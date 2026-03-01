@@ -1,0 +1,21 @@
+{
+    "name": "soprano-chat-saas",
+    "version": "1.0.0",
+    "private": true,
+    "workspaces": [
+        "apps/*"
+    ],
+    "scripts": {
+        "dev:web": "npm run dev -w apps/web",
+        "dev:api": "npm run start:dev -w apps/api",
+        "dev:mobile": "npm run start -w apps/mobile",
+        "dev:peer": "npx peerjs --port 9000 --path /peerjs",
+        "dev": "set NODE_OPTIONS=--max-http-header-size=32768&& concurrently \"npm run dev:web\" \"npm run dev:api\" \"npm run dev:peer\"",
+        "build": "npm run build --workspaces",
+        "start": "npm run start --workspaces",
+        "lint": "npm run lint --workspaces"
+    },
+    "devDependencies": {
+        "concurrently": "^8.0.0"
+    }
+}

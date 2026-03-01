@@ -1,0 +1,21 @@
+{
+    "name": "SopranoChat",
+    "short_name": "SopranoChat",
+    "description": "SopranoChat — Canlı Sesli Sohbet Platformu",
+    "start_url": "/",
+    "display": "standalone",
+    "display_override": [
+        "window-controls-overlay"
+    ],
+    "background_color": "#0a0a1a",
+    "theme_color": "#0a0a1a",
+    "orientation": "any",
+    "icons": [
+        {
+            "src": "/avatars/default.svg",
+            "sizes": "192x192",
+            "type": "image/svg+xml",
+            "purpose": "any maskable"
+        }
+    ]
+}

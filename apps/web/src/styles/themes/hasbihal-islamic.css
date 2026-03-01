@@ -1,0 +1,1103 @@
+﻿/* ========================================
+   HASBİHAL MECLİSİ - İSLAMİ TEMA
+   Fonts loaded in globals.css
+   ======================================== */
+
+/* Root Variables - İslami Tema */
+[data-theme="hasbihal-islamic"] {
+    /* Renk Paleti */
+    --islamic-green: #064e3b;
+    /* Derin Zümrüt */
+    --islamic-gold: #d4af37;
+    /* Altın */
+    --islamic-gold-light: #f3e5ab;
+    /* Açık Altın */
+    --islamic-cream: #fdfbf7;
+    /* Parşömen */
+    --islamic-teal: #115e59;
+    /* Turkuaz */
+    --islamic-dark: #022c22;
+    /* Koyu Yeşil */
+    --islamic-border: #b8860b;
+    /* Çerçeve Altını */
+
+    /* Font Variables */
+    --font-text: 'Amiri', serif;
+    --font-title: 'Aref Ruqaa', serif;
+}
+
+/* ========================================
+   GLOBAL OVERRIDES
+   ======================================== */
+
+[data-theme="hasbihal-islamic"],
+[data-theme="hasbihal-islamic"] body {
+    font-family: 'Amiri', serif !important;
+    color: #fdfbf7 !important;
+    -webkit-font-smoothing: antialiased !important;
+}
+
+[data-theme="hasbihal-islamic"] .app-background {
+    background-color: #022c22 !important;
+    background-image: url("https://www.transparenttextures.com/patterns/arabesque.png") !important;
+    background-size: auto !important;
+    background-repeat: repeat !important;
+}
+
+/* Remove telegraph texture/vignette overlays */
+[data-theme="hasbihal-islamic"] .app-background::before,
+[data-theme="hasbihal-islamic"] .app-background::after {
+    display: none !important;
+    content: none !important;
+}
+
+/* ========================================
+   SCROLLBAR
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] ::-webkit-scrollbar {
+    width: 8px;
+}
+
+[data-theme="hasbihal-islamic"] ::-webkit-scrollbar-track {
+    background: #022c22;
+    border-left: 1px solid #d4af37;
+}
+
+[data-theme="hasbihal-islamic"] ::-webkit-scrollbar-thumb {
+    background: #d4af37;
+    border-radius: 4px;
+    border: 1px solid #022c22;
+}
+
+[data-theme="hasbihal-islamic"] ::-webkit-scrollbar-thumb:hover {
+    background: #f3e5ab;
+}
+
+/* ========================================
+   KEYFRAME ANIMATIONS
+   ======================================== */
+
+@keyframes hasbihal-marquee {
+    0% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes hasbihal-music-bar {
+
+    0%,
+    100% {
+        height: 30%;
+    }
+
+    50% {
+        height: 100%;
+    }
+}
+
+@keyframes hasbihal-shine {
+    0% {
+        box-shadow: 0 0 5px #d4af37;
+    }
+
+    50% {
+        box-shadow: 0 0 20px #d4af37;
+    }
+
+    100% {
+        box-shadow: 0 0 5px #d4af37;
+    }
+}
+
+@keyframes hasbihal-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes hasbihal-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes hasbihal-pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* ========================================
+   ANA PANEL - TEZHIP SANATI
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .glass-panel.glass-panel {
+    background: rgba(6, 78, 59, 0.95) !important;
+    background-image: none !important;
+    border: 4px double #d4af37 !important;
+    border-radius: 16px !important;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.7), inset 0 0 50px rgba(0, 0, 0, 0.5) !important;
+    position: relative;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* Köşe Süsleri */
+[data-theme="hasbihal-islamic"] .glass-panel::before,
+[data-theme="hasbihal-islamic"] .glass-panel::after {
+    content: '' !important;
+    position: absolute !important;
+    width: 30px !important;
+    height: 30px !important;
+    border: 2px solid #d4af37 !important;
+    z-index: 50 !important;
+    background: transparent !important;
+    animation: none !important;
+    filter: none !important;
+    opacity: 1 !important;
+    display: block !important;
+}
+
+[data-theme="hasbihal-islamic"] .glass-panel::before {
+    top: 4px !important;
+    left: 4px !important;
+    border-right: none !important;
+    border-bottom: none !important;
+    border-top-left-radius: 12px !important;
+}
+
+[data-theme="hasbihal-islamic"] .glass-panel::after {
+    bottom: 4px !important;
+    right: 4px !important;
+    border-left: none !important;
+    border-top: none !important;
+    border-bottom-right-radius: 12px !important;
+}
+
+/* ========================================
+   ROOM CONTAINER LAYOUT
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .glass-panel.room-container {
+    max-width: 1700px !important;
+    height: 90vh !important;
+    border-radius: 16px !important;
+}
+
+/* ========================================
+   CENTER PANEL (Chat Area)
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .glass-panel.room-container>main.flex-1 {
+    background: rgba(253, 251, 247, 0.05) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ========================================
+   SOL SIDEBAR
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left.sidebar-left {
+    background: rgba(2, 44, 34, 0.9) !important;
+    background-image: none !important;
+    border-right: 1px solid rgba(212, 175, 55, 0.3) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}
+
+/* ========================================
+   LOGO — Aref Ruqaa, white + gold
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left .font-logo {
+    font-family: 'Aref Ruqaa', serif !important;
+    color: #fff !important;
+    text-shadow: none !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .font-logo span {
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .font-logo span:first-child {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
+    text-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .font-logo span:last-child {
+    color: #d4af37 !important;
+    -webkit-text-fill-color: #d4af37 !important;
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4)) !important;
+}
+
+/* Version badge */
+[data-theme="hasbihal-islamic"] .sidebar-left .text-\[9px\] {
+    color: rgba(212, 175, 55, 0.5) !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: 700 !important;
+}
+
+/* Chat Logo Area / Header */
+[data-theme="hasbihal-islamic"] .sidebar-left .chat-logo-area {
+    background: linear-gradient(to bottom, #064e3b, #022c22) !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+    text-align: center !important;
+}
+
+/* ========================================
+   USER CARDS
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card.user-card {
+    background: rgba(6, 78, 59, 0.4) !important;
+    background-image: none !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+    padding: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card.user-card:hover {
+    background: rgba(212, 175, 55, 0.1) !important;
+    background-image: none !important;
+    border-color: #d4af37 !important;
+}
+
+/* Avatar */
+[data-theme="hasbihal-islamic"] .user-card img {
+    filter: none !important;
+    border: 2px solid #d4af37 !important;
+    padding: 2px !important;
+    background: #022c22 !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Online dot */
+[data-theme="hasbihal-islamic"] .user-card span[class*="bg-emerald"],
+[data-theme="hasbihal-islamic"] .user-card span[class*="bg-green"] {
+    background: #22c55e !important;
+    border-color: #022c22 !important;
+    box-shadow: 0 0 8px #22c55e !important;
+}
+
+/* Username */
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card .text-sm {
+    color: #fdfbf7 !important;
+    -webkit-text-fill-color: #fdfbf7 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: 700 !important;
+    background: none !important;
+    -webkit-background-clip: unset !important;
+    background-clip: unset !important;
+}
+
+/* Username hover → gold */
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card:hover .text-sm {
+    color: #d4af37 !important;
+    -webkit-text-fill-color: #d4af37 !important;
+}
+
+/* Role label */
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card .text-\[10px\] {
+    font-family: 'Amiri', serif !important;
+    color: rgba(212, 175, 55, 0.7) !important;
+    font-weight: 500 !important;
+}
+
+/* GodMaster gradient override */
+[data-theme="hasbihal-islamic"] .user-card[class*="from-fuchsia"] {
+    background: rgba(6, 78, 59, 0.6) !important;
+    border: 2px solid #d4af37 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2) !important;
+}
+
+/* Owner gradient override */
+[data-theme="hasbihal-islamic"] .user-card[class*="from-amber"] {
+    background: rgba(6, 78, 59, 0.5) !important;
+    border: 2px solid rgba(212, 175, 55, 0.6) !important;
+    box-shadow: none !important;
+}
+
+/* Speaker highlight */
+[data-theme="hasbihal-islamic"] .user-card[class*="indigo-500"] {
+    background: rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+}
+
+/* Hide avatar badge overlays */
+[data-theme="hasbihal-islamic"] .sidebar-left .user-card .relative.flex-shrink-0>div.absolute {
+    display: none !important;
+}
+
+/* ========================================
+   SIDEBAR BOTTOM AREA
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left>div:last-child {
+    background: linear-gradient(to top, rgba(2, 44, 34, 0.9), transparent) !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ========================================
+   STATUS SELECTOR
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left .status-bar {
+    background: rgba(6, 78, 59, 0.5) !important;
+    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+    border-radius: 8px !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .status-bar:hover {
+    background: #064e3b !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .status-bar span {
+    color: #f3e5ab !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: 700 !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left .status-bar:hover span {
+    color: #fff !important;
+}
+
+/* Status dot */
+[data-theme="hasbihal-islamic"] .sidebar-left .status-bar [class*="bg-emerald"] {
+    background: #22c55e !important;
+    box-shadow: 0 0 8px #22c55e !important;
+    animation: hasbihal-pulse 2s infinite !important;
+}
+
+/* Status dropdown */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="absolute"][class*="bottom-full"] {
+    background: #022c22 !important;
+    backdrop-filter: none !important;
+    border: 1px solid #d4af37 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ========================================
+   MUSIC CARD / RADIO PLAYER (DİNLETİ)
+   ======================================== */
+
+/* Override sidebar gradient widgets */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] {
+    background: rgba(6, 78, 59, 0.3) !important;
+    background-image: none !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 8px !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] * {
+    color: inherit !important;
+}
+
+/* Aurora glow → golden shimmer */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"]::before {
+    content: '' !important;
+    position: absolute !important;
+    top: -50% !important;
+    left: -50% !important;
+    width: 200% !important;
+    height: 200% !important;
+    background: radial-gradient(circle, rgba(212, 175, 55, 0.1) 0%, rgba(6, 78, 59, 0.05) 50%, transparent 70%) !important;
+    pointer-events: none !important;
+    z-index: 0 !important;
+}
+
+/* Kill existing gradient overlay inside */
+[data-theme="hasbihal-islamic"] .sidebar-left .rounded-2xl>.absolute.inset-0,
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"]>.absolute.inset-0 {
+    opacity: 0 !important;
+}
+
+/* ON AIR / DİNLETİ label */
+[data-theme="hasbihal-islamic"] .sidebar-left .text-\[9px\].text-blue-400,
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] .text-\[9px\] {
+    color: #d4af37 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    letter-spacing: 0.15em !important;
+}
+
+/* Song name */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] .text-xs {
+    color: #fdfbf7 !important;
+    font-family: 'Amiri', serif !important;
+}
+
+/* Control buttons */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] button {
+    background: transparent !important;
+    border: none !important;
+    color: #d4af37 !important;
+    transition: all 0.3s !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] button:hover {
+    color: #fff !important;
+    transform: scale(1.1) !important;
+}
+
+/* Play/pause — gold circle */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] button[class*="bg-"] {
+    background: radial-gradient(circle at 30% 30%, #d4af37, #b8860b) !important;
+    color: #022c22 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
+}
+
+/* Album art */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-gradient-to"] img {
+    border-radius: 8px !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ========================================
+   MIC BUTTON (KELAM İSTE)
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .sidebar-left button[class*="rounded-2xl"],
+[data-theme="hasbihal-islamic"] .sidebar-left button[class*="rounded-3xl"] {
+    background: linear-gradient(135deg, #065f46 0%, #022c22 100%) !important;
+    border: 1px solid #d4af37 !important;
+    box-shadow: inset 0 0 10px rgba(212, 175, 55, 0.2) !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+    position: relative !important;
+    border-radius: 8px !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left button[class*="rounded-2xl"]:hover,
+[data-theme="hasbihal-islamic"] .sidebar-left button[class*="rounded-3xl"]:hover {
+    border-color: #f3e5ab !important;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-2px) !important;
+}
+
+/* Mic icon circle */
+[data-theme="hasbihal-islamic"] .sidebar-left button [class*="bg-green-"],
+[data-theme="hasbihal-islamic"] .sidebar-left button [class*="bg-indigo-"] {
+    background: radial-gradient(circle at 30% 30%, #d4af37, #b8860b) !important;
+    border: 2px solid #fdfbf7 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6) !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left button [class*="bg-green-"] svg,
+[data-theme="hasbihal-islamic"] .sidebar-left button [class*="bg-indigo-"] svg {
+    color: #022c22 !important;
+}
+
+/* Mic button text */
+[data-theme="hasbihal-islamic"] .sidebar-left button span {
+    color: #f3e5ab !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: bold !important;
+    letter-spacing: 0.05em !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left button:hover span {
+    color: #fff !important;
+}
+
+/* ========================================
+   ROOM TABS / HEADER
+   ======================================== */
+
+/* Header bar */
+[data-theme="hasbihal-islamic"] .glass-panel.room-container>main>header,
+[data-theme="hasbihal-islamic"] .chat-header {
+    background: rgba(2, 44, 34, 0.8) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Room tabs */
+[data-theme="hasbihal-islamic"] .room-tab {
+    background: rgba(2, 44, 34, 0.6) !important;
+    border: 1px solid #d4af37 !important;
+    color: #d4af37 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-size: 1.125rem !important;
+    border-radius: 8px 8px 0 0 !important;
+    transition: all 0.3s ease !important;
+    position: relative !important;
+}
+
+[data-theme="hasbihal-islamic"] .room-tab:hover {
+    background: rgba(212, 175, 55, 0.1) !important;
+    color: #f3e5ab !important;
+}
+
+[data-theme="hasbihal-islamic"] .room-tab:hover * {
+    color: #f3e5ab !important;
+}
+
+/* Active room tab */
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active {
+    background: #d4af37 !important;
+    color: #022c22 !important;
+    border-bottom: none !important;
+    box-shadow: 0 -5px 15px rgba(212, 175, 55, 0.2) !important;
+}
+
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active * {
+    color: #022c22 !important;
+}
+
+/* İslami Kemer (Aktif Tab Üstü) */
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active::after {
+    content: '' !important;
+    position: absolute !important;
+    top: -4px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 40% !important;
+    height: 4px !important;
+    background: #d4af37 !important;
+    border-radius: 4px 4px 0 0 !important;
+}
+
+/* Active icon bg → green/gold */
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active .icon-bg,
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active [class*="rounded-lg"] {
+    background: rgba(2, 44, 34, 0.5) !important;
+    color: #022c22 !important;
+}
+
+[data-theme="hasbihal-islamic"] .room-tab.room-tab-active .icon-bg svg {
+    color: #022c22 !important;
+}
+
+/* Room tab icon size */
+[data-theme="hasbihal-islamic"] .room-tab .icon-bg {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: transform 0.2s !important;
+}
+
+[data-theme="hasbihal-islamic"] .room-tab:hover .icon-bg {
+    transform: scale(1.1) !important;
+}
+
+/* Panel toggle button in header */
+[data-theme="hasbihal-islamic"] .glass-panel.room-container>main>header button[class*="rounded-full"],
+[data-theme="hasbihal-islamic"] .chat-header button[class*="rounded-full"] {
+    background: rgba(6, 78, 59, 0.5) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    color: #d4af37 !important;
+}
+
+[data-theme="hasbihal-islamic"] .glass-panel.room-container>main>header button[class*="rounded-full"]:hover,
+[data-theme="hasbihal-islamic"] .chat-header button[class*="rounded-full"]:hover {
+    background: #d4af37 !important;
+    color: #022c22 !important;
+}
+
+/* ========================================
+   CHAT MESSAGES AREA
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .chat-messages {
+    background: transparent !important;
+}
+
+/* Date badge */
+[data-theme="hasbihal-islamic"] .chat-messages [class*="rounded-full"][class*="bg-"] {
+    background: rgba(2, 44, 34, 0.8) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-top: 1px solid #d4af37 !important;
+    border-bottom: 1px solid #d4af37 !important;
+    color: #d4af37 !important;
+    font-weight: 700 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+}
+
+/* ========================================
+   MESSAGE BUBBLES
+   Parşömen (sol) + Turkuaz (sağ)
+   ======================================== */
+
+/* Incoming message (left - Parşömen) */
+[data-theme="hasbihal-islamic"] .message-bubble {
+    background: #fdfbf7 !important;
+    border: 1px solid #d4af37 !important;
+    color: #022c22 !important;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3) !important;
+    font-family: 'Amiri', serif !important;
+    font-size: 1.125rem !important;
+    border-radius: 0 16px 16px 16px !important;
+    line-height: 1.75 !important;
+}
+
+/* Outgoing message (right - Turkuaz) */
+[data-theme="hasbihal-islamic"] .message-bubble.message-mine {
+    background: linear-gradient(135deg, #115e59, #0f766e) !important;
+    border: 1px solid #2dd4bf !important;
+    color: #fff !important;
+    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3) !important;
+    border-radius: 16px 0 16px 16px !important;
+}
+
+/* Sender name */
+[data-theme="hasbihal-islamic"] .message-bubble .text-xs {
+    color: #d4af37 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+}
+
+/* Username in messages */
+[data-theme="hasbihal-islamic"] .message-username {
+    font-family: 'Aref Ruqaa', serif !important;
+    font-size: 1.125rem !important;
+    color: #f3e5ab !important;
+    -webkit-text-fill-color: #f3e5ab !important;
+}
+
+/* Admin badge in messages */
+[data-theme="hasbihal-islamic"] .message-bubble [class*="bg-blue-500"] {
+    background: #d4af37 !important;
+    border: none !important;
+    color: #022c22 !important;
+    font-size: 0.5625rem !important;
+    font-weight: bold !important;
+    padding: 0.125rem 0.5rem !important;
+    border-radius: 9999px !important;
+    text-transform: uppercase !important;
+}
+
+/* Timestamp */
+[data-theme="hasbihal-islamic"] .message-bubble .text-\[9px\] {
+    color: rgba(212, 175, 55, 0.6) !important;
+}
+
+/* Message text */
+[data-theme="hasbihal-islamic"] .message-bubble p,
+[data-theme="hasbihal-islamic"] .message-bubble .text-\[13px\] {
+    color: inherit !important;
+    font-family: 'Amiri', serif !important;
+    line-height: 1.75 !important;
+}
+
+/* ========================================
+   BOTTOM TOOLBAR + INPUT
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .bottom-toolbar {
+    background: rgba(2, 44, 34, 0.9) !important;
+    background-image: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Icon buttons in toolbar */
+[data-theme="hasbihal-islamic"] .bottom-toolbar button[class*="rounded-xl"],
+[data-theme="hasbihal-islamic"] .icon-button {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    color: #d4af37 !important;
+    background: rgba(2, 44, 34, 0.6) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    transition: all 0.3s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+[data-theme="hasbihal-islamic"] .bottom-toolbar button[class*="rounded-xl"]:hover,
+[data-theme="hasbihal-islamic"] .icon-button:hover {
+    background: #d4af37 !important;
+    color: #022c22 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.4) !important;
+    transform: translateY(-2px) !important;
+    border-color: #d4af37 !important;
+}
+
+[data-theme="hasbihal-islamic"] .bottom-toolbar button[class*="rounded-xl"] svg,
+[data-theme="hasbihal-islamic"] .icon-button svg {
+    color: inherit !important;
+}
+
+/* Danger / exit button */
+[data-theme="hasbihal-islamic"] .bottom-toolbar button[class*="text-red"] {
+    color: #ef4444 !important;
+}
+
+[data-theme="hasbihal-islamic"] .bottom-toolbar button[class*="text-red"]:hover {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.3) !important;
+    color: #fca5a5 !important;
+}
+
+/* Separator */
+[data-theme="hasbihal-islamic"] .bottom-toolbar [class*="bg-white"][class*="h-"] {
+    background: rgba(212, 175, 55, 0.3) !important;
+}
+
+/* Button group container */
+[data-theme="hasbihal-islamic"] .bottom-toolbar [class*="bg-"][class*="rounded-2xl"] {
+    background: transparent !important;
+    border: none !important;
+}
+
+/* ========================================
+   INPUT AREA
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .message-input-container {
+    background: rgba(2, 44, 34, 0.8) !important;
+    border: 1px solid #d4af37 !important;
+    border-radius: 8px !important;
+    transition: all 0.3s ease !important;
+}
+
+[data-theme="hasbihal-islamic"] .message-input-container:focus-within {
+    background: #022c22 !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] .message-input {
+    background: transparent !important;
+    color: #f3e5ab !important;
+    font-family: 'Amiri', serif !important;
+    font-size: 1.125rem !important;
+    border: none !important;
+}
+
+[data-theme="hasbihal-islamic"] .message-input::placeholder {
+    color: #887858 !important;
+}
+
+/* Plus button */
+[data-theme="hasbihal-islamic"] .message-input-container button:first-child {
+    color: #d4af37 !important;
+}
+
+[data-theme="hasbihal-islamic"] .message-input-container button:first-child:hover {
+    color: #f3e5ab !important;
+}
+
+/* Send button — gold gradient */
+[data-theme="hasbihal-islamic"] .send-button {
+    background: linear-gradient(to right, #d4af37, #b8860b) !important;
+    border: 1px solid #f3e5ab !important;
+    color: #022c22 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] .send-button:hover {
+    filter: brightness(1.1) !important;
+}
+
+[data-theme="hasbihal-islamic"] .send-button span {
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: bold !important;
+    font-size: 1.25rem !important;
+    letter-spacing: 0.05em !important;
+    color: #022c22 !important;
+}
+
+/* Gradient glow overlay gizle */
+[data-theme="hasbihal-islamic"] .bottom-toolbar [class*="from-indigo"] {
+    display: none !important;
+}
+
+/* Send button inner div */
+[data-theme="hasbihal-islamic"] .send-button .reactor-bg-send {
+    display: none !important;
+}
+
+[data-theme="hasbihal-islamic"] .send-button div {
+    background: transparent !important;
+}
+
+/* ========================================
+   RIGHT SIDEBAR (Canlı Yayın Panel)
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .live-panel {
+    background: rgba(2, 44, 34, 0.9) !important;
+    background-image: none !important;
+    border-left: 1px solid rgba(212, 175, 55, 0.3) !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] .live-panel * {
+    font-family: 'Amiri', serif;
+}
+
+/* Collapsed panel */
+[data-theme="hasbihal-islamic"] .live-panel-collapsed {
+    background: rgba(2, 44, 34, 0.9) !important;
+    border-left: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] .live-panel-collapsed * {
+    color: #fdfbf7 !important;
+}
+
+/* ========================================
+   CANLI YAYIN BADGE
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .live-panel [class*="bg-red-500\\/10"],
+[data-theme="hasbihal-islamic"] .live-panel [class*="bg-red"] {
+    background: rgba(212, 175, 55, 0.1) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-radius: 9999px !important;
+}
+
+[data-theme="hasbihal-islamic"] .live-panel [class*="bg-red"] span {
+    color: #d4af37 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: bold !important;
+    letter-spacing: 0.15em !important;
+}
+
+/* Live dot */
+[data-theme="hasbihal-islamic"] .live-panel .bg-red-500 {
+    background: #d4af37 !important;
+    border-radius: 50% !important;
+    animation: hasbihal-shine 3s infinite !important;
+}
+
+/* Live text */
+[data-theme="hasbihal-islamic"] .live-panel .text-red-400 {
+    color: #d4af37 !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-weight: bold !important;
+}
+
+/* ========================================
+   VIDEO PREVIEW (Altın Çerçeve)
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .video-preview {
+    background: #000 !important;
+    border: 6px solid #d4af37 !important;
+    border-radius: 4px !important;
+    box-shadow: 0 0 0 2px #022c22, 0 15px 30px rgba(0, 0, 0, 0.6) !important;
+    position: relative;
+    overflow: hidden;
+}
+
+[data-theme="hasbihal-islamic"] .video-preview::after {
+    content: '' !important;
+    position: absolute !important;
+    inset: 0 !important;
+    background: url("https://www.transparenttextures.com/patterns/arabesque.png") !important;
+    opacity: 0.05 !important;
+    pointer-events: none !important;
+    z-index: 20 !important;
+}
+
+/* No signal area */
+[data-theme="hasbihal-islamic"] .live-panel .text-indigo-400 {
+    color: rgba(212, 175, 55, 0.5) !important;
+    font-family: 'Aref Ruqaa', serif !important;
+}
+
+/* ========================================
+   GENEL TEXT & RENK OVERRIDE'LAR
+   ======================================== */
+
+/* Tüm gri metin → cream/gold */
+[data-theme="hasbihal-islamic"] .text-gray-300,
+[data-theme="hasbihal-islamic"] .text-gray-400,
+[data-theme="hasbihal-islamic"] .text-gray-500 {
+    color: rgba(212, 175, 55, 0.7) !important;
+}
+
+[data-theme="hasbihal-islamic"] .text-white {
+    color: #fdfbf7 !important;
+}
+
+[data-theme="hasbihal-islamic"] .text-indigo-300,
+[data-theme="hasbihal-islamic"] .text-indigo-400 {
+    color: #d4af37 !important;
+}
+
+/* Gradient text overrides */
+[data-theme="hasbihal-islamic"] [style*="-webkit-text-fill-color"] {
+    -webkit-text-fill-color: #fdfbf7 !important;
+}
+
+/* Border renkleri */
+[data-theme="hasbihal-islamic"] [class*="border-white"] {
+    border-color: rgba(212, 175, 55, 0.2) !important;
+}
+
+/* ========================================
+   AGGRESSIVE BACKGROUND OVERRIDES
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .bottom-toolbar {
+    background: rgba(2, 44, 34, 0.9) !important;
+    border-top: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+/* ========================================
+   WELCOME BANNER OVERRIDE
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] [class*="bg-gradient-to-r"][class*="from-"] {
+    background: rgba(6, 78, 59, 0.5) !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+    border-left: none !important;
+    border-right: none !important;
+}
+
+[data-theme="hasbihal-islamic"] [class*="bg-gradient-to-r"] * {
+    color: #fdfbf7 !important;
+    -webkit-text-fill-color: #fdfbf7 !important;
+}
+
+/* ========================================
+   USER LIST AREA — DEEP OVERRIDES
+   ======================================== */
+
+/* User list scroll area background */
+[data-theme="hasbihal-islamic"] .sidebar-left>div {
+    background: transparent !important;
+}
+
+/* User count label */
+[data-theme="hasbihal-islamic"] .sidebar-left .text-gray-500,
+[data-theme="hasbihal-islamic"] .sidebar-left .text-gray-400 {
+    color: rgba(212, 175, 55, 0.5) !important;
+    font-family: 'Amiri', serif !important;
+}
+
+/* Status indicator dots */
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-green-"] {
+    background: #22c55e !important;
+    box-shadow: 0 0 8px #22c55e !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-red-"] {
+    background: #ef4444 !important;
+    box-shadow: 0 0 8px #ef4444 !important;
+}
+
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-yellow-"],
+[data-theme="hasbihal-islamic"] .sidebar-left [class*="bg-amber-"] {
+    background: #d4af37 !important;
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.5) !important;
+}
+
+/* ========================================
+   ROL BADGE'LER
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .role-badge {
+    background: #d4af37 !important;
+    color: #022c22 !important;
+    border: none !important;
+    font-family: 'Aref Ruqaa', serif !important;
+    font-size: 0.5625rem !important;
+    font-weight: bold !important;
+    padding: 0.125rem 0.5rem !important;
+    text-transform: uppercase !important;
+    border-radius: 9999px !important;
+}
+
+/* ========================================
+   AYIRICILAR
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .separator-gold {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #d4af37, transparent) !important;
+    margin: 0.625rem 0;
+}
+
+/* ========================================
+   DURUM GÖSTERGELERİ
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .status-online {
+    background: #22c55e !important;
+    border: 1px solid #022c22 !important;
+    box-shadow: 0 0 8px #22c55e !important;
+}
+
+[data-theme="hasbihal-islamic"] .status-busy {
+    background: #ef4444 !important;
+    border: 1px solid #022c22 !important;
+}
+
+[data-theme="hasbihal-islamic"] .status-away {
+    background: #d4af37 !important;
+    border: 1px solid #022c22 !important;
+}
+
+/* ========================================
+   FOOTER
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] .footer-text {
+    font-family: 'Aref Ruqaa', serif !important;
+    font-size: 0.625rem !important;
+    color: rgba(212, 175, 55, 0.4) !important;
+    letter-spacing: 0.15em !important;
+}
+
+/* ========================================
+   CONTEXT MENU / MODALS
+   ======================================== */
+
+[data-theme="hasbihal-islamic"] [class*="bg-gray-900"],
+[data-theme="hasbihal-islamic"] [class*="bg-\\[\\#1a1d28\\]"] {
+    background: #022c22 !important;
+    border: 1px solid rgba(212, 175, 55, 0.3) !important;
+}
+
+[data-theme="hasbihal-islamic"] [class*="hover\\:bg-gray-800"]:hover {
+    background: rgba(6, 78, 59, 0.5) !important;
+}
+
+/* Online label */
+[data-theme="hasbihal-islamic"] .sidebar-left .tracking-widest {
+    color: rgba(212, 175, 55, 0.5) !important;
+    font-family: 'Aref Ruqaa', serif !important;
+}

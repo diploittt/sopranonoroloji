@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: soprano_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: sopranochat
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - soprano_net
+
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: soprano_api
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: "postgresql://user:password@postgres:5432/sopranochat?schema=public"
+      CORS_ORIGIN: "http://localhost:3000"
+      JWT_SECRET: "dev-secret"
+    ports:
+      - "3001:3001"
+    networks:
+      - soprano_net
+
+  web:
+    build:
+      context: ./apps/web
+      dockerfile: Dockerfile
+    container_name: soprano_web
+    depends_on:
+      - api
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+      NEXT_PUBLIC_SOCKET_URL: "http://localhost:3001"
+    ports:
+      - "3000:3000"
+    networks:
+      - soprano_net
+
+networks:
+  soprano_net:
+    driver: bridge
+
+volumes:
+  postgres_data:

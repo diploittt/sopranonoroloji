@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SopranoChat - Simulation Core</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fredoka:wght@500;600;700&subset=latin,latin-ext&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        logo: ['Fredoka', 'sans-serif'],
+                    },
+                    animation: {
+                        'music-bar': 'music-bar 1s ease-in-out infinite',
+                        'marquee': 'marquee 10s linear infinite',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        'music-bar': { '0%, 100%': { height: '30%' }, '50%': { height: '100%' } },
+                        'marquee': { '0%': { transform: 'translateX(100%)' }, '100%': { transform: 'translateX(-100%)' } },
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style>
+        body { 
+            background-color: #000; 
+            color: #e2e8f0; 
+            overflow: hidden; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh;
+            margin: 0;
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+
+        .glass-panel { background: rgba(11, 12, 18, 0.95); border: 1px solid rgba(255, 255, 255, 0.08); }
+
+        /* Simülasyon İmleci */
+        .fake-cursor {
+            width: 24px; height: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='white' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M3 3l7.07 16.97 2.51-7.39 7.39-2.51L3 3z' /%3E%3C/svg%3E");
+            background-size: contain; background-repeat: no-repeat;
+            position: absolute; z-index: 9999; pointer-events: none; top:0; left:0;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); 
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+        }
+        .sim-click { animation: click-pulse 0.2s ease-in-out; }
+        @keyframes click-pulse { 0% { transform: scale(1); } 50% { transform: scale(0.8); } 100% { transform: scale(1); } }
+
+        /* Sağ Tık Menüsü */
+        .sim-context-menu {
+            position: absolute; width: 140px; background: #1e1e24; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            padding: 4px; z-index: 10000; box-shadow: 0 10px 20px rgba(0,0,0,0.5); opacity: 0; transform: scale(0.9); transition: all 0.1s;
+        }
+        .sim-context-menu.active { opacity: 1; transform: scale(1); }
+        .sim-menu-item { padding: 6px 10px; font-size: 10px; color: #e2e8f0; border-radius: 4px; cursor: default; display: flex; gap: 6px; items-center; }
+        .sim-menu-item.hovered { background: #6366f1; color: white; }
+
+        /* Sohbet Balonları Animasyonu */
+        .chat-bubble-sim { animation: slideInRight 0.3s ease-out forwards; opacity: 0; transform: translateX(20px); }
+        @keyframes slideInRight { to { opacity: 1; transform: translateX(0); } }
+
+        /* Element Stilleri */
+        .mic-reactor {
+            position: relative; width: 100%; height: 70px; border-radius: 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+            border: 1px solid rgba(255,255,255,0.1); overflow: hidden; display: flex; align-items: center; padding: 0 10px;
+        }
+        .mic-reactor.active-sim { border-color: rgba(239, 68, 68, 0.5); background: rgba(239, 68, 68, 0.1); box-shadow: 0 0 30px rgba(239, 68, 68, 0.2); }
+        .reactor-core { width: 50px; height: 50px; border-radius: 12px; background: radial-gradient(circle at center, #34d399, #059669); box-shadow: 0 0 20px #10b981; display: flex; align-items: center; justify-content: center; position: relative; z-index: 10; transition: all 0.3s; }
+        .mic-reactor.active-sim .reactor-core { background: radial-gradient(circle at center, #ef4444, #b91c1c); box-shadow: 0 0 20px #ef4444; }
+
+        .room-card { position: relative; background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%); border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s; overflow: hidden; }
+        .room-card.active { background: linear-gradient(180deg, rgba(99,102,241,0.15) 0%, rgba(99,102,241,0.05) 100%); border-color: rgba(99,102,241,0.4); box-shadow: 0 0 30px rgba(99,102,241,0.2); }
+        .room-card.active::after { content: ''; position: absolute; bottom: 0; left: 0; width: 100%; height: 3px; background: #6366f1; }
+
+        .icon-btn { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; color: #94a3b8; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
+
+        .cam-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+        .cam-small { aspect-ratio: 16/9; background: #000; border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .cam-label { position: absolute; bottom: 2px; left: 2px; font-size: 8px; background: rgba(0,0,0,0.6); padding: 1px 4px; border-radius: 3px; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- MAIN SIMULATION CONTAINER (16:9 Aspect Ratio) -->
+    <div id="sim-screen-container" class="relative w-[95%] max-w-[1400px] aspect-video bg-black rounded-2xl border border-white/10 shadow-[0_0_100px_rgba(79,70,229,0.1)] overflow-hidden cursor-none">
+        
+        <!-- REC Indicator -->
+        <div class="absolute top-4 left-4 z-[60] flex items-center gap-3">
+            <div class="flex items-center gap-2 px-3 py-1 bg-red-600/20 border border-red-500/50 rounded-md">
+                <div class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                <span class="text-red-500 text-xs font-bold tracking-widest">REC</span>
+            </div>
+            <div id="sim-timer" class="font-mono text-white/50 text-sm">00:00:00</div>
+        </div>
+
+        <!-- FAKE CURSOR -->
+        <div id="sim-cursor" class="fake-cursor"></div>
+        
+        <!-- CONTEXT MENU (Hidden initially) -->
+        <div id="sim-ctx-menu" class="sim-context-menu">
+            <div class="sim-menu-item" id="sim-ctx-1"><i class="fa-solid fa-user"></i> Profil</div>
+            <div class="sim-menu-item" id="sim-ctx-2"><i class="fa-solid fa-message"></i> Özel Mesaj</div>
+            <div class="sim-menu-item" id="sim-ctx-3"><i class="fa-solid fa-gift"></i> Hediye Gönder</div>
+            <div class="h-px bg-white/10 my-1"></div>
+            <div class="sim-menu-item text-red-400" id="sim-ctx-4"><i class="fa-solid fa-ban"></i> Engelle</div>
+        </div>
+
+        <!-- APP CONTENT -->
+        <div class="relative w-full h-full flex overflow-hidden bg-[url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop')] bg-cover bg-center">
+            <div class="absolute inset-0 bg-black/40"></div>
+            
+            <div class="glass-panel w-full h-full flex overflow-hidden relative z-10">
+                <!-- LEFT SIDEBAR -->
+                <aside class="w-64 md:w-72 flex-shrink-0 flex flex-col bg-[#0b0d14]/60 border-r border-white/5 z-20">
+                    <div class="h-20 flex items-center px-6 border-b border-white/5 shrink-0">
+                        <div class="flex flex-col justify-center w-full">
+                            <div class="text-[9px] font-bold tracking-[0.4em] text-gray-500 uppercase mb-1 flex items-center gap-2">
+                                <span class="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> V 3.0 Live
+                            </div>
+                            <div class="text-2xl font-logo font-bold tracking-tight text-white">Soprano<span class="text-[#ff4757]">Chat</span></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dynamic User List -->
+                    <div class="flex-1 p-4 custom-scrollbar space-y-2" id="sim-user-list">
+                        <!-- Initial Content (Loader) -->
+                        <div class="flex items-center justify-center h-full opacity-50">
+                            <div class="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Radio & Mic -->
+                    <div class="p-4 bg-[#08090c]/60 border-t border-white/5 flex flex-col gap-3 backdrop-blur-xl">
+                        <div class="relative overflow-hidden rounded-xl border border-white/10 bg-[#0f1016] p-2 flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-black/60 flex items-center justify-center border border-white/10 overflow-hidden shrink-0">
+                                <div class="flex items-end gap-0.5 h-5">
+                                    <span class="w-1 bg-violet-500 rounded-t-sm h-3 animate-[music-bar_1s_ease-in-out_infinite]"></span>
+                                    <span class="w-1 bg-violet-500 rounded-t-sm h-5 animate-[music-bar_1.2s_ease-in-out_infinite_0.1s]"></span>
+                                    <span class="w-1 bg-violet-500 rounded-t-sm h-4 animate-[music-bar_0.8s_ease-in-out_infinite_0.2s]"></span>
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0 overflow-hidden">
+                                <div class="text-[10px] font-bold text-white mb-1">Power FM</div>
+                                <div class="w-full overflow-hidden relative h-3"><div class="absolute whitespace-nowrap text-[8px] text-gray-400 font-medium animate-[marquee_10s_linear_infinite]">Canlı Yayın Akışı • En Hit Parçalar</div></div>
+                            </div>
+                        </div>
+                        <div id="sim-mic-btn" class="mic-reactor group">
+                            <div class="reactor-core">
+                                <i data-lucide="mic" class="w-5 h-5 text-white fill-white relative z-20"></i>
+                            </div>
+                            <div class="flex-1 flex flex-col items-start ml-4" id="sim-mic-text">
+                                <span class="text-xs font-bold text-white tracking-wide">MİKROFON İSTE</span>
+                                <span class="text-[9px] text-gray-400">Sıraya Girmek İçin Tıkla</span>
+                            </div>
+                            <div class="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_15px_#10b981] animate-pulse"></div>
+                        </div>
+                    </div>
+                </aside>
+
+                <!-- MAIN AREA -->
+                <main class="flex-1 flex flex-col min-w-0 bg-gradient-to-b from-[#0f111a]/40 to-transparent relative z-10">
+                    <header class="h-16 flex-shrink-0 border-b border-white/5 bg-[#0f111a]/60 backdrop-blur-md flex items-center px-4 relative z-30">
+                        <div class="flex items-center gap-2 w-full overflow-x-auto no-scrollbar" id="sim-rooms">
+                            <button id="room-general" class="room-card active flex-1 min-w-[100px] h-10 rounded-lg flex items-center justify-center gap-2">
+                                <i data-lucide="message-square" class="w-3 h-3 text-white"></i>
+                                <span class="text-[10px] font-bold text-white">GENEL</span>
+                            </button>
+                            <button id="room-music" class="room-card flex-1 min-w-[100px] h-10 rounded-lg flex items-center justify-center gap-2">
+                                <i data-lucide="music" class="w-3 h-3 text-gray-500"></i>
+                                <span class="text-[10px] font-bold text-gray-400">MÜZİK</span>
+                            </button>
+                            <button id="room-game" class="room-card flex-1 min-w-[100px] h-10 rounded-lg flex items-center justify-center gap-2">
+                                <i data-lucide="gamepad-2" class="w-3 h-3 text-gray-500"></i>
+                                <span class="text-[10px] font-bold text-gray-400">OYUN</span>
+                            </button>
+                            <button id="room-vip" class="room-card flex-1 min-w-[100px] h-10 rounded-lg flex items-center justify-center gap-2">
+                                <i data-lucide="crown" class="w-3 h-3 text-gray-500"></i>
+                                <span class="text-[10px] font-bold text-gray-400">VIP</span>
+                            </button>
+                        </div>
+                    </header>
+
+                    <div class="flex-1 overflow-hidden p-4 relative flex flex-col justify-end">
+                        <div class="absolute inset-0 overflow-y-auto custom-scrollbar p-4 space-y-3" id="sim-chat-feed"></div>
+                    </div>
+
+                    <div class="p-4 bg-[#0b0d14]/80 border-t border-white/5 backdrop-blur-xl z-20 flex flex-col gap-3">
+                        <div class="flex items-center gap-2 p-1 bg-white/5 rounded-lg border border-white/5 w-fit">
+                            <button class="icon-btn hover:text-emerald-400"><i data-lucide="hand" class="w-4 h-4"></i></button>
+                            <button class="icon-btn hover:text-blue-400"><i data-lucide="video" class="w-4 h-4"></i></button>
+                            <div class="w-px h-4 bg-white/10 mx-1"></div>
+                            <button id="sim-emoji-btn" class="icon-btn hover:text-yellow-400"><i data-lucide="smile" class="w-4 h-4"></i></button>
+                        </div>
+                        <div class="w-full h-10 flex gap-2">
+                            <input type="text" id="sim-chat-input" disabled class="flex-1 bg-[#13151c] rounded-lg border border-white/10 px-4 text-xs text-white placeholder-gray-500 focus:outline-none" placeholder="Mesajınızı buraya yazın...">
+                            <button id="sim-send-btn" class="w-24 bg-indigo-600 rounded-lg flex items-center justify-center gap-2 text-[10px] font-bold text-white">GÖNDER <i data-lucide="send-horizontal" class="w-3 h-3"></i></button>
+                        </div>
+                    </div>
+                </main>
+
+                <!-- RIGHT SIDEBAR (CAMS) -->
+                <aside class="w-64 flex-shrink-0 bg-[#0b0d14]/60 border-l border-white/5 flex flex-col z-20 p-3">
+                    <div class="w-full aspect-video bg-black rounded-lg border border-white/10 relative overflow-hidden shadow-lg mb-3">
+                        <img id="sim-main-cam" src="" class="w-full h-full object-cover opacity-80">
+                        <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded text-[8px] text-white font-bold"><div class="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></div> LIVE</div>
+                        <div class="absolute bottom-2 left-2 bg-black/60 px-2 py-1 rounded text-[10px] text-white font-bold" id="sim-main-cam-label">Yayıncı</div>
+                    </div>
+
+                    <div class="cam-grid">
+                        <div class="cam-small"><img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover opacity-70"><div class="cam-label">Elif</div></div>
+                        <div class="cam-small"><img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover opacity-70"><div class="cam-label">Can</div></div>
+                        <div class="cam-small"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80" class="w-full h-full object-cover opacity-70"><div class="cam-label">Zeynep</div></div>
+                        <div class="cam-small bg-[#111] flex items-center justify-center"><i data-lucide="user" class="w-4 h-4 text-gray-600"></i><div class="cam-label">Misafir</div></div>
+                    </div>
+
+                    <div class="mt-auto p-3 bg-white/5 rounded-xl border border-white/5 text-center">
+                        <p class="text-[9px] text-gray-400">Yayın kalitesi: <span class="text-green-400 font-bold">HD</span></p>
+                    </div>
+                </aside>
+            </div>
+        </div>
+
+        <!-- BOOT SCREEN -->
+        <div id="sim-boot-screen" class="absolute inset-0 bg-black z-50 flex flex-col items-center justify-center font-mono">
+            <div class="text-indigo-500 text-4xl font-bold mb-4 tracking-tighter">SOPRANO<span class="text-white">OS</span></div>
+            <div class="w-64 h-1 bg-gray-800 rounded-full overflow-hidden">
+                <div class="h-full bg-indigo-500 animate-[width_2s_ease-out_forwards]" style="width: 0%" id="sim-boot-bar"></div>
+            </div>
+            <div class="mt-2 text-gray-500 text-xs animate-pulse">SYSTEM INITIALIZING...</div>
+        </div>
+
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        // --- SIMULATION DATA & LOGIC ---
+        let simInterval, timerInterval, simTimeouts = [];
+
+        const roomData = {
+            general: {
+                users: [
+                    { name: 'Admin', role: 'Yönetici', img: '11' },
+                    { name: 'Mehmet', role: 'Üye', img: '3' },
+                    { name: 'Ayşe', role: 'Üye', img: '5' }
+                ],
+                msgs: [
+                    { name: 'Admin', text: 'Hoş geldiniz, kurallara uyalım.' },
+                    { name: 'Ayşe', text: 'Selamlar herkese! 👋' }
+                ],
+                cam: 'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=400&q=80',
+                camLabel: 'Genel Yayın'
+            },
+            music: {
+                users: [
+                    { name: 'DJ Melis', role: 'Yayıncı', img: '9' },
+                    { name: 'Burak', role: 'Dinleyici', img: '12' },
+                    { name: 'Selin', role: 'Dinleyici', img: '1' }
+                ],
+                msgs: [
+                    { name: 'DJ Melis', text: 'Sıradaki parça istek üzerine geliyor! 🎵' },
+                    { name: 'Burak', text: 'Harika şarkı, sesini biraz açar mısın? 🔊' }
+                ],
+                cam: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=400&q=80',
+                camLabel: 'DJ Melis'
+            },
+            game: {
+                users: [
+                    { name: 'GamerX', role: 'Oyuncu', img: '8' },
+                    { name: 'NoobMaster', role: 'Oyuncu', img: '4' }
+                ],
+                msgs: [
+                    { name: 'GamerX', text: 'Takım toplanın mid gidiyoruz.' },
+                    { name: 'NoobMaster', text: 'Ben geldim.' }
+                ],
+                cam: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=400&q=80',
+                camLabel: 'Oyun Ekranı'
+            },
+            vip: {
+                users: [
+                    { name: 'VIP_King', role: 'VIP', img: '7' },
+                    { name: 'Queen', role: 'VIP', img: '2' }
+                ],
+                msgs: [
+                    { name: 'VIP_King', text: 'Burası çok daha sakin.' }
+                ],
+                cam: 'https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=400&q=80',
+                camLabel: 'VIP Lounge'
+            }
+        };
+
+        function moveCursor(targetId, offsetX=0, offsetY=0) {
+            const cursor = document.getElementById('sim-cursor');
+            const target = document.getElementById(targetId);
+            const container = document.getElementById('sim-screen-container');
+            
+            if(target && container) {
+                const cRect = container.getBoundingClientRect();
+                const tRect = target.getBoundingClientRect();
+                const x = tRect.left - cRect.left + (tRect.width/2) + offsetX;
+                const y = tRect.top - cRect.top + (tRect.height/2) + offsetY;
+                cursor.style.transform = `translate(${x}px, ${y}px)`;
+            }
+        }
+
+        function clickEffect(targetId) {
+            const cursor = document.getElementById('sim-cursor');
+            cursor.classList.add('sim-click');
+            setTimeout(() => cursor.classList.remove('sim-click'), 200);
+            
+            const el = document.getElementById(targetId);
+            if(el) {
+                el.style.transform = "scale(0.95)";
+                setTimeout(()=> el.style.transform = "", 150);
+            }
+        }
+
+        function switchRoom(roomId) {
+            // FIX: Lucide replaces <i> with <svg>, so querySelector('i') fails.
+            // Using querySelector('svg') ensures we catch the icon after Lucide runs.
+            ['general', 'music', 'game', 'vip'].forEach(r => {
+                const btn = document.getElementById(`room-${r}`);
+                const icon = btn.querySelector('svg') || btn.querySelector('i'); // Try both just in case
+                const text = btn.querySelector('span');
+                
+                if (icon && text) {
+                    if(r === roomId) {
+                        btn.classList.add('active');
+                        icon.classList.remove('text-gray-500'); icon.classList.add('text-white');
+                        text.classList.remove('text-gray-400'); text.classList.add('text-white');
+                    } else {
+                        btn.classList.remove('active');
+                        icon.classList.add('text-gray-500'); icon.classList.remove('text-white');
+                        text.classList.add('text-gray-400'); text.classList.remove('text-white');
+                    }
+                }
+            });
+
+            // USER LIST LOGIC
+            const data = roomData[roomId];
+            const userList = document.getElementById('sim-user-list');
+            userList.innerHTML = ''; // Clear existing
+            
+            data.users.forEach(u => {
+                userList.innerHTML += `
+                    <div class="flex items-center p-2 rounded-xl hover:bg-white/5 transition border border-transparent hover:border-white/5 cursor-pointer" id="user-${u.name}">
+                        <img src="https://i.pravatar.cc/150?img=${u.img}" class="w-8 h-8 rounded-full border border-white/10">
+                        <div class="ml-3">
+                            <div class="text-xs font-bold text-white">${u.name}</div>
+                            <div class="text-[9px] text-gray-500">${u.role}</div>
+                        </div>
+                    </div>`;
+            });
+
+            // MESSAGES & CAM
+            const chat = document.getElementById('sim-chat-feed');
+            chat.innerHTML = `<div class="flex justify-center mb-4"><span class="text-[9px] text-gray-500 uppercase tracking-widest bg-white/5 px-3 py-1 rounded-full">${roomId.toUpperCase()} ODASINA GİRİLDİ</span></div>`;
+            data.msgs.forEach((m, i) => {
+                setTimeout(() => addMessage(m.name, m.text), i * 500 + 200);
+            });
+
+            document.getElementById('sim-main-cam').src = data.cam;
+            document.getElementById('sim-main-cam-label').innerText = data.camLabel;
+        }
+
+        function addMessage(name, text, isMe=false) {
+            const chat = document.getElementById('sim-chat-feed');
+            const align = isMe ? 'items-end' : 'items-start';
+            const bg = isMe ? 'bg-indigo-600/20 border-indigo-500/30' : 'bg-[#181a25]/90 border-white/5';
+            const html = `
+                <div class="flex flex-col ${align} chat-bubble-sim mb-3">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="text-[10px] font-bold ${isMe ? 'text-indigo-400' : 'text-gray-400'}">${name}</span>
+                    </div>
+                    <div class="${bg} p-2.5 rounded-xl text-[10px] text-gray-200 border max-w-[85%] leading-relaxed">
+                        ${text}
+                    </div>
+                </div>`;
+            chat.insertAdjacentHTML('beforeend', html);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function typeText(text) {
+            const input = document.getElementById('sim-chat-input');
+            input.value = "";
+            let i = 0;
+            const typeInt = setInterval(() => {
+                input.value += text.charAt(i);
+                i++;
+                if(i > text.length) clearInterval(typeInt);
+            }, 50);
+        }
+
+        function startSimulation() {
+            // Boot Screen
+            const bootScreen = document.getElementById('sim-boot-screen');
+            const bootBar = document.getElementById('sim-boot-bar');
+            
+            // Timer
+            let seconds = 0;
+            const timerEl = document.getElementById('sim-timer');
+            timerInterval = setInterval(() => { seconds++; timerEl.innerText = new Date(seconds * 1000).toISOString().substr(11, 8); }, 1000);
+
+            const at = (ms, fn) => { simTimeouts.push(setTimeout(fn, ms)); };
+
+            // Timeline
+            
+            // IMMEDIATE INIT: Load users immediately (hidden behind boot screen) to fix "empty list" issue
+            switchRoom('general');
+
+            at(100, () => bootBar.style.width = '100%');
+            at(1500, () => bootScreen.style.display = 'none');
+            // at(2000) removed because we already initialized 'general' above
+            
+            // Music Room
+            at(4000, () => moveCursor('room-music', 0, 0));
+            at(4800, () => { clickEffect('room-music'); switchRoom('music'); });
+
+            // Mic
+            at(8000, () => moveCursor('sim-mic-btn', 0, 0));
+            at(8800, () => { 
+                clickEffect('sim-mic-btn'); 
+                document.getElementById('sim-mic-btn').classList.add('active-sim');
+                document.getElementById('sim-mic-text').innerHTML = '<span class="text-red-500 font-bold text-xs">YAYINDASIN</span><span class="text-[8px] text-gray-400">Konuşuyorsun...</span>';
+            });
+
+            // Chat Input
+            at(11000, () => moveCursor('sim-chat-input', 40, 0)); 
+            at(11800, () => typeText("Harika bir şarkı! 🥳"));
+
+            // Send
+            at(13500, () => moveCursor('sim-send-btn', 0, 0));
+            at(14000, () => {
+                clickEffect('sim-send-btn');
+                document.getElementById('sim-chat-input').value = "";
+                addMessage('Siz', 'Harika bir şarkı! 🥳', true);
+            });
+
+            // Game Room
+            at(16000, () => moveCursor('room-game', 0, 0));
+            at(16600, () => { clickEffect('room-game'); switchRoom('game'); });
+
+            // Right Click Context
+            at(19000, () => moveCursor('user-GamerX', 0, 0));
+            at(19800, () => {
+                const menu = document.getElementById('sim-ctx-menu');
+                const userRect = document.getElementById('user-GamerX').getBoundingClientRect();
+                const containerRect = document.getElementById('sim-screen-container').getBoundingClientRect();
+                menu.style.left = (userRect.left - containerRect.left + 40) + 'px';
+                menu.style.top = (userRect.top - containerRect.top + 10) + 'px';
+                menu.classList.add('active');
+            });
+            at(21000, () => { moveCursor('sim-ctx-3', 0, 0); document.getElementById('sim-ctx-3').classList.add('hovered'); });
+            at(21500, () => {
+                clickEffect('sim-ctx-3');
+                document.getElementById('sim-ctx-menu').classList.remove('active');
+                addMessage('Sistem', 'GamerX kullanıcısına hediye gönderildi. 🎁');
+            });
+
+            // Emoji
+            at(23000, () => moveCursor('sim-emoji-btn', 0, 0));
+            at(23600, () => clickEffect('sim-emoji-btn'));
+
+            // VIP Room
+            at(25000, () => moveCursor('room-vip', 0, 0));
+            at(25600, () => { clickEffect('room-vip'); switchRoom('vip'); });
+            
+            // Loop End Notice
+            at(28000, () => addMessage('Sistem', 'Simülasyon döngüsü tamamlandı.'));
+        }
+
+        // Start on Load
+        window.onload = startSimulation;
+
+    </script>
+</body>
+</html>

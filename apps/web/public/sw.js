@@ -1,0 +1,29 @@
+// SopranoChat Service Worker — PWA desteği için minimal service worker
+// Bu dosya uygulamanın PWA olarak yüklenebilmesini sağlar
+
+const CACHE_NAME = 'soprano-v1';
+
+self.addEventListener('install', (event) => {
+    self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+    event.waitUntil(clients.claim());
+});
+
+self.addEventListener('fetch', (event) => {
+    const url = new URL(event.request.url);
+
+    // Skip cross-origin requests (API calls to different ports like :3002)
+    if (url.origin !== self.location.origin) return;
+
+    // Skip API/admin requests — these should never be cached
+    if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin')) return;
+
+    // Network-first strategy for same-origin assets only
+    event.respondWith(
+        fetch(event.request).catch(() => {
+            return caches.match(event.request).then(r => r || fetch(event.request));
+        })
+    );
+});

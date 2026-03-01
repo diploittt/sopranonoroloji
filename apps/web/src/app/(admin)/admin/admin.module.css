@@ -1,0 +1,123 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap');
+
+/* Scoped Utility Classes */
+.adminContainer {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: linear-gradient(135deg, #0a0a1a 0%, #0d0d2b 50%, #0a0a1a 100%);
+    position: fixed;
+    /* Force full screen overlay within layout */
+    inset: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow: hidden;
+    color: #e2e8f0;
+    /* text-slate-200 */
+    z-index: 9999;
+    /* Ensure it's on top if needed, though layout segregation is better */
+}
+
+/* Scrollbars */
+.noScrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.noScrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.customScrollbar::-webkit-scrollbar {
+    width: 5px;
+}
+
+.customScrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.customScrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.customScrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+/* Glass Panel */
+.glassPanel {
+    background: rgba(11, 12, 18, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    width: 100%;
+    max-width: 1500px;
+    height: 90vh;
+    border-radius: 32px;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Logo Styles */
+.logoSoprano {
+    background: linear-gradient(180deg, #ffffff 0%, #94a3b8 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.logoAdmin {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(245, 158, 11, 0.4));
+}
+
+.fontLogo {
+    font-family: 'Fredoka', sans-serif;
+}
+
+/* Dashboard Cards (KPI) */
+.statCard {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 20px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+}
+
+.statCard:hover {
+    transform: translateY(-5px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.statCard::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--card-color, #6366f1);
+    opacity: 0.8;
+}
+
+/* Room/Domain Rows */
+.roomRow {
+    background: rgba(255, 255, 255, 0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s;
+}
+
+.roomRow:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.roomRow:last-child {
+    border-bottom: none;
+}

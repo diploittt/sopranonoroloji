@@ -1,0 +1,776 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────
+
+enum PackageType {
+  CAMERA       // Ses + Görüntü
+  NO_CAMERA    // Yalnızca Ses
+}
+
+enum TenantStatus {
+  ACTIVE
+  PASSIVE
+  SUSPENDED
+  TRIAL
+}
+
+enum RoomStatus {
+  WAITING      // Henüz çağrı yok
+  ACTIVE       // Aktif çağrı var
+  CLOSED       // Kapatılmış
+}
+
+enum ParticipantRole {
+  HOST
+  MODERATOR
+  PARTICIPANT
+}
+
+enum BanType {
+  BAN
+  GAG
+}
+
+enum BanDuration {
+  PERMANENT
+  ONE_DAY
+  ONE_WEEK
+  ONE_MONTH
+}
+
+enum MessageType {
+  TEXT
+  SYSTEM        // "X odaya katıldı" gibi
+  FILE          // İleride dosya paylaşımı
+}
+
+enum SessionStatus {
+  ACTIVE
+  ENDED
+}
+
+enum DuelResult {
+  CHALLENGER_WIN
+  OPPONENT_WIN
+  DRAW
+}
+
+// ─────────────────────────────────────────────
+// TENANT (Müşteri)
+// ─────────────────────────────────────────────
+
+model Tenant {
+  id              String        @id @default(cuid())
+  name            String
+  displayName     String?                      // Müşterinin platformuna verdiği isim (login sayfasında görünür)
+  slug            String        @unique        // URL-safe benzersiz isim
+  domain          String?                      // İzin verilen origin
+  hostingType     String        @default("sopranochat") // sopranochat | own_domain
+  accessCode      String?       @unique        // Müşteri giriş linki için karmaşık token
+  apiKey          String        @unique @default(cuid())
+  apiSecret       String                       // Hashed saklanır
+  packageType     PackageType   @default(CAMERA)
+  status          TenantStatus  @default(TRIAL)
+
+  // Limitler
+  roomLimit       Int           @default(10)
+  userLimitPerRoom Int          @default(50)
+  maxConcurrentRooms Int        @default(5)
+
+  // Branding (white-label)
+  logoUrl         String?
+  primaryColor    String?       @default("#6366F1")
+  customCss       String?       @db.Text
+
+  // Zaman damgaları
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  expiresAt       DateTime?                    // Trial süresi
+  billingPeriod   String        @default("MONTHLY") // MONTHLY veya YEARLY
+  price           Decimal?      @db.Decimal(10, 2)  // Aylık/yıllık ücret
+  currency        String        @default("TRY")     // Para birimi
+  email           String?                            // Müşteri e-posta
+  phone           String?                            // Müşteri telefon
+  paymentReminderAt DateTime?                        // Son ödeme hatırlatma tarihi
+
+  // İlişkiler
+  users           User[]
+  rooms           Room[]
+  sessions        Session[]
+  banLogs         BanLog[]
+  ipBans          IpBan[]
+  auditLogs       AuditLog[]
+  wordFilters     WordFilter[]
+  systemSettings  SystemSettings?
+  announcements   Announcement[]
+  gifts           Gift[]
+  tokenPackages   TokenPackage[]
+  tokenOrders     TokenOrder[]
+
+  @@index([slug])
+  @@index([apiKey])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// USER (Kullanıcı)
+// ─────────────────────────────────────────────
+
+model User {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  externalId      String?                      // Müşterinin kendi user ID'si
+  displayName     String
+  avatarUrl       String?
+  profilePicture  String?                      // Avatar URL alias
+  email           String?
+  passwordHash    String?                      // Opsiyonel — embed kullanıcıları için null
+  gender          String?
+  nameColor       String?                      // Kullanıcının seçtiği isim rengi
+
+  // Cüzdan & Statü
+  balance         Decimal       @default(0.00) @db.Decimal(10, 2)
+  points          Int           @default(0)      // Hediye alınca kazanılan puan
+  totalGiftsSent  Int           @default(0)      // Toplam gönderilen hediye
+  totalGiftsReceived Int        @default(0)      // Toplam alınan hediye
+  duelWins        Int           @default(0)      // Düello galibiyet sayısı
+  duelLosses      Int           @default(0)      // Düello mağlubiyet sayısı
+  duelDraws       Int           @default(0)      // Düello beraberlik sayısı
+  isPremium       Boolean       @default(false)
+  lastDailyBonus  DateTime?                      // Son günlük bonus tarihi
+  lastVipBonus    DateTime?                      // Son VIP haftalık bonus tarihi
+
+  // Rol & Yetki
+  role            String        @default("guest")  // guest|member|vip|operator|moderator|admin|superadmin|owner
+  permissions     Json?                            // Per-user checkbox overrides {"kick":true,"ban":true,...}
+
+  // Güvenlik
+  isOnline        Boolean       @default(false)
+  lastSeenAt      DateTime?
+  lastLoginAt     DateTime?
+  lastLoginIp     String?
+  ipAddress       String?                      // Son bilinen IP
+  deviceInfo      Json?                        // Cihaz/Tarayıcı bilgisi
+  loginCount      Int           @default(0)
+  isBanned        Boolean       @default(false)
+  banExpiresAt    DateTime?
+  tokenVersion    Int           @default(0)
+  resetToken      String?                      // Şifre sıfırlama kodu
+  resetTokenExpiresAt DateTime?                // Sıfırlama kodu son geçerlilik
+
+  // Sosyal Giriş
+  googleId        String?                      // Google OAuth provider ID
+  facebookId      String?                      // Facebook OAuth provider ID
+  appleId         String?                      // Apple OAuth provider ID
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  // İlişkiler
+  participants    Participant[]
+  messages        Message[]
+  bansReceived    BanLog[]      @relation("BannedUser")
+  bansGiven       BanLog[]      @relation("BanAdmin")
+  auditLogsAsAdmin   AuditLog[] @relation("AuditAdmin")
+  auditLogsAsTarget  AuditLog[] @relation("AuditTarget")
+  roomsOwned         Room[]     @relation("RoomOwner")
+  giftsSent          GiftTransaction[] @relation("GiftsSent")
+  giftsReceived      GiftTransaction[] @relation("GiftsReceived")
+  duelHistoryChallenger DuelHistory[]  @relation("DuelChallenger")
+  duelHistoryOpponent   DuelHistory[]  @relation("DuelOpponent")
+  tokenOrders        TokenOrder[]
+  likesGiven         UserLike[]     @relation("LikesGiven")
+  likesReceived      UserLike[]     @relation("LikesReceived")
+  notifications      Notification[]
+
+  @@unique([tenantId, externalId])             // Tenant başına benzersiz external ID
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([isOnline])
+  @@index([role])
+}
+
+// ─────────────────────────────────────────────
+// ROOM (Oda)
+// ─────────────────────────────────────────────
+
+model Room {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name            String
+  slug            String                       // Tenant içi benzersiz
+  description     String?       @db.Text
+  ownerId         String?                      // Oda sahibi (User ID) (Opsiyonel - sistem odaları için null olabilir)
+  owner           User?         @relation("RoomOwner", fields: [ownerId], references: [id], onDelete: SetNull)
+  password        String?                      // Oda şifresi
+  announcement    String?       @db.Text        // Oda duyuru metni
+  themeId         String?                      // Tema ID
+  status          RoomStatus    @default(WAITING)
+  
+  // Özellikler
+  category        String?       @default("general")
+  roomType        String        @default("free") // free, paid, vip
+  isLocked        Boolean       @default(false)
+  isPublic        Boolean       @default(true)
+  isMeetingRoom   Boolean       @default(false)
+  isVipRoom       Boolean       @default(false)
+  isCameraAllowed Boolean       @default(true)
+  buttonColor     String?                      // Opsiyonel oda düğme rengi (hex)
+  
+  // Limitler
+  micLimit        Int?                         // Mikrofon kullanıcı limiti
+  cameraLimit     Int?                         // Kamera kullanıcı limiti
+  maxParticipants Int?                         // null ise tenant limitine düşer
+
+  // Erişim
+  accessRestrictions Json?                     // { minLevel: 1, requiredRole: [], bannedUsers: [] }
+  metadata        Json?                        // Müşterinin ek verileri
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  closedAt        DateTime?
+
+  // İlişkiler
+  participants    Participant[]
+  messages        Message[]
+  sessions        Session[]
+
+  @@unique([tenantId, slug])
+  @@index([tenantId, status])
+}
+
+// ─────────────────────────────────────────────
+// PARTICIPANT (Katılımcı — odadaki kullanıcı)
+// ─────────────────────────────────────────────
+
+model Participant {
+  id              String           @id @default(cuid())
+  roomId          String
+  room            Room             @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId       String?
+  session         Session?         @relation(fields: [sessionId], references: [id])
+
+  role            ParticipantRole  @default(PARTICIPANT)
+  socketId        String?                      // Aktif soket bağlantısı
+  isActive        Boolean          @default(true)
+
+  // Medya durumları
+  isMicOn         Boolean          @default(false)
+  isCameraOn      Boolean          @default(false)
+  isScreenSharing Boolean          @default(false)
+  isHandRaised    Boolean          @default(false)
+
+  joinedAt        DateTime         @default(now())
+  leftAt          DateTime?
+
+  @@unique([roomId, userId, sessionId])        // Aynı session'da çift katılım engeli
+  @@index([roomId, isActive])
+  @@index([userId])
+  @@index([socketId])
+}
+
+// ─────────────────────────────────────────────
+// MESSAGE (Sohbet Mesajı)
+// ─────────────────────────────────────────────
+
+model Message {
+  id              String        @id @default(cuid())
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  userId          String
+  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type            MessageType   @default(TEXT)
+  content         String        @db.Text
+  metadata        Json?                        // Dosya bilgisi, reply referansı vs.
+
+  createdAt       DateTime      @default(now())
+  editedAt        DateTime?
+  isDeleted       Boolean       @default(false)
+
+  @@index([roomId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// SESSION (Çağrı Oturumu)
+// ─────────────────────────────────────────────
+
+model Session {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id])
+  roomId          String
+  room            Room          @relation(fields: [roomId], references: [id])
+
+  status          SessionStatus @default(ACTIVE)
+  startedAt       DateTime      @default(now())
+  endedAt         DateTime?
+  durationSeconds Int?                         // Hesaplanmış süre
+  peakParticipants Int          @default(0)    // Anlık en yüksek katılımcı
+
+  // mediasoup bilgileri (bellekte tutulur, burası log amaçlı)
+  routerId        String?                      // mediasoup router ID
+  metadata        Json?
+
+  // İlişkiler
+  participants    Participant[]
+
+  @@index([tenantId, startedAt])
+  @@index([roomId, status])
+}
+
+// ─────────────────────────────────────────────
+// BAN LOG (Ban / Gag Kayıtları)
+// ─────────────────────────────────────────────
+
+model BanLog {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId          String                       // Banlanan kullanıcı
+  user            User          @relation("BannedUser", fields: [userId], references: [id], onDelete: Cascade)
+  adminId         String                       // Ban veren admin
+  admin           User          @relation("BanAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+
+  type            BanType       @default(BAN)  // BAN veya GAG
+  duration        BanDuration   @default(PERMANENT)
+  reason          String?       @db.Text
+  ip              String?
+  connectionInfo  String?                      // Bağlantı bilgisi
+
+  isActive        Boolean       @default(true)
+  createdAt       DateTime      @default(now())
+  expiresAt       DateTime?
+  liftedAt        DateTime?
+  liftedBy        String?                      // Ban kaldıran admin ID
+
+  @@index([tenantId, isActive])
+  @@index([userId, isActive])
+  @@index([ip])
+}
+
+// ─────────────────────────────────────────────
+// IP BAN (IP Bazlı Yasaklama)
+// ─────────────────────────────────────────────
+
+model IpBan {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  ip              String                       // Yasaklanan IP adresi
+  reason          String?       @db.Text
+  bannedBy        String                       // Admin user ID
+  hits            Int           @default(0)    // Kaç kez deneme yaptı
+  lastHitAt       DateTime?
+
+  createdAt       DateTime      @default(now())
+
+  @@unique([tenantId, ip])
+  @@index([tenantId])
+  @@index([ip])
+}
+
+// ─────────────────────────────────────────────
+// AUDIT LOG (Admin Hareket Logları)
+// ─────────────────────────────────────────────
+
+model AuditLog {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  event           String                       // Olay türü: user.ban, user.kick, room.create, etc.
+  adminId         String                       // İşlemi yapan admin
+  admin           User          @relation("AuditAdmin", fields: [adminId], references: [id], onDelete: Cascade)
+  targetUserId    String?                      // Hedef kullanıcı (varsa)
+  targetUser      User?         @relation("AuditTarget", fields: [targetUserId], references: [id], onDelete: SetNull)
+
+  ip              String?                      // Hedef IP
+  adminIp         String?                      // Admin IP
+  metadata        Json?                        // Ek detaylar
+
+  createdAt       DateTime      @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([adminId])
+  @@index([event])
+}
+
+// ─────────────────────────────────────────────
+// WORD FILTER (Yasaklı Kelimeler)
+// ─────────────────────────────────────────────
+
+model WordFilter {
+  id              String        @id @default(cuid())
+  tenantId        String
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  badWord         String                       // Yasaklı kelime
+  replacement     String        @default("***")// Yerine yazılacak
+
+  createdAt       DateTime      @default(now())
+
+  @@unique([tenantId, badWord])
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────
+// SYSTEM SETTINGS (Global Ayarlar)
+// ─────────────────────────────────────────────
+
+model SystemSettings {
+  id              String        @id @default(cuid())
+  tenantId        String        @unique        // Her tenant için tek ayar kaydı
+  tenant          Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Kullanıcı girişi
+  welcomeMessage  String?       @db.Text       // Hoşgeldiniz mesajı
+  micDuration     Int           @default(120)  // Mikrofon süresi (saniye)
+  defaultLanguage String        @default("tr")
+
+  // Rol bazlı mikrofon süreleri (saniye)
+  micDurationGuest  Int?                       // Misafir mikrofon süresi
+  micDurationMember Int?                       // Üye mikrofon süresi
+  micDurationVip    Int?                       // VIP mikrofon süresi
+  micDurationAdmin  Int?                       // Admin mikrofon süresi
+
+  // Güvenlik
+  banBlockEntry   Boolean       @default(true) // Banlı giriş engelle
+  forceOperatorIcon Boolean     @default(false)// Mecburi operator ikonu
+  blockHtmlColors Boolean       @default(true) // HTML renkleri engelle
+  showRoomName    Boolean       @default(true) // Oda ismi görüntüle
+  adminAutoHdLock Boolean       @default(false)// Admin Auto HD Lock
+  antiFlood       Boolean       @default(true) // Anti flood
+  antiFloodLimit  Int           @default(5)    // Max mesaj/10sn
+  allowYoutube    Boolean       @default(true) // YouTube izin
+  multiLoginBlock Boolean       @default(true) // Çoklu giriş engelle
+  blockVirtualMachine Boolean   @default(false)// Sanal makine engelle
+  duelEnabled     Boolean       @default(true) // Düello özelliği açık/kapalı
+  nudgeEnabled    Boolean       @default(true) // Titreme özelliği açık/kapalı
+  initialBalance  Int           @default(100)  // Yeni kullanıcı başlangıç jetonu
+  dailyBonusMember Int          @default(50)   // Üye günlük bonus jeton
+  dailyBonusVip    Int          @default(100)  // VIP günlük bonus jeton
+  vipWeeklyBonus   Int          @default(500)  // VIP haftalık bonus jeton
+
+  // Misafir izinleri (eski — geriye uyumluluk)
+  guestProfile        Boolean   @default(true)
+  guestPrivateMessage Boolean   @default(true)
+  guestPrivateRoomInvite Boolean @default(false)
+  guestCamera         Boolean   @default(true)
+  guestWebcam1v1      Boolean   @default(false)
+  guestAnimation      Boolean   @default(false)
+
+  // Rol bazlı izinler (JSON)
+  // Format: { "guest": { "profile": true, "privateMessage": false, ... }, "member": { ... }, ... }
+  rolePermissions     Json?
+
+  // Dizayn / Tema
+  theme           String        @default("default")  // Aktif tema: default, ocean, forest, sunset, night, strawberry
+  primaryColor    String?       @default("#6366F1")   // Ana renk (HEX)
+  accentColor     String?       @default("#A855F7")   // Vurgu rengi (HEX)
+  backgroundImage String?                              // Arkaplan resmi URL'si
+
+  // Branding
+  logoName        String?                      // Logo ismi
+  logoUrl         String?        @db.Text         // Logo URL (base64 data URI)
+  logoTextSize    String?                      // Logo yazı boyutu (örn: "1.3rem", "1.6rem")
+  logoTextColor   String?                      // Logo yazı rengi (hex, örn: "#f0d88a")
+  logoTextColor2  String?                      // Logo yazı ikinci renk (gradient için)
+  logoPosition    String?        @default("left") // Logo konumu: "left", "center"
+  logoImageSize   Int?           @default(112)    // Logo resim yüksekliği (px)
+  logoOffsetX     Int?           @default(0)      // Logo resim yatay kaydırma (px)
+  logoOffsetY     Int?           @default(0)      // Logo resim dikey kaydırma (px)
+  logoEffect      String?                         // Logo resim efekti: none, glow, pulse, shadow, neon
+  textOffsetX     Int?           @default(0)      // Yazı yatay kaydırma (px)
+  textOffsetY     Int?           @default(0)      // Yazı dikey kaydırma (px)
+  textEffect      String?                         // Yazı efekti: none, shimmer, glow, neon, shadow, gradient-anim
+  allowedDomains  String?       @db.Text       // İzin verilen domainler (virgülle ayrılmış)
+
+  // Site yapılandırması (fiyatlar, IBAN, iletişim, vb.)
+  siteConfig      Json?                          // Esnek site ayarları JSON
+
+  // Ek metadata (dizaynlar vb.)
+  metadata        Json?                          // Dizayn presetleri ve diğer genişletilebilir veriler
+
+  updatedAt       DateTime      @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// ORDER (Siparişler)
+// ─────────────────────────────────────────────
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  COMPLETED
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  
+  // Customer Info
+  firstName     String
+  lastName      String
+  email         String
+  phone         String
+  
+  // Package Info
+  packageName   String
+  amount        Decimal     @db.Decimal(10, 2)
+  currency      String      @default("TRY")
+  
+  details       Json?       // {"roomLimit": 1, "userLimit": 50, "features": ["..."]}
+
+  // Hosting & Domain
+  hostingType   String      @default("sopranochat") // 'sopranochat' | 'own_domain'
+  customDomain  String?                             // Müşterinin kendi domaini
+  roomName      String?                             // Müşterinin odasına vermek istediği isim
+  logo          String?     @db.Text                // Müşterinin yüklediği logo (base64)
+
+  // Payment
+  paymentCode   String      @unique                 // SPR-XXXXX benzersiz ödeme kodu
+  paymentMethod String?
+  paymentStatus String      @default("PENDING")
+
+  // Order Status
+  status        OrderStatus @default(PENDING)
+  
+  notes         String?     @db.Text
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([paymentCode])
+}
+
+// ─────────────────────────────────────────────
+// ANNOUNCEMENT (Tenant Genel Duyuru)
+// ─────────────────────────────────────────────
+
+model Announcement {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  message   String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// CONTACT MESSAGE (Landing Page İletişim Formu)
+// ─────────────────────────────────────────────
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  subject   String
+  message   String   @db.Text
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────
+// GIFT (Sanal Hediye Tanımları)
+// ─────────────────────────────────────────────
+
+model Gift {
+  id            String   @id @default(cuid())
+  tenantId      String
+  tenant        Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name          String                       // "Kalp", "Gül", "Taç"
+  emoji         String                       // "❤️", "🌹", "👑"
+  price         Int                          // Jeton fiyatı
+  animationType String                       // "hearts", "roses", "crown", "diamond"
+  category      String   @default("basic")   // basic, premium, legendary
+  sortOrder     Int      @default(0)
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+
+  transactions  GiftTransaction[]
+
+  @@index([tenantId, isActive])
+  @@index([tenantId, category])
+}
+
+// ─────────────────────────────────────────────
+// GIFT TRANSACTION (Hediye Gönderim Kayıtları)
+// ─────────────────────────────────────────────
+
+model GiftTransaction {
+  id          String   @id @default(cuid())
+  tenantId    String
+
+  senderId    String
+  sender      User     @relation("GiftsSent", fields: [senderId], references: [id])
+  receiverId  String
+  receiver    User     @relation("GiftsReceived", fields: [receiverId], references: [id])
+
+  giftId      String
+  gift        Gift     @relation(fields: [giftId], references: [id])
+
+  quantity    Int      @default(1)
+  totalCost   Int                          // Harcanan jeton
+  pointsGiven Int                          // Alıcıya verilen puan
+  roomId      String?                      // Hangi odada gönderildi
+
+  createdAt   DateTime @default(now())
+
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([tenantId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// DUEL HISTORY (Düello Geçmişi)
+// ─────────────────────────────────────────────
+
+model DuelHistory {
+  id              String      @id @default(cuid())
+  tenantId        String
+  roomId          String
+
+  challengerId    String
+  challenger      User        @relation("DuelChallenger", fields: [challengerId], references: [id], onDelete: Cascade)
+  challengerName  String
+  opponentId      String
+  opponent        User        @relation("DuelOpponent", fields: [opponentId], references: [id], onDelete: Cascade)
+  opponentName    String
+
+  result          DuelResult
+  challengerVotes Int         @default(0)
+  opponentVotes   Int         @default(0)
+  totalReactions  Int         @default(0)
+  durationSeconds Int         @default(180)
+
+  createdAt       DateTime    @default(now())
+
+  @@index([challengerId])
+  @@index([opponentId])
+  @@index([tenantId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// TOKEN PACKAGE (Jeton Paketleri)
+// ─────────────────────────────────────────────
+
+model TokenPackage {
+  id            String        @id @default(cuid())
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name          String                         // Paket adı (örn: "Başlangıç Paketi")
+  tokenAmount   Int                            // Jeton miktarı
+  price         Decimal       @db.Decimal(10,2) // Fiyat (TL)
+  currency      String        @default("TRY")  // Para birimi
+  emoji         String?       @default("💎")   // Görsel emoji
+  description   String?                        // Açıklama
+  isActive      Boolean       @default(true)
+  sortOrder     Int           @default(0)
+
+  orders        TokenOrder[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────
+// TOKEN ORDER (Jeton Siparişleri)
+// ─────────────────────────────────────────────
+
+model TokenOrder {
+  id            String        @id @default(cuid())
+  tenantId      String
+  tenant        Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  userId        String
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  packageId     String
+  package       TokenPackage  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  tokenAmount   Int                            // Sipariş anındaki jeton miktarı
+  price         Decimal       @db.Decimal(10,2) // Sipariş anındaki fiyat
+  status        String        @default("PENDING") // PENDING | APPROVED | REJECTED
+  adminNote     String?                        // Admin notu
+  processedBy   String?                        // Onaylayan admin ID
+  processedAt   DateTime?                      // İşlem tarihi
+
+  createdAt     DateTime      @default(now())
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([status])
+}
+
+// ─────────────────────────────────────────────
+// USER LIKE (Kullanıcı Beğenileri)
+// ─────────────────────────────────────────────
+
+model UserLike {
+  id        String   @id @default(cuid())
+  tenantId  String
+
+  likerId   String
+  liker     User     @relation("LikesGiven", fields: [likerId], references: [id], onDelete: Cascade)
+  likedId   String
+  liked     User     @relation("LikesReceived", fields: [likedId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([likerId, likedId])
+  @@index([likedId])
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────
+// NOTIFICATION (Bildirimler)
+// ─────────────────────────────────────────────
+
+model Notification {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  type        String                       // LIKE, SYSTEM, etc.
+  fromUserId  String?                      // Bildirimi tetikleyen kullanıcı
+  fromName    String?                      // Bildirimi tetikleyen kullanıcı adı
+  fromAvatar  String?                      // Bildirimi tetikleyen kullanıcı avatarı
+  message     String
+  isRead      Boolean  @default(false)
+
+  createdAt   DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([userId, createdAt])
+}

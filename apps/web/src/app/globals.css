@@ -1,0 +1,3116 @@
+﻿@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Fredoka:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rye&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Aref+Ruqaa:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Anton&display=swap');
+@import "tailwindcss";
+
+:root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+}
+
+@theme inline {
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: 'Plus Jakarta Sans', sans-serif;
+    --font-logo: 'Fredoka', sans-serif;
+}
+
+body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* ============================================ */
+/*  CHATODASI CUSTOM STYLES                     */
+/* ============================================ */
+
+/* --- SCROLLBAR --- */
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(123, 159, 239, 0.10);
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(123, 159, 239, 0.28);
+}
+
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(123, 159, 239, 0.10) transparent;
+}
+
+/* --- APP BACKGROUND --- */
+.app-background {
+    background-color: #070B14;
+    background-image:
+        radial-gradient(ellipse at center, rgba(30, 58, 95, 0.25) 0%, transparent 55%),
+        radial-gradient(at 20% 80%, rgba(200, 150, 46, 0.08) 0%, transparent 40%),
+        radial-gradient(at 80% 20%, rgba(200, 150, 46, 0.06) 0%, transparent 40%),
+        radial-gradient(at 0% 0%, rgba(10, 15, 30, 1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(20, 28, 50, 0.5) 0px, transparent 50%);
+    position: relative;
+    overflow: hidden;
+}
+
+.app-background::before,
+.app-background::after {
+    content: '';
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: -1;
+    opacity: 0.5;
+}
+
+.app-background::before {
+    width: 600px;
+    height: 600px;
+    top: 15%;
+    left: 8%;
+    background: rgba(200, 150, 46, 0.10);
+}
+
+.app-background::after {
+    width: 500px;
+    height: 500px;
+    bottom: 15%;
+    right: 8%;
+    background: rgba(200, 150, 46, 0.12);
+    animation-delay: 5s;
+}
+
+@keyframes appBgGlow {
+    0% {
+        opacity: 0.35;
+        transform: scale(1);
+    }
+
+    100% {
+        opacity: 0.6;
+        transform: scale(1.1);
+    }
+}
+
+/* --- GLASS PANEL (default theme) --- */
+.glass-panel {
+    background-color: rgba(15, 22, 38, 0.65);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(60px) saturate(180%);
+    -webkit-backdrop-filter: blur(60px) saturate(180%);
+    box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+/* --- GOLD GLOW SHADOW + SUN GLOW (chat ekranının arkasından güneş ışığı) --- */
+.glass-panel.room-container {
+    box-shadow:
+        0 0 40px rgba(200, 150, 46, 0.18),
+        0 0 80px rgba(200, 150, 46, 0.12),
+        0 0 140px rgba(200, 150, 46, 0.08),
+        0 0 220px rgba(200, 150, 46, 0.05),
+        0 0 320px rgba(200, 150, 46, 0.03),
+        0 40px 80px rgba(0, 0, 0, 0.4),
+        inset 0 0 0 1px rgba(200, 150, 46, 0.10);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Güneş ışığı efekti — KALDIRILDI (kullanıcı isteğiyle) */
+.glass-panel.room-container::before {
+    display: none;
+}
+
+/* Işık hüzmeleri — KALDIRILDI (kullanıcı isteğiyle) */
+.glass-panel.room-container::after {
+    display: none;
+}
+
+
+/* Mobilde sun glow/rays gizle + layout düzeltmeleri */
+@media (max-width: 800px) {
+
+    .glass-panel.room-container::before,
+    .glass-panel.room-container::after {
+        display: none !important;
+    }
+
+    .app-background::before,
+    .app-background::after {
+        display: none !important;
+    }
+
+    .glass-panel.room-container {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(200, 150, 46, 0.08) !important;
+        flex-direction: column !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+    }
+
+    /* Sağ live panel — mobilde gizle */
+    .glass-panel.room-container .sidebar-right,
+    .glass-panel.room-container .live-panel,
+    .glass-panel.room-container .right-live-panel,
+    .glass-panel.room-container .live-panel-collapsed {
+        display: none !important;
+    }
+}
+
+/* Mobil sidebar slide-in animasyonu (portal ile kullanılır) */
+@keyframes mobileSidebarSlideIn {
+    from {
+        transform: translateX(-100%);
+    }
+
+    to {
+        transform: translateX(0);
+    }
+}
+
+@keyframes sunGlow {
+    0% {
+        opacity: 0.5;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.06);
+    }
+}
+
+@keyframes sunRays {
+    0% {
+        transform: translate(-50%, -50%) rotate(0deg);
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) rotate(360deg);
+        opacity: 0.7;
+    }
+}
+
+/* --- SIDEBAR LEFT (default theme) --- */
+.sidebar-left {
+    background-color: rgba(12, 16, 26, 0.92);
+    border-right: 1px solid rgba(200, 150, 46, 0.06);
+    box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8), inset -1px 0 0 rgba(200, 150, 46, 0.04);
+    backdrop-filter: blur(40px) saturate(150%);
+    -webkit-backdrop-filter: blur(40px) saturate(150%);
+}
+
+/* --- CHAT AREA (mesaj zemini — sidebar panellerle uyumlu) --- */
+.chat-area {
+    background: rgba(8, 12, 21, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* --- BOTTOM TOOLBAR (Premium) --- */
+.bottom-toolbar {
+    background: rgba(10, 14, 24, 0.70) !important;
+    border-top: 1px solid rgba(200, 150, 46, 0.06) !important;
+    box-shadow: inset 0 1px 0 rgba(200, 150, 46, 0.04), 0 -4px 20px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(40px) saturate(140%);
+    -webkit-backdrop-filter: blur(40px) saturate(140%);
+}
+
+/* --- RIGHT LIVE PANEL --- */
+.right-live-panel {
+    background-color: #0C101A;
+    border-left: 1px solid rgba(200, 150, 46, 0.06);
+    box-shadow: -6px 0 30px rgba(0, 0, 0, 0.3);
+}
+
+/* --- CHAT HEADER (Premium bottom border) --- */
+.chat-header {
+    border-bottom-color: rgba(200, 150, 46, 0.08) !important;
+    box-shadow: inset 0 -1px 0 rgba(200, 150, 46, 0.06), 0 4px 24px rgba(0, 0, 0, 0.30) !important;
+}
+
+/* --- CHAT LOGO AREA (Premium subtle warmth) --- */
+.chat-logo-area {
+    border-bottom-color: rgba(200, 150, 46, 0.06) !important;
+}
+
+/* --- Custom Room Colors (via CSS custom properties from room-container) --- */
+.room-container .sidebar-left {
+    background-color: var(--room-sidebar-bg, rgba(12, 16, 26, 0.92));
+}
+
+.room-container .chat-header {
+    background: var(--room-header-bg) !important;
+}
+
+.room-container>main {
+    background: #0a1628;
+}
+
+.room-container .bottom-toolbar {
+    background: var(--room-toolbar-bg, rgba(10, 14, 24, 0.70)) !important;
+}
+
+.room-container .right-live-panel {
+    background-color: var(--room-right-bg, #0C101A);
+}
+
+/* --- MİKROFON BUTONU (Premium Gold Style) --- */
+.mic-reactor {
+    position: relative;
+    width: 100%;
+    height: 64px;
+    border-radius: 14px;
+    background: linear-gradient(to right, rgba(124, 58, 237, 0.12), rgba(192, 38, 211, 0.08), rgba(15, 16, 22, 0.95));
+    border: 2px solid rgba(200, 150, 46, 0.35);
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(139, 92, 246, 0.06), inset 0 1px 0 rgba(139, 92, 246, 0.10);
+}
+
+.mic-reactor:hover {
+    border-color: rgba(200, 150, 46, 0.55);
+    background: linear-gradient(to right, rgba(124, 58, 237, 0.20), rgba(192, 38, 211, 0.14), rgba(15, 16, 22, 0.96));
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.15), 0 0 50px rgba(192, 38, 211, 0.06), 0 8px 25px rgba(0, 0, 0, 0.4);
+    transform: translateY(-1px);
+}
+
+.mic-reactor.speaking {
+    border-color: rgba(239, 68, 68, 0.5);
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(15, 16, 22, 0.9) 100%);
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.2);
+}
+
+.mic-reactor.requested {
+    border-color: rgba(245, 158, 11, 0.5);
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 16, 22, 0.9) 100%);
+    box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+}
+
+.reactor-core {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    background: transparent;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
+}
+
+.reactor-core.speaking {
+    background: radial-gradient(circle at center, #f87171, #dc2626);
+    box-shadow: 0 0 20px #ef4444;
+}
+
+.reactor-core.requested {
+    background: radial-gradient(circle at center, #fbbf24, #d97706);
+    box-shadow: 0 0 20px #f59e0b;
+}
+
+.reactor-core::after {
+    content: '';
+    position: absolute;
+    inset: -4px;
+    border-radius: 14px;
+    border: 2px solid #34d399;
+    opacity: 0.5;
+    animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.reactor-core.speaking::after {
+    border-color: #f87171;
+}
+
+.reactor-core.requested::after {
+    border-color: #fbbf24;
+}
+
+.reactor-lines {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 4px, rgba(0, 0, 0, 0.2) 4px, rgba(0, 0, 0, 0.2) 8px);
+    opacity: 0.3;
+}
+
+/* --- ODA DÃœÄMELERÄ° --- */
+.room-card {
+    position: relative;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.room-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(45deg, transparent, rgba(123, 159, 239, 0.08), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.room-card:hover::before {
+    transform: translateX(100%);
+}
+
+.room-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.room-card.active {
+    background: rgba(123, 159, 239, 0.1);
+    border-color: rgba(123, 159, 239, 0.2);
+}
+
+.room-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: #7b9fef;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+    box-shadow: 0 -2px 10px rgba(123, 159, 239, 0.5);
+}
+
+.room-card.active::after {
+    transform: scaleX(1);
+}
+
+/* --- GÖNDER BUTONU (Blue Gradient) --- */
+.reactor-btn-send {
+    position: relative;
+    background: linear-gradient(135deg, #7b9fef 0%, #4a6bc9 100%);
+    color: #070B14;
+    border-radius: 16px;
+    overflow: hidden;
+    border: none;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(123, 159, 239, 0.15);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.reactor-btn-send:hover {
+    box-shadow: 0 3px 12px rgba(123, 159, 239, 0.25);
+    transform: translateY(-1px);
+}
+
+.reactor-bg-send {
+    display: none;
+}
+
+.reactor-btn-send:hover .reactor-bg-send {
+    display: none;
+}
+
+/* --- TV CSS --- */
+.tv-wrapper {
+    width: 100%;
+    max-width: 260px;
+    aspect-ratio: 16/10;
+    perspective: 800px;
+    position: relative;
+    margin: 20px auto;
+    z-index: 10;
+}
+
+/* Monitor stand — vertical pole */
+.tv-wrapper::before {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 60%;
+    background: linear-gradient(180deg, #2a2a2a 0%, #1a1a1a 50%, #2a2a2a 100%);
+    border-radius: 2px;
+    z-index: -1;
+    box-shadow: 1px 0 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Monitor stand — horizontal arm */
+.tv-wrapper::after {
+    content: '';
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 4px;
+    background: linear-gradient(90deg, #333 0%, #222 100%);
+    border-radius: 2px;
+    z-index: -1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.tv-monitor {
+    width: 100%;
+    height: 100%;
+    background: #111;
+    border: 2px solid #333;
+    border-radius: 12px;
+    transform-style: preserve-3d;
+    transform: rotateY(-8deg);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), -15px 15px 30px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+    animation: tv-sway 7s ease-in-out infinite;
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+        box-shadow 0.6s ease,
+        border-color 0.6s ease;
+}
+
+.tv-scanlines {
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+    background-size: 100% 2px, 3px 100%;
+}
+
+.tv-monitor.tv-broadcasting {
+    animation: tv-arm-swing 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+    z-index: 20;
+}
+
+/* Monitor arm swing animation — TV swings into position like a real arm mount */
+@keyframes tv-arm-swing {
+    0% {
+        transform: rotateY(-35deg) rotateX(5deg) scale(0.95);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), -15px 15px 30px rgba(0, 0, 0, 0.6);
+    }
+
+    30% {
+        transform: rotateY(8deg) rotateX(-2deg) scale(1.08);
+    }
+
+    55% {
+        transform: rotateY(-5deg) rotateX(1deg) scale(1.12);
+    }
+
+    75% {
+        transform: rotateY(2deg) rotateX(0deg) scale(1.1);
+    }
+
+    100% {
+        transform: rotateY(-3deg) rotateX(1deg) scale(1.08);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1), -12px 18px 35px rgba(0, 0, 0, 0.65);
+    }
+}
+
+/* --- İKON BUTONLARI --- */
+
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    color: #94a3b8;
+    transition: all 0.2s;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid transparent;
+}
+
+.icon-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* --- GOLD ACTION BUTTON --- */
+.btn-gold-action {
+    background: linear-gradient(135deg, #a3bfff 0%, #5a7fd4 100%);
+    color: #070B14;
+    box-shadow: 0 4px 15px rgba(123, 159, 239, 0.3);
+    transition: all 0.3s ease;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+}
+
+.btn-gold-action:hover {
+    box-shadow: 0 6px 20px rgba(123, 159, 239, 0.5);
+    transform: translateY(-1px);
+}
+
+/* --- CHAT BALONLARI --- */
+.chat-bubble-self {
+    background: linear-gradient(135deg, rgba(123, 159, 239, 0.15) 0%, rgba(123, 159, 239, 0.05) 100%);
+    border: 1px solid rgba(123, 159, 239, 0.3);
+    color: #fdfbf9;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.chat-bubble-other {
+    background: rgba(26, 35, 58, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #e2e8f0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* --- SOUND EQUALIZER ANIMATION --- */
+@keyframes soundEq {
+    0% {
+        height: 3px;
+    }
+
+    100% {
+        height: 16px;
+    }
+}
+
+@keyframes glowPulse {
+    0% {
+        opacity: 0.2;
+    }
+
+    100% {
+        opacity: 0.5;
+    }
+}
+
+/* ============================================ */
+/*  KEYFRAMES                                   */
+/* ============================================ */
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+@keyframes float-logo {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    50% {
+        transform: translateY(-4px) rotate(0.5deg);
+    }
+}
+
+@keyframes music-bar {
+
+    0%,
+    100% {
+        height: 30%;
+    }
+
+    50% {
+        height: 100%;
+    }
+}
+
+@keyframes marquee {
+    0% {
+        transform: translateX(100%);
+    }
+
+    100% {
+        transform: translateX(-100%);
+    }
+}
+
+@keyframes tv-sway {
+    0% {
+        transform: rotateY(-12deg) rotateX(5deg);
+    }
+
+    50% {
+        transform: rotateY(12deg) rotateX(5deg);
+    }
+
+    100% {
+        transform: rotateY(-12deg) rotateX(5deg);
+    }
+}
+
+@keyframes ping-slow {
+    0% {
+        transform: scale(1);
+        opacity: 0.5;
+    }
+
+    75%,
+    100% {
+        transform: scale(1.15);
+        opacity: 0;
+    }
+}
+
+@keyframes spin-slow {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* --- NUDGE SHAKE (Titretme Efekti) --- */
+@keyframes nudgeShake {
+
+    0%,
+    100% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    10% {
+        transform: translate(-8px, -4px) rotate(-1deg);
+    }
+
+    20% {
+        transform: translate(8px, 4px) rotate(1deg);
+    }
+
+    30% {
+        transform: translate(-6px, 2px) rotate(-0.5deg);
+    }
+
+    40% {
+        transform: translate(6px, -2px) rotate(0.5deg);
+    }
+
+    50% {
+        transform: translate(-4px, 4px) rotate(-0.3deg);
+    }
+
+    60% {
+        transform: translate(4px, -4px) rotate(0.3deg);
+    }
+
+    70% {
+        transform: translate(-2px, 2px) rotate(-0.2deg);
+    }
+
+    80% {
+        transform: translate(2px, -2px) rotate(0.2deg);
+    }
+
+    90% {
+        transform: translate(-1px, 1px) rotate(0deg);
+    }
+}
+
+.nudge-shake {
+    animation: nudgeShake 0.6s ease-in-out 2 !important;
+}
+
+/* ============================================ */
+/*  SOPRANO CHAT V2 (HOMEPAGE) STYLES           */
+/* ============================================ */
+
+/* Pure Fade Animation (No Slide/Zoom) */
+@keyframes pure-fade {
+    from {
+        opacity: 0;
+        transform: none;
+    }
+
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.animate-pure-fade {
+    animation: pure-fade 0.2s ease-out forwards;
+}
+
+/* --- MEGA TV SÄ°STEMÄ° --- */
+.mega-tv-wrapper {
+    width: 360px;
+    /* BÃœYÃœTÃœLDÃœ */
+    height: 240px;
+    /* BÃœYÃœTÃœLDÃœ */
+    perspective: 1200px;
+    z-index: 50;
+    transform-style: preserve-3d;
+}
+
+.mega-tv-chassis {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2a2a2a 0%, #111 100%);
+    border-radius: 28px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow:
+        -30px 30px 70px rgba(0, 0, 0, 0.9),
+        inset 0 0 30px rgba(0, 0, 0, 0.9);
+    position: relative;
+    transform-style: preserve-3d;
+    animation: tv-hover 8s ease-in-out infinite;
+}
+
+/* Yan HoparlÃ¶rler - OVERFLOW VISIBLE Ã–NEMLÄ° */
+.tv-speaker {
+    position: absolute;
+    top: 15%;
+    bottom: 15%;
+    width: 60px;
+    background: #18181b;
+    border: 1px solid #333;
+    background-image: radial-gradient(#333 1px, transparent 1px);
+    background-size: 3px 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform-style: preserve-3d;
+    overflow: visible !important;
+    /* HALKALAR DIÅARI TAÅSIN DÄ°YE */
+}
+
+.tv-speaker.left {
+    left: -60px;
+    border-radius: 20px 0 0 20px;
+    transform-origin: right;
+    transform: rotateY(-20deg);
+    border-right: none;
+}
+
+.tv-speaker.right {
+    right: -60px;
+    border-radius: 0 20px 20px 0;
+    transform-origin: left;
+    transform: rotateY(20deg);
+    border-left: none;
+}
+
+/* Woofer */
+.speaker-woofer {
+    width: 36px;
+    height: 36px;
+    background: radial-gradient(circle, #555 0%, #111 100%);
+    border-radius: 50%;
+    border: 1px solid #666;
+    box-shadow: 0 0 15px rgba(167, 139, 250, 0.4);
+    animation: speaker-bounce 0.4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* SES DALGASI HALKALARI (RIPPLE) */
+.ripple-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(236, 72, 153, 0.8);
+    /* Pembe/Mor */
+    box-shadow: 0 0 10px rgba(236, 72, 153, 0.5);
+    pointer-events: none;
+    opacity: 0;
+}
+
+.ripple-1 {
+    animation: ripple 1.5s linear infinite;
+}
+
+.ripple-2 {
+    animation: ripple 1.5s linear 0.5s infinite;
+    border-color: rgba(96, 165, 250, 0.8);
+}
+
+/* Mavi */
+.ripple-3 {
+    animation: ripple 1.5s linear 1s infinite;
+    border-color: rgba(167, 139, 250, 0.8);
+}
+
+/* Mor */
+
+/* Ekran */
+.mega-tv-screen-container {
+    position: absolute;
+    inset: 14px;
+    background: #000;
+    border-radius: 20px;
+    border: 4px solid #333;
+    overflow: hidden;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 1);
+}
+
+.mega-tv-screen {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, #222 0%, #000 100%);
+    position: relative;
+}
+
+/* YAZI ANÄ°MASYONU (PULSE/HEARTBEAT) */
+.brand-text {
+    font-family: var(--font-logo), 'Fredoka', sans-serif;
+    font-weight: 700;
+    line-height: 0.9;
+    text-align: center;
+    z-index: 10;
+    /* animation: throb 0.8s ease-in-out infinite; */
+    /* User requested to disable throb. Optional: minimal glow */
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+}
+
+.animate-float-slow {
+    animation: float 12s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+    animation: pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.scanlines {
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.3) 50%, rgba(0, 0, 0, 0.3));
+    background-size: 100% 4px;
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.static-noise {
+    position: absolute;
+    inset: 0;
+    background-image: url('https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif');
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+}
+
+.antenna {
+    position: absolute;
+    top: -50px;
+    width: 5px;
+    height: 70px;
+    background: #555;
+    z-index: -1;
+    transform-origin: bottom;
+}
+
+.antenna.left {
+    left: 80px;
+    transform: rotate(-30deg);
+}
+
+.antenna.right {
+    right: 80px;
+    transform: rotate(30deg);
+}
+
+.antenna::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -3px;
+    width: 12px;
+    height: 12px;
+    background: #ef4444;
+    border-radius: 50%;
+    box-shadow: 0 0 20px #ef4444;
+    animation: pulse-glow 1s infinite;
+}
+
+/* --- ORTAK COMPONENT STÄ°LLERÄ° --- */
+.bg-grid {
+    background-size: 50px 50px;
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    mask-image: radial-gradient(circle at center, black, transparent 80%);
+    -webkit-mask-image: radial-gradient(circle at center, black, transparent 80%);
+}
+
+.glass-card {
+    background: rgba(18, 18, 24, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.text-glow {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+}
+
+.text-glow-brand {
+    text-shadow: 0 0 30px rgba(99, 102, 241, 0.5);
+}
+
+.logo-chat-gradient {
+    background: linear-gradient(135deg, #c084fc 0%, #f472b6 50%, #60a5fa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 10px rgba(192, 132, 252, 0.5));
+}
+
+.nav-link {
+    position: relative;
+    padding: 10px 20px;
+    border-radius: 99px;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+}
+
+.nav-link.active {
+    background: rgba(99, 102, 241, 0.2);
+    color: #fff;
+    border: 1px solid rgba(99, 102, 241, 0.4);
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+}
+
+/* --- KEYFRAMES --- */
+@keyframes tv-hover {
+    0% {
+        transform: rotateY(-3deg) rotateX(2deg) translateY(0px);
+    }
+
+    50% {
+        transform: rotateY(12deg) rotateX(-5deg) translateY(-12px);
+    }
+
+    100% {
+        transform: rotateY(-3deg) rotateX(2deg) translateY(0px);
+    }
+}
+
+@keyframes blob {
+    0% {
+        transform: translate(0px, 0px) scale(1);
+    }
+
+    33% {
+        transform: translate(30px, -50px) scale(1.1);
+    }
+
+    66% {
+        transform: translate(-20px, 20px) scale(0.9);
+    }
+
+    100% {
+        transform: translate(0px, 0px) scale(1);
+    }
+}
+
+@keyframes throb {
+
+    0%,
+    100% {
+        transform: scale(1);
+        filter: brightness(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+        filter: brightness(1.5) drop-shadow(0 0 15px rgba(255, 255, 255, 0.8));
+    }
+}
+
+@keyframes ripple {
+    0% {
+        width: 100%;
+        height: 100%;
+        opacity: 0.8;
+        borderWidth: 3px;
+    }
+
+    100% {
+        width: 400%;
+        height: 400%;
+        opacity: 0;
+        borderWidth: 0px;
+    }
+}
+
+@keyframes speaker-bounce {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes pulse-glow {
+
+    0%,
+    100% {
+        opacity: 1;
+        box-shadow: 0 0 20px #ef4444;
+    }
+
+    50% {
+        opacity: 0.5;
+        box-shadow: 0 0 10px #ef4444;
+    }
+}
+
+.tv-screen {
+    position: relative;
+}
+
+.tv-video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 16px;
+}
+
+.tv-animation-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    mix-blend-mode: screen;
+}
+
+/* --- CUSTOM MIC QUEUE HAND --- */
+@keyframes pulse-custom {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+    }
+}
+
+.hand-icon {
+    color: #f59e0b;
+    animation: pulse-custom 1s ease-in-out infinite;
+    font-size: 14px;
+    display: inline-block;
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   GodMaster â€” LÃ¼ks Avatar Ã‡erÃ§evesi & Badge AnimasyonlarÄ±
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+
+@keyframes godmaster-frame-glow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 8px rgba(217, 70, 239, 0.6),
+            0 0 20px rgba(217, 70, 239, 0.3),
+            0 0 40px rgba(168, 85, 247, 0.15);
+        border-color: #d946ef;
+    }
+
+    33% {
+        box-shadow:
+            0 0 8px rgba(245, 158, 11, 0.6),
+            0 0 20px rgba(245, 158, 11, 0.3),
+            0 0 40px rgba(234, 179, 8, 0.15);
+        border-color: #f59e0b;
+    }
+
+    66% {
+        box-shadow:
+            0 0 8px rgba(168, 85, 247, 0.6),
+            0 0 20px rgba(168, 85, 247, 0.3),
+            0 0 40px rgba(139, 92, 246, 0.15);
+        border-color: #a855f7;
+    }
+}
+
+@keyframes godmaster-badge-pulse {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 6px rgba(217, 70, 239, 0.5),
+            0 0 12px rgba(168, 85, 247, 0.3);
+        transform: scale(1);
+    }
+
+    50% {
+        box-shadow:
+            0 0 12px rgba(217, 70, 239, 0.8),
+            0 0 24px rgba(168, 85, 247, 0.5),
+            0 0 40px rgba(139, 92, 246, 0.2);
+        transform: scale(1.15);
+    }
+}
+
+.godmaster-avatar-frame {
+    animation: godmaster-frame-glow 3s ease-in-out infinite;
+    border-width: 2px;
+}
+
+.godmaster-badge-glow {
+    animation: godmaster-badge-pulse 2s ease-in-out infinite;
+}
+
+/* ========================================
+   PERFORMANCE: Reduced Motion
+   Disables heavy animations for low-end GPUs
+   ======================================== */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Global animation performance hints */
+.animate-pulse,
+.animate-ping,
+.animate-spin,
+.animate-bounce {
+    will-change: auto;
+}
+
+.animate-float-logo {
+    /* Eski float/glow efektleri kaldırıldı */
+}
+
+/* Logo resmi — sadece hafif ışık parlaması */
+.logo-pulse {
+    filter: drop-shadow(0 2px 8px rgba(44, 74, 124, 0.15)) drop-shadow(0 0 4px rgba(200, 150, 46, 0.1));
+    animation: logo-glow 4s ease-in-out infinite;
+}
+
+@keyframes logo-glow {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 2px 8px rgba(44, 74, 124, 0.15)) drop-shadow(0 0 4px rgba(200, 150, 46, 0.1));
+    }
+
+    50% {
+        filter: drop-shadow(0 2px 12px rgba(44, 74, 124, 0.25)) drop-shadow(0 0 8px rgba(200, 150, 46, 0.2));
+    }
+}
+
+/* Metin dalga efekti — ses dalgası gibi yumuşak parlama */
+.logo-text-wave {
+    display: inline-block;
+    animation: text-wave 3s ease-in-out infinite;
+    opacity: 0.85;
+}
+
+@keyframes text-wave {
+
+    0%,
+    100% {
+        opacity: 0.85;
+        filter: brightness(1);
+    }
+
+    50% {
+        opacity: 1;
+        filter: brightness(1.4);
+    }
+}
+
+/* Logo yazısı — pulse ile senkron parlama efekti */
+.logo-sync-glow {
+    animation: logo-sync-glow-anim 3s ease-in-out infinite;
+}
+
+@keyframes logo-sync-glow-anim {
+
+    0%,
+    100% {
+        filter: drop-shadow(0 0 2px rgba(168, 85, 247, 0.2));
+        opacity: 0.92;
+    }
+
+    50% {
+        filter: drop-shadow(0 0 18px rgba(168, 85, 247, 0.6)) drop-shadow(0 0 40px rgba(147, 51, 234, 0.25));
+        opacity: 1;
+    }
+}
+
+/* Reduce box-shadow glow animations to static */
+.godmaster-avatar-frame {
+    animation: godmaster-frame-glow 6s ease-in-out infinite;
+}
+
+.godmaster-badge-glow {
+    animation: godmaster-badge-pulse 4s ease-in-out infinite;
+}
+
+/* ============================================ */
+/*  ANIMATED NICK STYLES (GodMaster)            */
+/* ============================================ */
+
+/* Preview inside modal */
+.animated-nick-preview {
+    display: inline-block;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+}
+
+/* Sidebar animated nick renderer */
+.animated-nick {
+    display: inline-block;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* ── Shimmer Gold ── */
+.shimmer-gold {
+    background: linear-gradient(90deg, #fbbf24, #f59e0b, #fde68a, #f59e0b, #fbbf24);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: nick-shimmer-gold 2s ease-in-out infinite;
+    text-shadow: none;
+    filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.3));
+}
+
+@keyframes nick-shimmer-gold {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ── Neon Pulse ── */
+.neon-pulse {
+    color: #22d3ee;
+    animation: nick-neon-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes nick-neon-pulse {
+
+    0%,
+    100% {
+        text-shadow: 0 0 4px #22d3ee, 0 0 10px #06b6d4, 0 0 20px #0891b2;
+        color: #22d3ee;
+    }
+
+    50% {
+        text-shadow: 0 0 6px #e879f9, 0 0 14px #d946ef, 0 0 28px #a855f7;
+        color: #e879f9;
+    }
+}
+
+/* ── Fire Glow ── */
+.fire-glow {
+    background: linear-gradient(90deg, #ef4444, #f97316, #eab308, #f97316, #ef4444);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: nick-fire-glow 1.8s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+}
+
+@keyframes nick-fire-glow {
+    0% {
+        background-position: 200% 0;
+        filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+    }
+
+    50% {
+        background-position: 0% 0;
+        filter: drop-shadow(0 0 8px rgba(249, 115, 22, 0.6));
+    }
+
+    100% {
+        background-position: -200% 0;
+        filter: drop-shadow(0 0 5px rgba(239, 68, 68, 0.4));
+    }
+}
+
+/* ── Ice Shimmer ── */
+.ice-shimmer {
+    background: linear-gradient(90deg, #60a5fa, #93c5fd, #dbeafe, #93c5fd, #60a5fa);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: nick-ice-shimmer 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px rgba(96, 165, 250, 0.3));
+}
+
+@keyframes nick-ice-shimmer {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ── Matrix Glow ── */
+.matrix-glow {
+    color: #4ade80;
+    font-family: 'Courier Prime', monospace;
+    animation: nick-matrix-glow 1.2s ease-in-out infinite;
+}
+
+@keyframes nick-matrix-glow {
+
+    0%,
+    100% {
+        text-shadow: 0 0 4px #4ade80, 0 0 10px #22c55e;
+        opacity: 1;
+    }
+
+    50% {
+        text-shadow: 0 0 8px #4ade80, 0 0 20px #22c55e, 0 0 30px #16a34a;
+        opacity: 0.85;
+    }
+}
+
+/* ── Royal Glow ── */
+.royal-glow {
+    background: linear-gradient(90deg, #d946ef, #a855f7, #fbbf24, #a855f7, #d946ef);
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: nick-royal-glow 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 4px rgba(168, 85, 247, 0.3));
+}
+
+@keyframes nick-royal-glow {
+    0% {
+        background-position: 200% 0;
+    }
+
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* ── Scrollbar hide for tab overflow ── */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* ============================================ */
+/*  TEMA IMPORTS                                */
+/* ============================================ */
+@import '../styles/themes/telegraph-1910.css';
+@import '../styles/themes/midnight.css';
+@import '../styles/themes/hasbihal-islamic.css';
+
+
+/* ── GodMaster Banner: çerçeve kaldır (tüm temalar) ── */
+.godmaster-banner,
+.godmaster-banner canvas,
+.user-card .godmaster-banner,
+.user-card .godmaster-banner canvas,
+.sidebar-left .godmaster-banner,
+.sidebar-left .godmaster-banner canvas,
+.sidebar-left .user-card .godmaster-banner,
+.sidebar-left .user-card .godmaster-banner canvas,
+[data-theme] .godmaster-banner,
+[data-theme] .godmaster-banner canvas,
+[data-theme] .user-card .godmaster-banner,
+[data-theme] .user-card .godmaster-banner canvas,
+[data-theme] .sidebar-left .godmaster-banner,
+[data-theme] .sidebar-left .godmaster-banner canvas,
+[data-theme] .sidebar-left .user-card .godmaster-banner,
+[data-theme] .sidebar-left .user-card .godmaster-banner canvas,
+[data-theme] .sidebar-left .user-card.user-card .godmaster-banner,
+[data-theme] .sidebar-left .user-card.user-card .godmaster-banner canvas {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+}
+
+/* ============================================ */
+/*  LANDING PAGE — DESERT TITANIUM DARK THEME   */
+/* ============================================ */
+
+/* ── Ses Dalgası Halkalı Arka Plan ── */
+.wavy-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: radial-gradient(ellipse at center, #1e3a5f 0%, #0f172a 40%, #0a0e1a 100%);
+    overflow: hidden;
+}
+
+/* Ses dalgası halkaları — GPU-optimized, sayfanın arkasından çıkar */
+.wavy-background::before,
+.wavy-background::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin-top: -30px;
+    margin-left: -30px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    will-change: transform, opacity;
+    animation: soundWaveRing 18s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+    pointer-events: none;
+}
+
+.wavy-background::before {
+    border-color: rgba(6, 182, 212, 0.18);
+    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.05);
+    animation-delay: 0s;
+}
+
+.wavy-background::after {
+    border-color: rgba(20, 184, 166, 0.2);
+    box-shadow: 0 0 25px 5px rgba(20, 184, 166, 0.06);
+    animation-delay: 3.6s;
+}
+
+/* Ekstra halkalar — merkezden yayılır */
+.sound-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 60px;
+    height: 60px;
+    margin-top: -30px;
+    margin-left: -30px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    will-change: transform, opacity;
+    animation: soundWaveRing 18s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+    pointer-events: none;
+}
+
+.sound-ring:nth-child(1) {
+    border-color: rgba(6, 182, 212, 0.15);
+    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.04);
+    animation-delay: 1.8s;
+}
+
+.sound-ring:nth-child(2) {
+    border-color: rgba(20, 184, 166, 0.18);
+    box-shadow: 0 0 18px 4px rgba(20, 184, 166, 0.04);
+    animation-delay: 5.4s;
+}
+
+.sound-ring:nth-child(3) {
+    border-color: rgba(34, 211, 238, 0.15);
+    box-shadow: 0 0 22px 5px rgba(34, 211, 238, 0.05);
+    animation-delay: 7.2s;
+}
+
+.sound-ring:nth-child(4) {
+    border-color: rgba(8, 145, 178, 0.12);
+    box-shadow: 0 0 18px 3px rgba(8, 145, 178, 0.03);
+    animation-delay: 9s;
+}
+
+.sound-ring:nth-child(5) {
+    border-color: rgba(6, 182, 212, 0.1);
+    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.03);
+    animation-delay: 10.8s;
+}
+
+.sound-ring:nth-child(6) {
+    border-color: rgba(20, 184, 166, 0.14);
+    box-shadow: 0 0 25px 5px rgba(20, 184, 166, 0.04);
+    animation-delay: 12.6s;
+}
+
+.sound-ring:nth-child(7) {
+    border-color: rgba(34, 211, 238, 0.12);
+    box-shadow: 0 0 18px 4px rgba(34, 211, 238, 0.03);
+    animation-delay: 14.4s;
+}
+
+@keyframes soundWaveRing {
+    0% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+
+    100% {
+        transform: scale(65);
+        opacity: 0;
+    }
+}
+
+/* Arka plan gradyan glow efekti */
+.wavy-bg-glow {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+    animation: glowPulse 12s ease-in-out infinite alternate;
+}
+
+@keyframes glowPulse {
+    0% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        opacity: 0.35;
+        transform: scale(1.1);
+    }
+}
+
+/* ── Logo Efektleri ── */
+.logo-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* Gold glow arkası — Neon Mavi/Mor uyumlu */
+.logo-wrap::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(ellipse at center, rgba(79, 195, 247, 0.12) 0%, rgba(149, 117, 205, 0.06) 40%, transparent 70%);
+    border-radius: 50%;
+    filter: blur(18px);
+    animation: logoGoldGlow 4s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* CSS Logo neon glow pulse */
+@keyframes logoCssGlow {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.05);
+    }
+}
+
+/* Soprano CSS Logo hover efekti */
+.soprano-css-logo {
+    transition: filter 0.3s ease;
+}
+
+.soprano-css-logo:hover {
+    filter: brightness(1.15) drop-shadow(0 0 8px rgba(99, 89, 152, 0.4));
+}
+
+
+/* ═══ CINEMATIC WORDMARK ═══ */
+
+.wordmark-scene {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    transform-style: preserve-3d;
+    perspective: 1200px;
+}
+
+.wordmark-group {
+    display: flex;
+    align-items: center;
+    transform-style: preserve-3d;
+    filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.7));
+    position: relative;
+}
+
+/* Shimmer light sweep */
+.shimmer-text {
+    position: relative;
+    background-image: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.35) 45%, rgba(255, 255, 255, 0.35) 55%, transparent 70%);
+    background-size: 300% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    animation: flowLight 6s infinite linear;
+}
+
+@keyframes flowLight {
+    0% {
+        background-position: 150% 0;
+    }
+
+    100% {
+        background-position: -150% 0;
+    }
+}
+
+/* Grunge Text base */
+.grunge-text {
+    font-family: 'Anton', sans-serif;
+    background-color: #cc2222;
+    background-image: linear-gradient(180deg, #ffffff 0%, #ff3344 50%, #cc2222 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1;
+}
+
+.chat-part {
+    background-image: linear-gradient(180deg, #ffffff 0%, #7b9fef 50%, #4a6bc9 100%);
+    -webkit-background-clip: text;
+}
+
+/* S neon frame */
+.s-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.s-neon-frame {
+    position: absolute;
+    width: 130%;
+    height: 80%;
+    border: 2px solid #7b9fef;
+    border-radius: 12px;
+    box-shadow: 0 0 10px #7b9fef, inset 0 0 8px #7b9fef;
+    z-index: 1;
+    opacity: 0.8;
+    filter: blur(0.5px);
+    animation: neonFlicker 4s infinite;
+}
+
+@keyframes neonFlicker {
+
+    0%,
+    100% {
+        opacity: 0.8;
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.02);
+    }
+}
+
+/* Camera lens (o harfi) */
+.camera-lens-mini {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.lens-chassis-mini {
+    position: relative;
+    background: #0a0a0a;
+    border: 2px solid #ff0000;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff0000, inset 0 0 5px #ff0000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.lens-inner-glass-mini {
+    width: 80%;
+    height: 80%;
+    background: #000;
+    border-radius: 50%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #1a1a1a;
+}
+
+.lens-optic-core-mini {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at center, #050505 0%, #000 100%);
+    position: relative;
+    overflow: hidden;
+}
+
+.rec-neon-mini {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: #ff0000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    filter: blur(1px);
+    box-shadow: 0 0 6px 2px #ff0000, 0 0 15px 4px rgba(255, 0, 0, 0.3);
+    animation: recPulse 2s infinite ease-in-out;
+    z-index: 10;
+}
+
+@keyframes recPulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(0.9);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+.lens-highlight-mini {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(135deg, transparent 46%, rgba(255, 255, 255, 0.15) 50%, transparent 54%);
+    animation: lensSweep 10s infinite linear;
+}
+
+@keyframes lensSweep {
+    0% {
+        transform: translate(-10%, -10%) rotate(0deg);
+    }
+
+    100% {
+        transform: translate(10%, 10%) rotate(20deg);
+    }
+}
+
+/* Microphone (t harfi) */
+.mic-system-mini {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mic-head-mini {
+    background: linear-gradient(135deg, #333, #080808);
+    border: 2px solid #7b9fef;
+    border-radius: 10px;
+    box-shadow: 0 0 12px rgba(59, 89, 152, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.mic-mesh-mini {
+    width: 100%;
+    height: 100%;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
+    background-size: 3px 3px;
+}
+
+.mic-pole-mini {
+    background: linear-gradient(to right, #2a2a2a, #000, #2a2a2a);
+    border-radius: 2px;
+}
+
+.mic-mount-mini {
+    background: linear-gradient(to bottom, #7b9fef, #2a3d6b);
+    border-radius: 4px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+}
+
+/* Sound wave bars */
+.wm-wave-bar {
+    width: 2px;
+    border-radius: 10px;
+    opacity: 0;
+    animation: waveRipple 3s infinite ease-in-out;
+}
+
+.wm-wave-bar.left-bar {
+    background: linear-gradient(to top, #ff3344, #ff6655);
+    box-shadow: 0 0 8px rgba(255, 51, 68, 0.4);
+}
+
+.wm-wave-bar.right-bar {
+    background: linear-gradient(to top, #7b9fef, #a3bfff);
+    box-shadow: 0 0 8px rgba(123, 159, 239, 0.5);
+}
+
+@keyframes waveRipple {
+    0% {
+        transform: scaleY(0.3);
+        opacity: 0;
+    }
+
+    20% {
+        opacity: 0.8;
+        transform: scaleY(1.3);
+    }
+
+    100% {
+        transform: scaleY(0.4) translateX(var(--wdir, 0));
+        opacity: 0;
+    }
+}
+
+/* Brand slogan */
+.brand-slogan-mini {
+    color: #a3bfff;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    font-weight: 300;
+    opacity: 0.5;
+    filter: drop-shadow(0 0 6px #7a6133);
+}
+
+/* Nota deseni — logodan yükselerek dağılır */
+.logo-note {
+    position: absolute;
+    font-size: 24px;
+    color: rgba(200, 150, 46, 0.5);
+    will-change: transform, opacity;
+    animation: noteFloat 5s ease-out infinite;
+    pointer-events: none;
+    z-index: 0;
+    text-shadow: 0 0 8px rgba(200, 150, 46, 0.3);
+}
+
+.logo-note:nth-child(1) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 0s;
+}
+
+.logo-note:nth-child(2) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 1s;
+    color: rgba(91, 155, 213, 0.5);
+    text-shadow: 0 0 8px rgba(91, 155, 213, 0.3);
+}
+
+.logo-note:nth-child(3) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 2s;
+}
+
+.logo-note:nth-child(4) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 3s;
+    color: rgba(91, 155, 213, 0.4);
+    text-shadow: 0 0 8px rgba(91, 155, 213, 0.2);
+}
+
+.logo-note:nth-child(5) {
+    top: 50%;
+    left: 50%;
+    animation-delay: 4s;
+}
+
+@keyframes noteFloat {
+    0% {
+        transform: translate(-50%, -50%) scale(0.6);
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        transform: translate(calc(-50% + var(--note-dx, 40px)), calc(-50% + var(--note-dy, -60px))) scale(0.4) rotate(var(--note-rot, 20deg));
+        opacity: 0;
+    }
+}
+
+/* Nota yön varyasyonları */
+.logo-note:nth-child(1) {
+    --note-dx: -50px;
+    --note-dy: -70px;
+    --note-rot: -25deg;
+}
+
+.logo-note:nth-child(2) {
+    --note-dx: 55px;
+    --note-dy: -55px;
+    --note-rot: 30deg;
+}
+
+.logo-note:nth-child(3) {
+    --note-dx: -60px;
+    --note-dy: -40px;
+    --note-rot: -15deg;
+}
+
+.logo-note:nth-child(4) {
+    --note-dx: 45px;
+    --note-dy: -75px;
+    --note-rot: 20deg;
+}
+
+.logo-note:nth-child(5) {
+    --note-dx: -30px;
+    --note-dy: -65px;
+    --note-rot: -30deg;
+}
+
+/* Yazı üzerinden geçen parlama efekti */
+.logo-text-shimmer {
+    position: relative;
+    overflow: hidden;
+    filter: drop-shadow(0 2px 12px rgba(200, 150, 46, 0.35)) drop-shadow(0 0 20px rgba(200, 150, 46, 0.15));
+}
+
+.logo-text-shimmer::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    left: -150%;
+    width: 120%;
+    height: 160%;
+    background: linear-gradient(105deg,
+            transparent 10%,
+            rgba(255, 240, 200, 0.03) 20%,
+            rgba(255, 240, 200, 0.08) 30%,
+            rgba(255, 255, 255, 0.15) 38%,
+            rgba(255, 240, 200, 0.35) 44%,
+            rgba(255, 255, 255, 0.5) 50%,
+            rgba(255, 240, 200, 0.35) 56%,
+            rgba(255, 255, 255, 0.15) 62%,
+            rgba(255, 240, 200, 0.08) 70%,
+            rgba(255, 240, 200, 0.03) 80%,
+            transparent 90%);
+    transform: skewX(-15deg);
+    animation: textShimmer 12s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 2;
+}
+
+@keyframes textShimmer {
+    0% {
+        left: -150%;
+        opacity: 0;
+    }
+
+    3% {
+        opacity: 1;
+    }
+
+    25% {
+        left: 200%;
+        opacity: 0;
+    }
+
+    100% {
+        left: 200%;
+        opacity: 0;
+    }
+}
+
+/* ── Brand Logo/Text Effect Keyframes ── */
+@keyframes logoPulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    50% {
+        transform: scale(1.06);
+        opacity: 0.85;
+    }
+}
+
+@keyframes logoRotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+@keyframes brandTextShimmer {
+    0% {
+        background-position: -200% center;
+    }
+
+    100% {
+        background-position: 200% center;
+    }
+}
+
+/* ── Ana Sayfa Altın Düğme Stilleri ── */
+.landing-btn-gold-primary {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #ff3344 0%, #cc2222 40%, #991111 100%) !important;
+    color: #fff !important;
+    border: none !important;
+    font-weight: 700;
+    box-shadow: 0 4px 15px rgba(204, 34, 34, 0.35), 0 0 25px rgba(204, 34, 34, 0.15);
+    transition: all 0.3s ease;
+}
+
+.landing-btn-gold-primary:hover {
+    box-shadow: 0 6px 30px rgba(204, 34, 34, 0.5), 0 0 40px rgba(204, 34, 34, 0.25);
+    transform: translateY(-1px);
+}
+
+.landing-btn-gold-primary::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -120%;
+    width: 50%;
+    height: 140%;
+    background: linear-gradient(105deg,
+            transparent 30%,
+            rgba(255, 255, 255, 0.15) 45%,
+            rgba(255, 255, 255, 0.4) 50%,
+            rgba(255, 255, 255, 0.15) 55%,
+            transparent 70%);
+    transform: skewX(-20deg);
+    transition: left 0.6s ease;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.landing-btn-gold-primary:hover::after {
+    left: 220%;
+}
+
+/* Outline versiyonu */
+.landing-btn-gold-outline {
+    position: relative;
+    overflow: hidden;
+    background: rgba(204, 34, 34, 0.06) !important;
+    color: #ffcccc !important;
+    border: 1px solid rgba(204, 34, 34, 0.3) !important;
+    box-shadow: 0 2px 10px rgba(204, 34, 34, 0.15), 0 0 15px rgba(204, 34, 34, 0.08);
+    transition: all 0.3s ease;
+}
+
+.landing-btn-gold-outline:hover {
+    background: rgba(204, 34, 34, 0.15) !important;
+    border-color: rgba(204, 34, 34, 0.5) !important;
+    box-shadow: 0 4px 25px rgba(204, 34, 34, 0.35), 0 0 30px rgba(204, 34, 34, 0.18);
+    color: #ff6666 !important;
+}
+
+/* Navbar pill düğmeleri */
+.landing-nav-btn {
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.landing-nav-btn:hover {
+    color: #ffcccc !important;
+    background: rgba(204, 34, 34, 0.1) !important;
+    border-color: rgba(204, 34, 34, 0.2) !important;
+}
+
+.landing-nav-btn::after {
+    content: '';
+    position: absolute;
+    top: -20%;
+    left: -120%;
+    width: 50%;
+    height: 140%;
+    background: linear-gradient(105deg,
+            transparent 30%,
+            rgba(204, 34, 34, 0.08) 45%,
+            rgba(204, 34, 34, 0.15) 50%,
+            rgba(204, 34, 34, 0.08) 55%,
+            transparent 70%);
+    transform: skewX(-20deg);
+    transition: left 0.5s ease;
+    pointer-events: none;
+}
+
+.landing-nav-btn:hover::after {
+    left: 220%;
+}
+
+/* Footer link düğmeleri */
+.landing-footer-btn {
+    transition: color 0.3s ease;
+}
+
+.landing-footer-btn:hover {
+    color: #ff6666 !important;
+    text-shadow: 0 0 12px rgba(204, 34, 34, 0.3);
+}
+
+/* ── Ana Konteyner (Koyu Cam) ── */
+.landing-container {
+    width: 100%;
+    max-width: 1350px;
+    background-color: rgba(15, 23, 42, 0.7);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    min-height: 85vh;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    border-radius: 2.5rem;
+    box-shadow: 0 35px 70px -15px rgba(0, 0, 0, 0.8), 0 0 60px rgba(168, 146, 126, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* ── Glass Navbar ── */
+.landing-glass-nav {
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(168, 146, 126, 0.2);
+}
+
+/* ── Nav Link Alt Çizgi ── */
+.landing-nav-link {
+    position: relative;
+    color: #94a3b8;
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.5rem 0;
+    transition: color 0.3s ease;
+}
+
+.landing-nav-link:hover {
+    color: #ff6666;
+}
+
+.landing-nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: linear-gradient(90deg, #ff6666, #cc2222);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
+.landing-nav-link:hover::after {
+    width: 100%;
+}
+
+/* ── Gradient Text (Desert Titanium) ── */
+.landing-text-gradient {
+    background: linear-gradient(135deg, #ffcccc 0%, #cc2222 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ── Gold Shine Effect ── */
+.landing-text-shine {
+    background: linear-gradient(to right, #fde047 20%, #fff 40%, #eab308 60%, #fde047 80%);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    animation: landing-shine 4s linear infinite;
+    filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+@keyframes landing-shine {
+    to {
+        background-position: 200% center;
+    }
+}
+
+/* ── Cinsiyet Seçimi (Desert) ── */
+.gender-btn.active {
+    border-color: #a8927e !important;
+    background-color: rgba(168, 146, 126, 0.15) !important;
+    color: #e5d8c8 !important;
+    box-shadow: 0 0 0 2px rgba(168, 146, 126, 0.3);
+}
+
+.gender-btn.active-pink {
+    border-color: #ec4899 !important;
+    background-color: rgba(236, 72, 153, 0.1) !important;
+    color: #ec4899 !important;
+    box-shadow: 0 0 0 2px rgba(236, 72, 153, 0.2);
+}
+
+/* ── Form Geçiş Animasyonları ── */
+.landing-form-section {
+    display: none;
+}
+
+.landing-form-section.active {
+    display: block;
+    animation: landing-fadeIn 0.4s ease-out forwards;
+}
+
+@keyframes landing-fadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Heartbeat Animasyon ── */
+@keyframes heartbeat {
+
+    0%,
+    50%,
+    100% {
+        transform: scale(1);
+    }
+
+    15% {
+        transform: scale(1.25);
+    }
+
+    25% {
+        transform: scale(1);
+    }
+
+    35% {
+        transform: scale(1.25);
+    }
+}
+
+.animate-heartbeat {
+    animation: heartbeat 2s ease-in-out infinite;
+}
+
+/* ── Float Animasyon (landing için) ── */
+.landing-animate-float {
+    animation: landing-float 6s ease-in-out infinite;
+}
+
+@keyframes landing-float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+/* ── Sinematik Oda Giriş Efekti ── */
+.room-entrance-wrapper {
+    perspective: 1200px;
+    transform-style: preserve-3d;
+    width: 100%;
+    height: 100%;
+}
+
+@keyframes roomEntranceZoom {
+    0% {
+        opacity: 0;
+        filter: blur(20px);
+    }
+
+    50% {
+        opacity: 0.8;
+        filter: blur(6px);
+    }
+
+    100% {
+        opacity: 1;
+        filter: blur(0px);
+    }
+}
+
+/* ── Blob Animasyon ── */
+.animate-blob {
+    animation: blob 7s infinite;
+}
+
+/* ── Scrollbar (Desert Titanium) ── */
+.landing-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.landing-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.landing-scrollbar::-webkit-scrollbar-thumb {
+    background: #826e5a;
+    border-radius: 20px;
+}
+
+.landing-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #685645;
+}
+
+/* ── Select Styling (Dark) ── */
+.landing-select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position-x: 95%;
+    background-position-y: 50%;
+}
+
+/* ── Buton Glow Efektleri ── */
+.btn-gold-glow {
+    box-shadow: 0 0 20px rgba(234, 179, 8, 0.3);
+}
+
+.btn-gold-glow:hover {
+    box-shadow: 0 0 30px rgba(234, 179, 8, 0.5);
+}
+
+.btn-desert-glow {
+    box-shadow: 0 0 20px rgba(168, 146, 126, 0.4);
+}
+
+.btn-desert-glow:hover {
+    box-shadow: 0 0 30px rgba(168, 146, 126, 0.6);
+}
+
+/* ============================================ */
+/*  INLINE EXPANDING BUTTONS                    */
+/* ============================================ */
+.landing-btn-expand {
+    position: relative;
+    overflow: hidden;
+    max-height: 64px;
+    width: auto;
+}
+
+.landing-btn-expand.expanded {
+    max-height: 550px;
+    width: 100%;
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.landing-btn-content {
+    transition: none;
+}
+
+.landing-btn-expand.expanded .landing-btn-content {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+}
+
+.landing-expand-form {
+    overflow: hidden;
+    max-height: 0;
+    opacity: 0;
+}
+
+.landing-btn-expand.expanded .landing-expand-form {
+    max-height: 550px;
+    opacity: 1;
+}
+
+/* ── Expanded header ── */
+.landing-expand-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid rgba(204, 34, 34, 0.3);
+}
+
+/* ═══════════════════════════════════════
+   ROOM TRANSITION — fade-in on mount
+   Masks the empty state flash during
+   room-to-room navigation
+   ═══════════════════════════════════════ */
+@keyframes roomFadeIn {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.room-fade-in {
+    animation: roomFadeIn 400ms ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, calc(100% + 4px));
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, calc(100% + 8px));
+    }
+}
+
+/* ============================================ */
+/*  MSN NUDGE — Screen Shake Animation          */
+/* ============================================ */
+@keyframes nudgeShake {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    5% {
+        transform: translate(-6px, -4px);
+    }
+
+    10% {
+        transform: translate(6px, 3px);
+    }
+
+    15% {
+        transform: translate(-5px, 5px);
+    }
+
+    20% {
+        transform: translate(5px, -3px);
+    }
+
+    25% {
+        transform: translate(-4px, 4px);
+    }
+
+    30% {
+        transform: translate(4px, -5px);
+    }
+
+    35% {
+        transform: translate(-3px, 3px);
+    }
+
+    40% {
+        transform: translate(3px, -2px);
+    }
+
+    45% {
+        transform: translate(-2px, 2px);
+    }
+
+    50% {
+        transform: translate(2px, -1px);
+    }
+
+    55% {
+        transform: translate(-1px, 1px);
+    }
+
+    60% {
+        transform: translate(1px, 0);
+    }
+}
+
+.nudge-shake {
+    animation: nudgeShake 0.6s ease-in-out !important;
+}
+
+/* Kırmızı kenar flaşı (nudge visual feedback) */
+.nudge-shake::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 4px solid rgba(239, 68, 68, 0.6);
+    border-radius: 0;
+    pointer-events: none;
+    z-index: 99999;
+    animation: nudgeBorderFlash 0.6s ease-out forwards;
+}
+
+@keyframes nudgeBorderFlash {
+    0% {
+        opacity: 1;
+        border-color: rgba(239, 68, 68, 0.8);
+    }
+
+    30% {
+        opacity: 0.8;
+        border-color: rgba(239, 68, 68, 0.5);
+    }
+
+    60% {
+        opacity: 0.4;
+        border-color: rgba(239, 68, 68, 0.3);
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* ═══ BAN ICON BLINK ANIMATION ═══ */
+@keyframes banBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(220, 38, 38, 0.7);
+    }
+
+    50% {
+        opacity: 0.3;
+        transform: scale(0.85);
+        box-shadow: 0 0 4px rgba(220, 38, 38, 0.3);
+    }
+}
+
+@keyframes banIconBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.5;
+        transform: scale(0.9);
+    }
+}
+
+/* ============================================ */
+/*  MOBILE RESPONSIVE — max-width: 768px        */
+/* ============================================ */
+
+/* --- Sidebar Toggle Button (visible only on mobile) --- */
+.mobile-sidebar-toggle {
+    display: none;
+}
+
+/* --- Sidebar Overlay (visible only on mobile) --- */
+.mobile-sidebar-overlay {
+    display: none;
+}
+
+/* --- Hamburger Menu Button (visible only on mobile) --- */
+.mobile-hamburger-btn {
+    display: none;
+}
+
+/* --- Mobile Menu Overlay --- */
+.mobile-menu-overlay {
+    display: none;
+}
+
+@media (max-width: 768px) {
+
+    /* ══════════ CHAT ROOM ══════════ */
+
+    /* Room container: Full-screen on mobile */
+    .room-container {
+        max-width: 100% !important;
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Sidebar: Offcanvas drawer from left */
+    .sidebar-left {
+        position: fixed !important;
+        top: 0 !important;
+        left: -320px !important;
+        width: 300px !important;
+        height: 100dvh !important;
+        z-index: 9999 !important;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        background: rgba(7, 11, 20, 0.98) !important;
+        border-right: 1px solid rgba(200, 150, 46, 0.15) !important;
+        box-shadow: 4px 0 30px rgba(0, 0, 0, 0.6) !important;
+        overflow-y: auto !important;
+    }
+
+    .sidebar-left.mobile-open {
+        left: 0 !important;
+    }
+
+    /* Sidebar overlay — dark overlay behind drawer */
+    .mobile-sidebar-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 9998;
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        animation: fadeIn 0.2s ease;
+    }
+
+    .mobile-sidebar-overlay.active {
+        display: block;
+    }
+
+    /* Sidebar toggle button */
+    .mobile-sidebar-toggle {
+        display: flex !important;
+        position: fixed;
+        top: 12px;
+        left: 12px;
+        z-index: 9997;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        align-items: center;
+        justify-content: center;
+        background: rgba(15, 23, 42, 0.9);
+        border: 1px solid rgba(200, 150, 46, 0.25);
+        color: #f0d88a;
+        cursor: pointer;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+        transition: all 0.2s;
+    }
+
+    .mobile-sidebar-toggle:active {
+        transform: scale(0.92);
+    }
+
+    /* Right panel (video): Sits above chat, compact */
+    .right-live-panel {
+        position: relative !important;
+        width: 100% !important;
+        max-height: 200px !important;
+        flex-shrink: 0 !important;
+        order: -1 !important;
+        border-bottom: 1px solid rgba(200, 150, 46, 0.1) !important;
+        border-right: none !important;
+        border-left: none !important;
+    }
+
+    .right-live-panel video {
+        max-height: 180px !important;
+        object-fit: cover !important;
+    }
+
+    /* Center panel: takes full width */
+    .room-container>main {
+        flex: 1 !important;
+        min-width: 0 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Bottom toolbar: Fixed bottom, touch-friendly */
+    .bottom-toolbar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 9990 !important;
+        min-height: 56px !important;
+        padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+        background: rgba(7, 11, 20, 0.98) !important;
+        border-top: 1px solid rgba(200, 150, 46, 0.12) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+    }
+
+    /* Make buttons touch-friendly */
+    .bottom-toolbar button {
+        min-height: 44px !important;
+        min-width: 44px !important;
+    }
+
+    /* Add padding-bottom to chat messages so they don't hide behind toolbar */
+    .room-container .chat-messages-container {
+        padding-bottom: 72px !important;
+    }
+
+    /* Header rooms — compact on mobile */
+    .room-container header {
+        padding-left: 52px !important;
+    }
+
+    /* ══════════ HOME PAGE ══════════ */
+
+    /* Landing container: Remove excess padding */
+    .landing-container {
+        padding: 0 !important;
+        border-radius: 0 !important;
+        max-width: 100% !important;
+    }
+
+    /* Hamburger button: visible on mobile */
+    .mobile-hamburger-btn {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        background: rgba(15, 23, 42, 0.8);
+        border: 1px solid rgba(200, 150, 46, 0.25);
+        color: #f0d88a;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .mobile-hamburger-btn:active {
+        transform: scale(0.92);
+    }
+
+    /* Mobile full-screen menu overlay */
+    .mobile-menu-overlay {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+        background: rgba(5, 5, 5, 0.97);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        animation: fadeIn 0.25s ease;
+    }
+
+    .mobile-menu-overlay button {
+        width: 80%;
+        max-width: 320px;
+        padding: 16px 24px;
+        border-radius: 16px;
+        font-size: 16px;
+        font-weight: 700;
+        border: 1px solid rgba(200, 150, 46, 0.2);
+        background: rgba(15, 23, 42, 0.8);
+        color: #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        transition: all 0.2s;
+    }
+
+    .mobile-menu-overlay button:active {
+        transform: scale(0.96);
+        background: rgba(200, 150, 46, 0.15);
+    }
+
+    .mobile-menu-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(30, 41, 59, 0.8);
+        color: #94a3b8;
+        border: 1px solid rgba(100, 116, 139, 0.3);
+        cursor: pointer;
+        font-size: 20px;
+    }
+
+    /* Navbar: smaller on mobile */
+    .landing-glass-nav .max-w-7xl {
+        height: 64px !important;
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+    }
+
+    /* Logo: smaller on mobile */
+    .logo-wrap .relative {
+        width: 80px !important;
+        height: 80px !important;
+    }
+
+    .logo-wrap img {
+        height: 80px !important;
+    }
+
+    .logo-wrap .logo-text-shimmer span {
+        font-size: 1.1rem !important;
+    }
+
+    .logo-wrap .flex.flex-col {
+        margin-top: 4px !important;
+    }
+
+    /* Hero section: less padding */
+    .landing-container main {
+        padding-top: 24px !important;
+        padding-bottom: 24px !important;
+    }
+
+    .landing-container main .max-w-7xl {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        gap: 24px !important;
+    }
+
+    /* Hero title: smaller on mobile */
+    .landing-container main h1 {
+        font-size: 1.75rem !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Room section: less padding */
+    .landing-container section {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-top: 40px !important;
+        padding-bottom: 40px !important;
+    }
+
+    /* Room section title: smaller */
+    .landing-container section h2 {
+        font-size: 1.5rem !important;
+    }
+
+    /* Overall page padding: reduce on mobile */
+    .min-h-screen.flex.justify-center {
+        padding: 0 !important;
+    }
+
+    /* Room cards with horizontal scroll */
+    .room-cards-grid {
+        display: flex !important;
+        overflow-x: auto !important;
+        scroll-snap-type: x mandatory !important;
+        gap: 16px !important;
+        padding-bottom: 16px !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .room-cards-grid>div {
+        min-width: 280px !important;
+        scroll-snap-align: start !important;
+        flex-shrink: 0 !important;
+    }
+}
+
+/* Shared animation */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ─── Tablet (769px - 1024px) adjustments ─── */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .room-container {
+        max-width: 100% !important;
+        border-radius: 16px !important;
+    }
+
+    .sidebar-left {
+        width: 240px !important;
+    }
+
+    .right-live-panel {
+        width: 240px !important;
+    }
+}
+
+/* ═══ CHAT AREA BACKGROUND ═══ */
+.chat-area {
+    position: relative;
+    overflow: hidden;
+    background: rgba(8, 12, 21, 0.75);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+/* ═══ REACTION PICKER ANIMATIONS ═══ */
+@keyframes reactionPickerIn {
+    0% {
+        opacity: 0;
+        transform: scale(0.85) translateY(6px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+@keyframes reactionEmojiPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.3);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ═══ WHATSAPP-STYLE MESSAGE TAP ANIMATION ═══ */
+@keyframes messageTap {
+    0% {
+        transform: scale(1);
+    }
+
+    30% {
+        transform: scale(0.95);
+    }
+
+    60% {
+        transform: scale(1.02);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+.message-tap-animate {
+    animation: messageTap 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mesaj balonunda aktif basma efekti */
+.message-bubble-interactive {
+    cursor: pointer;
+    transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+}
+
+.message-bubble-interactive:active {
+    transform: scale(0.96);
+}

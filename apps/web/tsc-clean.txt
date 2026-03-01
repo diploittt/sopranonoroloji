@@ -1,0 +1,7 @@
+src/components/roomUI/ChatMessages.tsx(333,106): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'SetStateAction<string | null>'.
+  Type 'undefined' is not assignable to type 'SetStateAction<string | null>'.
+src/components/roomUI/ChatMessages.tsx(418,46): error TS2367: This comparison appears to be unintentional because the types '"user"' and '"system"' have no overlap.
+src/components/roomUI/ChatMessages.tsx(422,78): error TS2345: Argument of type '(prev: string | null) => string | null | undefined' is not assignable to parameter of type 'SetStateAction<string | null>'.
+  Type '(prev: string | null) => string | null | undefined' is not assignable to type '(prevState: string | null) => string | null'.
+    Type 'string | null | undefined' is not assignable to type 'string | null'.
+      Type 'undefined' is not assignable to type 'string | null'.

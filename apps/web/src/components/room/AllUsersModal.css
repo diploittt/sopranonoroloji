@@ -1,0 +1,381 @@
+/* ═══════════ All Users Modal ═══════════ */
+
+.all-users-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    animation: auOverlayIn 0.25s ease-out;
+}
+
+@keyframes auOverlayIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.all-users-modal {
+    width: 90vw;
+    max-width: 720px;
+    max-height: 85vh;
+    background: linear-gradient(145deg, rgba(15, 17, 26, 0.97), rgba(10, 12, 20, 0.99));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 24px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow:
+        0 25px 50px -12px rgba(0, 0, 0, 0.8),
+        0 0 80px rgba(99, 102, 241, 0.08);
+    animation: auModalIn 0.3s ease-out;
+}
+
+@keyframes auModalIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Header */
+.au-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), transparent);
+}
+
+.au-header h2 {
+    font-size: 18px;
+    font-weight: 800;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.au-header h2 .au-icon {
+    font-size: 20px;
+}
+
+.au-badge {
+    font-size: 11px;
+    font-weight: 700;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    padding: 2px 10px;
+    border-radius: 20px;
+}
+
+.au-close-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: #94a3b8;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.au-close-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+/* Body (scrollable) */
+.au-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px 24px 24px;
+}
+
+.au-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.au-body::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.au-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+/* Room Section */
+.au-room-section {
+    margin-bottom: 20px;
+}
+
+.au-room-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.au-room-icon {
+    font-size: 16px;
+}
+
+.au-room-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #a5b4fc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.au-room-count {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    margin-left: auto;
+}
+
+/* User Row */
+.au-user-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    position: relative;
+}
+
+.au-user-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+.au-user-row.selected {
+    background: rgba(99, 102, 241, 0.08);
+    border-color: rgba(99, 102, 241, 0.2);
+}
+
+.au-user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    object-fit: cover;
+    flex-shrink: 0;
+    background: #1a1a2e;
+}
+
+.au-user-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.au-user-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: #e2e8f0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.au-user-role {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #64748b;
+    margin-top: 2px;
+}
+
+/* Status indicators */
+.au-user-badges {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.au-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.au-status-dot.muted {
+    background: #ef4444;
+}
+
+.au-status-dot.gagged {
+    background: #f59e0b;
+}
+
+.au-status-dot.stealth {
+    background: #8b5cf6;
+}
+
+/* Action Panel (inline, below selected user) */
+.au-actions-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 14px 10px 66px;
+    animation: auActionsIn 0.2s ease-out;
+}
+
+@keyframes auActionsIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.au-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: #cbd5e1;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.au-action-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+}
+
+.au-action-btn.danger {
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.15);
+}
+
+.au-action-btn.danger:hover {
+    background: rgba(239, 68, 68, 0.12);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+}
+
+.au-action-btn.warn {
+    color: #fde68a;
+    border-color: rgba(245, 158, 11, 0.15);
+}
+
+.au-action-btn.warn:hover {
+    background: rgba(245, 158, 11, 0.12);
+    border-color: rgba(245, 158, 11, 0.3);
+    color: #f59e0b;
+}
+
+.au-action-btn .au-action-icon {
+    font-size: 14px;
+}
+
+/* Loading / empty states */
+.au-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 0;
+    color: #64748b;
+    gap: 12px;
+}
+
+.au-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    border-top-color: #6366f1;
+    border-radius: 50%;
+    animation: auSpin 0.8s linear infinite;
+}
+
+@keyframes auSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.au-empty {
+    text-align: center;
+    padding: 40px 0;
+    color: #475569;
+    font-size: 14px;
+}
+
+/* Toast feedback in modal */
+.au-toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 10001;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    animation: auToastIn 0.3s ease-out;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.au-toast.success {
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.au-toast.error {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.au-toast.info {
+    background: linear-gradient(135deg, #4f46e5, #6366f1);
+}
+
+@keyframes auToastIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

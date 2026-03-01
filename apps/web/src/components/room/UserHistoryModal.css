@@ -1,0 +1,399 @@
+/* ── UserHistoryModal ── */
+.user-history-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: uhm-fadeIn 0.2s ease;
+}
+
+@keyframes uhm-fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes uhm-slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(24px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.user-history-modal {
+    background: linear-gradient(145deg, rgba(30, 27, 40, 0.97), rgba(22, 20, 32, 0.99));
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 16px;
+    width: 620px;
+    max-width: 92vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    animation: uhm-slideUp 0.25s ease;
+    overflow: hidden;
+}
+
+/* ── Header ── */
+.uhm-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 18px 22px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.uhm-header-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.uhm-header-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.uhm-header-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.uhm-header-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.35);
+    margin-top: 2px;
+}
+
+.uhm-close-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.15s;
+}
+
+.uhm-close-btn:hover {
+    background: rgba(255, 80, 80, 0.15);
+    color: #ff6b6b;
+    border-color: rgba(255, 80, 80, 0.2);
+}
+
+/* ── Toolbar ── */
+.uhm-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    flex-shrink: 0;
+}
+
+.uhm-filter-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.8);
+    outline: none;
+    transition: border-color 0.15s;
+}
+
+.uhm-filter-input:focus {
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.uhm-filter-input::placeholder {
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.uhm-refresh-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
+    color: rgba(255, 255, 255, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.uhm-refresh-btn:hover {
+    background: rgba(139, 92, 246, 0.12);
+    color: #a78bfa;
+    border-color: rgba(139, 92, 246, 0.25);
+}
+
+@keyframes uhm-spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.uhm-spinning {
+    animation: uhm-spin 0.6s linear infinite;
+}
+
+/* ── Log list ── */
+.uhm-log-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 6px 0;
+    min-height: 0;
+}
+
+.uhm-log-list::-webkit-scrollbar {
+    width: 5px;
+}
+
+.uhm-log-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.uhm-log-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+}
+
+.uhm-log-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 10px 22px;
+    cursor: pointer;
+    transition: background 0.12s;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.uhm-log-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.uhm-log-row.selected {
+    background: rgba(139, 92, 246, 0.08);
+    border-left: 3px solid #8b5cf6;
+    padding-left: 19px;
+}
+
+.uhm-event-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.uhm-log-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.uhm-log-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 3px;
+}
+
+.uhm-log-meta {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.uhm-log-meta span {
+    white-space: nowrap;
+}
+
+/* ── Detail panel (expanded row) ── */
+.uhm-detail-panel {
+    padding: 10px 22px 14px 42px;
+    background: rgba(139, 92, 246, 0.04);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    animation: uhm-fadeIn 0.15s ease;
+}
+
+.uhm-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.uhm-detail-label {
+    font-size: 9px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.3);
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.uhm-detail-value {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.75);
+    word-break: break-word;
+}
+
+.uhm-meta-section {
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.uhm-meta-section h5 {
+    font-size: 10px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.35);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 6px;
+}
+
+.uhm-meta-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.uhm-meta-key {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.4);
+    font-weight: 600;
+}
+
+.uhm-meta-val {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    font-weight: 500;
+    max-width: 60%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* ── Empty / Loading ── */
+.uhm-empty {
+    text-align: center;
+    padding: 50px 20px;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.uhm-empty-icon {
+    font-size: 36px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+.uhm-empty-text {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+
+.uhm-empty-sub {
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.18);
+}
+
+.uhm-loading {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 12px;
+}
+
+.uhm-spinner {
+    width: 24px;
+    height: 24px;
+    border: 2px solid rgba(139, 92, 246, 0.15);
+    border-top-color: #8b5cf6;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    animation: uhm-spin 0.7s linear infinite;
+}
+
+/* ── Footer / pagination ── */
+.uhm-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 22px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.3);
+}
+
+.uhm-pagination {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.uhm-page-btn {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 13px;
+}
+
+.uhm-page-btn:hover:not(:disabled) {
+    background: rgba(139, 92, 246, 0.12);
+    color: #a78bfa;
+}
+
+.uhm-page-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
