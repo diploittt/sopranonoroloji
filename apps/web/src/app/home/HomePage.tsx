@@ -546,7 +546,7 @@ export default function HomePage() {
                                 Sesin Buluştuğu <br /><span className="landing-text-gradient">Dijital Sahne.</span>
                             </h1>
                             <p className="text-lg text-slate-400 mb-10 leading-relaxed font-medium max-w-lg mx-auto lg:mx-0">
-                                Sıradan sohbet odalarını geride bırakın. Kameranızı açın, sahneye çıkın  gerçek insanlarla, gerçek anlar yaşayın.
+                                Sıradan sohbet odalarını geride bırakın. Kameranızı açın, sahneye çıkın, gerçek insanlarla gerçek anlar yaşayın.
                             </p>
 
                             {/* Giriş alanı / Profil kartı */}

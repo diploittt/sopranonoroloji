@@ -16,7 +16,7 @@ const fredoka = Fredoka({
 });
 
 export const metadata: Metadata = {
-  title: "SopranoChat - Final Radio Edition",
+  title: "SopranoChat — Sesin Buluştuğu Dijital Sahne",
   description: "SopranoChat — Canlı Sesli Sohbet Platformu",
 };
 
