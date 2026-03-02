@@ -182,6 +182,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Active duels: roomId -> DuelState (one duel per room at a time) */
   private activeDuels = new Map<string, DuelState>();
 
+  /** Active YouTube TV URLs: roomId -> { url, setBy } */
+  private roomYoutubeUrls = new Map<string, { url: string; setBy: string }>();
+
   /** Duel reaction cooldowns: "duelId:userId" -> timestamp */
   private _duelReactionCooldowns = new Map<string, number>();
 
@@ -1419,6 +1422,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       })() : null,
       userPermissions: user.permissions || null,
     });
+
+    // ★ TV YOUTUBE SYNC — Aktif YouTube yayını varsa yeni katılana gönder
+    const activeYoutube = this.roomYoutubeUrls.get(scopedRoom);
+    if (activeYoutube) {
+      client.emit('tv:youtubeUpdate', { url: activeYoutube.url, setBy: activeYoutube.setBy });
+      this.logger.log(`📺 TV YouTube synced to ${participant.displayName}: ${activeYoutube.url}`);
+    }
 
     // ─── WELCOME MESSAGE ──────────────────────────────────────
     if (sysSettings?.welcomeMessage) {
@@ -4085,6 +4095,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const youtubeUrl = data?.url?.trim() || null;
     this.logger.log(`📺 TV YouTube ${youtubeUrl ? 'SET' : 'CLEARED'} by ${actor.displayName} in ${roomSlug}`);
+
+    // Store/clear YouTube URL in memory for newcomer sync
+    if (youtubeUrl) {
+      this.roomYoutubeUrls.set(scopedRoom, { url: youtubeUrl, setBy: actor.displayName });
+    } else {
+      this.roomYoutubeUrls.delete(scopedRoom);
+    }
 
     // Broadcast to all users in the room
     this.server.to(scopedRoom).emit('tv:youtubeUpdate', { url: youtubeUrl, setBy: actor.displayName });
