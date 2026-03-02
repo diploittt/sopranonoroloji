@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3002';
+
 const nextConfig: NextConfig = {
   async headers() {
     return [
@@ -18,11 +20,11 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://localhost:3002/:path*',
+        destination: `${BACKEND_URL}/:path*`,
       },
       {
         source: '/socket.io/:path*',
-        destination: 'http://localhost:3002/socket.io/:path*',
+        destination: `${BACKEND_URL}/socket.io/:path*`,
       },
     ];
   },
