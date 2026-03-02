@@ -2178,7 +2178,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             />
 
                                             {/* Chat messages — visible even for soft-banned users */}
-                                            <div className="chat-area" style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+                                            <div className="chat-area" style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
                                                 <ChatMessages
                                                     room={room}
                                                     messages={room.state.messages}

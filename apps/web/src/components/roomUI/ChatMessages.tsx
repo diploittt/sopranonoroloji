@@ -165,6 +165,13 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, ignor
     const getAvatarUrl = (msgOrUsername: Message | string): string | null => {
         const resolveAvatar = (avatar?: string, username?: string) => {
             if (!avatar) return `https://api.dicebear.com/9.x/avataaars/svg?seed=${username || 'guest'}`;
+            // gifnick:: prefix — parse ve URL kısmını çıkar
+            if (avatar.startsWith('gifnick::')) {
+                const parts = avatar.split('::');
+                const gifUrl = parts[1] || '';
+                if (gifUrl) return gifUrl;
+                return null;
+            }
             // GIF/3D/Animated mod › avatar gösterme
             if (avatar.startsWith('3d:') || avatar.startsWith('animated:') || avatar.toLowerCase().endsWith('.gif') || avatar.startsWith('data:image/gif')) {
                 return null; // Avatar gizle
@@ -185,8 +192,14 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, ignor
                 return result;
             }
 
-            if (msgOrUsername.avatar) return msgOrUsername.avatar;
-            if (user?.avatar) return user.avatar;
+            if (msgOrUsername.avatar) {
+                const resolved = resolveAvatar(msgOrUsername.avatar, msgOrUsername.sender);
+                if (resolved !== msgOrUsername.avatar) return resolved; // was special prefix
+            }
+            if (user?.avatar) {
+                const resolved = resolveAvatar(user.avatar, msgOrUsername.sender);
+                if (resolved !== user.avatar || !user.avatar.startsWith('gifnick')) return resolved;
+            }
             return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername.sender}`;
         }
 
@@ -197,7 +210,10 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, ignor
             if (result === null) return null;
             return result;
         }
-        if (user?.avatar) return user.avatar;
+        if (user?.avatar) {
+            const resolved = resolveAvatar(user.avatar, msgOrUsername);
+            return resolved;
+        }
         return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername}`;
     };
 
