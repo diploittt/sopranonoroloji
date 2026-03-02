@@ -1847,7 +1847,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                 mobileSidebarOpen={mobileSidebarOpen}
                                                 onCloseMobileSidebar={() => setMobileSidebarOpen(false)}
                                                 ignoredUsers={ignoredUsers}
-                                                isMeetingRoom={isMeetingRoom}
                                             />
                                         </div>
                                     </div>
@@ -1897,7 +1896,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     mobileSidebarOpen={mobileSidebarOpen}
                                     onCloseMobileSidebar={() => setMobileSidebarOpen(false)}
                                     ignoredUsers={ignoredUsers}
-                                    isMeetingRoom={isMeetingRoom}
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}

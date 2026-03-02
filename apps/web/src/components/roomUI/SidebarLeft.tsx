@@ -27,7 +27,7 @@ interface SidebarLeftProps {
     [key: string]: any;
 }
 
-export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers, isMeetingRoom }: SidebarLeftProps) {
+export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers }: SidebarLeftProps) {
     const { t } = useTranslation();
     const currentTheme = useCurrentTheme();
     const isHasbihal = currentTheme === 'hasbihal-islamic';
@@ -496,7 +496,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             ) : (
                 <div className="flex-1 p-6 custom-scrollbar space-y-6 overflow-y-auto">
                     {/* ═══ KONUŞMACI BÖLÜMÜ — logo altında, online listesinin üstünde ═══ */}
-                    {!isMeetingRoom && currentSpeaker && (() => {
+                    {currentSpeaker && (() => {
                         const speakerUser = sortedUsers.find(u => u.userId === currentSpeaker.userId);
                         if (!speakerUser) return null;
 
@@ -1064,8 +1064,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             {/* BOTTOM CONTROLS */}
             <div className="status-bar p-4 bg-[#070B14]/80 border-t border-white/5 flex flex-col gap-3 relative backdrop-blur-2xl">
 
-                {/* STATUS DROPDOWN — toplantı odasında gizle */}
-                {!isMeetingRoom && <div className="relative" ref={statusMenuRef}>
+                {/* STATUS DROPDOWN */}
+                <div className="relative" ref={statusMenuRef}>
                     <div
                         className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
                         onClick={() => setShowStatusMenu(!showStatusMenu)}
@@ -1255,7 +1255,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             )}
                         </div>
                     )}
-                </div>}
+                </div>
 
                 {/* 📢 DUYURU BİLDİRİM KUTUSU — sadece owner/admin/superadmin */}
                 {['owner', 'admin', 'superadmin'].includes(currentUser?.role || '') && (
@@ -1371,85 +1371,82 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     </div>
                 )}
 
-                {/* STATUS DROPDOWN kapanış — toplantı odasında gizlendi */}
-                {!isMeetingRoom && <>
-                    {/* RADIO WIDGET */}
-                    <RadioPlayer />
+                {/* RADIO WIDGET */}
+                <RadioPlayer />
 
-                    {/* MIC REQUEST BUTTON */}
-                    <button
-                        onClick={() => {
-                            if (room?.state?.banInfo) return;
-                            if (isMicOn) {
-                                room.actions.releaseMic();
-                            } else if (isSomeoneElseSpeaker) {
-                                if (isInQueue) {
-                                    room.actions.leaveQueue();
-                                } else {
-                                    room.actions.joinQueue();
-                                }
+                {/* MIC REQUEST BUTTON */}
+                <button
+                    onClick={() => {
+                        if (room?.state?.banInfo) return;
+                        if (isMicOn) {
+                            room.actions.releaseMic();
+                        } else if (isSomeoneElseSpeaker) {
+                            if (isInQueue) {
+                                room.actions.leaveQueue();
                             } else {
-                                room.actions.takeMic();
+                                room.actions.joinQueue();
                             }
-                        }}
-                        className={`mic-reactor group mt-2 cursor-pointer relative max-md:sticky max-md:bottom-0 max-md:z-50 max-md:bg-[#070b14]/95 max-md:border-t max-md:border-white/5 max-md:backdrop-blur-sm`}
-                        style={{
-                            background: isMicOn
-                                ? 'linear-gradient(135deg, rgba(239,68,68,0.20) 0%, rgba(220,38,38,0.12) 50%, rgba(239,68,68,0.08) 100%)'
-                                : isInQueue
-                                    ? 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 50%, rgba(251,191,36,0.06) 100%)'
-                                    : 'linear-gradient(135deg, rgba(123,159,239,0.22) 0%, rgba(90,127,212,0.14) 50%, rgba(123,159,239,0.08) 100%)',
-                            borderRadius: 14,
-                            border: isMicOn
-                                ? '1px solid rgba(239,68,68,0.35)'
-                                : isInQueue
-                                    ? '1px solid rgba(251,191,36,0.30)'
-                                    : '1px solid rgba(123,159,239,0.30)',
-                            boxShadow: isMicOn
-                                ? '0 2px 12px rgba(239,68,68,0.15), 0 0 20px rgba(239,68,68,0.06), inset 0 1px 0 rgba(255,255,255,0.06)'
-                                : isInQueue
-                                    ? '0 2px 12px rgba(251,191,36,0.12), 0 0 20px rgba(251,191,36,0.05), inset 0 1px 0 rgba(255,255,255,0.06)'
-                                    : '0 2px 12px rgba(123,159,239,0.12), 0 0 20px rgba(123,159,239,0.06), inset 0 1px 0 rgba(255,255,255,0.06)',
-                            padding: '16px 18px',
-                            transition: 'all 0.3s ease',
-                            overflow: 'hidden',
-                        }}
-                    >
-                        <div className={`reactor-core ${isMicOn ? 'speaking' : ''} ${isInQueue ? 'queueing' : ''}`}>
-                            <div className="reactor-lines"></div>
-                            {isMicOn ? (
-                                <MicOff className="w-5 h-5 relative z-20" style={{ color: '#f87171' }} />
-                            ) : isInQueue ? (
-                                <Hand className="w-5 h-5 relative z-20 animate-pulse" style={{ color: '#fbbf24' }} />
-                            ) : (
-                                <Mic className="w-5 h-5 relative z-20" style={{ color: '#7b9fef' }} />
-                            )}
-                        </div>
-                        <div className="flex-1 flex flex-col items-start ml-3">
-                            <span className={`text-xs font-bold tracking-widest transition-colors
+                        } else {
+                            room.actions.takeMic();
+                        }
+                    }}
+                    className={`mic-reactor group mt-2 cursor-pointer relative max-md:sticky max-md:bottom-0 max-md:z-50 max-md:bg-[#070b14]/95 max-md:border-t max-md:border-white/5 max-md:backdrop-blur-sm`}
+                    style={{
+                        background: isMicOn
+                            ? 'linear-gradient(135deg, rgba(239,68,68,0.20) 0%, rgba(220,38,38,0.12) 50%, rgba(239,68,68,0.08) 100%)'
+                            : isInQueue
+                                ? 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 50%, rgba(251,191,36,0.06) 100%)'
+                                : 'linear-gradient(135deg, rgba(123,159,239,0.22) 0%, rgba(90,127,212,0.14) 50%, rgba(123,159,239,0.08) 100%)',
+                        borderRadius: 14,
+                        border: isMicOn
+                            ? '1px solid rgba(239,68,68,0.35)'
+                            : isInQueue
+                                ? '1px solid rgba(251,191,36,0.30)'
+                                : '1px solid rgba(123,159,239,0.30)',
+                        boxShadow: isMicOn
+                            ? '0 2px 12px rgba(239,68,68,0.15), 0 0 20px rgba(239,68,68,0.06), inset 0 1px 0 rgba(255,255,255,0.06)'
+                            : isInQueue
+                                ? '0 2px 12px rgba(251,191,36,0.12), 0 0 20px rgba(251,191,36,0.05), inset 0 1px 0 rgba(255,255,255,0.06)'
+                                : '0 2px 12px rgba(123,159,239,0.12), 0 0 20px rgba(123,159,239,0.06), inset 0 1px 0 rgba(255,255,255,0.06)',
+                        padding: '16px 18px',
+                        transition: 'all 0.3s ease',
+                        overflow: 'hidden',
+                    }}
+                >
+                    <div className={`reactor-core ${isMicOn ? 'speaking' : ''} ${isInQueue ? 'queueing' : ''}`}>
+                        <div className="reactor-lines"></div>
+                        {isMicOn ? (
+                            <MicOff className="w-5 h-5 relative z-20" style={{ color: '#f87171' }} />
+                        ) : isInQueue ? (
+                            <Hand className="w-5 h-5 relative z-20 animate-pulse" style={{ color: '#fbbf24' }} />
+                        ) : (
+                            <Mic className="w-5 h-5 relative z-20" style={{ color: '#7b9fef' }} />
+                        )}
+                    </div>
+                    <div className="flex-1 flex flex-col items-start ml-3">
+                        <span className={`text-xs font-bold tracking-widest transition-colors
                             ${isMicOn ? 'text-red-300' : isInQueue ? 'text-amber-300' : 'text-white'}
                         `}>
-                                {isSomeoneElseSpeaker
-                                    ? (isInQueue ? 'SIRADAN ÇIK' : 'SIRAYA GİR')
-                                    : (isMicOn ? 'MİKROFONU BIRAK' : (isHasbihal ? 'KELAM İSTE' : isMidnight ? 'Mikrofon İste' : 'MİKROFONU AL'))}
-                            </span>
-                            <span className={`text-[10px]
+                            {isSomeoneElseSpeaker
+                                ? (isInQueue ? 'SIRADAN ÇIK' : 'SIRAYA GİR')
+                                : (isMicOn ? 'MİKROFONU BIRAK' : (isHasbihal ? 'KELAM İSTE' : isMidnight ? 'Mikrofon İste' : 'MİKROFONU AL'))}
+                        </span>
+                        <span className={`text-[10px]
                              ${isMicOn ? 'text-red-400/70' : isInQueue ? 'text-amber-400/70' : 'text-gray-500'}
                         `} style={isHasbihal ? { fontFamily: "'Amiri', serif", color: 'rgba(123,159,239,0.7)' } : undefined}>
-                                {isSomeoneElseSpeaker
-                                    ? (isInQueue
-                                        ? `${queue.indexOf(currentUser?.userId || '') + 1}. Sıradasınız`
-                                        : `${currentSpeaker?.displayName} konuşuyor`)
-                                    : (isMicOn
-                                        ? (micTimeLeft > 0 ? `Kalan: ${formatTime(micTimeLeft)}` : 'Konuşmayı Bitir')
-                                        : (isHasbihal ? 'Söz Hakkı Talep Et' : isMidnight ? 'Söz hakkı talep et' : 'Konuşmak İçin Tıkla'))}
-                            </span>
-                        </div>
-                        <div className={`w-2 h-2 rounded-full animate-pulse
+                            {isSomeoneElseSpeaker
+                                ? (isInQueue
+                                    ? `${queue.indexOf(currentUser?.userId || '') + 1}. Sıradasınız`
+                                    : `${currentSpeaker?.displayName} konuşuyor`)
+                                : (isMicOn
+                                    ? (micTimeLeft > 0 ? `Kalan: ${formatTime(micTimeLeft)}` : 'Konuşmayı Bitir')
+                                    : (isHasbihal ? 'Söz Hakkı Talep Et' : isMidnight ? 'Söz hakkı talep et' : 'Konuşmak İçin Tıkla'))}
+                        </span>
+                    </div>
+                    <div className={`w-2 h-2 rounded-full animate-pulse
                          ${isMicOn ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' : isSomeoneElseSpeaker ? 'bg-amber-500 shadow-[0_0_10px_rgba(251,191,36,0.5)]' : 'bg-emerald-500 shadow-[0_0_10px_rgba(52,211,153,0.5)]'}
                     `}></div>
-                    </button>
-                </>}
+                </button>
 
             </div>
         </aside >
