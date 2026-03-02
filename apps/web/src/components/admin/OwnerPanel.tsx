@@ -82,7 +82,7 @@ export default function OwnerPanel() {
     useEffect(() => {
         const token = localStorage.getItem('soprano_admin_token');
         if (!token) {
-            router.replace('/admin-login');
+            router.replace('/riconun-odasi');
             return;
         }
         try {
@@ -832,7 +832,7 @@ export default function OwnerPanel() {
         localStorage.removeItem('soprano_admin_token');
         localStorage.removeItem('soprano_admin_user');
         // Redirect to admin login
-        router.push('/admin-login');
+        router.push('/riconun-odasi');
     };
 
     return (
@@ -2397,7 +2397,7 @@ export default function OwnerPanel() {
                                                             <div className="text-sm font-semibold text-white">Yönetici Yönetimi</div>
                                                             <div className="text-[10px] text-gray-600 mt-0.5">Admin ve yardımcılar</div>
                                                         </button>
-                                                        <button onClick={() => { localStorage.removeItem('soprano_admin_token'); localStorage.removeItem('soprano_admin_user'); router.replace('/admin-login'); }} className="p-4 rounded-xl bg-white/[0.02] hover:bg-red-500/[0.05] border border-white/5 hover:border-red-500/20 transition-all text-left group">
+                                                        <button onClick={() => { localStorage.removeItem('soprano_admin_token'); localStorage.removeItem('soprano_admin_user'); router.replace('/riconun-odasi'); }} className="p-4 rounded-xl bg-white/[0.02] hover:bg-red-500/[0.05] border border-white/5 hover:border-red-500/20 transition-all text-left group">
                                                             <LogOut className="w-5 h-5 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
                                                             <div className="text-sm font-semibold text-white">Çıkış Yap</div>
                                                             <div className="text-[10px] text-gray-600 mt-0.5">Oturumu sonlandır</div>

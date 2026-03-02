@@ -81,7 +81,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
             const token = localStorage.getItem('soprano_admin_token') || localStorage.getItem('soprano_auth_token');
 
             if (!token) {
-                throw new Error('Token bulunamadı. Lütfen /admin-login sayfasından giriş yapın.');
+                throw new Error('Token bulunamadı. Lütfen /riconun-odasi sayfasından giriş yapın.');
             }
 
             const response = await fetch(`${API_URL}/admin/customers`, {
@@ -133,7 +133,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
         try {
             const token = localStorage.getItem('soprano_admin_token');
             if (!token) {
-                window.location.href = '/admin-login';
+                window.location.href = '/riconun-odasi';
                 return;
             }
             const headers = {
@@ -147,7 +147,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
             console.log('[loadInitialData] Response status:', tenantsRes.status);
             if (tenantsRes.status === 401 || tenantsRes.status === 403) {
                 localStorage.removeItem('soprano_admin_token');
-                window.location.href = '/admin-login';
+                window.location.href = '/riconun-odasi';
                 return;
             }
             if (!tenantsRes.ok) {

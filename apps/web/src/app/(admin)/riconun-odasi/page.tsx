@@ -184,7 +184,7 @@ export default function AdminLoginPage() {
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="block w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all placeholder:text-gray-700"
-                                    placeholder="admin@soprano.com"
+                                    placeholder=""
                                 />
                             </div>
                         </div>
