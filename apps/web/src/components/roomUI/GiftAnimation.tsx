@@ -95,64 +95,6 @@ export function GiftAnimation({ animationData, onComplete }: {
         setShow(true);
         setPhase('enter');
 
-        // ★ Play category-based sound effect via Web Audio API
-        try {
-            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const category = animationData.gift.category || 'basic';
-
-            if (category === 'legendary') {
-                // Epik crescendo — ascending chord
-                [261.6, 329.6, 392, 523.2].forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.15);
-                    gain.gain.linearRampToValueAtTime(0.15, ctx.currentTime + i * 0.15 + 0.1);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.15 + 1.2);
-                    osc.connect(gain).connect(ctx.destination);
-                    osc.start(ctx.currentTime + i * 0.15);
-                    osc.stop(ctx.currentTime + i * 0.15 + 1.3);
-                });
-                // Shimmer overlay
-                const shimmer = ctx.createOscillator();
-                const shimmerGain = ctx.createGain();
-                shimmer.type = 'triangle';
-                shimmer.frequency.value = 1046.5;
-                shimmerGain.gain.setValueAtTime(0, ctx.currentTime + 0.5);
-                shimmerGain.gain.linearRampToValueAtTime(0.08, ctx.currentTime + 0.7);
-                shimmerGain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2);
-                shimmer.connect(shimmerGain).connect(ctx.destination);
-                shimmer.start(ctx.currentTime + 0.5);
-                shimmer.stop(ctx.currentTime + 2.1);
-            } else if (category === 'premium') {
-                // Rich chime — two-note chord
-                [523.2, 659.2].forEach((freq, i) => {
-                    const osc = ctx.createOscillator();
-                    const gain = ctx.createGain();
-                    osc.type = 'sine';
-                    osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0.12, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
-                    osc.connect(gain).connect(ctx.destination);
-                    osc.start(ctx.currentTime);
-                    osc.stop(ctx.currentTime + 0.9);
-                });
-            } else {
-                // Soft ding
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.value = 880;
-                gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-                osc.connect(gain).connect(ctx.destination);
-                osc.start(ctx.currentTime);
-                osc.stop(ctx.currentTime + 0.6);
-            }
-        } catch (e) {
-            console.warn('[GiftAnimation] Sound failed:', e);
-        }
 
         const enterTimer = setTimeout(() => setPhase('display'), 400);
         const exitTimer = setTimeout(() => setPhase('exit'), config.duration - 600);
