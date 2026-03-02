@@ -1,5 +1,5 @@
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 
 import { SOCKET_URL_BASE } from '@/lib/api';
@@ -54,6 +54,7 @@ export type RoomInfo = {
 
 export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const socketRef = useRef<Socket | null>(null);
+    const currentRoomRef = useRef<string | null>(null);
     const [isConnected, setIsConnected] = useState(false);
     const [messages, setMessages] = useState<Message[]>([]);
     const [participants, setParticipants] = useState<Participant[]>([]);
@@ -69,11 +70,31 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
     const [duplicateBlocked, setDuplicateBlocked] = useState<{ message: string; countdown: number } | null>(null);
 
+    // ─── Helper: build room:join payload ─────────────────────────────
+    const buildJoinPayload = useCallback((targetRoomId: string) => {
+        const authUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_auth_user') || 'null') : null;
+        const tenantUserCheck = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+        const effectiveAuthUser = tenantUserCheck || authUser;
+        const isGuest = !effectiveAuthUser || effectiveAuthUser.role === 'guest';
+        if (isGuest) {
+            localStorage.removeItem('soprano_user_status');
+            localStorage.removeItem('soprano_godmaster_disguise_name');
+        }
+        const storedStatus = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined);
+        const storedDisguiseName = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_disguise_name') : undefined);
+        const tenantUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+        const effectiveUser = tenantUser || authUser;
+        const userAvatar = effectiveUser?.avatar || undefined;
+        const userGender = effectiveUser?.gender || undefined;
+        const storedGodmasterIcon = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_icon') : undefined;
+        return { roomId: targetRoomId, initialStatus: storedStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined };
+    }, []);
+
+    // ─── Socket Connection (stable — NOT re-created on room change) ───
     useEffect(() => {
         if (!roomId) return;
 
         // Force token from localStorage if not provided (fixes admin/socket auth)
-        // URL-aware: tenant pages use soprano_tenant_token, system pages use soprano_auth_token
         const isTenantPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/t/');
         const storedToken = typeof window !== 'undefined'
             ? (isTenantPage
@@ -84,7 +105,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
         console.log('useSocket: Connecting with token:', effectiveToken ? effectiveToken.substring(0, 10) + '...' : 'MISSING');
 
-        // Cloudflared WebSocket'i native desteklediği için transport kısıtlaması yok
         const socket = io(SOCKET_URL, {
             query: {
                 tenantId: tenantId || 'default',
@@ -96,33 +116,14 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         });
 
         socketRef.current = socket;
+        currentRoomRef.current = roomId;
 
         socket.on('connect', () => {
             console.log('Socket connected:', socket.id);
             setIsConnected(true);
-
-            // Read stored status preference (if any) to persist across refreshes
-            // Guest kullanıcılar için stealth/godmaster durumlarını temizle
-            const authUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_auth_user') || 'null') : null;
-            const tenantUserCheck = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
-            const effectiveAuthUser = tenantUserCheck || authUser;
-            const isGuest = !effectiveAuthUser || effectiveAuthUser.role === 'guest';
-            if (isGuest) {
-                localStorage.removeItem('soprano_user_status');
-                localStorage.removeItem('soprano_godmaster_disguise_name');
-            }
-            const storedStatus = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined);
-            const storedDisguiseName = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_disguise_name') : undefined);
-
-            // Avatar ve gender bilgisini payload'a ekle — backend participant oluştururken kullanacak
-            const tenantUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
-            const effectiveUser = tenantUser || authUser;
-            const userAvatar = effectiveUser?.avatar || undefined;
-            const userGender = effectiveUser?.gender || undefined;
-            const storedGodmasterIcon = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_icon') : undefined;
-
-            socket.emit('room:join', { roomId, initialStatus: storedStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined });
-
+            // Join the current room on connect/reconnect
+            const targetRoom = currentRoomRef.current || roomId;
+            socket.emit('room:join', buildJoinPayload(targetRoom));
         });
 
         socket.on('disconnect', () => {
@@ -406,8 +407,32 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             window.removeEventListener('storage', handleStorageChange);
             window.removeEventListener('auth-change', handleAuthChange);
             socket.disconnect();
+            currentRoomRef.current = null;
         };
-    }, [roomId, token, tenantId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [token, tenantId]); // ★ roomId removed — socket is NOT recreated on room change
+
+    // ─── Room Switch (leave old → join new, same socket) ─────────────
+    useEffect(() => {
+        const socket = socketRef.current;
+        if (!socket || !roomId) return;
+        const prevRoom = currentRoomRef.current;
+        if (prevRoom === roomId) return; // same room, no-op
+
+        console.log(`[useSocket] Room switch: ${prevRoom} → ${roomId}`);
+        if (prevRoom) {
+            socket.emit('room:leave', { roomId: prevRoom });
+        }
+        // Clear stale data
+        setMessages([]);
+        setParticipants([]);
+        setRoomSettings(null);
+        setPasswordRequired(null);
+        setRoomError(null);
+        // Join new room
+        currentRoomRef.current = roomId;
+        socket.emit('room:join', buildJoinPayload(roomId));
+    }, [roomId, buildJoinPayload]);
 
     const sendMessage = (content: string) => {
         if (socketRef.current) {
