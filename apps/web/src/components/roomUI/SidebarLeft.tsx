@@ -1088,8 +1088,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             {/* BOTTOM CONTROLS */}
             <div className="status-bar p-4 bg-[#070B14]/80 border-t border-white/5 flex flex-col gap-3 relative backdrop-blur-2xl">
 
-                {/* STATUS DROPDOWN — toplantı odasında gizle */}
-                {!isMeetingRoom && <div className="relative" ref={statusMenuRef}>
+                {/* STATUS DROPDOWN */}
+                <div className="relative" ref={statusMenuRef}>
                     <div
                         className="flex items-center justify-between p-3 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
                         onClick={() => setShowStatusMenu(!showStatusMenu)}
@@ -1279,7 +1279,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             )}
                         </div>
                     )}
-                </div>}
+                </div>
 
                 {/* 📢 DUYURU BİLDİRİM KUTUSU — sadece owner/admin/superadmin */}
                 {['owner', 'admin', 'superadmin'].includes(currentUser?.role || '') && (
@@ -1395,9 +1395,11 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     </div>
                 )}
 
-                {/* RADIO WIDGET + MIC REQUEST — toplantı odasında gizle */}
+                {/* RADIO WIDGET */}
+                <RadioPlayer />
+
+                {/* MIC REQUEST BUTTON — toplantı odasında gizle (toolbar'da mic toggle var) */}
                 {!isMeetingRoom && <>
-                    <RadioPlayer />
 
                     {/* MIC REQUEST BUTTON */}
                     <button
