@@ -335,7 +335,9 @@ export default function HomePage() {
             localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
             const avatarUrl = generateGenderAvatar(trimmed, guestGender);
             const u = { userId: data.user.sub, username: data.user.username, avatar: data.user?.avatar || avatarUrl, isMember: false, role: 'guest' as const, gender: data.user?.gender || guestGender };
-            setAuthUser(u); setLoggedInUser(u); window.dispatchEvent(new Event('auth-change')); closeForm();
+            setAuthUser(u); setLoggedInUser(u); window.dispatchEvent(new Event('auth-change'));
+            // Giriş başarılı — hemen odaya yönlendir (landing page useEffect oturumu silmesin)
+            window.location.href = '/room/genel-sohbet';
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
     };
 
