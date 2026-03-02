@@ -403,9 +403,24 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         };
         window.addEventListener('auth-change', handleAuthChange);
 
+        // ★ Cleanup on tab close / page navigation — prevent ghost sessions
+        const handleBeforeUnload = () => {
+            const room = currentRoomRef.current;
+            if (room && socket.connected) {
+                socket.emit('room:leave', { roomId: room });
+                socket.disconnect();
+            }
+        };
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
             window.removeEventListener('storage', handleStorageChange);
             window.removeEventListener('auth-change', handleAuthChange);
+            const room = currentRoomRef.current;
+            if (room && socket.connected) {
+                socket.emit('room:leave', { roomId: room });
+            }
             socket.disconnect();
             currentRoomRef.current = null;
         };
