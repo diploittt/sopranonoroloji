@@ -686,39 +686,17 @@ export default function HomePage() {
                                                 <button onClick={(e) => { e.stopPropagation(); closeForm(); }} className="w-7 h-7 rounded-full flex items-center justify-center text-slate-400 transition-colors" style={{ background: 'rgba(30, 41, 59, 0.8)' }}><X className="w-3.5 h-3.5" /></button>
                                             </div>
                                             <div className="space-y-3">
-                                                {guestLoggedIn && loggedInUser ? (
-                                                    /* ── Profil Kartı ── */
-                                                    <div className="flex flex-col items-center gap-3">
-                                                        <div className="w-16 h-16 rounded-full overflow-hidden border-2" style={{ borderColor: '#06b6d4' }}>
-                                                            <img src={loggedInUser.avatar || generateGenderAvatar(loggedInUser.username, guestGender)} alt="" className="w-full h-full object-cover" />
-                                                        </div>
-                                                        <div className="text-center">
-                                                            <p className="text-lg font-bold text-white">{loggedInUser.username}</p>
-                                                            <p className="text-xs text-slate-400">{guestGender} · Misafir</p>
-                                                        </div>
-                                                        <button onClick={(e) => { e.stopPropagation(); window.location.href = '/room/genel-sohbet'; }} className="landing-btn-gold-primary w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2">
-                                                            Odaya Katıl <ArrowRight className="w-4 h-4" />
-                                                        </button>
-                                                        <button onClick={(e) => { e.stopPropagation(); setGuestLoggedIn(false); clearAllSopranoAuth(); setLoggedInUser(null); }} className="text-xs text-slate-500 hover:text-slate-300 transition-colors">
-                                                            Farklı isimle gir
-                                                        </button>
-                                                    </div>
-                                                ) : (
-                                                    /* ── Giriş Formu ── */
-                                                    <>
-                                                        <div className="relative"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><PenLine className="w-4 h-4 text-slate-400" /></div>
-                                                            <input type="text" value={guestNick} onChange={e => setGuestNick(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleGuestLogin(); } }} placeholder="Görünecek İsminiz" className="w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-600/50 rounded-xl text-sm font-medium text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all" onClick={e => e.stopPropagation()} />
-                                                        </div>
-                                                        <div className="flex gap-3">
-                                                            <button type="button" onClick={(e) => { e.stopPropagation(); setGuestGender('Erkek'); }} className={`gender-btn flex-1 py-2.5 border border-slate-600/50 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-400 transition-all hover:border-blue-400/50 ${guestGender === 'Erkek' ? 'active' : ''}`}><User className="w-4 h-4" /> Erkek</button>
-                                                            <button type="button" onClick={(e) => { e.stopPropagation(); setGuestGender('Kadın'); }} className={`gender-btn flex-1 py-2.5 border border-slate-600/50 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-400 transition-all hover:border-pink-400/50 ${guestGender === 'Kadın' ? 'active-pink' : ''}`}><User className="w-4 h-4" /> Kadın</button>
-                                                        </div>
-                                                        {guestError && <p className="text-xs text-red-500 font-medium">{guestError}</p>}
-                                                        <button onClick={(e) => { e.stopPropagation(); handleGuestLogin(); }} disabled={guestLoading} className="landing-btn-gold-primary w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-                                                            {guestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Odaya Katıl <ArrowRight className="w-4 h-4" /></>}
-                                                        </button>
-                                                    </>
-                                                )}
+                                                <div className="relative"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><PenLine className="w-4 h-4 text-slate-400" /></div>
+                                                    <input type="text" value={guestNick} onChange={e => setGuestNick(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleGuestLogin(); } }} placeholder="Görünecek İsminiz" className="w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-600/50 rounded-xl text-sm font-medium text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all" onClick={e => e.stopPropagation()} />
+                                                </div>
+                                                <div className="flex gap-3">
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); setGuestGender('Erkek'); }} className={`gender-btn flex-1 py-2.5 border border-slate-600/50 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-400 transition-all hover:border-blue-400/50 ${guestGender === 'Erkek' ? 'active' : ''}`}><User className="w-4 h-4" /> Erkek</button>
+                                                    <button type="button" onClick={(e) => { e.stopPropagation(); setGuestGender('Kadın'); }} className={`gender-btn flex-1 py-2.5 border border-slate-600/50 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-400 transition-all hover:border-pink-400/50 ${guestGender === 'Kadın' ? 'active-pink' : ''}`}><User className="w-4 h-4" /> Kadın</button>
+                                                </div>
+                                                {guestError && <p className="text-xs text-red-500 font-medium">{guestError}</p>}
+                                                <button onClick={(e) => { e.stopPropagation(); handleGuestLogin(); }} disabled={guestLoading} className="landing-btn-gold-primary w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+                                                    {guestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Odaya Katıl <ArrowRight className="w-4 h-4" /></>}
+                                                </button>
                                                 {/* Sosyal Giriş */}
                                                 <div className="flex items-center gap-2 mt-1">
                                                     <div className="flex-1 h-px bg-slate-600/40" />
