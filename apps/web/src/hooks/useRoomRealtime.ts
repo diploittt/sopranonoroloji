@@ -114,6 +114,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     const [banInfo, setBanInfo] = useState<{ reason: string; expiresAt?: string | null; banLevel?: 'soft' | 'hard' } | null>(null);
     const [sessionKicked, setSessionKicked] = useState<{ message: string } | null>(null);
 
+    // ─── Meeting Room: who is currently speaking (userId → audioLevel 0-1) ───
+    const [speakingUsers, setSpeakingUsers] = useState<Record<string, number>>({});
+
     // ─── Timer Logic ─────────────────────────────────────
     const startCountdown = useCallback((durationMs: number, startedAt: number) => {
         // Clear any existing timer
@@ -813,6 +816,36 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             }
         },
 
+        // ─── Zoom-style meeting room mic toggle ───
+        toggleMeetingMic: async () => {
+            if (isCurrentUserMuted) {
+                setToastMessage({ type: 'error', title: '🔇 Mikrofon Engelli', message: 'Susturuldunuz.' });
+                return;
+            }
+            if (isMicOnRef.current) {
+                setIsMicOn(false);
+                cleanupMicStream();
+                closeAudioProducer();
+            } else {
+                try {
+                    const constraints: MediaStreamConstraints = {
+                        audio: selectedAudioDeviceId
+                            ? { deviceId: { exact: selectedAudioDeviceId } }
+                            : true,
+                    };
+                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                    micStreamRef.current = stream;
+                    setIsMicOn(true);
+                    const audioTrack = stream.getAudioTracks()[0];
+                    if (audioTrack) {
+                        await produceAudio(audioTrack);
+                    }
+                } catch (err: any) {
+                    setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon açılamıyor.' });
+                }
+            }
+        },
+
         leaveRoom: () => {
             // 0. Forfeit active duel before leaving
             if (socket) {
@@ -1035,6 +1068,48 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         }));
     }, [mediaRemoteStreams]);
 
+    // ─── Audio Level Monitoring for Meeting Room ───
+    useEffect(() => {
+        if (mediaRemoteStreams.length === 0) return;
+        let audioCtx: AudioContext | null = null;
+        try { audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)(); } catch { return; }
+        const analysers = new Map<string, { analyser: AnalyserNode; source: MediaStreamAudioSourceNode }>();
+        let rafId: number;
+
+        mediaRemoteStreams.forEach(rs => {
+            if (rs.kind !== 'audio') return;
+            try {
+                const source = audioCtx!.createMediaStreamSource(rs.stream);
+                const analyser = audioCtx!.createAnalyser();
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.5;
+                source.connect(analyser);
+                analysers.set(rs.userId, { analyser, source });
+            } catch { /* ignore */ }
+        });
+
+        const poll = () => {
+            const levels: Record<string, number> = {};
+            analysers.forEach((val, uid) => {
+                const data = new Uint8Array(val.analyser.frequencyBinCount);
+                val.analyser.getByteFrequencyData(data);
+                const avg = data.reduce((a, b) => a + b, 0) / data.length;
+                const normalized = Math.min(avg / 80, 1);
+                if (normalized > 0.05) levels[uid] = normalized;
+            });
+            setSpeakingUsers(levels);
+            rafId = requestAnimationFrame(poll);
+        };
+        rafId = requestAnimationFrame(poll);
+
+        return () => {
+            cancelAnimationFrame(rafId);
+            analysers.forEach(v => { v.source.disconnect(); });
+            analysers.clear();
+            audioCtx?.close().catch(() => { });
+        };
+    }, [mediaRemoteStreams]);
+
     return {
         state: {
             users,
@@ -1075,6 +1150,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             sessionKicked,
             duplicateBlocked,
             userPermissions,
+            speakingUsers,
         },
         actions: {
             ...actions,

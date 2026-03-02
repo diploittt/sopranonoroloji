@@ -1847,6 +1847,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                 mobileSidebarOpen={mobileSidebarOpen}
                                                 onCloseMobileSidebar={() => setMobileSidebarOpen(false)}
                                                 ignoredUsers={ignoredUsers}
+                                                isMeetingRoom={isMeetingRoom}
+                                                speakingUsers={room.state.speakingUsers}
                                             />
                                         </div>
                                     </div>
@@ -1896,6 +1898,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     mobileSidebarOpen={mobileSidebarOpen}
                                     onCloseMobileSidebar={() => setMobileSidebarOpen(false)}
                                     ignoredUsers={ignoredUsers}
+                                    isMeetingRoom={isMeetingRoom}
+                                    speakingUsers={room.state.speakingUsers}
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
@@ -2256,6 +2260,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onTvVolumeChange={setTvVolume}
                                                     hasTvStream={!!tvVideoUrl && !(videoState.tvStreamEntry?.stream)}
                                                     systemSettings={room.state.systemSettings}
+                                                    isMeetingRoom={isMeetingRoom}
+                                                    onToggleMeetingMic={room.actions.toggleMeetingMic}
                                                 />
                                             </div>
                                         </>

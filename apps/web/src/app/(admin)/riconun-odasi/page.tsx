@@ -133,7 +133,7 @@ export default function AdminLoginPage() {
 
             // Kısa gecikme sonra yönlendir
             setTimeout(() => {
-                router.push('/admin');
+                router.push('/riconun-mekani');
             }, 600);
         } catch (err: any) {
             setToast({ message: err.message, type: 'error' });

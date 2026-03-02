@@ -1,6 +1,6 @@
 "use client";
 
-import { Hand, Video, Volume2, VolumeX, Smile, Sticker, Settings2, Power, SendHorizontal, Clapperboard } from 'lucide-react';
+import { Hand, Video, Volume2, VolumeX, Smile, Sticker, Settings2, Power, SendHorizontal, Clapperboard, Mic, MicOff } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { AnchorPopover } from '@/components/ui/AnchorPopover';
 import { EmojiPicker } from './EmojiPicker';
@@ -57,6 +57,10 @@ export interface BottomToolbarProps {
 
     // System Settings (for guest restrictions)
     systemSettings?: any;
+
+    // Meeting Room (Zoom mode)
+    isMeetingRoom?: boolean;
+    onToggleMeetingMic?: () => void;
 }
 
 export function BottomToolbar({
@@ -90,6 +94,8 @@ export function BottomToolbar({
     onTvVolumeChange,
     hasTvStream = false,
     systemSettings,
+    isMeetingRoom = false,
+    onToggleMeetingMic,
 }: BottomToolbarProps) {
     const [text, setText] = useState('');
     const isChatDisabled = isChatLocked || isCurrentUserGagged;
@@ -403,33 +409,61 @@ export function BottomToolbar({
             <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
 
                 <div className="flex items-center gap-3 p-2 bg-[#070B14]/80 rounded-2xl border border-white/5 shadow-xl">
-                    {/* Hand (Queue) */}
-                    <button
-                        onClick={() => {
-                            console.log('[BottomToolbar] Hand clicked. isInQueue:', isInQueue, 'isMeSpeaker:', isMeSpeaker);
-                            if (isInQueue) onLeaveQueue();
-                            else onJoinQueue();
-                        }}
-                        disabled={isMeSpeaker}
-                        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
-                            ${isInQueue
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                                : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
-                        `}
-                        title={isInQueue ? t.leaveQueue : t.joinQueue}
-                    >
-                        <Hand className={`w-5 h-5 transition-transform group-hover:scale-110`} />
-                        {isInQueue && (
-                            <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
-                                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                            </span>
-                        )}
-                        {queue.length > 0 && !isInQueue && (
-                            <span className="absolute -top-2 -left-2 bg-[#1f2937] text-white text-[9px] font-bold rounded-md px-1.5 py-0.5 border border-white/10 shadow-lg">
-                                {queue.length}
-                            </span>
-                        )}
-                    </button>
+                    {/* Hand (Queue) OR Meeting Mic Toggle */}
+                    {isMeetingRoom ? (
+                        <button
+                            onClick={() => onToggleMeetingMic?.()}
+                            className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                                ${isCurrentUserMuted
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 cursor-not-allowed opacity-60'
+                                    : isMicOn
+                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                                        : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
+                            `}
+                            title={isCurrentUserMuted ? 'Susturuldunuz' : isMicOn ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
+                        >
+                            {isCurrentUserMuted ? (
+                                <MicOff className="w-5 h-5" />
+                            ) : isMicOn ? (
+                                <Mic className="w-5 h-5" />
+                            ) : (
+                                <Mic className="w-5 h-5" />
+                            )}
+                            {isMicOn && !isCurrentUserMuted && (
+                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                            )}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => {
+                                console.log('[BottomToolbar] Hand clicked. isInQueue:', isInQueue, 'isMeSpeaker:', isMeSpeaker);
+                                if (isInQueue) onLeaveQueue();
+                                else onJoinQueue();
+                            }}
+                            disabled={isMeSpeaker}
+                            className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                                ${isInQueue
+                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                                    : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
+                            `}
+                            title={isInQueue ? t.leaveQueue : t.joinQueue}
+                        >
+                            <Hand className={`w-5 h-5 transition-transform group-hover:scale-110`} />
+                            {isInQueue && (
+                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                                </span>
+                            )}
+                            {queue.length > 0 && !isInQueue && (
+                                <span className="absolute -top-2 -left-2 bg-[#1f2937] text-white text-[9px] font-bold rounded-md px-1.5 py-0.5 border border-white/10 shadow-lg">
+                                    {queue.length}
+                                </span>
+                            )}
+                        </button>
+                    )}
 
                     {/* Camera — only for CAMERA tenants */}
                     {systemSettings?.packageType === 'CAMERA' && (() => {
