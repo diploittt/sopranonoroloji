@@ -783,7 +783,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 }
 
                 try {
-                    const constraints: MediaStreamConstraints = { video: selectedVideoDeviceId ? { deviceId: { exact: selectedVideoDeviceId } } : true };
+                    const constraints: MediaStreamConstraints = { video: selectedVideoDeviceId ? { deviceId: { exact: selectedVideoDeviceId } } : true, audio: false };
                     const stream = await navigator.mediaDevices.getUserMedia(constraints);
                     setLocalStream(stream);
                     setIsCameraOn(true);
