@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { openChatWindow } from "@/components/ui/TitleBar";
-import { getAuthUser, setAuthUser, removeAuthUser, AuthUser } from "@/lib/auth";
+import { getAuthUser, setAuthUser, removeAuthUser, clearAllSopranoAuth, AuthUser } from "@/lib/auth";
 import { generateGenderAvatar } from "@/lib/avatar";
 import {
     Heart, User, LogIn, X, Mail, Lock, ArrowRight, Sparkles, Users, Video, Mic, Camera,
@@ -226,6 +226,13 @@ export default function HomePage() {
     useEffect(() => {
         const checkAuth = () => {
             const user = getAuthUser();
+            // Misafir kullanıcılar ana sayfaya döndüğünde oturumu temizle (güvenlik)
+            if (user && !user.isMember) {
+                console.info('[Auth] Guest session cleared on landing page visit.');
+                clearAllSopranoAuth();
+                setLoggedInUser(null);
+                return;
+            }
             setLoggedInUser(user);
         };
         checkAuth();
@@ -314,7 +321,7 @@ export default function HomePage() {
     const openForm = (type: 'misafir' | 'giris' | 'kayit') => { setActiveForm(type); setShowButtons(false); setTimeout(() => setFormVisible(true), 50); };
     const closeForm = () => { setFormVisible(false); setActiveForm('none'); setShowButtons(true); };
     const switchForm = (type: 'misafir' | 'giris' | 'kayit') => { setActiveForm(type); };
-    const handleLogout = () => { localStorage.removeItem(AUTH_TOKEN_KEY); removeAuthUser(); setLoggedInUser(null); };
+    const handleLogout = () => { clearAllSopranoAuth(); setLoggedInUser(null); };
 
     const handleGuestLogin = async () => {
         const trimmed = guestNick.trim();

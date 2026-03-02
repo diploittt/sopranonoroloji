@@ -4,15 +4,17 @@ import { PrismaPg } from '@prisma/adapter-pg';
 
 const connectionString =
   process.env.DATABASE_URL ||
-  'postgresql://user:password@localhost:5432/sopranochat?schema=public';
+  'postgresql://neondb_owner:npg_Cl3YEjuNFxV1@ep-solitary-brook-agbxat72.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require';
 
 @Injectable()
 export class PrismaService
   extends PrismaClient
-  implements OnModuleInit, OnModuleDestroy
-{
+  implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    const adapter = new PrismaPg({ connectionString });
+    const adapter = new PrismaPg({
+      connectionString,
+      ssl: { rejectUnauthorized: false },
+    });
     super({ adapter });
   }
 

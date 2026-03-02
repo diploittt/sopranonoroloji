@@ -269,35 +269,48 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private moduleRef: ModuleRef,
     private prisma: PrismaService,
   ) {
-    // Seed default gifts if not exist
-    this.seedDefaultGifts().catch(e => console.error('[GIFT] Seed error:', e));
+    // Seed default gifts — delay to let DB connection pool warm up
+    setTimeout(() => {
+      this.seedDefaultGifts().catch(e => console.error('[GIFT] Seed error:', e));
+    }, 5000);
   }
 
   // ═══════════ Gift Seed ═══════════
-  private async seedDefaultGifts() {
-    // Get all tenants
-    const tenants = await this.prisma.tenant.findMany({ select: { id: true } });
-    for (const tenant of tenants) {
-      const existing = await this.prisma.gift.count({ where: { tenantId: tenant.id } });
-      if (existing > 0) continue;
+  private async seedDefaultGifts(attempt = 1) {
+    const MAX_RETRIES = 3;
+    const RETRY_DELAY = 5000; // 5s between retries
+    try {
+      // Get all tenants
+      const tenants = await this.prisma.tenant.findMany({ select: { id: true } });
+      for (const tenant of tenants) {
+        const existing = await this.prisma.gift.count({ where: { tenantId: tenant.id } });
+        if (existing > 0) continue;
 
-      const gifts = [
-        { name: 'Kalp', emoji: '❤️', price: 5, animationType: 'hearts', category: 'basic', sortOrder: 1 },
-        { name: 'Alkış', emoji: '👏', price: 10, animationType: 'applause', category: 'basic', sortOrder: 2 },
-        { name: 'Gül', emoji: '🌹', price: 15, animationType: 'roses', category: 'basic', sortOrder: 3 },
-        { name: 'Yıldız', emoji: '⭐', price: 30, animationType: 'stars', category: 'basic', sortOrder: 4 },
-        { name: 'Müzik', emoji: '🎵', price: 40, animationType: 'music', category: 'premium', sortOrder: 5 },
-        { name: 'Kelebek', emoji: '🦋', price: 50, animationType: 'butterfly', category: 'premium', sortOrder: 6 },
-        { name: 'Taç', emoji: '👑', price: 100, animationType: 'crown', category: 'premium', sortOrder: 7 },
-        { name: 'Araba', emoji: '🚗', price: 200, animationType: 'car', category: 'premium', sortOrder: 8 },
-        { name: 'Elmas', emoji: '💎', price: 500, animationType: 'diamond', category: 'legendary', sortOrder: 9 },
-        { name: 'Kale', emoji: '🏰', price: 1000, animationType: 'castle', category: 'legendary', sortOrder: 10 },
-      ];
+        const gifts = [
+          { name: 'Kalp', emoji: '❤️', price: 5, animationType: 'hearts', category: 'basic', sortOrder: 1 },
+          { name: 'Alkış', emoji: '👏', price: 10, animationType: 'applause', category: 'basic', sortOrder: 2 },
+          { name: 'Gül', emoji: '🌹', price: 15, animationType: 'roses', category: 'basic', sortOrder: 3 },
+          { name: 'Yıldız', emoji: '⭐', price: 30, animationType: 'stars', category: 'basic', sortOrder: 4 },
+          { name: 'Müzik', emoji: '🎵', price: 40, animationType: 'music', category: 'premium', sortOrder: 5 },
+          { name: 'Kelebek', emoji: '🦋', price: 50, animationType: 'butterfly', category: 'premium', sortOrder: 6 },
+          { name: 'Taç', emoji: '👑', price: 100, animationType: 'crown', category: 'premium', sortOrder: 7 },
+          { name: 'Araba', emoji: '🚗', price: 200, animationType: 'car', category: 'premium', sortOrder: 8 },
+          { name: 'Elmas', emoji: '💎', price: 500, animationType: 'diamond', category: 'legendary', sortOrder: 9 },
+          { name: 'Kale', emoji: '🏰', price: 1000, animationType: 'castle', category: 'legendary', sortOrder: 10 },
+        ];
 
-      await this.prisma.gift.createMany({
-        data: gifts.map(g => ({ ...g, tenantId: tenant.id })),
-      });
-      this.logger.log(`🎁 Seeded ${gifts.length} gifts for tenant ${tenant.id}`);
+        await this.prisma.gift.createMany({
+          data: gifts.map(g => ({ ...g, tenantId: tenant.id })),
+        });
+        this.logger.log(`🎁 Seeded ${gifts.length} gifts for tenant ${tenant.id}`);
+      }
+    } catch (err: any) {
+      if (attempt < MAX_RETRIES && (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED'))) {
+        this.logger.warn(`[GIFT] DB not ready (attempt ${attempt}/${MAX_RETRIES}), retrying in ${RETRY_DELAY / 1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+        return this.seedDefaultGifts(attempt + 1);
+      }
+      throw err;
     }
   }
 
