@@ -219,7 +219,7 @@ function getFilteredMenu(
     userRole?: string,
     userPermissions?: Record<string, boolean> | null
 ): ContextMenuItem[] {
-    console.log('[getFilteredMenu] CALLED! menuType:', menuType, 'userRole:', userRole, 'userPermissions:', userPermissions ? Object.keys(userPermissions).filter(k => userPermissions[k]).join(',') : 'NONE');
+    // Debug log kaldırıldı — render spam yapıyordu
     const targetLevel = getRoleLevel(targetUser?.role);
     const isSelf = menuType === 'user' && targetUser?.userId === currentUserId;
 
@@ -729,7 +729,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
         setContextMenu(null);
 
-        console.log('[handleMenuItemClick] action:', item.action, 'targetId:', targetId, 'targetName:', targetName);
+        // console.log('[handleMenuItemClick] action:', item.action, 'targetId:', targetId, 'targetName:', targetName);
 
         switch (item.action) {
             case 'muteUser':
@@ -836,11 +836,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             case 'freeMicForUser':
                 if (targetId) {
                     room.socket?.emit('admin:userAction', { action: 'release_mic', targetUserId: targetId });
+                    addToast('success', 'Mikrofon Serbest', `${targetName} mikrofonu serbest bırakıldı.`);
                 } else {
                     // Empty area context menu — release whoever currently holds the mic
-                    room.socket?.emit('admin:userAction', { action: 'release_mic' });
+                    room.actions.releaseMic();
+                    addToast('success', 'Mikrofon Serbest', 'Mikrofon serbest bırakıldı.');
                 }
-                addToast('success', 'Mikrofon Serbest', `Mikrofon serbest bırakıldı.`);
                 break;
             case 'takeMicrophone':
             case 'takeMicFromUser':
