@@ -746,6 +746,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         releaseMic: () => {
             if (!socket) return;
             socket.emit('mic:release', { roomId: slug });
+            setIsMicOn(false);
             cleanupMicStream();
             closeAudioProducer();
         },
