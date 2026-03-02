@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Load .env BEFORE any module imports (critical for mediasoup.config.ts)
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
