@@ -834,7 +834,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 break;
             case 'freeMicrophone':
             case 'freeMicForUser':
-                room.socket?.emit('admin:userAction', { action: 'release_mic', targetUserId: targetId });
+                if (targetId) {
+                    room.socket?.emit('admin:userAction', { action: 'release_mic', targetUserId: targetId });
+                } else {
+                    // Empty area context menu — release whoever currently holds the mic
+                    room.socket?.emit('admin:userAction', { action: 'release_mic' });
+                }
                 addToast('success', 'Mikrofon Serbest', `Mikrofon serbest bırakıldı.`);
                 break;
             case 'takeMicrophone':
@@ -912,6 +917,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             case 'openChangeNameModal':
             case 'openChangeName':
                 setIsChangeNameOpen(true);
+                break;
+            case 'openHistoryModal':
+            case 'openHistory':
+                setUserHistoryTarget({ userId: '', displayName: 'Tüm Kullanıcılar' });
                 break;
             case 'openRoomMonitor':
                 setIsRoomMonitorOpen(true);
@@ -2292,17 +2301,31 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
 
                                 {/* DM Windows Layer */}
-                                {room.state.openDMs && room.state.openDMs.map((dmUser, idx) => (
-                                    <DMWindow
-                                        key={dmUser}
-                                        targetUsername={dmUser}
-                                        messages={room.state.dmMessages[dmUser] || []}
-                                        onClose={() => room.actions.closeDM(dmUser)}
-                                        onMinimize={() => { }}
-                                        onSendMessage={(text) => room.actions.sendDM(dmUser, text)}
-                                        initialPosition={{ x: 200 + (idx * 30), y: 150 + (idx * 30) }}
-                                    />
-                                ))}
+                                {room.state.openDMs && room.state.openDMs.map((dmUser, idx) => {
+                                    const dmParticipant = room.state.users?.find((p: any) => p.displayName === dmUser || p.username === dmUser);
+                                    const dmUserId = dmParticipant?.userId;
+                                    const isDmIgnored = dmUserId ? ignoredUsers.has(dmUserId) : false;
+                                    return (
+                                        <DMWindow
+                                            key={dmUser}
+                                            targetUsername={dmUser}
+                                            messages={room.state.dmMessages[dmUser] || []}
+                                            onClose={() => room.actions.closeDM(dmUser)}
+                                            onMinimize={() => { }}
+                                            onSendMessage={(text) => room.actions.sendDM(dmUser, text)}
+                                            onIgnore={dmUserId ? () => {
+                                                setIgnoredUsers(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(dmUserId)) next.delete(dmUserId);
+                                                    else next.add(dmUserId);
+                                                    return next;
+                                                });
+                                            } : undefined}
+                                            isIgnored={isDmIgnored}
+                                            initialPosition={{ x: 200 + (idx * 30), y: 150 + (idx * 30) }}
+                                        />
+                                    );
+                                })}
 
                                 {/* Theme Switcher moved to BottomToolbar */}
                             </div>

@@ -362,10 +362,23 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 }
             } else if (data.action === 'exit_browser') {
                 setToastMessage({ type: 'error', title: 'Tarayıcı Kapatılıyor', message: 'Yönetici tarafından çıkışa zorlandınız.' });
+                // Clear all auth tokens to prevent re-entry
+                localStorage.removeItem('soprano_tenant_user');
+                localStorage.removeItem('soprano_auth_user');
+                localStorage.removeItem('soprano_jwt');
+                sessionStorage.clear();
+                // Disconnect socket
+                if (socket) socket.disconnect();
                 setTimeout(() => {
+                    // Try to close window/tab
                     window.close();
-                    window.location.href = 'about:blank';
-                }, 2000);
+                    // If window.close() didn't work (not opened via script), destroy the page
+                    setTimeout(() => {
+                        // Replace history so back button doesn't work
+                        window.location.replace('about:blank');
+                        document.documentElement.innerHTML = '<body style="background:#000;color:#fff;display:flex;justify-content:center;align-items:center;height:100vh;font-family:sans-serif;"><h1>Oturum sonlandırıldı</h1></body>';
+                    }, 500);
+                }, 1500);
             } else if (data.action === 'release_mic') {
                 // Admin forced mic release — turn off mic locally
                 setIsMicOn(false);

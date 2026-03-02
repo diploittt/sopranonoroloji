@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { X, Minus, Send, MessageSquare, Smile } from 'lucide-react';
+import { X, Minus, Send, MessageSquare, Smile, Ban } from 'lucide-react';
 
 interface DMMessage {
     id: string;
@@ -17,6 +17,8 @@ interface DMWindowProps {
     onClose: () => void;
     onMinimize: () => void;
     onSendMessage: (text: string) => void;
+    onIgnore?: () => void;
+    isIgnored?: boolean;
     initialPosition?: { x: number; y: number };
 }
 
@@ -38,6 +40,8 @@ export function DMWindow({
     onClose,
     onMinimize,
     onSendMessage,
+    onIgnore,
+    isIgnored,
     initialPosition = { x: 100, y: 100 }
 }: DMWindowProps) {
     const [position, setPosition] = useState(initialPosition);
@@ -132,6 +136,11 @@ export function DMWindow({
                     <span className="text-sm font-semibold text-gray-200">{targetUsername}</span>
                 </div>
                 <div className="flex items-center gap-1">
+                    {onIgnore && (
+                        <button onClick={onIgnore} className={`p-1 rounded transition-colors ${isIgnored ? 'bg-red-500/20 text-red-400' : 'hover:bg-white/10 text-gray-400 hover:text-white'}`} title={isIgnored ? 'Yoksayma Kaldır' : 'Yoksay'}>
+                            <Ban className="w-3 h-3" />
+                        </button>
+                    )}
                     <button onClick={onMinimize} className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors">
                         <Minus className="w-3 h-3" />
                     </button>
