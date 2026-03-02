@@ -224,19 +224,22 @@ export default function HomePage() {
     };
 
     useEffect(() => {
-        const checkAuth = () => {
+        // Sayfa ilk yüklendiğinde: misafir oturumunu temizle (güvenlik)
+        const initialUser = getAuthUser();
+        if (initialUser && !initialUser.isMember) {
+            console.info('[Auth] Guest session cleared on landing page visit.');
+            clearAllSopranoAuth();
+            setLoggedInUser(null);
+        } else {
+            setLoggedInUser(initialUser);
+        }
+
+        // auth-change event: sadece state güncelle (misafir temizleme YAPMA — giriş akışını bozar)
+        const onAuthChange = () => {
             const user = getAuthUser();
-            // Misafir kullanıcılar ana sayfaya döndüğünde oturumu temizle (güvenlik)
-            if (user && !user.isMember) {
-                console.info('[Auth] Guest session cleared on landing page visit.');
-                clearAllSopranoAuth();
-                setLoggedInUser(null);
-                return;
-            }
             setLoggedInUser(user);
         };
-        checkAuth();
-        window.addEventListener('auth-change', checkAuth);
+        window.addEventListener('auth-change', onAuthChange);
 
         // Oda popup'ından çıkış mesajını dinle
         const handleRoomExit = (event: MessageEvent) => {
@@ -247,7 +250,7 @@ export default function HomePage() {
         window.addEventListener('message', handleRoomExit);
 
         return () => {
-            window.removeEventListener('auth-change', checkAuth);
+            window.removeEventListener('auth-change', onAuthChange);
             window.removeEventListener('message', handleRoomExit);
         };
     }, []);
@@ -683,7 +686,7 @@ export default function HomePage() {
                                             </div>
                                             <div className="space-y-3">
                                                 <div className="relative"><div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><PenLine className="w-4 h-4 text-slate-400" /></div>
-                                                    <input type="text" value={guestNick} onChange={e => setGuestNick(e.target.value)} placeholder="Görünecek İsminiz" className="w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-600/50 rounded-xl text-sm font-medium text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all" onClick={e => e.stopPropagation()} />
+                                                    <input type="text" value={guestNick} onChange={e => setGuestNick(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleGuestLogin(); } }} placeholder="Görünecek İsminiz" className="w-full pl-11 pr-4 py-3 bg-slate-800/60 border border-slate-600/50 rounded-xl text-sm font-medium text-slate-200 placeholder:text-slate-500 focus:outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 transition-all" onClick={e => e.stopPropagation()} />
                                                 </div>
                                                 <div className="flex gap-3">
                                                     <button type="button" onClick={(e) => { e.stopPropagation(); setGuestGender('Erkek'); }} className={`gender-btn flex-1 py-2.5 border border-slate-600/50 rounded-xl flex items-center justify-center gap-2 text-sm font-bold text-slate-400 transition-all hover:border-blue-400/50 ${guestGender === 'Erkek' ? 'active' : ''}`}><User className="w-4 h-4" /> Erkek</button>
