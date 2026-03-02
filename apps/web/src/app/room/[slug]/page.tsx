@@ -2256,6 +2256,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onTvVolumeChange={setTvVolume}
                                                     hasTvStream={!!tvVideoUrl && !(videoState.tvStreamEntry?.stream)}
                                                     systemSettings={room.state.systemSettings}
+                                                    isMeetingRoom={isMeetingRoom}
+                                                    onToggleMeetingMic={room.actions.toggleMeetingMic}
                                                 />
                                             </div>
                                         </>
