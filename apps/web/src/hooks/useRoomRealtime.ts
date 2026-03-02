@@ -813,42 +813,6 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             }
         },
 
-        // ─── Discord-style meeting room mic toggle ───
-        // Bypasses stage system (mic:take/release), allows everyone to speak simultaneously
-        toggleMeetingMic: async () => {
-            if (isCurrentUserMuted) {
-                setToastMessage({ type: 'error', title: '🔇 Mikrofon Engelli', message: 'Susturuldunuz.' });
-                return;
-            }
-
-            if (isMicOnRef.current) {
-                // Turn off mic
-                setIsMicOn(false);
-                cleanupMicStream();
-                closeAudioProducer();
-            } else {
-                // Turn on mic — direct audio produce, no backend permission needed
-                try {
-                    const constraints: MediaStreamConstraints = {
-                        audio: selectedAudioDeviceId
-                            ? { deviceId: { exact: selectedAudioDeviceId } }
-                            : true,
-                    };
-                    const stream = await navigator.mediaDevices.getUserMedia(constraints);
-                    micStreamRef.current = stream;
-                    setIsMicOn(true);
-                    const audioTrack = stream.getAudioTracks()[0];
-                    if (audioTrack) {
-                        await produceAudio(audioTrack);
-                        console.log('[MeetingMic] Audio track produced (Discord mode)');
-                    }
-                } catch (err: any) {
-                    console.error('[MeetingMic] Failed to capture audio:', err);
-                    setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon açılamıyor.' });
-                }
-            }
-        },
-
         leaveRoom: () => {
             // 0. Forfeit active duel before leaving
             if (socket) {
