@@ -339,9 +339,9 @@ export default function HomePage() {
             localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
             const avatarUrl = generateGenderAvatar(trimmed, guestGender);
             const u = { userId: data.user.sub, username: data.user.username, avatar: data.user?.avatar || avatarUrl, isMember: false, role: 'guest' as const, gender: data.user?.gender || guestGender };
-            setAuthUser(u); setLoggedInUser(u); window.dispatchEvent(new Event('auth-change'));
-            // Giriş başarılı — profil kartı göster, kullanıcı odaya katıl butonuna basacak
-            setGuestLoggedIn(true);
+            setAuthUser(u);
+            // Giriş başarılı — hemen odaya yönlendir (auth-change dispatch ETME — eski useEffect temizler)
+            window.location.href = '/room/genel-sohbet';
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
     };
 
@@ -715,7 +715,7 @@ export default function HomePage() {
                                                         </div>
                                                         {guestError && <p className="text-xs text-red-500 font-medium">{guestError}</p>}
                                                         <button onClick={(e) => { e.stopPropagation(); handleGuestLogin(); }} disabled={guestLoading} className="landing-btn-gold-primary w-full py-3 rounded-xl text-white font-bold text-sm shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50">
-                                                            {guestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Giriş Yap <ArrowRight className="w-4 h-4" /></>}
+                                                            {guestLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <>Odaya Katıl <ArrowRight className="w-4 h-4" /></>}
                                                         </button>
                                                     </>
                                                 )}
