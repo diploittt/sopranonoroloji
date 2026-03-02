@@ -230,6 +230,13 @@ body {
     background: rgba(8, 12, 21, 0.75);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
+    min-height: 0; /* Critical for flex children to enable overflow scrolling */
+}
+
+/* Ensure chat messages container scrolls properly */
+.chat-messages-container {
+    min-height: 0;
+    max-height: 100%;
 }
 
 /* --- BOTTOM TOOLBAR (Premium) --- */

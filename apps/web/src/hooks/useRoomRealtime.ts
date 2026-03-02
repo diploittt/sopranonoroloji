@@ -317,6 +317,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     if (isMicOnRef.current) {
                         setIsMicOn(false);
                         cleanupMicStream();
+                        closeAudioProducer(); // Also close mediasoup audio producer
                     }
                 } else {
                     setIsCurrentUserMuted(false);
