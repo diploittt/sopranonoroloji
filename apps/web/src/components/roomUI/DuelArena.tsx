@@ -38,7 +38,7 @@ interface DuelResultData {
     forfeitReason?: string;
 }
 
-type DuelPhase = 'idle' | 'challenge-pending' | 'active' | 'voting' | 'result';
+type DuelPhase = 'idle' | 'challenge-pending' | 'challenge-sent' | 'active' | 'voting' | 'result';
 
 interface Props {
     socket: Socket | null;
@@ -337,6 +337,19 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             }, 10_000);
         };
 
+        // Düello reddedildi — challenger'a bildirim
+        const onRejected = (data?: { opponentName?: string }) => {
+            console.log('[DUEL] Challenge rejected by opponent:', data?.opponentName);
+            setChallengeFrom(null);
+            setPhase('idle');
+            // Browser notification
+            try {
+                const rejName = data?.opponentName || 'Rakip';
+                // Dispatch a custom event so the room page can show a toast
+                window.dispatchEvent(new CustomEvent('soprano:duel-rejected', { detail: { opponentName: rejName } }));
+            } catch { }
+        };
+
         // İptal / Timeout
         const onCancelled = () => {
             setPhase('idle');
@@ -357,6 +370,8 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         socket.on('duel:result', onResult);
         socket.on('duel:cancelled', onCancelled);
         socket.on('duel:challenge-expired', onExpired);
+        socket.on('duel:challenge-rejected', onRejected);
+        socket.on('duel:rejected', onRejected); // fallback event name
 
         return () => {
             socket.off('duel:challenge-received', onChallengeReceived);
@@ -368,6 +383,8 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             socket.off('duel:result', onResult);
             socket.off('duel:cancelled', onCancelled);
             socket.off('duel:challenge-expired', onExpired);
+            socket.off('duel:challenge-rejected', onRejected);
+            socket.off('duel:rejected', onRejected);
             if (votingTimerRef.current) clearInterval(votingTimerRef.current);
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps

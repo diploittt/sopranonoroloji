@@ -621,7 +621,16 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             }
         };
         window.addEventListener('soprano:force-navigate', onForceNavigate);
-        return () => window.removeEventListener('soprano:force-navigate', onForceNavigate);
+        // Düello ret bildirimi
+        const onDuelRejected = (e: Event) => {
+            const detail = (e as CustomEvent<{ opponentName: string }>).detail;
+            addToast('error', '❌ Düello Reddedildi', `${detail?.opponentName || 'Rakip'} düello davetinizi reddetti.`);
+        };
+        window.addEventListener('soprano:duel-rejected', onDuelRejected);
+        return () => {
+            window.removeEventListener('soprano:force-navigate', onForceNavigate);
+            window.removeEventListener('soprano:duel-rejected', onDuelRejected);
+        };
     }, []);
 
 
@@ -830,7 +839,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 break;
             case 'takeMicrophone':
             case 'takeMicFromUser':
-                room.socket?.emit('admin:userAction', { action: 'take_mic', targetUserId: targetId });
+                if (targetId) {
+                    room.socket?.emit('admin:userAction', { action: 'take_mic', targetUserId: targetId });
+                } else {
+                    // Empty area context menu — take mic for self (force if someone is speaking)
+                    room.actions.forceTakeMic();
+                }
                 addToast('success', 'Mikrofon Alındı', `Mikrofon alındı.`);
                 break;
             case 'nudgeUser':
@@ -1961,6 +1975,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             rooms={room.state.rooms}
                                             systemSettings={room.state.systemSettings}
                                             onNavigate={setActiveSlug}
+                                            currentUserRole={room.state.currentUser?.role || 'guest'}
+                                            activeRoomParticipants={room.state.users}
                                         />
                                     )}
                                     {/* 💳 ÖDEME HATIRLATMA — neon uyarı banner (oda isimlerinin altında) */}

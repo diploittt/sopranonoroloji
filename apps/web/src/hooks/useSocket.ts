@@ -440,10 +440,29 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         }
         // Clear stale data
         setMessages([]);
-        setParticipants([]);
         setRoomSettings(null);
         setPasswordRequired(null);
         setRoomError(null);
+        // Optimistic: add self to participants immediately so user sees themselves
+        try {
+            const authUser = JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null');
+            if (authUser) {
+                const optimistic = {
+                    userId: authUser.id || authUser.userId,
+                    displayName: authUser.displayName || authUser.username || 'Kullanıcı',
+                    role: authUser.role || 'member',
+                    avatar: authUser.avatar,
+                    gender: authUser.gender,
+                    isMuted: false,
+                    isBanned: false,
+                };
+                setParticipants([optimistic as any]);
+            } else {
+                setParticipants([]);
+            }
+        } catch {
+            setParticipants([]);
+        }
         // Join new room
         currentRoomRef.current = roomId;
         socket.emit('room:join', buildJoinPayload(roomId));

@@ -13,6 +13,32 @@ function hexToRgba(hex: string, alpha: number): string {
     return `rgba(${r},${g},${b},${alpha})`;
 }
 
+// ─── Role hierarchy for stealth visibility ───
+const ROLE_HIERARCHY: Record<string, number> = {
+    godmaster: 100,
+    owner: 90,
+    superadmin: 80,
+    admin: 70,
+    moderator: 60,
+    vip: 50,
+    member: 30,
+    guest: 10,
+};
+
+function getVisibleCount(
+    participants: any[],
+    viewerRole: string,
+): number {
+    const viewerLevel = ROLE_HIERARCHY[viewerRole.toLowerCase()] || 0;
+    return participants.filter(u => {
+        // If user is not stealth, always visible
+        if (!u.isStealth) return true;
+        // Stealth user: viewer can only see them if viewer outranks them
+        const userLevel = ROLE_HIERARCHY[(u.role || 'guest').toLowerCase()] || 0;
+        return viewerLevel > userLevel;
+    }).length;
+}
+
 interface HeaderRoomsProps {
     currentSlug: string;
     totalUsers: number;
@@ -20,6 +46,8 @@ interface HeaderRoomsProps {
     rooms?: RoomInfo[];
     systemSettings?: any;
     onNavigate?: (slug: string) => void;
+    currentUserRole?: string;
+    activeRoomParticipants?: any[];
 }
 
 export function HeaderRooms({
@@ -29,6 +57,8 @@ export function HeaderRooms({
     rooms = [],
     systemSettings,
     onNavigate,
+    currentUserRole = 'guest',
+    activeRoomParticipants,
 }: HeaderRoomsProps) {
     const router = useRouter();
     const pathname = usePathname();
@@ -132,6 +162,11 @@ export function HeaderRooms({
                         const isHovered = hoveredRoom === room.id;
                         const btnColor = room.buttonColor || '#06b6d4';
 
+                        // ★ Stealth-aware participant count: active room uses hierarchy filter
+                        const visibleCount = (isActive && activeRoomParticipants)
+                            ? getVisibleCount(activeRoomParticipants, currentUserRole)
+                            : room.participantCount;
+
                         // ════════════════════════════════════════
                         // TIER: MINI — lots of rooms (21+)
                         // ════════════════════════════════════════
@@ -162,7 +197,7 @@ export function HeaderRooms({
                                             </span>
                                         )}
                                         <span className="text-[9px] font-bold tabular-nums" style={{ color: isActive ? hexToRgba(btnColor, 0.9) : '#4b5563', transition: 'color 0.3s' }}>
-                                            {room.participantCount}
+                                            {visibleCount}
                                         </span>
                                         {room.isLocked && <Lock className="w-2.5 h-2.5 flex-shrink-0" style={{ color: hexToRgba(btnColor, 0.7) }} />}
                                         {isActive && (
@@ -218,7 +253,7 @@ export function HeaderRooms({
                                         <div className="flex items-center gap-1" style={{ opacity: isActive ? 1 : 0.7, transition: 'opacity 0.3s' }}>
                                             <Users className="w-3 h-3" style={{ color: isActive ? btnColor : '#4b5563', transition: 'color 0.3s' }} />
                                             <span className="text-[10px] font-bold tabular-nums" style={{ color: isActive ? hexToRgba(btnColor, 0.85) : '#4b5563', transition: 'color 0.3s' }}>
-                                                {room.participantCount}
+                                                {visibleCount}
                                             </span>
                                         </div>
                                         {room.isLocked && <Lock className="w-3 h-3 flex-shrink-0" style={{ color: hexToRgba(btnColor, 0.6) }} />}
@@ -280,7 +315,7 @@ export function HeaderRooms({
                                         </span>
                                         <span className="text-[9px] flex items-center gap-1" style={{ color: isActive ? hexToRgba(btnColor, 0.85) : '#4b5563', transition: 'color 0.3s' }}>
                                             {room.isLocked && <Lock className="w-2.5 h-2.5" />}
-                                            {room.isVipRoom ? 'VIP' : `${room.participantCount} Kişi`}
+                                            {room.isVipRoom ? 'VIP' : `${visibleCount} Kişi`}
                                         </span>
                                     </div>
                                     {isActive && (
@@ -316,7 +351,7 @@ export function HeaderRooms({
                                     <div className="flex items-center gap-1" style={{ opacity: isActive ? 1 : isHovered ? 0.85 : 0.65, transition: 'opacity 0.3s' }}>
                                         <Users className="w-3 h-3" style={{ color: isActive ? btnColor : '#4b5563', transition: 'color 0.3s' }} />
                                         <span className="text-[11px] font-bold tabular-nums" style={{ color: isActive ? hexToRgba(btnColor, 0.85) : '#4b5563', transition: 'color 0.3s' }}>
-                                            {room.participantCount}
+                                            {visibleCount}
                                         </span>
                                     </div>
                                     {room.isLocked && <Lock className="w-3 h-3" style={{ color: hexToRgba(btnColor, 0.6) }} />}
