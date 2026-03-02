@@ -1207,30 +1207,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`[MULTI-LOGIN] Check: enabled=${multiLoginEnabled}, userId=${user.sub}, isGodMaster=${isGodMaster}`);
 
     if (multiLoginEnabled && !isGodMaster) {
-      let alreadyActive = false;
       for (const [existingSocketId, existingParticipant] of this.participants.entries()) {
         if (existingParticipant.userId === user.sub && existingSocketId !== client.id) {
-          alreadyActive = true;
           this.logger.warn(
-            `[DUPLICATE BLOCKED] User ${user.sub} (${user.displayName}) tried to join but is already active as ${existingSocketId} in room ${existingParticipant.roomSlug}. Blocking NEW connection.`,
+            `[ROOM SWITCH] User ${user.sub} (${user.displayName}) joining new room — disconnecting old socket ${existingSocketId} from ${existingParticipant.roomSlug}`,
           );
+          // Eski oturumu kapat — yeni oturum devam etsin (oda değiştirme desteklenir)
+          const oldSocket = this.server.sockets.sockets.get(existingSocketId);
+          if (oldSocket) {
+            oldSocket.disconnect(true);
+          }
+          this.participants.delete(existingSocketId);
           break;
         }
-      }
-
-      if (alreadyActive) {
-        // Yeni girişe engel mesajı gönder
-        client.emit('session:duplicate-blocked', {
-          message: 'Bu hesap şu anda başka bir oturumda aktif. Aynı hesapla birden fazla giriş yapılamaz.',
-        });
-
-        // 3 saniye sonra bağlantıyı kes
-        setTimeout(() => {
-          client.disconnect(true);
-        }, 3000);
-
-        // room:join işlemini durdur — participant eklenmez
-        return;
       }
     } // end multiLoginBlock
 
