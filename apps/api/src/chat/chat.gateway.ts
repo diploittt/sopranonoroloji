@@ -1430,6 +1430,32 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`📺 TV YouTube synced to ${participant.displayName}: ${activeYoutube.url}`);
     }
 
+    // ★ SPEAKER SYNC — Aktif konuşmacı varsa yeni katılana gönder
+    const activeSpeaker = this.roomSpeakers.get(scopedRoom);
+    if (activeSpeaker) {
+      client.emit('mic:acquired', {
+        userId: activeSpeaker.userId,
+        displayName: activeSpeaker.displayName,
+        socketId: activeSpeaker.socketId,
+        role: activeSpeaker.role,
+        startedAt: activeSpeaker.startedAt,
+        duration: activeSpeaker.duration,
+      });
+      this.logger.log(`🎤 Speaker synced to ${participant.displayName}: ${activeSpeaker.displayName}`);
+    }
+
+    // ★ MIC QUEUE SYNC — Mevcut sıra varsa yeni katılana gönder
+    const currentQueue = this.micQueues.get(scopedRoom);
+    if (currentQueue && currentQueue.length > 0) {
+      client.emit('mic:queue-updated', currentQueue);
+      this.logger.log(`📋 Mic queue synced to ${participant.displayName}: ${currentQueue.length} in queue`);
+    }
+
+    // ★ CHAT LOCK SYNC — Sohbet kilitliyse yeni katılana bildir
+    if (this.roomChatLocks.has(scopedRoom)) {
+      client.emit('room:chat-lock', { locked: true });
+    }
+
     // ─── WELCOME MESSAGE ──────────────────────────────────────
     if (sysSettings?.welcomeMessage) {
       client.emit('chat:message', {
