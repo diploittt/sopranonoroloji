@@ -37,7 +37,7 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-    width: 4px;
+    width: 6px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -45,19 +45,19 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(123, 159, 239, 0.10);
+    background: rgba(123, 159, 239, 0.25);
     border-radius: 4px;
     transition: background 0.3s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(123, 159, 239, 0.28);
+    background: rgba(123, 159, 239, 0.50);
 }
 
 /* Firefox */
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(123, 159, 239, 0.10) transparent;
+    scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
 }
 
 /* --- APP BACKGROUND --- */
@@ -230,7 +230,8 @@ body {
     background: rgba(8, 12, 21, 0.75);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    min-height: 0; /* Critical for flex children to enable overflow scrolling */
+    min-height: 0;
+    /* Critical for flex children to enable overflow scrolling */
 }
 
 /* Ensure chat messages container scrolls properly */
