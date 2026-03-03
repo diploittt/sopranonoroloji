@@ -609,7 +609,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         setTvBroadcastLevel(0);
     }, [activeSlug]);
 
-    // Listen for tv:youtubeUpdate events
+    // Listen for tv:youtubeUpdate events — activeSlug dependency ensures cleanup on room switch
     useEffect(() => {
         if (!room.socket) return;
         const onYoutubeUpdate = (data: { url: string | null; setBy: string; setByLevel?: number }) => {
@@ -632,8 +632,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         return () => {
             room.socket?.off('tv:youtubeUpdate', onYoutubeUpdate);
             room.socket?.off('dailyBonus:received', onBonusReceived);
+            // ★ Oda geçişinde TV state'ini temizle
+            setTvVideoUrl(null);
+            setTvBroadcastLevel(0);
         };
-    }, [room.socket]);
+    }, [room.socket, activeSlug]);
 
     // ★ ADMIN PULL-USER: Listen for soprano:force-navigate (dispatched by useSocket when admin pulls user)
     useEffect(() => {
