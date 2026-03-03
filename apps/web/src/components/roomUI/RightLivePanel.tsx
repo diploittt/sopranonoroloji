@@ -50,6 +50,7 @@ export function RightLivePanel({
     const [expandedUsername, setExpandedUsername] = useState<string>('');
     const [ytInputOpen, setYtInputOpen] = useState(false);
     const [ytInputValue, setYtInputValue] = useState('');
+    const [ytPaused, setYtPaused] = useState(false);
     const { t } = useTranslation();
     const currentTheme = useCurrentTheme();
     const isHasbihal = currentTheme === 'hasbihal-islamic';
@@ -85,6 +86,25 @@ export function RightLivePanel({
             } catch (e) { /* cross-origin safety */ }
         }
     }, [tvVolume, isYoutubeUrl]);
+
+    // Toggle YouTube pause/play via postMessage
+    const toggleYtPause = useCallback(() => {
+        if (ytIframeRef.current && isYoutubeUrl) {
+            try {
+                const cmd = ytPaused ? 'playVideo' : 'pauseVideo';
+                ytIframeRef.current.contentWindow?.postMessage(
+                    JSON.stringify({ event: 'command', func: cmd, args: [] }),
+                    '*'
+                );
+                setYtPaused(!ytPaused);
+            } catch (e) { /* cross-origin safety */ }
+        }
+    }, [ytPaused, isYoutubeUrl]);
+
+    // YouTube URL değişince pause durumunu sıfırla
+    useEffect(() => {
+        setYtPaused(false);
+    }, [tvVideoUrl]);
 
     // TV Stream Effect & Volume Control
     useEffect(() => {
@@ -285,12 +305,27 @@ export function RightLivePanel({
             {userLevel >= 5 && (
                 <div className="px-3 mt-2 shrink-0">
                     {tvVideoUrl && !speakerStream ? (
-                        <button
-                            onClick={() => onSetTvVideo?.(null)}
-                            className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
-                        >
-                            ■ Yayını Durdur
-                        </button>
+                        <div className="flex gap-1">
+                            {isYoutubeUrl && (
+                                <button
+                                    onClick={toggleYtPause}
+                                    className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium border transition-all"
+                                    style={{
+                                        background: ytPaused ? 'rgba(34, 197, 94, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                                        color: ytPaused ? '#4ade80' : '#fbbf24',
+                                        borderColor: ytPaused ? 'rgba(34, 197, 94, 0.25)' : 'rgba(251, 191, 36, 0.25)',
+                                    }}
+                                >
+                                    {ytPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                                </button>
+                            )}
+                            <button
+                                onClick={() => onSetTvVideo?.(null)}
+                                className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
+                            >
+                                ■ Durdur
+                            </button>
+                        </div>
                     ) : !speakerStream ? (
                         ytInputOpen ? (
                             <div className="flex gap-1">
