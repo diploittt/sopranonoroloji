@@ -47,9 +47,27 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         });
     }, [socket]);
 
+    // ─── Full cleanup helper (reusable) ───
+    const fullCleanup = useCallback(() => {
+        for (const [, consumer] of consumersRef.current) { consumer.close(); }
+        consumersRef.current.clear();
+        for (const [, audioEl] of audioElementsRef.current) { audioEl.pause(); audioEl.srcObject = null; }
+        audioElementsRef.current.clear();
+        if (videoProducerRef.current) { videoProducerRef.current.close(); videoProducerRef.current = null; }
+        if (audioProducerRef.current) { audioProducerRef.current.close(); audioProducerRef.current = null; }
+        if (sendTransportRef.current) { sendTransportRef.current.close(); sendTransportRef.current = null; }
+        if (recvTransportRef.current) { recvTransportRef.current.close(); recvTransportRef.current = null; }
+        deviceRef.current = null;
+        initializedRef.current = false;
+        setIsProducing(false);
+        setRemoteStreams([]);
+    }, []);
+
     // ─── Initialize Device + Transports ───
     const initDevice = useCallback(async () => {
-        if (!socket || !enabled || initializedRef.current) return;
+        if (!socket || !enabled) return;
+        // Prevent double-init while already initialized for THIS room
+        if (initializedRef.current) return;
 
         try {
             // 1. Get router RTP capabilities
@@ -143,7 +161,7 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         } catch (err) {
             console.error('[Mediasoup] Init error:', err);
         }
-    }, [socket, roomId, enabled, request]);
+    }, [socket, roomId, enabled, request, fullCleanup]);
 
     // ─── Consume existing producers ───
     const consumeExistingProducers = useCallback(async () => {
@@ -428,39 +446,7 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
         const onReconnect = () => {
             console.log('[Mediasoup] Socket reconnected — resetting media state');
-            // Close stale client-side resources
-            for (const [, consumer] of consumersRef.current) {
-                consumer.close();
-            }
-            consumersRef.current.clear();
-
-            for (const [, audioEl] of audioElementsRef.current) {
-                audioEl.pause();
-                audioEl.srcObject = null;
-            }
-            audioElementsRef.current.clear();
-
-            if (videoProducerRef.current) {
-                videoProducerRef.current.close();
-                videoProducerRef.current = null;
-            }
-            if (audioProducerRef.current) {
-                audioProducerRef.current.close();
-                audioProducerRef.current = null;
-            }
-            if (sendTransportRef.current) {
-                sendTransportRef.current.close();
-                sendTransportRef.current = null;
-            }
-            if (recvTransportRef.current) {
-                recvTransportRef.current.close();
-                recvTransportRef.current = null;
-            }
-
-            deviceRef.current = null;
-            initializedRef.current = false;
-            setIsProducing(false);
-            setRemoteStreams([]);
+            fullCleanup();
 
             // Re-initialize with fresh transports
             if (enabled) {
@@ -472,50 +458,27 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         return () => {
             socket.off('connect', onReconnect);
         };
-    }, [socket, enabled, initDevice]);
+    }, [socket, enabled, initDevice, fullCleanup]);
 
-    // ─── Cleanup on room change or unmount ───
+    // ─── Cleanup + reinit on room change ───
     useEffect(() => {
+        // Oda değiştiğinde eski kaynakları temizle ve yeniden başlat
+        fullCleanup();
+
+        // Yeni oda için init — küçük delay ile socket room:join'in tamamlanmasını bekle
+        let timer: ReturnType<typeof setTimeout> | null = null;
+        if (enabled && socket) {
+            timer = setTimeout(() => {
+                console.log(`[Mediasoup] Room changed to ${roomId} — reinitializing`);
+                initDevice();
+            }, 500);
+        }
+
         return () => {
-            // Close all consumers
-            for (const [id, consumer] of consumersRef.current) {
-                consumer.close();
-            }
-            consumersRef.current.clear();
-            setRemoteStreams([]);
-
-            // Cleanup all audio elements
-            for (const [, audioEl] of audioElementsRef.current) {
-                audioEl.pause();
-                audioEl.srcObject = null;
-            }
-            audioElementsRef.current.clear();
-
-            // Close producer
-            if (videoProducerRef.current) {
-                videoProducerRef.current.close();
-                videoProducerRef.current = null;
-            }
-            if (audioProducerRef.current) {
-                audioProducerRef.current.close();
-                audioProducerRef.current = null;
-            }
-
-            // Close transports
-            if (sendTransportRef.current) {
-                sendTransportRef.current.close();
-                sendTransportRef.current = null;
-            }
-            if (recvTransportRef.current) {
-                recvTransportRef.current.close();
-                recvTransportRef.current = null;
-            }
-
-            deviceRef.current = null;
-            initializedRef.current = false;
-            setIsProducing(false);
+            if (timer) clearTimeout(timer);
+            fullCleanup();
         };
-    }, [roomId]); // Re-run cleanup when roomId changes
+    }, [roomId]); // Re-run on room change
 
     return {
         remoteStreams,
