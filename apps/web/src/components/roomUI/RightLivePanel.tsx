@@ -29,6 +29,7 @@ interface RightLivePanelProps {
     tvVideoUrl?: string | null;
     tvVolume?: number;
     userLevel?: number;
+    tvBroadcastLevel?: number;
     onSetTvVideo?: (url: string | null) => void;
 }
 
@@ -42,12 +43,14 @@ export function RightLivePanel({
     tvVideoUrl,
     tvVolume = 0.7,
     userLevel = 0,
+    tvBroadcastLevel = 0,
     onSetTvVideo
 }: RightLivePanelProps) {
     const tvVideoRef = useRef<HTMLVideoElement>(null);
     const [collapsed, setCollapsed] = useState(false);
     const [expandedStream, setExpandedStream] = useState<MediaStream | null>(null);
     const [expandedUsername, setExpandedUsername] = useState<string>('');
+    const [tvPaused, setTvPaused] = useState(false);
     const [ytInputOpen, setYtInputOpen] = useState(false);
     const [ytInputValue, setYtInputValue] = useState('');
     const { t } = useTranslation();
@@ -57,6 +60,9 @@ export function RightLivePanel({
     const isYoutubeUrl = tvVideoUrl ? !!extractYoutubeId(tvVideoUrl) : false;
     const tvVideoRef2 = useRef<HTMLVideoElement>(null);
     const ytIframeRef = useRef<HTMLIFrameElement>(null);
+
+    // ★ tvVideoUrl değiştiğinde tvPaused'ı sıfırla
+    useEffect(() => { setTvPaused(false); }, [tvVideoUrl]);
 
     // Apply tvVolume to direct video element
     useEffect(() => {
@@ -285,12 +291,35 @@ export function RightLivePanel({
             {userLevel >= 5 && (
                 <div className="px-3 mt-2 shrink-0">
                     {tvVideoUrl && !speakerStream ? (
-                        <button
-                            onClick={() => onSetTvVideo?.(null)}
-                            className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
-                        >
-                            ■ Yayını Durdur
-                        </button>
+                        <div className="flex flex-col gap-1">
+                            {/* Duraklat / Devam Et butonu */}
+                            <button
+                                onClick={() => {
+                                    if (isYoutubeUrl && ytIframeRef.current?.contentWindow) {
+                                        ytIframeRef.current.contentWindow.postMessage(
+                                            JSON.stringify({ event: 'command', func: tvPaused ? 'playVideo' : 'pauseVideo' }),
+                                            '*'
+                                        );
+                                    }
+                                    if (!isYoutubeUrl && tvVideoRef2.current) {
+                                        tvPaused ? tvVideoRef2.current.play() : tvVideoRef2.current.pause();
+                                    }
+                                    setTvPaused(!tvPaused);
+                                }}
+                                className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 border border-amber-500/20 transition-all"
+                            >
+                                {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                            </button>
+                            {/* Durdur butonu — sadece yayın seviyesi eşit veya düşük olanlar görebilir */}
+                            {userLevel >= tvBroadcastLevel && (
+                                <button
+                                    onClick={() => onSetTvVideo?.(null)}
+                                    className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
+                                >
+                                    ■ Yayını Durdur
+                                </button>
+                            )}
+                        </div>
                     ) : !speakerStream ? (
                         ytInputOpen ? (
                             <div className="flex gap-1">

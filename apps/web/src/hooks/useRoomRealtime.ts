@@ -110,6 +110,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     const [isRemoteMuted, setIsRemoteMuted] = useState(false);
     const [openDMs, setOpenDMs] = useState<string[]>([]);
     const [dmMessages, setDmMessages] = useState<any>({});
+    // DM ignore: userIds whose DMs should be silently dropped
+    const dmIgnoredUserIdsRef = useRef<Set<string>>(new Set());
     const [stereoMode, setStereoMode] = useState(false);
     const [banInfo, setBanInfo] = useState<{ reason: string; expiresAt?: string | null; banLevel?: 'soft' | 'hard' } | null>(null);
     const [sessionKicked, setSessionKicked] = useState<{ message: string } | null>(null);
@@ -523,6 +525,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             const partnerName = data.isSelf ? data.to : data.from;
             const partnerUserId = data.isSelf ? data.toUserId : data.fromUserId;
 
+            // ★ DM Ignore: gelen mesaj ignore edilen kullanıcıdan geliyorsa sessizce engelle
+            if (!data.isSelf && dmIgnoredUserIdsRef.current.has(data.fromUserId)) {
+                return; // Mesajı gösterme, DM penceresi açma
+            }
+
             // Auto-open DM window for incoming messages
             setOpenDMs(prev => {
                 if (!prev.includes(partnerName)) return [...prev, partnerName];
@@ -925,10 +932,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             if (!socket) return;
             const currentlyStealthed = mergedCurrentUser?.isStealth;
             const newStatus = currentlyStealthed ? 'online' : 'stealth';
-            // Persist preference to localStorage
-            try {
-                localStorage.setItem('soprano_user_status', newStatus);
-            } catch (e) { console.error(e); }
+            // ★ localStorage'a yazma — VIP+ kullanıcılar için backend yönetiyor
+            // localStorage artık status için kullanılmıyor (buildJoinPayload'da da temizleniyor)
             // Optimistic local update for instant UI feedback
             if (mergedCurrentUser?.userId) {
                 updateParticipantLocally(mergedCurrentUser.userId, {
@@ -942,10 +947,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         changeStatus: (newStatus: string) => {
             if (!socket) return;
             const isStealth = newStatus === 'stealth';
-            // Persist preference to localStorage
-            try {
-                localStorage.setItem('soprano_user_status', newStatus);
-            } catch (e) { console.error(e); }
+            // ★ localStorage'a yazma — VIP+ kullanıcılar için backend yönetiyor
             // Optimistic local update
             if (mergedCurrentUser?.userId) {
                 updateParticipantLocally(mergedCurrentUser.userId, {
@@ -969,15 +971,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             };
             console.log(`[setGodmasterVisibility] Emitting status:change with status=${statusMap[mode]}`);
             socket.emit('status:change', { status: statusMap[mode], disguiseName });
-            // Persist to localStorage for recovery after F5/room change
-            try {
-                localStorage.setItem('soprano_user_status', statusMap[mode]);
-                if (disguiseName) {
-                    localStorage.setItem('soprano_godmaster_disguise_name', disguiseName);
-                } else {
-                    localStorage.removeItem('soprano_godmaster_disguise_name');
-                }
-            } catch (e) { console.error(e); }
+            // ★ localStorage'a artık GodMaster status yazma — backend yönetiyor
             // Optimistic local update — instant visual feedback
             if (mergedCurrentUser?.userId) {
                 const optimistic: any = {
@@ -1089,6 +1083,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             } catch { /* ignore */ }
         });
 
+        let prevKeys = '';
         const poll = () => {
             const levels: Record<string, number> = {};
             analysers.forEach((val, uid) => {
@@ -1096,9 +1091,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 val.analyser.getByteFrequencyData(data);
                 const avg = data.reduce((a, b) => a + b, 0) / data.length;
                 const normalized = Math.min(avg / 80, 1);
-                if (normalized > 0.05) levels[uid] = normalized;
+                if (normalized > 0.05) levels[uid] = Math.round(normalized * 100) / 100;
             });
-            setSpeakingUsers(levels);
+            // Sadece konuşanlar değiştiğinde state güncelle (her frame'de yeni obje oluşturmayı önle)
+            const curKeys = Object.keys(levels).sort().map(k => `${k}:${levels[k]}`).join(',');
+            if (curKeys !== prevKeys) {
+                prevKeys = curKeys;
+                setSpeakingUsers(levels);
+            }
             rafId = requestAnimationFrame(poll);
         };
         rafId = requestAnimationFrame(poll);
@@ -1161,6 +1161,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             dismissPaymentReminder: () => setPaymentReminder(null),
             dismissAnnouncement: () => { setAnnouncement(null); setHasNewAnnouncement(false); },
             markAnnouncementSeen: () => setHasNewAnnouncement(false),
+            setDmIgnoredUserIds: (ids: Set<string>) => { dmIgnoredUserIdsRef.current = ids; },
         },
         socket,
         passwordRequired,

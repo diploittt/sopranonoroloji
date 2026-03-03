@@ -22,7 +22,6 @@ interface ChatMessagesProps {
     messages: Message[];
     currentUser: User | null;
     onContextMenu?: (e: React.MouseEvent) => void;
-    ignoredUsers?: Set<string>;
     roomName?: string;
 }
 
@@ -95,7 +94,7 @@ function getYouTubeVideoId(text: string): string | null {
     return null;
 }
 
-export function ChatMessages({ room, messages, currentUser, onContextMenu, ignoredUsers, roomName }: ChatMessagesProps) {
+export function ChatMessages({ room, messages, currentUser, onContextMenu, roomName }: ChatMessagesProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
     const { t, lang } = useTranslation();
 
@@ -253,12 +252,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, ignor
 
                 {messages
                     .filter(msg => {
-                        // Yoksayılan kullanıcıların mesajlarını filtrele
-                        if (!ignoredUsers || ignoredUsers.size === 0) return true;
                         if (msg.type === 'system') return true;
-                        // sender display name'den userId'ye çevir
-                        const senderUser = room.state.users.find(u => u.username === msg.sender || u.displayName === msg.sender);
-                        if (senderUser && senderUser.userId && ignoredUsers.has(senderUser.userId)) return false;
                         return true;
                     })
                     .map((msg, i, filteredMsgs) => {

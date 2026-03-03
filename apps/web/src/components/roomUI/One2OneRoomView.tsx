@@ -326,7 +326,9 @@ export function One2OneRoomView({
                         </div>
                     )}
                     {messages.map((msg: any, i: number) => {
-                        const isMe = msg.userId === currentUser?.userId;
+                        // Backend sends: sender (userId), senderName, senderAvatar
+                        // Also check msg.userId for backward compatibility
+                        const isMe = (msg.sender || msg.userId) === currentUser?.userId;
                         return (
                             <div key={i} className="o2o-msg" style={{
                                 display: 'flex', alignItems: 'flex-start', gap: '8px',
@@ -339,7 +341,7 @@ export function One2OneRoomView({
                                     whiteSpace: 'nowrap',
                                     minWidth: 'fit-content',
                                 }}>
-                                    {msg.displayName || (isMe ? myName : otherName)}:
+                                    {msg.senderName || msg.displayName || (isMe ? myName : otherName)}:
                                 </span>
                                 <span style={{
                                     color: 'rgba(255,255,255,0.85)',

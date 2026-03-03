@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { X, Minus, Send, MessageSquare, Smile, Ban } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { X, Minus, Send, MessageSquare, Smile, Ban, MessageCircle } from 'lucide-react';
 
 interface DMMessage {
     id: string;
@@ -49,9 +50,13 @@ export function DMWindow({
     const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
     const [inputText, setInputText] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
+    const [mounted, setMounted] = useState(false);
     const windowRef = useRef<HTMLDivElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLInputElement>(null);
+
+    // Mount state for portal
+    useEffect(() => setMounted(true), []);
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -60,23 +65,22 @@ export function DMWindow({
 
     // Drag Logic
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if ((e.target as HTMLElement).closest('.dm-header')) {
+        if ((e.target as HTMLElement).closest('.dm-header-drag')) {
+            e.preventDefault();
             setIsDragging(true);
-            const rect = windowRef.current!.getBoundingClientRect();
             setDragOffset({
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
+                x: e.clientX - position.x,
+                y: e.clientY - position.y
             });
         }
-    }, []);
+    }, [position]);
 
     useEffect(() => {
         if (!isDragging) return;
         const handleMouseMove = (e: MouseEvent) => {
-            setPosition({
-                x: e.clientX - dragOffset.x,
-                y: e.clientY - dragOffset.y
-            });
+            const newX = Math.max(0, Math.min(window.innerWidth - 340, e.clientX - dragOffset.x));
+            const newY = Math.max(0, Math.min(window.innerHeight - 100, e.clientY - dragOffset.y));
+            setPosition({ x: newX, y: newY });
         };
         const handleMouseUp = () => setIsDragging(false);
 
@@ -100,77 +104,189 @@ export function DMWindow({
         inputRef.current?.focus();
     }, []);
 
-    // Memoize message list to avoid re-renders
+    // Memoize message list
     const messageList = useMemo(() => messages.map((msg) => (
         <div key={msg.id} className={`flex ${msg.isSelf ? 'justify-end' : 'justify-start'}`}>
-            <div className={`
-                max-w-[80%] rounded-2xl px-3 py-2 text-xs leading-relaxed
-                ${msg.isSelf
-                    ? 'bg-amber-700 text-white rounded-br-none'
-                    : 'bg-[#1f222e] text-gray-200 rounded-bl-none border border-white/5'}
-            `}>
+            <div
+                className="max-w-[80%] px-3.5 py-2 text-[13px] leading-relaxed"
+                style={msg.isSelf ? {
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(123, 159, 239, 0.20) 100%)',
+                    border: '1px solid rgba(6, 182, 212, 0.25)',
+                    borderRadius: '16px 16px 4px 16px',
+                    color: '#e2e8f0',
+                } : {
+                    background: 'rgba(30, 41, 59, 0.6)',
+                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    borderRadius: '16px 16px 16px 4px',
+                    color: '#cbd5e1',
+                }}
+            >
                 {msg.message}
-                <div className={`text-[9px] mt-1 opacity-50 ${msg.isSelf ? 'text-right' : 'text-left'}`}>
+                <div className={`text-[9px] mt-1 ${msg.isSelf ? 'text-right text-cyan-400/40' : 'text-left text-slate-500'}`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
             </div>
         </div>
     )), [messages]);
 
-    return (
+    if (!mounted) return null;
+
+    const content = (
         <div
             ref={windowRef}
-            className="fixed z-50 w-80 bg-[#13151c] border border-white/10 rounded-xl shadow-2xl flex flex-col overflow-hidden"
             style={{
+                position: 'fixed',
                 left: position.x,
                 top: position.y,
-                height: '420px',
+                width: 340,
+                height: 440,
+                zIndex: 9999,
                 willChange: isDragging ? 'transform' : 'auto',
+                borderRadius: 20,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                background: 'rgba(10, 14, 24, 0.96)',
+                backdropFilter: 'blur(24px) saturate(150%)',
+                WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                border: '1px solid rgba(6, 182, 212, 0.20)',
+                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(6, 182, 212, 0.08), 0 0 40px rgba(6, 182, 212, 0.06)',
             }}
             onMouseDown={handleMouseDown}
         >
-            {/* Header (Draggable) */}
-            <div className="dm-header h-10 bg-white/5 border-b border-white/5 flex items-center justify-between px-3 cursor-move select-none">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    <span className="text-sm font-semibold text-gray-200">{targetUsername}</span>
+            {/* Header */}
+            <div
+                className="dm-header-drag"
+                style={{
+                    height: 52,
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(123, 159, 239, 0.10) 100%)',
+                    borderBottom: '1px solid rgba(6, 182, 212, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '0 14px',
+                    cursor: 'move',
+                    userSelect: 'none',
+                    flexShrink: 0,
+                }}
+            >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{
+                        width: 32, height: 32, borderRadius: 10,
+                        background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(123, 159, 239, 0.20))',
+                        border: '1px solid rgba(6, 182, 212, 0.30)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                        <MessageCircle style={{ width: 16, height: 16, color: '#67e8f9' }} />
+                    </div>
+                    <div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#e2e8f0', lineHeight: 1.2 }}>{targetUsername}</div>
+                        <div style={{ fontSize: 10, color: 'rgba(6, 182, 212, 0.7)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22d3ee', display: 'inline-block', boxShadow: '0 0 6px rgba(34, 211, 238, 0.5)' }}></span>
+                            Özel Mesaj
+                        </div>
+                    </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     {onIgnore && (
-                        <button onClick={onIgnore} className={`p-1 rounded transition-colors ${isIgnored ? 'bg-red-500/20 text-red-400' : 'hover:bg-white/10 text-gray-400 hover:text-white'}`} title={isIgnored ? 'Yoksayma Kaldır' : 'Yoksay'}>
-                            <Ban className="w-3 h-3" />
+                        <button
+                            onClick={onIgnore}
+                            style={{
+                                width: 28, height: 28, borderRadius: 8,
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                border: 'none', cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                background: isIgnored ? 'rgba(239, 68, 68, 0.15)' : 'transparent',
+                                color: isIgnored ? '#f87171' : '#64748b',
+                            }}
+                            title={isIgnored ? 'Yoksayma Kaldır' : 'Yoksay'}
+                            onMouseEnter={e => {
+                                e.currentTarget.style.background = isIgnored ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255,255,255,0.08)';
+                                e.currentTarget.style.color = isIgnored ? '#fca5a5' : '#e2e8f0';
+                            }}
+                            onMouseLeave={e => {
+                                e.currentTarget.style.background = isIgnored ? 'rgba(239, 68, 68, 0.15)' : 'transparent';
+                                e.currentTarget.style.color = isIgnored ? '#f87171' : '#64748b';
+                            }}
+                        >
+                            <Ban style={{ width: 14, height: 14 }} />
                         </button>
                     )}
-                    <button onClick={onMinimize} className="p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white transition-colors">
-                        <Minus className="w-3 h-3" />
+                    <button
+                        onClick={onMinimize}
+                        style={{
+                            width: 28, height: 28, borderRadius: 8,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: 'none', cursor: 'pointer',
+                            background: 'transparent', color: '#64748b', transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#e2e8f0'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
+                    >
+                        <Minus style={{ width: 14, height: 14 }} />
                     </button>
-                    <button onClick={onClose} className="p-1 hover:bg-red-500/20 rounded text-gray-400 hover:text-red-400 transition-colors">
-                        <X className="w-3 h-3" />
+                    <button
+                        onClick={onClose}
+                        style={{
+                            width: 28, height: 28, borderRadius: 8,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: 'none', cursor: 'pointer',
+                            background: 'transparent', color: '#64748b', transition: 'all 0.2s',
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.color = '#f87171'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
+                    >
+                        <X style={{ width: 14, height: 14 }} />
                     </button>
                 </div>
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar bg-[#0b0d14]/50">
+            <div
+                style={{
+                    flex: 1, overflowY: 'auto', padding: '16px 14px',
+                    display: 'flex', flexDirection: 'column', gap: 8,
+                    background: 'rgba(4, 8, 16, 0.4)',
+                }}
+                className="custom-scrollbar"
+            >
                 {messages.length === 0 && (
-                    <div className="text-center mt-10 opacity-30">
-                        <MessageSquare className="w-8 h-8 mx-auto mb-2" />
-                        <p className="text-xs">Özel mesajlaşma başladı.</p>
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        justifyContent: 'center', flex: 1, opacity: 0.3, gap: 8, paddingTop: 60,
+                    }}>
+                        <MessageSquare style={{ width: 36, height: 36, color: '#06b6d4' }} />
+                        <p style={{ fontSize: 12, color: '#94a3b8' }}>Özel mesajlaşma başladı.</p>
                     </div>
                 )}
                 {messageList}
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Emoji Picker (inline) */}
+            {/* Emoji Picker */}
             {showEmoji && (
-                <div className="border-t border-white/5 bg-[#13151c] p-2 max-h-[140px] overflow-y-auto custom-scrollbar">
-                    <div className="grid grid-cols-10 gap-0.5">
+                <div style={{
+                    borderTop: '1px solid rgba(6, 182, 212, 0.10)',
+                    background: 'rgba(10, 14, 24, 0.98)',
+                    padding: 8,
+                    maxHeight: 140,
+                    overflowY: 'auto',
+                }}>
+                    <div style={{
+                        display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 2,
+                    }}>
                         {EMOJI_LIST.map((emoji, i) => (
                             <button
                                 key={i}
                                 onClick={() => addEmoji(emoji)}
-                                className="w-7 h-7 flex items-center justify-center text-base hover:bg-white/10 rounded transition-colors"
+                                style={{
+                                    width: 28, height: 28,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 16, background: 'transparent', border: 'none',
+                                    borderRadius: 6, cursor: 'pointer', transition: 'background 0.15s',
+                                }}
+                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
                             >
                                 {emoji}
                             </button>
@@ -180,31 +296,87 @@ export function DMWindow({
             )}
 
             {/* Input Area */}
-            <div className="p-3 border-t border-white/5 bg-[#13151c]">
-                <div className="relative flex items-center gap-1">
+            <div style={{
+                padding: '10px 12px',
+                borderTop: '1px solid rgba(6, 182, 212, 0.10)',
+                background: 'rgba(10, 14, 24, 0.6)',
+                flexShrink: 0,
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
                     <button
                         onClick={() => setShowEmoji(s => !s)}
-                        className={`p-1.5 rounded-full transition-colors ${showEmoji ? 'bg-amber-700 text-white' : 'text-gray-500 hover:text-gray-300 hover:bg-white/10'}`}
+                        style={{
+                            width: 32, height: 32, borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: 'none', cursor: 'pointer', flexShrink: 0,
+                            transition: 'all 0.2s',
+                            background: showEmoji ? 'rgba(6, 182, 212, 0.20)' : 'transparent',
+                            color: showEmoji ? '#22d3ee' : '#64748b',
+                        }}
+                        onMouseEnter={e => {
+                            if (!showEmoji) { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }
+                        }}
+                        onMouseLeave={e => {
+                            if (!showEmoji) { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }
+                        }}
                     >
-                        <Smile className="w-4 h-4" />
+                        <Smile style={{ width: 18, height: 18 }} />
                     </button>
                     <input
                         ref={inputRef}
                         type="text"
-                        className="flex-1 bg-[#0b0d14] border border-white/10 rounded-full pl-4 pr-10 py-2 text-sm text-gray-200 focus:border-amber-600 focus:outline-none placeholder-gray-600"
-                        placeholder="Bir mesaj yazın..."
+                        style={{
+                            flex: 1,
+                            background: 'rgba(15, 23, 42, 0.8)',
+                            border: '1px solid rgba(6, 182, 212, 0.15)',
+                            borderRadius: 999,
+                            padding: '9px 40px 9px 16px',
+                            fontSize: 13,
+                            color: '#e2e8f0',
+                            outline: 'none',
+                            transition: 'border-color 0.2s, box-shadow 0.2s',
+                        }}
+                        placeholder="Mesajınızı yazın..."
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        onFocus={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.40)';
+                            e.currentTarget.style.boxShadow = '0 0 0 3px rgba(6, 182, 212, 0.08)';
+                        }}
+                        onBlur={(e) => {
+                            e.currentTarget.style.borderColor = 'rgba(6, 182, 212, 0.15)';
+                            e.currentTarget.style.boxShadow = 'none';
+                        }}
                     />
                     <button
                         onClick={handleSend}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 p-1.5 bg-amber-700 hover:bg-amber-600 rounded-full text-white transition-colors"
+                        style={{
+                            position: 'absolute',
+                            right: 4, top: '50%', transform: 'translateY(-50%)',
+                            width: 30, height: 30, borderRadius: '50%',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            border: 'none', cursor: 'pointer',
+                            background: 'linear-gradient(135deg, #06b6d4, #0891b2)',
+                            color: '#fff',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 2px 8px rgba(6, 182, 212, 0.25)',
+                        }}
+                        onMouseEnter={e => {
+                            e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)';
+                            e.currentTarget.style.boxShadow = '0 4px 12px rgba(6, 182, 212, 0.35)';
+                        }}
+                        onMouseLeave={e => {
+                            e.currentTarget.style.transform = 'translateY(-50%) scale(1)';
+                            e.currentTarget.style.boxShadow = '0 2px 8px rgba(6, 182, 212, 0.25)';
+                        }}
                     >
-                        <Send className="w-3 h-3" />
+                        <Send style={{ width: 13, height: 13 }} />
                     </button>
                 </div>
             </div>
         </div>
     );
+
+    return createPortal(content, document.body);
 }

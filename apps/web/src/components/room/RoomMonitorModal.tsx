@@ -600,13 +600,7 @@ export function RoomMonitorModal({
                                                 </button>
                                                 <button
                                                     onClick={() => {
-                                                        // Set stealth mode before navigating
-                                                        const isGodMaster = currentUserRole?.toLowerCase() === 'godmaster';
-                                                        if (isGodMaster) {
-                                                            localStorage.setItem('soprano_user_status', 'godmaster-hidden');
-                                                        } else {
-                                                            localStorage.setItem('soprano_user_status', 'stealth');
-                                                        }
+                                                        // ★ localStorage'a yazma — backend VIP+ kullanıcıları otomatik stealth yapar
                                                         onNavigateToRoom(room.slug);
                                                         onClose();
                                                     }}

@@ -227,23 +227,10 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
     };
 
     // STEALTH FILTERING
-    const visibleUsers = useMemo(() => {
-        const myRole = currentUser?.role || 'guest';
-        return users.filter(u => {
-            // Check if target is self (Robust check)
-            const isSelf = (u.userId && u.userId === currentUser?.userId) ||
-                (u.socketId && u.socketId === currentUser?.socketId);
-
-            if (isSelf) return true;
-
-            // GodMaster visibility is handled server-side in getRoomParticipants.
-            // The backend only sends visible/disguised GodMasters to non-GodMaster viewers,
-            // so no frontend filtering is needed here.
-
-            if (u.isStealth) return canSeeStealthUser(myRole, u.role);
-            return true;
-        });
-    }, [users, currentUser]);
+    // ★ Backend (getRoomParticipants) zaten hiyerarşik stealth filtreleme yapıyor.
+    // Frontend'e sadece kullanıcının görmesi gereken katılımcılar geliyor.
+    // Burada tekrar filtreleme yapMAmalıyız — çift filtreleme hatalara neden olur.
+    const visibleUsers = users;
 
     // SORTING LOGIC
     const sortedUsers = useMemo(() => {
@@ -289,7 +276,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
 
     return (
         <aside
-            className="sidebar-left w-80 flex-shrink-0 flex flex-col border-r border-white/5 z-20 relative max-md:hidden"
+            className="sidebar-left w-80 flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden"
             onContextMenu={onEmptyContextMenu}
         >
 
@@ -679,9 +666,9 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                 const isSpeaker = currentSpeaker?.userId === user.userId;
                                 const queueIndex = queue.indexOf(user.userId || '');
 
-                                // Use currentUser state for self to ensure immediate UI update
                                 const isSelf = user.userId === currentUser?.userId;
-                                const isInvisible = isSelf ? currentUser?.isStealth : user.isStealth;
+                                // ★ Backend'den gelen veri her zaman güncel — user.isStealth kullan
+                                const isInvisible = user.isStealth;
 
                                 const hasStatusIcons = user.isMuted || user.isGagged || user.isBanned || user.isCamBlocked;
                                 const isIgnored = ignoredUsers?.has(user.userId || '') || false;

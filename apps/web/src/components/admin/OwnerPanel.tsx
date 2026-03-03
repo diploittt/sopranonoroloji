@@ -911,7 +911,7 @@ export default function OwnerPanel() {
                     <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden">
                             {/* Placeholder Avatar */}
-                            <Image src={adminUser?.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${adminUser?.displayName || 'Owner'}`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
+                            <Image src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `https://api.dicebear.com/9.x/avataaars/svg?seed=${adminUser?.displayName || 'Owner'}`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
                         </div>
                         <div className="hidden lg:block overflow-hidden">
                             <div className="text-xs font-bold text-white truncate">{adminUser?.displayName || 'Admin'}</div>
@@ -1032,7 +1032,7 @@ export default function OwnerPanel() {
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
                                         <Image
-                                            src={adminUser?.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${adminUser?.displayName || 'admin'}`}
+                                            src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `https://api.dicebear.com/9.x/avataaars/svg?seed=${adminUser?.displayName || 'admin'}`}
                                             alt="avatar"
                                             width={56} height={56}
                                             className="rounded-2xl border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/10"
@@ -1216,7 +1216,7 @@ export default function OwnerPanel() {
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
                                                                     <Image
-                                                                        src={member.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${member.displayName || member.id}`}
+                                                                        src={member.avatarUrl && (member.avatarUrl.startsWith('http') || member.avatarUrl.startsWith('/')) ? member.avatarUrl : `https://api.dicebear.com/9.x/avataaars/svg?seed=${member.displayName || member.id}`}
                                                                         alt="avatar" width={36} height={36}
                                                                         className="rounded-xl border border-white/10"
                                                                     />
