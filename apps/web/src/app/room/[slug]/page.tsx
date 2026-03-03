@@ -601,6 +601,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const [tvVideoUrl, setTvVideoUrl] = useState<string | null>(null);
     const [tvVolume, setTvVolume] = useState(0.7);
 
+    // ★ Oda değişiminde YouTube TV state'ini sıfırla
+    useEffect(() => {
+        setTvVideoUrl(null);
+    }, [activeSlug]);
+
     // Listen for tv:youtubeUpdate events
     useEffect(() => {
         if (!room.socket) return;
