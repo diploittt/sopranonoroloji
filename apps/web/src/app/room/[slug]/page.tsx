@@ -553,6 +553,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
     const [isAudioTestOpen, setIsAudioTestOpen] = useState(false);
     const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
+    const [dmIgnoredUsers, setDmIgnoredUsers] = useState<Set<string>>(new Set()); // DM-only ignore
 
     // ─── Saved selection for copy action ──────────────────────────────
     const savedSelectionRef = useRef<string>('');
@@ -2343,17 +2344,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {room.state.openDMs && room.state.openDMs.map((dmUser, idx) => {
                                     const dmParticipant = room.state.users?.find((p: any) => p.displayName === dmUser || p.username === dmUser);
                                     const dmUserId = dmParticipant?.userId;
-                                    const isDmIgnored = dmUserId ? ignoredUsers.has(dmUserId) : false;
+                                    const isDmIgnored = dmUserId ? dmIgnoredUsers.has(dmUserId) : false;
                                     return (
                                         <DMWindow
                                             key={dmUser}
                                             targetUsername={dmUser}
-                                            messages={room.state.dmMessages[dmUser] || []}
+                                            messages={isDmIgnored ? [] : (room.state.dmMessages[dmUser] || [])}
                                             onClose={() => room.actions.closeDM(dmUser)}
                                             onMinimize={() => { }}
                                             onSendMessage={(text) => room.actions.sendDM(dmUser, text)}
                                             onIgnore={dmUserId ? () => {
-                                                setIgnoredUsers(prev => {
+                                                setDmIgnoredUsers(prev => {
                                                     const next = new Set(prev);
                                                     if (next.has(dmUserId)) next.delete(dmUserId);
                                                     else next.add(dmUserId);
