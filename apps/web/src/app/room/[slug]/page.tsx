@@ -40,7 +40,6 @@ import ThemeSwitcher from '@/components/room/ThemeSwitcher';
 import { UserHistoryModal } from '@/components/room/UserHistoryModal';
 import OneToOneCallView from '@/components/roomUI/OneToOneCallView';
 import { useRouter } from 'next/navigation';
-import { getAuthUser } from '@/lib/auth';
 import { useCurrentTheme } from '@/hooks/useCurrentTheme';
 import DuelArena from '@/components/roomUI/DuelArena';
 
@@ -497,21 +496,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const [activeSlug, setActiveSlug] = useState(urlSlug);
     // Sync activeSlug when URL param changes (e.g. browser back/forward)
     useEffect(() => { setActiveSlug(urlSlug); }, [urlSlug]);
-
-    // ★ AUTH GUARD — Token/session yoksa veya süresi dolmuşsa login sayfasına yönlendir
-    const router = useRouter();
-    const [authChecked, setAuthChecked] = useState(false);
-    useEffect(() => {
-        const user = getAuthUser(); // Session timeout + token varlığı kontrol eder
-        const token = localStorage.getItem('soprano_auth_token') || localStorage.getItem('soprano_tenant_token');
-        if (!user || !token) {
-            // Token yok veya session süresi dolmuş — ana sayfaya yönlendir
-            router.replace('/');
-            return;
-        }
-        setAuthChecked(true);
-    }, [router]);
-
     const room = useRoomRealtime({ slug: activeSlug });
     const { openPanel, closePanel, setActiveTab } = useAdminPanelStore();
     const isMeetingRoom = activeSlug === 'staff-meeting';
@@ -539,6 +523,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const { toasts, addToast, removeToast } = useToast();
     const bonusQueue = useBonusQueue();
 
+    const router = useRouter();
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     // Tenant-aware URL helper: if we're at /t/[tenant]/room/..., keep the tenant prefix
     const tenantMatch = pathname.match(/^\/t\/([^/]+)\/room\//);
@@ -553,7 +538,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
     const [isAudioTestOpen, setIsAudioTestOpen] = useState(false);
     const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
-    const [dmIgnoredUsers, setDmIgnoredUsers] = useState<Set<string>>(new Set()); // DM-only ignore
 
     // ─── Saved selection for copy action ──────────────────────────────
     const savedSelectionRef = useRef<string>('');
@@ -601,20 +585,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     // TV Video State
     const [tvVideoUrl, setTvVideoUrl] = useState<string | null>(null);
     const [tvVolume, setTvVolume] = useState(0.7);
-    const [tvBroadcastLevel, setTvBroadcastLevel] = useState(0);
 
-    // ★ Oda değişiminde YouTube TV state'ini sıfırla
-    useEffect(() => {
-        setTvVideoUrl(null);
-        setTvBroadcastLevel(0);
-    }, [activeSlug]);
-
-    // Listen for tv:youtubeUpdate events — activeSlug dependency ensures cleanup on room switch
+    // Listen for tv:youtubeUpdate events
     useEffect(() => {
         if (!room.socket) return;
-        const onYoutubeUpdate = (data: { url: string | null; setBy: string; setByLevel?: number }) => {
+        const onYoutubeUpdate = (data: { url: string | null; setBy: string }) => {
             setTvVideoUrl(data.url);
-            setTvBroadcastLevel(data.url ? (data.setByLevel || 5) : 0);
             if (data.url) {
                 addToast('info', '🎬 Video Yayını', `${data.setBy} TV'de video başlattı.`);
             } else {
@@ -632,11 +608,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         return () => {
             room.socket?.off('tv:youtubeUpdate', onYoutubeUpdate);
             room.socket?.off('dailyBonus:received', onBonusReceived);
-            // ★ Oda geçişinde TV state'ini temizle
-            setTvVideoUrl(null);
-            setTvBroadcastLevel(0);
         };
-    }, [room.socket, activeSlug]);
+    }, [room.socket]);
 
     // ★ ADMIN PULL-USER: Listen for soprano:force-navigate (dispatched by useSocket when admin pulls user)
     useEffect(() => {
@@ -671,18 +644,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         isCameraOn: room.state.isCameraOn,
     });
     const userLevel = ROLE_HIERARCHY[room.state.currentUser?.role || 'guest'] || 0;
-
-    // ★ AUTH GATE — Auth kontrolü geçmeden hiçbir şey render etme
-    if (!authChecked) {
-        return (
-            <div style={{ width: '100vw', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0a0a0f' }}>
-                <div style={{ textAlign: 'center' }}>
-                    <div style={{ width: 48, height: 48, border: '3px solid rgba(99,102,241,0.3)', borderTopColor: '#6366F1', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
-                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 14 }}>Oturum kontrol ediliyor...</p>
-                </div>
-            </div>
-        );
-    }
 
     // ─── Confirm Modal ──────────────────────────────────────────────
     const [confirmModal, setConfirmModal] = useState<{
@@ -1943,7 +1904,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
-                                <main className="flex-1 flex flex-col min-w-0 min-h-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
+                                <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {isMeetingRoom ? (
                                         /* ━━━ TOPLANTI ODASI ÖZEL HEADER ━━━ */
                                         <header className="h-24 flex-shrink-0 border-b backdrop-blur-md flex items-center justify-between px-8 relative z-30"
@@ -2338,7 +2299,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         tvVideoUrl={tvVideoUrl}
                                         tvVolume={tvVolume}
                                         userLevel={userLevel}
-                                        tvBroadcastLevel={tvBroadcastLevel}
                                         onSetTvVideo={(url) => {
                                             room.socket?.emit('tv:setYoutube', { url });
                                         }}
@@ -2351,17 +2311,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {room.state.openDMs && room.state.openDMs.map((dmUser, idx) => {
                                     const dmParticipant = room.state.users?.find((p: any) => p.displayName === dmUser || p.username === dmUser);
                                     const dmUserId = dmParticipant?.userId;
-                                    const isDmIgnored = dmUserId ? dmIgnoredUsers.has(dmUserId) : false;
+                                    const isDmIgnored = dmUserId ? ignoredUsers.has(dmUserId) : false;
                                     return (
                                         <DMWindow
                                             key={dmUser}
                                             targetUsername={dmUser}
-                                            messages={isDmIgnored ? [] : (room.state.dmMessages[dmUser] || [])}
+                                            messages={room.state.dmMessages[dmUser] || []}
                                             onClose={() => room.actions.closeDM(dmUser)}
                                             onMinimize={() => { }}
                                             onSendMessage={(text) => room.actions.sendDM(dmUser, text)}
                                             onIgnore={dmUserId ? () => {
-                                                setDmIgnoredUsers(prev => {
+                                                setIgnoredUsers(prev => {
                                                     const next = new Set(prev);
                                                     if (next.has(dmUserId)) next.delete(dmUserId);
                                                     else next.add(dmUserId);

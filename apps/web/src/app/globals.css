@@ -37,7 +37,7 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -45,19 +45,19 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(123, 159, 239, 0.25);
+    background: rgba(123, 159, 239, 0.10);
     border-radius: 4px;
     transition: background 0.3s;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(123, 159, 239, 0.50);
+    background: rgba(123, 159, 239, 0.28);
 }
 
 /* Firefox */
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
+    scrollbar-color: rgba(123, 159, 239, 0.10) transparent;
 }
 
 /* --- APP BACKGROUND --- */
