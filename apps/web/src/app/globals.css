@@ -37,27 +37,28 @@ body {
 }
 
 .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+    width: 7px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: rgba(123, 159, 239, 0.25);
+    background: rgba(123, 159, 239, 0.35);
     border-radius: 4px;
-    transition: background 0.3s;
+    border: 1px solid rgba(123, 159, 239, 0.15);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: rgba(123, 159, 239, 0.50);
+    background: rgba(123, 159, 239, 0.55);
 }
 
 /* Firefox */
 .custom-scrollbar {
     scrollbar-width: thin;
-    scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
+    scrollbar-color: rgba(123, 159, 239, 0.35) rgba(255, 255, 255, 0.03);
 }
 
 /* --- APP BACKGROUND --- */
@@ -223,6 +224,8 @@ body {
     box-shadow: 15px 0 50px rgba(0, 0, 0, 0.8), inset -1px 0 0 rgba(200, 150, 46, 0.04);
     backdrop-filter: blur(40px) saturate(150%);
     -webkit-backdrop-filter: blur(40px) saturate(150%);
+    min-height: 0;
+    /* flex child scroll fix */
 }
 
 /* --- CHAT AREA (mesaj zemini — sidebar panellerle uyumlu) --- */
@@ -238,6 +241,8 @@ body {
 .chat-messages-container {
     min-height: 0;
     max-height: 100%;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
 }
 
 /* --- BOTTOM TOOLBAR (Premium) --- */
@@ -254,6 +259,9 @@ body {
     background-color: #0C101A;
     border-left: 1px solid rgba(200, 150, 46, 0.06);
     box-shadow: -6px 0 30px rgba(0, 0, 0, 0.3);
+    min-height: 0;
+    /* flex child scroll fix */
+    overflow-y: auto;
 }
 
 /* --- CHAT HEADER (Premium bottom border) --- */
@@ -1514,143 +1522,43 @@ body {
 /*  LANDING PAGE — DESERT TITANIUM DARK THEME   */
 /* ============================================ */
 
-/* ── Ses Dalgası Halkalı Arka Plan ── */
-.wavy-background {
+/* ── Eskimiş Kağıt Arka Plan ── */
+.aged-paper-background {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     z-index: -1;
-    background: radial-gradient(ellipse at center, #1e3a5f 0%, #0f172a 40%, #0a0e1a 100%);
+    background:
+        /* Koyu gölge — kenar kararması (daha yoğun) */
+        radial-gradient(ellipse at center, transparent 15%, rgba(0, 0, 0, 0.55) 100%),
+        /* Çok koyu turkuaz zemin */
+        linear-gradient(165deg, #030d10 0%, #051518 20%, #0a2830 45%, #071d24 65%, #051316 85%, #020a0d 100%);
     overflow: hidden;
 }
 
-/* Ses dalgası halkaları — GPU-optimized, sayfanın arkasından çıkar */
-.wavy-background::before,
-.wavy-background::after {
+/* Kağıt dokusu — koyu grain efekti */
+.aged-paper-background::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 60px;
-    height: 60px;
-    margin-top: -30px;
-    margin-left: -30px;
-    border-radius: 50%;
-    border: 1px solid transparent;
-    will-change: transform, opacity;
-    animation: soundWaveRing 18s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    background-size: 200px 200px;
+    mix-blend-mode: multiply;
+    opacity: 0.6;
     pointer-events: none;
 }
 
-.wavy-background::before {
-    border-color: rgba(6, 182, 212, 0.18);
-    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.05);
-    animation-delay: 0s;
-}
-
-.wavy-background::after {
-    border-color: rgba(20, 184, 166, 0.2);
-    box-shadow: 0 0 25px 5px rgba(20, 184, 166, 0.06);
-    animation-delay: 3.6s;
-}
-
-/* Ekstra halkalar — merkezden yayılır */
-.sound-ring {
+/* Koyu gölge — köşeler */
+.aged-paper-background::after {
+    content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 60px;
-    height: 60px;
-    margin-top: -30px;
-    margin-left: -30px;
-    border-radius: 50%;
-    border: 1px solid transparent;
-    will-change: transform, opacity;
-    animation: soundWaveRing 18s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at top left, rgba(0, 0, 0, 0.6) 0%, transparent 50%),
+        radial-gradient(ellipse at bottom right, rgba(0, 0, 0, 0.65) 0%, transparent 50%);
     pointer-events: none;
-}
-
-.sound-ring:nth-child(1) {
-    border-color: rgba(6, 182, 212, 0.15);
-    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.04);
-    animation-delay: 1.8s;
-}
-
-.sound-ring:nth-child(2) {
-    border-color: rgba(20, 184, 166, 0.18);
-    box-shadow: 0 0 18px 4px rgba(20, 184, 166, 0.04);
-    animation-delay: 5.4s;
-}
-
-.sound-ring:nth-child(3) {
-    border-color: rgba(34, 211, 238, 0.15);
-    box-shadow: 0 0 22px 5px rgba(34, 211, 238, 0.05);
-    animation-delay: 7.2s;
-}
-
-.sound-ring:nth-child(4) {
-    border-color: rgba(8, 145, 178, 0.12);
-    box-shadow: 0 0 18px 3px rgba(8, 145, 178, 0.03);
-    animation-delay: 9s;
-}
-
-.sound-ring:nth-child(5) {
-    border-color: rgba(6, 182, 212, 0.1);
-    box-shadow: 0 0 20px 4px rgba(6, 182, 212, 0.03);
-    animation-delay: 10.8s;
-}
-
-.sound-ring:nth-child(6) {
-    border-color: rgba(20, 184, 166, 0.14);
-    box-shadow: 0 0 25px 5px rgba(20, 184, 166, 0.04);
-    animation-delay: 12.6s;
-}
-
-.sound-ring:nth-child(7) {
-    border-color: rgba(34, 211, 238, 0.12);
-    box-shadow: 0 0 18px 4px rgba(34, 211, 238, 0.03);
-    animation-delay: 14.4s;
-}
-
-@keyframes soundWaveRing {
-    0% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(65);
-        opacity: 0;
-    }
-}
-
-/* Arka plan gradyan glow efekti */
-.wavy-bg-glow {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(80px);
-    pointer-events: none;
-    mix-blend-mode: screen;
-    will-change: transform, opacity;
-    animation: glowPulse 12s ease-in-out infinite alternate;
-}
-
-@keyframes glowPulse {
-    0% {
-        opacity: 0.3;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 0.5;
-    }
-
-    100% {
-        opacity: 0.35;
-        transform: scale(1.1);
-    }
 }
 
 /* ── Logo Efektleri ── */

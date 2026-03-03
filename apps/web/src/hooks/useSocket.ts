@@ -87,7 +87,24 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         const userAvatar = effectiveUser?.avatar || undefined;
         const userGender = effectiveUser?.gender || undefined;
         const storedGodmasterIcon = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_icon') : undefined;
-        return { roomId: targetRoomId, initialStatus: storedStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined };
+
+        // ★ VIP+ roller için initialStatus gönderme — backend her zaman stealth uygular
+        // Bu sayede eski localStorage değerleri backend'i etkileyemez
+        const roleLevel = (() => {
+            const role = (effectiveUser?.role || 'guest').toLowerCase();
+            const levels: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, superadmin: 6, super_admin: 6, owner: 7, godmaster: 8 };
+            return levels[role] ?? 0;
+        })();
+        const isVipPlus = roleLevel >= 2; // VIP_LEVEL = 2
+        // ★ VIP+ kullanıcılar için localStorage'daki eski status değerini SİL
+        // Bu kritik: sayfa yenilendiğinde eski 'godmaster-visible' değeri kalmamalı
+        if (isVipPlus && typeof window !== 'undefined') {
+            localStorage.removeItem('soprano_user_status');
+            localStorage.removeItem('soprano_godmaster_disguise_name');
+        }
+        const effectiveStatus = isVipPlus ? undefined : storedStatus;
+
+        return { roomId: targetRoomId, initialStatus: effectiveStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined };
     }, []);
 
     // ─── Socket Connection (stable — NOT re-created on room change) ───
@@ -251,7 +268,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
         // Add listener for full participant list updates (e.g. status changes)
         socket.on('room:participants', (data: { participants: any[] }) => {
-            console.log('[room:participants] Updated:', data.participants.length, 'users', data.participants.map(p => `${p.displayName}(role=${p.role},muted=${p.isMuted},banned=${p.isBanned})`));
+            console.log('[room:participants] Updated:', data.participants.length, 'users', data.participants.map(p => `${p.displayName}(role=${p.role},stealth=${p.isStealth},status=${p.status})`));
             setParticipants(data.participants);
         });
 
@@ -406,6 +423,19 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         // ★ Cleanup on tab close / page navigation — prevent ghost sessions
         const handleBeforeUnload = () => {
             const room = currentRoomRef.current;
+            // ★ Yöneticiler — tab kapatıldığında görünürlük tercihini sıfırla
+            // Tekrar girişte varsayılan 'stealth' modu geçerli olsun
+            try {
+                const authUser = JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null');
+                const role = (authUser?.role || 'guest').toLowerCase();
+                const stealthRoles = ['vip', 'operator', 'moderator', 'admin', 'super_admin', 'superadmin', 'owner', 'godmaster'];
+                if (stealthRoles.includes(role)) {
+                    localStorage.removeItem('soprano_user_status');
+                    if (role === 'godmaster') {
+                        localStorage.removeItem('soprano_godmaster_disguise_name');
+                    }
+                }
+            } catch { }
             if (room && socket.connected) {
                 socket.emit('room:leave', { roomId: room });
                 socket.disconnect();
@@ -484,7 +514,17 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     // Join a password-protected room
     const joinWithPassword = (password: string) => {
         if (socketRef.current && passwordRequired) {
-            const storedStatus = typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined;
+            // ★ VIP+ kullancılar için localStorage status gönderme
+            const authUserPw = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_auth_user') || 'null') : null;
+            const tenantUserPw = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+            const pwUser = tenantUserPw || authUserPw;
+            const pwRoleLevel = (() => {
+                const role = (pwUser?.role || 'guest').toLowerCase();
+                const levels: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, superadmin: 6, super_admin: 6, owner: 7, godmaster: 8 };
+                return levels[role] ?? 0;
+            })();
+            const pwIsVipPlus = pwRoleLevel >= 2;
+            const storedStatus = pwIsVipPlus ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined);
             const storedDisguiseName2 = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_disguise_name') : undefined;
             socketRef.current.emit('room:join', { roomId: passwordRequired.roomId, initialStatus: storedStatus, password, disguiseName: storedDisguiseName2 || undefined });
             setPasswordRequired(null);

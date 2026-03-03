@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 
 export type ToastType = 'success' | 'error' | 'info';
 
@@ -77,15 +77,15 @@ function ToastItem({ toast, onRemove }: { toast: ToastMessage; onRemove: () => v
 export function useToast() {
     const [toasts, setToasts] = useState<ToastMessage[]>([]);
 
-    const addToast = (type: ToastType, title: string, message?: string, duration?: number) => {
+    const addToast = useCallback((type: ToastType, title: string, message?: string, duration?: number) => {
         const id = Math.random().toString(36).substring(2, 9);
         setToasts((prev) => [...prev, { id, type, title, message, duration }]);
         return id;
-    };
+    }, []);
 
-    const removeToast = (id: string) => {
+    const removeToast = useCallback((id: string) => {
         setToasts((prev) => prev.filter((t) => t.id !== id));
-    };
+    }, []);
 
     return { toasts, addToast, removeToast };
 }

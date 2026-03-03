@@ -272,10 +272,28 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private moduleRef: ModuleRef,
     private prisma: PrismaService,
   ) {
-    // Seed default gifts — delay to let DB connection pool warm up
-    setTimeout(() => {
+    // ★ STARTUP CLEANUP — Backend restart'ta tüm aktif oturumları temizle
+    // (hiçbir socket bağlı değil, eski kayıtlar hayalet kullanıcı oluşturur)
+    setTimeout(async () => {
+      try {
+        const result = await this.prisma.participant.updateMany({
+          where: { isActive: true },
+          data: { isActive: false, leftAt: new Date() },
+        });
+        if (result.count > 0) {
+          this.logger.warn(`[STARTUP CLEANUP] ${result.count} stale participant(s) marked inactive`);
+        }
+        // Tüm kullanıcıları offline yap
+        await this.prisma.user.updateMany({
+          where: { isOnline: true },
+          data: { isOnline: false },
+        });
+      } catch (e) {
+        this.logger.warn(`[STARTUP CLEANUP] Failed: ${e.message}`);
+      }
+      // Gift seed
       this.seedDefaultGifts().catch(e => console.error('[GIFT] Seed error:', e));
-    }, 5000);
+    }, 3000);
   }
 
   // ═══════════ Gift Seed ═══════════
@@ -834,19 +852,111 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // ★ DUEL AUTO-FORFEIT on disconnect
       this.autoDuelForfeit(participant.roomId, participant.userId, participant.displayName, 'disconnected');
 
+      // ★ GodMaster — disconnect olduğunda görünürlük tercihini sıfırla
+      // Böylece tekrar girdiğinde varsayılan 'hidden' modu geçerli olur
+      if (participant.role?.toLowerCase() === 'godmaster') {
+        this.godmasterVisibility.delete(participant.userId);
+      }
+
       this.participants.delete(client.id);
       this.server.to(participant.roomId).emit('room:participant-left', {
         userId: participant.userId,
         socketId: client.id,
       });
+
+      // ★ Tam participant listesi güncellemesi — hayalet kullanıcıları önler
+      this.broadcastParticipants(participant.roomId);
+
       this.logger.log(
         `Disconnected: ${client.id} (${participant.displayName}) left ${participant.roomId}`,
       );
 
       // Broadcast updated room counts to all tenant clients
       this.broadcastRoomCounts(participant.tenantId);
+
+      // ★ DB CLEANUP — Mark participant as inactive AND user as offline
+      try {
+        await this.prisma.participant.updateMany({
+          where: { socketId: client.id, isActive: true },
+          data: { isActive: false, leftAt: new Date() },
+        });
+
+        // Check if user has any other active sockets before marking offline
+        if (participant.userId) {
+          const hasOtherSockets = Array.from(this.participants.values()).some(
+            (p) => p.userId === participant.userId,
+          );
+          if (!hasOtherSockets) {
+            await this.prisma.user.updateMany({
+              where: { id: participant.userId, isOnline: true },
+              data: { isOnline: false },
+            });
+            this.logger.log(`[DB CLEANUP] User ${participant.displayName} marked offline`);
+          }
+        }
+      } catch (e) {
+        this.logger.warn(`[DB CLEANUP] Failed to mark participant/user inactive: ${e.message}`);
+      }
     } else {
       this.logger.log(`Disconnected: ${client.id} (no room)`);
+    }
+  }
+
+  // ═══════════ Room Leave Handler ═══════════
+  @SubscribeMessage('room:leave')
+  async handleRoomLeave(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { roomId: string },
+  ) {
+    const participant = this.participants.get(client.id);
+    if (!participant) return;
+
+    this.logger.log(`[room:leave] ${participant.displayName} leaving ${participant.roomSlug}`);
+
+    // Release mic if speaker
+    this.autoReleaseSpeaker(participant.roomId, client.id);
+
+    // Duel auto-forfeit
+    this.autoDuelForfeit(participant.roomId, participant.userId, participant.displayName, 'room_switch');
+
+    // Notify room
+    this.server.to(participant.roomId).emit('room:participant-left', {
+      userId: participant.userId,
+      socketId: client.id,
+    });
+
+    // Leave Socket.IO room
+    client.leave(participant.roomId);
+
+    // Remove from participants
+    this.participants.delete(client.id);
+
+    // Broadcast updated participant list and room counts
+    this.broadcastParticipants(participant.roomId);
+    this.broadcastRoomCounts(participant.tenantId);
+
+    // ★ DB CLEANUP — Mark participant as inactive AND user as offline
+    try {
+      await this.prisma.participant.updateMany({
+        where: { socketId: client.id, isActive: true },
+        data: { isActive: false, leftAt: new Date() },
+      });
+
+      // Check if user has any other active sockets before marking offline
+      if (participant.userId) {
+        const hasOtherSockets = Array.from(this.participants.values()).some(
+          (p) => p.userId === participant.userId,
+        );
+        if (!hasOtherSockets) {
+          await this.prisma.user.updateMany({
+            where: { id: participant.userId, isOnline: true },
+            data: { isOnline: false },
+          });
+          this.logger.log(`[DB CLEANUP] User ${participant.displayName} marked offline on leave`);
+        }
+      }
+    } catch (e) {
+      this.logger.warn(`[DB CLEANUP] Failed to mark participant/user inactive on leave: ${e.message}`);
     }
   }
 
@@ -892,12 +1002,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const viewerLevel = getRoleLevel(viewerRole);
         const targetLevel = getRoleLevel(p.role);
 
-        // Hide if viewer is not owner AND viewer level is lower/equal to target
-        if (
-          viewerRole.toLowerCase() !== 'owner' &&
-          viewerLevel <= targetLevel
-        ) {
-          return; // hidden
+        // ★ Hiyerarşik görünürlük: üst veya eşit rol stealth kullanıcıyı görür
+        // Aynı seviyedekiler birbirini görür (iki admin, iki moderator vb.)
+        if (viewerLevel < targetLevel) {
+          return; // hidden — viewer'ın seviyesi daha düşük
         }
       }
       result.push(p);
@@ -1100,40 +1208,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Store participant in memory
     const userRoleLevel = getRoleLevel(user.role || 'guest');
 
-    // self.stealth izni VEYA VIP+ rolü → otomatik stealth
-    // NOT: Owner ve SuperAdmin varsayılan olarak görünür girer (stealth istemezlerse)
+    // ★ Tüm yöneticiler (VIP+) varsayılan olarak GÖRÜNMEZ girer
+    // Hiyerarşi getRoomParticipants'ta korunur: üst rol alttakini görür
+    // GodMaster varsayılan olarak GÖRÜNMEZ girer (hidden mode)
     const hasStealthPermission = user.permissions?.['self.stealth'] === true;
-    const isOwnerOrAbove = userRoleLevel >= ROLE_HIERARCHY['superadmin']; // superadmin(9), owner(10)
-    let initialStealth = isOwnerOrAbove ? false : (hasStealthPermission || userRoleLevel >= VIP_LEVEL);
-
-    // Strict persistence logic:
-    // 1. If payload has 'initialStatus', trust it (if authorized)
+    const isGodMasterRole = (user.role || 'guest').toLowerCase() === 'godmaster';
+    // ★ VIP+ ve GodMaster kullanıcılar HER GİRİŞTE varsayılan stealth ile başlar
+    // Frontend'den gelen initialStatus payload'ı tamamen göz ardı edilir
+    // Kullanıcı odaya girdikten sonra manuel olarak görünür olabilir (status:change ile)
+    let initialStealth = isGodMasterRole ? true : (hasStealthPermission || userRoleLevel >= VIP_LEVEL);
     let initialVisibilityMode: 'hidden' | 'visible' | 'disguised' | undefined = undefined;
     let initialDisguiseName: string | undefined = undefined;
-    if (payload.initialStatus) {
+
+    if (initialStealth) {
+      // ★ VIP+ / GodMaster → payload ne olursa olsun stealth ile başla
+      if (isGodMasterRole) {
+        initialVisibilityMode = 'hidden';
+      }
+      // initialStatus payload'ı göz ardı edilir — stealth korunur
+    } else if (payload.initialStatus) {
+      // ★ Sadece VIP altı kullanıcılar initialStatus payload'ını kullanabilir
       if (payload.initialStatus === 'stealth') {
-        // Only allow if has permission or VIP+
-        if (hasStealthPermission || userRoleLevel >= VIP_LEVEL) {
+        if (hasStealthPermission) {
           initialStealth = true;
         }
-      } else if (payload.initialStatus === 'online') {
-        // User explicitly wants to be online
-        initialStealth = false;
-      } else if (payload.initialStatus === 'godmaster-visible') {
-        initialVisibilityMode = 'visible';
-        initialStealth = false;
-      } else if (payload.initialStatus === 'godmaster-disguised') {
-        initialVisibilityMode = 'disguised';
-        initialDisguiseName = payload.disguiseName || 'Misafir';
-        initialStealth = false;
-      } else if (payload.initialStatus === 'godmaster-hidden') {
-        initialVisibilityMode = 'hidden';
-        initialStealth = true;
       }
+      // 'online' veya başka statuslar → initialStealth zaten false
     }
 
     this.logger.log(
-      `[Stealth Debug] User: ${user.username} | Role: ${user.role} | Level: ${userRoleLevel} | VIP_LEVEL: ${VIP_LEVEL} | InitialStealth: ${initialStealth} | Requested: ${payload.initialStatus}`
+      `[Stealth Debug] User: ${user.username} | Role: ${user.role} | Level: ${userRoleLevel} | VIP_LEVEL: ${VIP_LEVEL} | InitialStealth: ${initialStealth} | Requested: ${payload.initialStatus} | IGNORED_PAYLOAD: ${initialStealth}`
     );
 
     // Refresh role and profile from DB for non-guest users
@@ -1186,9 +1290,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isStealth: initialStealth,
       status: initialStealth ? 'stealth' : 'online',
       nameColor: user.nameColor || undefined,
-      visibilityMode: (user.role || 'guest').toLowerCase() === 'godmaster' ? (initialVisibilityMode || this.godmasterVisibility.get(user.sub) || 'hidden') : undefined,
+      visibilityMode: isGodMasterRole ? (initialVisibilityMode || this.godmasterVisibility.get(user.sub) || 'hidden') : undefined,
       disguisedName: initialDisguiseName,
-      godmasterIcon: (user.role || 'guest').toLowerCase() === 'godmaster' ? (payload.godmasterIcon || undefined) : undefined,
+      godmasterIcon: isGodMasterRole ? (payload.godmasterIcon || undefined) : undefined,
       permissions: user.permissions || undefined,
       platform: (client.data as any).platform || 'web',
     };
@@ -1201,6 +1305,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       participant.isCamBlocked = savedFlags.isCamBlocked ?? false;
       this.logger.log(`[Moderation Restore] ${participant.displayName}: muted=${participant.isMuted}, gagged=${participant.isGagged}, camBlocked=${participant.isCamBlocked}`);
     }
+    // ─── ZOMBIE CLEANUP — Aynı userId ile eski socket'leri temizle (çoklu giriş ayarından BAĞIMSIZ) ───
+    // Bu, hayalet kullanıcıları önler: kullanıcı yeni socket ile bağlandığında eski
+    // zombie participant kayıtlarını temizle (disconnect event kaybolmuş olabilir).
+    const zombieSocketIds: string[] = [];
+    for (const [existingSocketId, existingParticipant] of this.participants.entries()) {
+      if (existingParticipant.userId === user.sub && existingSocketId !== client.id) {
+        // Bu gerçekten bağlı bir socket mi kontrol et
+        const existingSocket = this.server.sockets.sockets.get(existingSocketId);
+        if (!existingSocket || !existingSocket.connected) {
+          // Zombie socket — bağlı değil ama participant listesinde kalıyor
+          this.logger.warn(
+            `[⚠️ ZOMBIE CLEANUP] Removing stale participant ${existingParticipant.displayName} (socket ${existingSocketId}) from ${existingParticipant.roomSlug}`,
+          );
+          zombieSocketIds.push(existingSocketId);
+        }
+      }
+    }
+    for (const zombieId of zombieSocketIds) {
+      const zombieParticipant = this.participants.get(zombieId);
+      if (zombieParticipant) {
+        this.server.to(zombieParticipant.roomId).emit('room:participant-left', {
+          userId: zombieParticipant.userId,
+          socketId: zombieId,
+        });
+        this.broadcastParticipants(zombieParticipant.roomId);
+        this.participants.delete(zombieId);
+      }
+    }
+
     // ─── DUPLICATE SESSION CHECK ────────────────────────────────
     // Çoklu giriş engelleme varsayılan olarak AÇIK (true). Admin panelinden kapatılabilir.
     // YENİ DAVRANIŞ: Mevcut oturum korunur, YENI giriş ENGELLENİR ve 3sn sonra atılır.
@@ -1308,7 +1441,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
 
     this.logger.log(
-      `${participant.displayName} joined room "${roomId}" (${roomParticipants.length} visible, stealth=${participant.isStealth})`,
+      `${participant.displayName} joined room "${roomId}" (${roomParticipants.length} visible, stealth=${participant.isStealth}) | participantMap has clientId=${this.participants.has(client.id)} | roomId=${scopedRoom} | roomParticipants=${roomParticipants.map(p => `${p.displayName}(userId=${p.userId},stealth=${p.isStealth},roomId=${p.roomId})`).join(', ')}`,
     );
 
     // Send room data back to the joining client
@@ -1328,6 +1461,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Fetch room list + theme settings for the joining client
     let allRooms: any[] = [];
     let themeSettings: any = null;
+    // İn-memory participant sayılarını hesapla (DB'deki stale kayıtlar yerine)
+    const inMemoryCounts: Record<string, number> = {};
+    this.participants.forEach(p => {
+      if (p.tenantId === tenantId) {
+        inMemoryCounts[p.roomSlug] = (inMemoryCounts[p.roomSlug] || 0) + 1;
+      }
+    });
     try {
       const dbRooms = await this.roomService.findAll(user.tenantId);
       allRooms = dbRooms.map((r: any) => ({
@@ -1338,7 +1478,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         isLocked: r.isLocked,
         isVipRoom: r.isVipRoom,
         isMeetingRoom: r.isMeetingRoom,
-        participantCount: r._count?.participants || 0,
+        participantCount: inMemoryCounts[r.slug] || 0,
         buttonColor: r.buttonColor || null,
       }));
     } catch (e) {
@@ -4410,8 +4550,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (duel.timer) clearTimeout(duel.timer);
     this.activeDuels.delete(actor.roomId);
 
-    this.server.to(duel.challengerSocketId).emit('room:toast', {
-      type: 'warning', title: '⚔️ Düello', message: `${actor.displayName} meydan okumanızı reddetti.`,
+    // ★ Challenger'a duel:challenge-rejected event'i gönder — frontend DuelArena'daki
+    // onRejected handler tetiklenir ve room page'deki toast bildirimi gösterilir
+    this.server.to(duel.challengerSocketId).emit('duel:challenge-rejected', {
+      opponentName: actor.displayName,
     });
     client.emit('room:toast', { type: 'info', title: 'Düello', message: 'Meydan okumayı reddettiniz.' });
 

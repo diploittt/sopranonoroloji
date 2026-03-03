@@ -539,6 +539,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const [isAudioTestOpen, setIsAudioTestOpen] = useState(false);
     const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
 
+    // ★ Sync ignoredUsers → useRoomRealtime so DMs from ignored users are blocked
+    useEffect(() => {
+        room.actions.setDmIgnoredUserIds?.(ignoredUsers);
+    }, [ignoredUsers]);
+
     // ─── Saved selection for copy action ──────────────────────────────
     const savedSelectionRef = useRef<string>('');
 
@@ -585,12 +590,21 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     // TV Video State
     const [tvVideoUrl, setTvVideoUrl] = useState<string | null>(null);
     const [tvVolume, setTvVolume] = useState(0.7);
+    const [tvBroadcastLevel, setTvBroadcastLevel] = useState<number>(0);
+
+    // ★ Oda geçişlerinde TV yayınını sıfırla (bileşen remount olmadığı için)
+    useEffect(() => {
+        setTvVideoUrl(null);
+        setTvVolume(0.7);
+        setTvBroadcastLevel(0);
+    }, [activeSlug]);
 
     // Listen for tv:youtubeUpdate events
     useEffect(() => {
         if (!room.socket) return;
-        const onYoutubeUpdate = (data: { url: string | null; setBy: string }) => {
+        const onYoutubeUpdate = (data: { url: string | null; setBy: string; setByLevel?: number }) => {
             setTvVideoUrl(data.url);
+            setTvBroadcastLevel(data.url ? (data.setByLevel || 5) : 0);
             if (data.url) {
                 addToast('info', '🎬 Video Yayını', `${data.setBy} TV'de video başlattı.`);
             } else {
@@ -605,9 +619,18 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         };
         room.socket.on('dailyBonus:received', onBonusReceived);
 
+        // ★ Generic room:toast handler — backend'den gelen tüm toast bildirimlerini göster
+        const onRoomToast = (data: { type?: string; title?: string; message?: string }) => {
+            const toastType = (data.type === 'error' || data.type === 'warning' || data.type === 'success' || data.type === 'info')
+                ? data.type : 'info';
+            addToast(toastType, data.title || 'Bildirim', data.message || '');
+        };
+        room.socket.on('room:toast', onRoomToast);
+
         return () => {
             room.socket?.off('tv:youtubeUpdate', onYoutubeUpdate);
             room.socket?.off('dailyBonus:received', onBonusReceived);
+            room.socket?.off('room:toast', onRoomToast);
         };
     }, [room.socket]);
 
@@ -2189,7 +2212,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     messages={room.state.messages}
                                                     currentUser={room.state.currentUser}
                                                     onContextMenu={handleChatContextMenu}
-                                                    ignoredUsers={ignoredUsers}
                                                     roomName={room.state.rooms?.find((r: any) => r.slug === activeSlug)?.name}
                                                 />
                                                 {/* ★ SOFT BAN chat overlay — büyük ban uyarısı */}
@@ -2299,6 +2321,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         tvVideoUrl={tvVideoUrl}
                                         tvVolume={tvVolume}
                                         userLevel={userLevel}
+                                        tvBroadcastLevel={tvBroadcastLevel}
                                         onSetTvVideo={(url) => {
                                             room.socket?.emit('tv:setYoutube', { url });
                                         }}
