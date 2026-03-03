@@ -900,7 +900,7 @@ export default function HomePage() {
                             <button onClick={() => loggedInUser ? goRoom() : openForm('misafir')} className="landing-btn-gold-outline px-6 py-2.5 rounded-xl font-bold transition-colors flex items-center gap-2">Tüm Odaları Gör <ArrowRight className="w-4 h-4" /></button>
                         </div>
                         <div className={`room-cards-grid grid grid-cols-1 ${rooms.length === 1 ? 'md:grid-cols-1 max-w-md mx-auto' : rooms.length === 2 ? 'md:grid-cols-2 max-w-3xl mx-auto' : 'md:grid-cols-3'} gap-8`}>
-                            {rooms.map((rm, i) => {
+                            {rooms.slice(0, 3).map((rm, i) => {
                                 // Oda adına göre tema eşleştirme
                                 const name = (rm.name || '').toLowerCase();
                                 const visual = name.includes('müzik') || name.includes('muzik') || name.includes('akustik')
