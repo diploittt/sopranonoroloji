@@ -29,6 +29,7 @@ interface RightLivePanelProps {
     tvVideoUrl?: string | null;
     tvVolume?: number;
     userLevel?: number;
+    tvBroadcastLevel?: number;
     onSetTvVideo?: (url: string | null) => void;
 }
 
@@ -42,6 +43,7 @@ export function RightLivePanel({
     tvVideoUrl,
     tvVolume = 0.7,
     userLevel = 0,
+    tvBroadcastLevel = 0,
     onSetTvVideo
 }: RightLivePanelProps) {
     const tvVideoRef = useRef<HTMLVideoElement>(null);
@@ -305,27 +307,33 @@ export function RightLivePanel({
             {userLevel >= 5 && (
                 <div className="px-3 mt-2 shrink-0">
                     {tvVideoUrl && !speakerStream ? (
-                        <div className="flex gap-1">
-                            {isYoutubeUrl && (
+                        userLevel >= tvBroadcastLevel ? (
+                            <div className="flex gap-1">
+                                {isYoutubeUrl && (
+                                    <button
+                                        onClick={toggleYtPause}
+                                        className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium border transition-all"
+                                        style={{
+                                            background: ytPaused ? 'rgba(34, 197, 94, 0.15)' : 'rgba(251, 191, 36, 0.15)',
+                                            color: ytPaused ? '#4ade80' : '#fbbf24',
+                                            borderColor: ytPaused ? 'rgba(34, 197, 94, 0.25)' : 'rgba(251, 191, 36, 0.25)',
+                                        }}
+                                    >
+                                        {ytPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                                    </button>
+                                )}
                                 <button
-                                    onClick={toggleYtPause}
-                                    className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium border transition-all"
-                                    style={{
-                                        background: ytPaused ? 'rgba(34, 197, 94, 0.15)' : 'rgba(251, 191, 36, 0.15)',
-                                        color: ytPaused ? '#4ade80' : '#fbbf24',
-                                        borderColor: ytPaused ? 'rgba(34, 197, 94, 0.25)' : 'rgba(251, 191, 36, 0.25)',
-                                    }}
+                                    onClick={() => onSetTvVideo?.(null)}
+                                    className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
                                 >
-                                    {ytPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                                    ■ Durdur
                                 </button>
-                            )}
-                            <button
-                                onClick={() => onSetTvVideo?.(null)}
-                                className="flex-1 px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"
-                            >
-                                ■ Durdur
-                            </button>
-                        </div>
+                            </div>
+                        ) : (
+                            <div className="text-[9px] text-gray-500 text-center py-1">
+                                🔒 Yayını yalnızca açan kişi veya üst yetkili durdurabilir
+                            </div>
+                        )
                     ) : !speakerStream ? (
                         ytInputOpen ? (
                             <div className="flex gap-1">

@@ -601,17 +601,20 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     // TV Video State
     const [tvVideoUrl, setTvVideoUrl] = useState<string | null>(null);
     const [tvVolume, setTvVolume] = useState(0.7);
+    const [tvBroadcastLevel, setTvBroadcastLevel] = useState(0);
 
     // ★ Oda değişiminde YouTube TV state'ini sıfırla
     useEffect(() => {
         setTvVideoUrl(null);
+        setTvBroadcastLevel(0);
     }, [activeSlug]);
 
     // Listen for tv:youtubeUpdate events
     useEffect(() => {
         if (!room.socket) return;
-        const onYoutubeUpdate = (data: { url: string | null; setBy: string }) => {
+        const onYoutubeUpdate = (data: { url: string | null; setBy: string; setByLevel?: number }) => {
             setTvVideoUrl(data.url);
+            setTvBroadcastLevel(data.url ? (data.setByLevel || 5) : 0);
             if (data.url) {
                 addToast('info', '🎬 Video Yayını', `${data.setBy} TV'de video başlattı.`);
             } else {
@@ -2332,6 +2335,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         tvVideoUrl={tvVideoUrl}
                                         tvVolume={tvVolume}
                                         userLevel={userLevel}
+                                        tvBroadcastLevel={tvBroadcastLevel}
                                         onSetTvVideo={(url) => {
                                             room.socket?.emit('tv:setYoutube', { url });
                                         }}

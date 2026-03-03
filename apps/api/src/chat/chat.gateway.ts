@@ -182,8 +182,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Active duels: roomId -> DuelState (one duel per room at a time) */
   private activeDuels = new Map<string, DuelState>();
 
-  /** Active YouTube TV URLs: roomId -> { url, setBy } */
-  private roomYoutubeUrls = new Map<string, { url: string; setBy: string }>();
+  /** Active YouTube TV URLs: roomId -> { url, setBy, setByLevel, setByRole } */
+  private roomYoutubeUrls = new Map<string, { url: string; setBy: string; setByLevel: number; setByRole: string }>();
 
   /** Duel reaction cooldowns: "duelId:userId" -> timestamp */
   private _duelReactionCooldowns = new Map<string, number>();
@@ -1426,7 +1426,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ★ TV YOUTUBE SYNC — Aktif YouTube yayını varsa yeni katılana gönder
     const activeYoutube = this.roomYoutubeUrls.get(scopedRoom);
     if (activeYoutube) {
-      client.emit('tv:youtubeUpdate', { url: activeYoutube.url, setBy: activeYoutube.setBy });
+      client.emit('tv:youtubeUpdate', { url: activeYoutube.url, setBy: activeYoutube.setBy, setByLevel: activeYoutube.setByLevel || 5 });
       this.logger.log(`📺 TV YouTube synced to ${participant.displayName}: ${activeYoutube.url}`);
     }
 
@@ -4120,17 +4120,34 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!scopedRoom) return;
 
     const youtubeUrl = data?.url?.trim() || null;
+
+    // ★ HIERARCHY CHECK — yayını açan kişi daha yüksek yetkili ise alt yetkililer müdahale edemez
+    const existingBroadcast = this.roomYoutubeUrls.get(scopedRoom);
+    if (existingBroadcast && existingBroadcast.setByLevel > roleLevel) {
+      this.logger.warn(`📺 TV YouTube BLOCKED — ${actor.displayName} (level ${roleLevel}) cannot override broadcast by ${existingBroadcast.setBy} (level ${existingBroadcast.setByLevel})`);
+      return { error: `Bu yayını sadece ${existingBroadcast.setBy} veya daha yetkili biri durdurabilir.` };
+    }
+
     this.logger.log(`📺 TV YouTube ${youtubeUrl ? 'SET' : 'CLEARED'} by ${actor.displayName} in ${roomSlug}`);
 
     // Store/clear YouTube URL in memory for newcomer sync
     if (youtubeUrl) {
-      this.roomYoutubeUrls.set(scopedRoom, { url: youtubeUrl, setBy: actor.displayName });
+      this.roomYoutubeUrls.set(scopedRoom, {
+        url: youtubeUrl,
+        setBy: actor.displayName,
+        setByLevel: roleLevel,
+        setByRole: actor.role || 'admin',
+      });
     } else {
       this.roomYoutubeUrls.delete(scopedRoom);
     }
 
-    // Broadcast to all users in the room
-    this.server.to(scopedRoom).emit('tv:youtubeUpdate', { url: youtubeUrl, setBy: actor.displayName });
+    // Broadcast to all users in the room (include setByLevel for frontend hierarchy control)
+    this.server.to(scopedRoom).emit('tv:youtubeUpdate', {
+      url: youtubeUrl,
+      setBy: actor.displayName,
+      setByLevel: roleLevel,
+    });
 
     return { success: true, url: youtubeUrl };
   }
