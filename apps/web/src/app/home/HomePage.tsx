@@ -401,19 +401,20 @@ export default function HomePage() {
 
                 .glossy-panel {
                     background:
-                        linear-gradient(180deg, rgba(255,255,255,0.07) 0%, rgba(255,255,255,0.02) 30%, transparent 60%),
+                        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
                         linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
                     backdrop-filter: blur(24px);
                     -webkit-backdrop-filter: blur(24px);
                     border: 1px solid rgba(255,255,255,0.15);
-                    border-top: 1px solid rgba(255,255,255,0.4);
-                    border-left: 1px solid rgba(255,255,255,0.25);
+                    border-top: 1px solid rgba(255,255,255,0.35);
+                    border-left: 1px solid rgba(255,255,255,0.2);
                     box-shadow:
                         0 50px 70px -20px rgba(0, 0, 0, 0.8),
                         0 20px 30px -10px rgba(0, 0, 0, 0.6),
-                        inset 0 1px 0 rgba(255,255,255,0.08),
-                        inset 0 0 40px rgba(255, 255, 255, 0.05);
-                    border-radius: 20px;
+                        inset 0 1px 0 rgba(255,255,255,0.1),
+                        inset 0 0 60px rgba(255,255,255,0.03);
+                    border-radius: 22px;
                     overflow: hidden;
                 }
 
