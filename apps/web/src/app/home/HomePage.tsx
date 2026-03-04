@@ -611,6 +611,24 @@ export default function HomePage() {
                     100% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
                 }
 
+                @keyframes cardDropDown {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(-120px) scaleY(0.7);
+                    }
+                    50% {
+                        opacity: 1;
+                        transform: translateY(8px) scaleY(1.02);
+                    }
+                    70% {
+                        transform: translateY(-3px) scaleY(0.99);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateY(0) scaleY(1);
+                    }
+                }
+
                 @keyframes tvSettle {
                     0% { transform: rotateX(0deg) rotateY(10deg); }
                     25% { transform: rotateX(-2deg) rotateY(-8deg); }
@@ -1453,7 +1471,7 @@ export default function HomePage() {
                     {activeSection === 'iletisim' && (
                         <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'fadeIn 0.4s ease both' }}>
+                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1488,7 +1506,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'fadeIn 0.5s ease 0.35s both' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                                     <div style={{
@@ -1588,7 +1606,7 @@ export default function HomePage() {
                     {activeSection === 'fiyatlar' && (
                         <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'fadeIn 0.4s ease both' }}>
+                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="glBarMetalP" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1623,7 +1641,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'fadeIn 0.5s ease 0.35s both' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                     <div style={{
