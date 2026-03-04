@@ -47,6 +47,7 @@ export default function HomePage() {
     const [regAcceptTerms, setRegAcceptTerms] = useState(false);
     const [regError, setRegError] = useState('');
     const [regLoading, setRegLoading] = useState(false);
+    const [showPackages, setShowPackages] = useState(false);
 
     // Auth check on mount
     useEffect(() => {
@@ -708,42 +709,140 @@ export default function HomePage() {
                                     <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
                                     <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <div style={{ flex: 1, minWidth: 280 }}>
-                                            <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                                Kendi Dijital Sahneni Yarat
-                                            </h2>
-                                            <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                                <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
-                                                HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
-                                                sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
-                                                Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
-                                            </p>
+                                        <div style={{ flex: 1, minWidth: 280, position: 'relative' }}>
 
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-                                                {[
-                                                    { icon: <ShieldCheck style={{ width: 18, height: 18 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme ile tüm iletişim güvende', color: '#34d399' },
-                                                    { icon: <Video style={{ width: 18, height: 18 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntülü sohbet deneyimi', color: '#a78bfa' },
-                                                    { icon: <Mic style={{ width: 18, height: 18 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite ses iletimi', color: '#38bdf8' },
-                                                    { icon: <Settings style={{ width: 18, height: 18 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli ve oda ayarları', color: '#fbbf24' },
-                                                ].map((t, i) => (
-                                                    <div key={i} className="feature-toast" style={{
-                                                        display: 'flex', alignItems: 'center', gap: 12,
-                                                        padding: '8px 12px', borderRadius: 10,
-                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
-                                                    }}>
-                                                        <div style={{
-                                                            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            background: `${t.color}15`, color: t.color,
-                                                            border: `1px solid ${t.color}30`,
-                                                        }}>{t.icon}</div>
-                                                        <div>
-                                                            <div style={{ fontSize: 12, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
-                                                            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                            {/* Original Content — fades out */}
+                                            <div style={{
+                                                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                opacity: showPackages ? 0 : 1,
+                                                filter: showPackages ? 'blur(8px)' : 'blur(0)',
+                                                transform: showPackages ? 'scale(0.97)' : 'scale(1)',
+                                                maxHeight: showPackages ? 0 : 2000,
+                                                overflow: 'hidden',
+                                                pointerEvents: showPackages ? 'none' : 'auto',
+                                            }}>
+                                                <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                    Kendi Dijital Sahneni Yarat
+                                                </h2>
+                                                <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                    <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
+                                                    HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
+                                                    sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
+                                                    Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
+                                                </p>
+
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+                                                    {[
+                                                        { icon: <ShieldCheck style={{ width: 18, height: 18 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme ile tüm iletişim güvende', color: '#34d399' },
+                                                        { icon: <Video style={{ width: 18, height: 18 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntülü sohbet deneyimi', color: '#a78bfa' },
+                                                        { icon: <Mic style={{ width: 18, height: 18 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite ses iletimi', color: '#38bdf8' },
+                                                        { icon: <Settings style={{ width: 18, height: 18 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli ve oda ayarları', color: '#fbbf24' },
+                                                    ].map((t, i) => (
+                                                        <div key={i} className="feature-toast" style={{
+                                                            display: 'flex', alignItems: 'center', gap: 12,
+                                                            padding: '8px 12px', borderRadius: 10,
+                                                            background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                        }}>
+                                                            <div style={{
+                                                                width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                background: `${t.color}15`, color: t.color,
+                                                                border: `1px solid ${t.color}30`,
+                                                            }}>{t.icon}</div>
+                                                            <div>
+                                                                <div style={{ fontSize: 12, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                                <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                ))}
+                                                    ))}
+                                                </div>
                                             </div>
+
+                                            {/* Package Cards — fades in */}
+                                            <div style={{
+                                                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s',
+                                                opacity: showPackages ? 1 : 0,
+                                                filter: showPackages ? 'blur(0)' : 'blur(8px)',
+                                                transform: showPackages ? 'translateY(0)' : 'translateY(20px)',
+                                                maxHeight: showPackages ? 2000 : 0,
+                                                overflow: 'hidden',
+                                                pointerEvents: showPackages ? 'auto' : 'none',
+                                                position: showPackages ? 'relative' : 'absolute',
+                                                top: 0, left: 0, right: 0,
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                    <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                        Çözüm Modelleri
+                                                    </h2>
+                                                    <button onClick={() => setShowPackages(false)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', color: '#94a3b8', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
+                                                </div>
+                                                <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, marginBottom: 20 }}>İşletmenizin ihtiyacına göre iki farklı entegrasyon modeli.</p>
+
+                                                <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
+                                                    {/* Soprano Hosted */}
+                                                    <div className="feature-toast" style={{
+                                                        flex: 1, padding: '20px', borderRadius: 14,
+                                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(56,189,248,0.15)',
+                                                        display: 'flex', flexDirection: 'column', gap: 12,
+                                                    }}>
+                                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Monitor style={{ width: 20, height: 20, color: '#38bdf8' }} />
+                                                        </div>
+                                                        <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Soprano Hosted</h3>
+                                                        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>
+                                                            Tamamen bizim sunucularımızda barınan, teknik kurulum gerektirmeyen hızlı çözüm. Saniyeler içinde kendi odanızı yayına alın.
+                                                        </p>
+                                                    </div>
+
+                                                    {/* White-Label Embed */}
+                                                    <div className="feature-toast" style={{
+                                                        flex: 1, padding: '20px', borderRadius: 14,
+                                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,191,36,0.15)',
+                                                        display: 'flex', flexDirection: 'column', gap: 12,
+                                                    }}>
+                                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                            <Sparkles style={{ width: 20, height: 20, color: '#fbbf24' }} />
+                                                        </div>
+                                                        <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>White-Label Embed</h3>
+                                                        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>
+                                                            Kendi sitenize iframe veya SDK ile gömün. Kullanıcılar sitenizden ayrılmadan SopranoChat deneyimini markanızla yaşasın.
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                {/* Fiyatlandırma */}
+                                                <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                    <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
+                                                    <div style={{ display: 'flex', gap: 12 }}>
+                                                        {[
+                                                            { name: 'Başlangıç', price: '149', period: '/ay', features: ['1 Oda', '25 Kişi', 'Sesli Sohbet', 'Temel Yönetim'], color: '#38bdf8', popular: false },
+                                                            { name: 'Profesyonel', price: '349', period: '/ay', features: ['5 Oda', '100 Kişi', 'HD Video + Ses', 'Gelişmiş Panel', 'Şifreli Giriş'], color: '#a78bfa', popular: true },
+                                                            { name: 'Kurumsal', price: '799', period: '/ay', features: ['Sınırsız Oda', '500 Kişi', '4K Video', 'White-Label', 'Özel Destek', 'API Erişimi'], color: '#fbbf24', popular: false },
+                                                        ].map((plan, i) => (
+                                                            <div key={i} style={{
+                                                                flex: 1, padding: '20px 16px', borderRadius: 12, textAlign: 'center',
+                                                                background: plan.popular ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)',
+                                                                border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                                position: 'relative', overflow: 'hidden',
+                                                            }}>
+                                                                {plan.popular && <div style={{ position: 'absolute', top: 8, right: -24, background: '#a78bfa', color: '#fff', fontSize: 8, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>POPÜLER</div>}
+                                                                <div style={{ fontSize: 11, fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>{plan.name}</div>
+                                                                <div style={{ marginBottom: 16 }}>
+                                                                    <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>₺{plan.price}</span>
+                                                                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{plan.period}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+                                                                    {plan.features.map((f, fi) => (
+                                                                        <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>✓ {f}</div>
+                                                                    ))}
+                                                                </div>
+                                                                <button className={`btn-3d ${plan.popular ? 'btn-3d-gold' : 'btn-3d-blue'}`} style={{ width: '100%', padding: '8px 0', fontSize: 10 }}>Seç</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+
                                         </div>
 
                                         {/* 3D TV Efekti */}
@@ -1069,7 +1168,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500, marginBottom: 32, lineHeight: 1.7, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                                         Yönetici yetkileri, HD yayın kalitesi ve şifreli koruma ile kendi topluluğunu oluştur.
                                     </p>
-                                    <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
+                                    <button onClick={() => setShowPackages(true)} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
                                         Paketleri İncele
                                     </button>
                                 </div>
