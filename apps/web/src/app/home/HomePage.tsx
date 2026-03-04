@@ -849,58 +849,72 @@ export default function HomePage() {
 
                                             <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
                                                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
-                                                <div style={{ display: 'flex', gap: 12 }}>
-                                                    {[
-                                                        { name: 'Ses + Metin', price: '990', period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                        { name: 'Kamera + Ses', price: '1.390', period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                        { name: 'White Label', price: '6.990', period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
-                                                    ].map((plan, i) => (
-                                                        <div key={i} style={{
-                                                            flex: 1, padding: '20px 16px', borderRadius: 12,
-                                                            background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
-                                                            border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                                            position: 'relative', overflow: 'hidden',
-                                                            display: 'flex', flexDirection: 'column',
-                                                        }}>
-                                                            {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                                                                <span style={{ fontSize: 18 }}>{plan.icon}</span>
-                                                                <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
-                                                            </div>
-                                                            <div style={{ marginBottom: 16 }}>
-                                                                <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
-                                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
-                                                            </div>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
-                                                                {plan.features.map((f, fi) => (
-                                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                        <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
-                                                                    </div>
-                                                                ))}
-                                                            </div>
-                                                            <button className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
-                                                        </div>
-                                                    ))}
-                                                </div>
 
-                                                {/* Özel Yapılandırma Butonu */}
-                                                <div style={{ textAlign: 'center', marginTop: 20 }}>
-                                                    <button
-                                                        onClick={() => setShowCustomConfig(!showCustomConfig)}
-                                                        className="btn-3d btn-3d-blue"
-                                                        style={{ padding: '10px 28px', fontSize: 12, fontWeight: 800, borderRadius: 10, letterSpacing: 1 }}
-                                                    >
-                                                        ⚙️ Özel Yapılandırma
-                                                    </button>
-                                                </div>
-
-                                                {/* Özel Yapılandırma Paneli */}
+                                                {/* Kampanyalı Paketler — fade out */}
                                                 <div style={{
                                                     transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    maxHeight: showCustomConfig ? 600 : 0,
+                                                    opacity: showCustomConfig ? 0 : 1,
+                                                    filter: showCustomConfig ? 'blur(6px)' : 'blur(0)',
+                                                    transform: showCustomConfig ? 'scale(0.97)' : 'scale(1)',
+                                                    maxHeight: showCustomConfig ? 0 : 2000,
                                                     overflow: 'hidden',
+                                                    pointerEvents: showCustomConfig ? 'none' : 'auto',
+                                                }}>
+                                                    <div style={{ display: 'flex', gap: 12 }}>
+                                                        {[
+                                                            { name: 'Ses + Metin', price: '990', period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                            { name: 'Kamera + Ses', price: '1.390', period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                            { name: 'White Label', price: '6.990', period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                        ].map((plan, i) => (
+                                                            <div key={i} style={{
+                                                                flex: 1, padding: '20px 16px', borderRadius: 12,
+                                                                background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
+                                                                border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                                position: 'relative', overflow: 'hidden',
+                                                                display: 'flex', flexDirection: 'column',
+                                                            }}>
+                                                                {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                                                    <span style={{ fontSize: 18 }}>{plan.icon}</span>
+                                                                    <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
+                                                                </div>
+                                                                <div style={{ marginBottom: 16 }}>
+                                                                    <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
+                                                                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
+                                                                </div>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
+                                                                    {plan.features.map((f, fi) => (
+                                                                        <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                            <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                                <button className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+
+                                                    {/* Özel Yapılandırma Butonu */}
+                                                    <div style={{ textAlign: 'center', marginTop: 20 }}>
+                                                        <button
+                                                            onClick={() => setShowCustomConfig(true)}
+                                                            className="btn-3d btn-3d-blue"
+                                                            style={{ padding: '10px 28px', fontSize: 12, fontWeight: 800, borderRadius: 10, letterSpacing: 1 }}
+                                                        >
+                                                            ⚙️ Özel Yapılandırma
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                {/* Özel Yapılandırma Paneli — fade in */}
+                                                <div style={{
+                                                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
                                                     opacity: showCustomConfig ? 1 : 0,
-                                                    marginTop: showCustomConfig ? 20 : 0,
+                                                    filter: showCustomConfig ? 'blur(0)' : 'blur(6px)',
+                                                    transform: showCustomConfig ? 'translateY(0)' : 'translateY(20px)',
+                                                    maxHeight: showCustomConfig ? 2000 : 0,
+                                                    overflow: 'hidden',
+                                                    pointerEvents: showCustomConfig ? 'auto' : 'none',
                                                 }}>
                                                     <div style={{
                                                         background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
@@ -912,9 +926,14 @@ export default function HomePage() {
                                                                 <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>Kendi Paketini Oluştur</h4>
                                                                 <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>İhtiyacın kadar oda, dilediğin kadar limit.</p>
                                                             </div>
-                                                            <button className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
-                                                                Hesapla & Al →
-                                                            </button>
+                                                            <div style={{ display: 'flex', gap: 8 }}>
+                                                                <button onClick={() => setShowCustomConfig(false)} className="btn-3d btn-3d-white" style={{ padding: '8px 16px', fontSize: 10, fontWeight: 800, borderRadius: 10 }}>
+                                                                    ← Paketlere Dön
+                                                                </button>
+                                                                <button className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                                                    Hesapla & Al →
+                                                                </button>
+                                                            </div>
                                                         </div>
 
                                                         {/* Dropdown'lar */}
