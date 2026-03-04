@@ -63,6 +63,7 @@ export default function HomePage() {
     const [chkLogo, setChkLogo] = useState<File | null>(null);
     const [chkHosting, setChkHosting] = useState<'soprano' | 'own'>('soprano');
     const [chkDomain, setChkDomain] = useState('');
+    const [chkRoomName, setChkRoomName] = useState('');
     const [chkBilling, setChkBilling] = useState<'monthly' | 'yearly'>('monthly');
     const [chkPaymentCode] = useState(() => 'SPR-' + Math.random().toString(36).substring(2, 7).toUpperCase());
     const [chkCopied, setChkCopied] = useState<string | null>(null);
@@ -1513,6 +1514,22 @@ export default function HomePage() {
                                         </div>
                                     ))}
                                 </div>
+                                {chkHosting === 'soprano' && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <input
+                                            type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)}
+                                            placeholder="Oda Adınız"
+                                            style={{
+                                                width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
+                                                outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
+                                            }}
+                                            onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
+                                            onBlur={e => { e.target.style.borderColor = 'rgba(56,189,248,0.2)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
+                                    </div>
+                                )}
                                 {chkHosting === 'own' && (
                                     <div style={{ marginTop: 8 }}>
                                         <input
