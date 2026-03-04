@@ -1451,7 +1451,43 @@ export default function HomePage() {
 
                     {/* İLETİŞİM SECTION */}
                     {activeSection === 'iletisim' && (
-                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 680, margin: '0 auto' }}>
+                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 680, margin: '0 auto', position: 'relative' }}>
+                            {/* Gallery Lamp */}
+                            <div className="gallery-lamp-svg">
+                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                        </linearGradient>
+                                        <linearGradient id="glMountPlateC" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                        </linearGradient>
+                                        <linearGradient id="glArmMetalC" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                        </linearGradient>
+                                        <linearGradient id="glLightSpreadC" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                        </linearGradient>
+                                        <linearGradient id="glLedStripC" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadC)" opacity="0.5" />
+                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateC)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalC)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripC)" />
+                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                </svg>
+                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
+                            </div>
                             <div className="glossy-panel" style={{ padding: '28px 32px' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -1550,7 +1586,43 @@ export default function HomePage() {
 
                     {/* FİYATLAR SECTION */}
                     {activeSection === 'fiyatlar' && (
-                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 720, margin: '0 auto' }}>
+                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                            {/* Gallery Lamp */}
+                            <div className="gallery-lamp-svg">
+                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="glBarMetalP" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                        </linearGradient>
+                                        <linearGradient id="glMountPlateP" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                        </linearGradient>
+                                        <linearGradient id="glArmMetalP" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                        </linearGradient>
+                                        <linearGradient id="glLightSpreadP" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                        </linearGradient>
+                                        <linearGradient id="glLedStripP" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadP)" opacity="0.5" />
+                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateP)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalP)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripP)" />
+                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                </svg>
+                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
+                            </div>
                             <div className="glossy-panel" style={{ padding: '28px 32px' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
@@ -1601,6 +1673,96 @@ export default function HomePage() {
                                             <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
                                         </div>
                                     ))}
+                                </div>
+
+                                {/* Özel Yapılandırma */}
+                                <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '20px', border: '1px solid rgba(56,189,248,0.15)', marginBottom: 16 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                                        <div>
+                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 6 }}>⚙️ Özel Yapılandırma</div>
+                                            <h4 style={{ fontSize: 14, fontWeight: 900, color: '#fff', margin: 0 }}>Kendi Paketini Oluştur</h4>
+                                        </div>
+                                        <button onClick={() => {
+                                            const rc = cfgRooms * 200;
+                                            const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                            const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                            const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                            openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
+                                        }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                            Satın Al →
+                                        </button>
+                                    </div>
+                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+                                        <div>
+                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>🏠 Oda Sayısı</div>
+                                            <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
+                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                            }}>
+                                                {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>👥 Kişi Limiti</div>
+                                            <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
+                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                            }}>
+                                                {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>📹 Kamera</div>
+                                            <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
+                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                            }}>
+                                                <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
+                                                <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>💛 Toplantı</div>
+                                            <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
+                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                            }}>
+                                                <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
+                                                <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {/* Fiyat Hesaplama */}
+                                    {(() => {
+                                        const roomCost = cfgRooms * 200;
+                                        const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                        const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                        const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                        const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
+                                        const yearlyTotal = monthlyTotal * 10;
+                                        return (
+                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                        <span>🏠 {cfgRooms} Oda</span><span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
+                                                    </div>
+                                                    {cameraCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                        <span>📹 Kamera</span><span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
+                                                    </div>}
+                                                    {meetingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                        <span>💛 Toplantı</span><span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
+                                                    </div>}
+                                                    {personExtra > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                        <span>👥 Ek Kapasite ({cfgPersons} kişi)</span><span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
+                                                    </div>}
+                                                </div>
+                                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 10, display: 'flex', justifyContent: 'space-between' }}>
+                                                    <div><div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Aylık</div><div style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div></div>
+                                                    <div style={{ textAlign: 'right' }}><div style={{ fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase' }}>Yıllık (2 Ay Ücretsiz)</div><div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div></div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })()}
                                 </div>
 
                                 {/* Alt bilgi */}
