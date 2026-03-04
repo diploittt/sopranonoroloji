@@ -7,7 +7,7 @@ import {
     Mic, Video, Users, LogIn, Monitor,
     Headset, ShieldCheck, Play, Star, Sparkles,
     Volume2, User, Lock, Settings, Copy, Upload, X, Globe, Check,
-    Phone, Mail, MessageCircle, Send
+    Phone, Mail, MessageCircle, Send, BookOpen
 } from "lucide-react";
 import { API_URL } from '@/lib/api';
 import ToastContainer from '@/components/ui/ToastContainer';
@@ -78,6 +78,7 @@ export default function HomePage() {
 
     // Navigation sections
     const [activeSection, setActiveSection] = useState('home');
+    const [guideOpen, setGuideOpen] = useState<string | null>(null);
 
     const openCheckout = (name: string, price: number, period: string) => {
         setCheckoutPlan({ name, price, period });
@@ -698,6 +699,7 @@ export default function HomePage() {
                             { label: 'SCENE', section: 'scene' },
                             { label: 'REHBER', section: 'rehber' },
                             { label: 'FİYATLAR', section: 'fiyatlar' },
+                            { label: 'REFERANSLAR', section: 'referanslar' },
                             { label: 'İLETİŞİM', section: 'iletisim' },
                         ].map((item, i, arr) => (
                             <React.Fragment key={i}>
@@ -1794,7 +1796,257 @@ export default function HomePage() {
                         </div>
                     )}
 
-                    {/* FOOTER */}
+                    {/* REHBER SECTION */}
+                    {activeSection === 'rehber' && (
+                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                            {/* Gallery Lamp */}
+                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
+                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="glBarMetalR" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                        </linearGradient>
+                                        <linearGradient id="glMountPlateR" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                        </linearGradient>
+                                        <linearGradient id="glArmMetalR" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                        </linearGradient>
+                                        <linearGradient id="glLightSpreadR" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                        </linearGradient>
+                                        <linearGradient id="glLedStripR" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadR)" opacity="0.5" />
+                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateR)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalR)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripR)" />
+                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                </svg>
+                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
+                            </div>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
+                                {/* Başlık */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+                                    <div style={{
+                                        width: 44, height: 44, borderRadius: 14,
+                                        background: 'linear-gradient(135deg, #34d399, #10b981)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 6px 16px rgba(52,211,153,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                    }}>
+                                        <BookOpen style={{ width: 20, height: 20, color: '#fff' }} />
+                                    </div>
+                                    <div>
+                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Kullanım Rehberi</h2>
+                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat'i en verimli şekilde kullanmanız için rehber.</p>
+                                    </div>
+                                </div>
+
+                                {/* Accordion */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                    {[
+                                        {
+                                            id: 'baslangic', icon: '🚀', title: 'Hızlı Başlangıç', color: '#38bdf8',
+                                            items: [
+                                                { q: 'Hesap Oluşturma', a: 'Ana sayfadaki "Kayıt Ol" butonuna tıklayın. Kullanıcı adı, e-posta ve şifrenizi girin. E-posta doğrulaması sonrası hesabınız aktif olacaktır.' },
+                                                { q: 'İlk Odaya Giriş', a: 'Giriş yaptıktan sonra oda listesinden istediğiniz odaya tıklayın. Bazı odalar şifreli olabilir, şifreyi oda sahibinden öğrenebilirsiniz.' },
+                                                { q: 'Mikrofon & Kamera İzinleri', a: 'Tarayıcınız mikrofon ve kamera erişimi isteyecektir. "İzin Ver" butonuna tıklayarak sesli/görüntülü sohbete katılabilirsiniz.' },
+                                            ],
+                                        },
+                                        {
+                                            id: 'oda', icon: '🎙️', title: 'Oda Kullanım Rehberi', color: '#a78bfa',
+                                            items: [
+                                                { q: 'Sesli Sohbet', a: 'Odaya girdikten sonra mikrofon butonuna tıklayarak sesli konuşmaya başlayabilirsiniz. Push-to-talk veya sürekli açık mod seçenekleri mevcuttur.' },
+                                                { q: 'Kamera Yayını', a: 'Kamera destekli odalarda kamera ikonuna tıklayarak görüntülü yayın başlatabilirsiniz. HD kalitede eşzamanlı yayın yapılır.' },
+                                                { q: 'Metin Sohbeti', a: 'Alt kısımdaki mesaj kutusundan yazılı mesajlar gönderebilirsiniz. Emoji, bağlantı ve özel formatlar desteklenir.' },
+                                                { q: 'Özel Mesaj (Private Chat)', a: 'Bir kullanıcıya sağ tıklayıp "Özel Mesaj" seçeneğini kullanarak birebir yazışma başlatabilirsiniz.' },
+                                                { q: 'One2One Görüşme', a: 'Bir kullanıcıya sağ tıklayıp "One2One Davet" ile özel birebir sesli/görüntülü görüşme başlatabilirsiniz.' },
+                                            ],
+                                        },
+                                        {
+                                            id: 'roller', icon: '👑', title: 'Roller & Yetkiler', color: '#fbbf24',
+                                            items: [
+                                                { q: 'Rol Sıralaması', a: 'Misafir → Üye → VIP → Operatör → Moderatör → Admin → Süper Admin → Owner → GodMaster. Her üst rol, altındaki tüm yetkilere sahiptir.' },
+                                                { q: 'Misafir & Üye', a: 'Temel sohbet özellikleri: mesaj yazma, sesli dinleme, özel mesaj gönderme. Üyeler ayrıca nudge ve düello gönderebilir.' },
+                                                { q: 'VIP', a: 'Özel VIP rozeti, öncelikli mikrofon sırası ve genişletilmiş profil özellikleri.' },
+                                                { q: 'Operatör & Moderatör', a: 'Kullanıcıları susturma (mute/gag), odadan atma (kick), mikrofon yönetimi ve kısa süreli ban yetkileri.' },
+                                                { q: 'Admin & Süper Admin', a: 'Uzun süreli ban, rol atama/kaldırma, admin paneli erişimi, oda izleme ve gelişmiş yönetim araçları.' },
+                                                { q: 'Owner', a: 'Oda sahibi. Kalıcı ban, tüm rolleri atama, oda ayarlarını değiştirme ve tam yönetim yetkisi.' },
+                                            ],
+                                        },
+                                        {
+                                            id: 'yonetim', icon: '🏠', title: 'Oda Yönetimi', color: '#ef4444',
+                                            items: [
+                                                { q: 'Oda Satın Alma', a: 'Fiyatlar bölümünden size uygun paketi seçin veya Özel Yapılandırma ile ihtiyacınıza göre paket oluşturun. Ödeme sonrası odanız anında aktif olur.' },
+                                                { q: 'Şifre Koruması', a: 'Admin panelinden odanıza şifre koyabilirsiniz. Şifreli odalara sadece şifreyi bilen kullanıcılar girebilir.' },
+                                                { q: 'Toplantı Modu', a: 'Toplantı modunu aktif ederek odayı kapalı bir konferans ortamına dönüştürebilirsiniz. Sadece davet edilen kullanıcılar katılabilir.' },
+                                                { q: 'Ban & Gag Listesi', a: 'Admin panelinden yasaklı (ban) ve susturulmuş (gag) kullanıcı listelerini yönetebilir, yasakları kaldırabilirsiniz.' },
+                                                { q: 'Oda İzleme (Monitor)', a: 'Süper Admin ve üzeri roller, Oda İzleme özelliğiyle odadaki tüm aktiviteleri gerçek zamanlı takip edebilir.' },
+                                            ],
+                                        },
+                                        {
+                                            id: 'yapilandirma', icon: '⚙️', title: 'Özel Yapılandırma', color: '#38bdf8',
+                                            items: [
+                                                { q: 'Kendi Paketini Oluştur', a: 'Fiyatlar sayfasındaki Özel Yapılandırma bölümünden oda sayısı, kişi limiti, kamera ve toplantı modu seçeneklerini istediğiniz gibi ayarlayabilirsiniz.' },
+                                                { q: 'White Label / Domain', a: 'White Label pakette kendi domaininizi kullanarak SopranoChat altyapısını kendi markanızla sunabilirsiniz. HTML/PHP embed desteği mevcuttur.' },
+                                                { q: 'Farklı Domain Desteği', a: 'Birden fazla domain üzerinden aynı altyapıyı kullanabilirsiniz. Her domain için ayrı oda yapılandırması mümkündür.' },
+                                            ],
+                                        },
+                                        {
+                                            id: 'sss', icon: '❓', title: 'Sık Sorulan Sorular', color: '#f472b6',
+                                            items: [
+                                                { q: 'Sesim karşı tarafa gitmiyorsa ne yapmalıyım?', a: 'Tarayıcı ayarlarından mikrofon izninin verildiğinden emin olun. Farklı bir mikrofon seçmeyi deneyin. Sayfayı yenileyip tekrar giriş yapın.' },
+                                                { q: 'Nasıl oda satın alabilirim?', a: 'Üst menüden FİYATLAR sekmesine gidin, size uygun paketi seçin ve ödeme adımlarını takip edin. 7 gün ücretsiz deneme ile başlayabilirsiniz.' },
+                                                { q: 'Kamera açılmıyorsa ne yapmalıyım?', a: 'Tarayıcınızın kamera iznini kontrol edin. Başka bir uygulama kamerayı kullanıyor olabilir, kapatıp tekrar deneyin.' },
+                                                { q: 'Ban yedim, ne yapabilirim?', a: 'Ban süresine bağlı olarak otomatik kalkar. Kalıcı banlarda oda sahibi veya adminlerle iletişime geçin. İletişim bölümünden destek alabilirsiniz.' },
+                                                { q: 'Odamdaki rolleri nasıl yönetirim?', a: 'Admin panelinden kullanıcılara sağ tıklayarak rol atama/kaldırma işlemlerini yapabilirsiniz. Yalnızca kendi rolünüzden düşük rolleri atayabilirsiniz.' },
+                                            ],
+                                        },
+                                    ].map((section) => (
+                                        <div key={section.id} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${guideOpen === section.id ? `${section.color}30` : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.3s' }}>
+                                            <button onClick={() => setGuideOpen(guideOpen === section.id ? null : section.id)} style={{
+                                                width: '100%', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
+                                                background: guideOpen === section.id ? `${section.color}10` : 'rgba(0,0,0,0.15)',
+                                                border: 'none', cursor: 'pointer', transition: 'all 0.3s',
+                                            }}>
+                                                <span style={{ fontSize: 18 }}>{section.icon}</span>
+                                                <span style={{ fontSize: 13, fontWeight: 800, color: guideOpen === section.id ? section.color : '#fff', flex: 1, textAlign: 'left' }}>{section.title}</span>
+                                                <span style={{ color: '#64748b', fontSize: 16, transition: 'transform 0.3s', transform: guideOpen === section.id ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
+                                            </button>
+                                            <div style={{
+                                                maxHeight: guideOpen === section.id ? 1200 : 0,
+                                                overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                background: 'rgba(0,0,0,0.1)',
+                                            }}>
+                                                <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                    {section.items.map((item, ii) => (
+                                                        <div key={ii} style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                                                            <div style={{ fontSize: 12, fontWeight: 700, color: section.color, marginBottom: 6 }}>{item.q}</div>
+                                                            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>{item.a}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* REFERANSLAR SECTION */}
+                    {activeSection === 'referanslar' && (
+                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                            {/* Gallery Lamp */}
+                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
+                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <defs>
+                                        <linearGradient id="glBarMetalF" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                        </linearGradient>
+                                        <linearGradient id="glMountPlateF" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                        </linearGradient>
+                                        <linearGradient id="glArmMetalF" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                        </linearGradient>
+                                        <linearGradient id="glLightSpreadF" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                        </linearGradient>
+                                        <linearGradient id="glLedStripF" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                        </linearGradient>
+                                    </defs>
+                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadF)" opacity="0.5" />
+                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateF)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
+                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalF)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripF)" />
+                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                </svg>
+                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
+                            </div>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
+                                {/* Başlık */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+                                    <div style={{
+                                        width: 44, height: 44, borderRadius: 14,
+                                        background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 6px 16px rgba(167,139,250,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                    }}>
+                                        <Users style={{ width: 20, height: 20, color: '#fff' }} />
+                                    </div>
+                                    <div>
+                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Referanslarımız</h2>
+                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat altyapısını kullanan müşterilerimiz.</p>
+                                    </div>
+                                </div>
+
+                                {/* Açıklama */}
+                                <div style={{ textAlign: 'center', padding: '16px', marginBottom: 20, borderRadius: 12, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' }}>
+                                    <div style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600, marginBottom: 4 }}>🌐 White Label & Domain Müşterilerimiz</div>
+                                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>Kendi domainleriyle SopranoChat altyapısını kullanan kurumsal müşterilerimiz aşağıda listelenmiştir.</div>
+                                </div>
+
+                                {/* Referans Kartları */}
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                    {[
+                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#38bdf8', icon: '🌐' },
+                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#a78bfa', icon: '🌐' },
+                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#fbbf24', icon: '🌐' },
+                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#34d399', icon: '🌐' },
+                                    ].map((ref, i) => (
+                                        <div key={i} style={{
+                                            padding: '18px 16px', borderRadius: 12,
+                                            background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.06)',
+                                            display: 'flex', flexDirection: 'column', gap: 10, transition: 'all 0.3s',
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                <div style={{
+                                                    width: 36, height: 36, borderRadius: 10,
+                                                    background: `linear-gradient(135deg, ${ref.color}20, ${ref.color}08)`,
+                                                    border: `1px solid ${ref.color}25`,
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    fontSize: 18,
+                                                }}>{ref.icon}</div>
+                                                <div>
+                                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ref.name}</div>
+                                                    <div style={{ fontSize: 10, color: ref.color, fontWeight: 600 }}>{ref.domain}</div>
+                                                </div>
+                                            </div>
+                                            <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500, lineHeight: 1.6 }}>{ref.desc}</div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Alt bilgi */}
+                                <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.1)' }}>
+                                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
+                                        Siz de <span style={{ color: '#34d399', fontWeight: 700 }}>SopranoChat altyapısı</span> ile kendi markanızı oluşturun. <span style={{ color: '#38bdf8', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setActiveSection('iletisim'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>İletişime geçin →</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     <footer style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                         &copy; 2026 SopranoChat Systems.
                         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 32 }}>
