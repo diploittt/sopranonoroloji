@@ -400,7 +400,6 @@ export default function HomePage() {
                 .content-fade-6 { animation-delay: 2.2s; }
 
                 .glossy-panel {
-                    position: relative;
                     background:
                         radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
                         linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
@@ -411,29 +410,12 @@ export default function HomePage() {
                     border-top: 1px solid rgba(255,255,255,0.35);
                     border-left: 1px solid rgba(255,255,255,0.2);
                     box-shadow:
+                        0 50px 70px -20px rgba(0, 0, 0, 0.8),
                         0 20px 30px -10px rgba(0, 0, 0, 0.6),
                         inset 0 1px 0 rgba(255,255,255,0.1),
                         inset 0 0 60px rgba(255,255,255,0.03);
                     border-radius: 22px;
                     overflow: hidden;
-                }
-                .glossy-panel::before,
-                .glossy-panel::after {
-                    content: '';
-                    position: absolute;
-                    bottom: 12px;
-                    width: 45%;
-                    height: 20px;
-                    box-shadow: 0 15px 18px rgba(0,0,0,0.6);
-                    z-index: -1;
-                }
-                .glossy-panel::before {
-                    left: 12px;
-                    transform: rotate(-2deg);
-                }
-                .glossy-panel::after {
-                    right: 12px;
-                    transform: rotate(2deg);
                 }
 
                 .btn-3d {
