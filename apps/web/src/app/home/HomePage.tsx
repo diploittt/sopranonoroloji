@@ -62,6 +62,7 @@ export default function HomePage() {
     const [chkPhone, setChkPhone] = useState('');
     const [chkLogo, setChkLogo] = useState<File | null>(null);
     const [chkHosting, setChkHosting] = useState<'soprano' | 'own'>('soprano');
+    const [chkDomain, setChkDomain] = useState('');
     const [chkBilling, setChkBilling] = useState<'monthly' | 'yearly'>('monthly');
     const [chkPaymentCode] = useState(() => 'SPR-' + Math.random().toString(36).substring(2, 7).toUpperCase());
     const [chkCopied, setChkCopied] = useState<string | null>(null);
@@ -1512,6 +1513,22 @@ export default function HomePage() {
                                         </div>
                                     ))}
                                 </div>
+                                {chkHosting === 'own' && (
+                                    <div style={{ marginTop: 8 }}>
+                                        <input
+                                            type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)}
+                                            placeholder="ornek.com"
+                                            style={{
+                                                width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)',
+                                                outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
+                                            }}
+                                            onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(167,139,250,0.1)'; }}
+                                            onBlur={e => { e.target.style.borderColor = 'rgba(167,139,250,0.2)'; e.target.style.boxShadow = 'none'; }}
+                                        />
+                                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Ödeme Bilgileri Decorative Divider */}
