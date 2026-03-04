@@ -616,18 +616,11 @@ export default function HomePage() {
                 @keyframes cardDropDown {
                     0% {
                         opacity: 0;
-                        transform: translateY(-120px) scaleY(0.7);
-                    }
-                    50% {
-                        opacity: 1;
-                        transform: translateY(8px) scaleY(1.02);
-                    }
-                    70% {
-                        transform: translateY(-3px) scaleY(0.99);
+                        transform: translateY(-40px);
                     }
                     100% {
                         opacity: 1;
-                        transform: translateY(0) scaleY(1);
+                        transform: translateY(0);
                     }
                 }
 
