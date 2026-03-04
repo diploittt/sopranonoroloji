@@ -1451,137 +1451,99 @@ export default function HomePage() {
 
                     {/* İLETİŞİM SECTION */}
                     {activeSection === 'iletisim' && (
-                        <div style={{ animation: 'fadeIn 0.5s ease' }}>
-                            <div className="glossy-panel" style={{ padding: '48px', marginBottom: 32 }}>
+                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 680, margin: '0 auto' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px' }}>
                                 {/* Başlık */}
-                                <div style={{ textAlign: 'center', marginBottom: 40 }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                                     <div style={{
-                                        width: 64, height: 64, borderRadius: 18,
+                                        width: 44, height: 44, borderRadius: 14,
                                         background: 'linear-gradient(135deg, #38bdf8, #06b6d4)',
-                                        margin: '0 auto 20px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 10px 30px rgba(56,189,248,0.3), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 6px 16px rgba(56,189,248,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
                                     }}>
-                                        <Phone style={{ width: 28, height: 28, color: '#fff' }} />
+                                        <Phone style={{ width: 20, height: 20, color: '#fff' }} />
                                     </div>
-                                    <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 8, textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>Bizimle İletişime Geçin</h2>
-                                    <p style={{ fontSize: 14, color: '#94a3b8', fontWeight: 500 }}>Sorularınız, önerileriniz veya iş birliği talepleriniz için bize ulaşın.</p>
+                                    <div>
+                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Bizimle İletişime Geçin</h2>
+                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>Sorularınız ve önerileriniz için bize ulaşın.</p>
+                                    </div>
                                 </div>
 
-                                {/* İletişim Kartları */}
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 40 }}>
+                                {/* İletişim Butonları — yatay */}
+                                <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
                                     <a href="https://wa.me/905520363674" target="_blank" rel="noopener noreferrer" style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-                                        padding: '24px 16px', borderRadius: 16, textDecoration: 'none',
-                                        background: 'rgba(37,211,102,0.06)', border: '1px solid rgba(37,211,102,0.15)',
+                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
+                                        background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.18)',
                                         transition: 'all 0.3s',
                                     }}>
-                                        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #25d366, #128c7e)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(37,211,102,0.25)' }}>
-                                            <MessageCircle style={{ width: 22, height: 22, color: '#fff' }} />
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #25d366, #128c7e)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <MessageCircle style={{ width: 15, height: 15, color: '#fff' }} />
                                         </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#25d366', marginBottom: 4 }}>WhatsApp</div>
-                                            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>+90 552 036 3674</div>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#25d366' }}>WhatsApp</div>
+                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>+90 552 036 3674</div>
                                         </div>
                                     </a>
                                     <a href="mailto:destek@sopranochat.com" style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-                                        padding: '24px 16px', borderRadius: 16, textDecoration: 'none',
-                                        background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.15)',
+                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
+                                        background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.18)',
                                         transition: 'all 0.3s',
                                     }}>
-                                        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(56,189,248,0.25)' }}>
-                                            <Mail style={{ width: 22, height: 22, color: '#fff' }} />
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Mail style={{ width: 15, height: 15, color: '#fff' }} />
                                         </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#38bdf8', marginBottom: 4 }}>E-Posta</div>
-                                            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>destek@sopranochat.com</div>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8' }}>E-Posta</div>
+                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>destek@sopranochat.com</div>
                                         </div>
                                     </a>
                                     <div style={{
-                                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
-                                        padding: '24px 16px', borderRadius: 16,
-                                        background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)',
+                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                        padding: '12px 14px', borderRadius: 12,
+                                        background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)',
                                     }}>
-                                        <div style={{ width: 48, height: 48, borderRadius: 14, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(251,191,36,0.25)' }}>
-                                            <Globe style={{ width: 22, height: 22, color: '#fff' }} />
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            <Globe style={{ width: 15, height: 15, color: '#fff' }} />
                                         </div>
-                                        <div style={{ textAlign: 'center' }}>
-                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 4 }}>Web</div>
-                                            <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>sopranochat.com</div>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24' }}>Web</div>
+                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>sopranochat.com</div>
                                         </div>
                                     </div>
                                 </div>
 
-                                {/* Mesaj Formu */}
-                                <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
-                                    <div style={{ flex: '1 1 300px' }}>
-                                        <h3 style={{ fontSize: 18, fontWeight: 800, color: '#fff', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                            <Send style={{ width: 18, height: 18, color: '#38bdf8' }} /> Mesaj Gönderin
-                                        </h3>
-                                        <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>ADINIZ</div>
-                                                <input type="text" value={supName} onChange={e => setSupName(e.target.value)} placeholder="Ad Soyad" style={{
-                                                    width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
-                                                }} />
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>E-POSTA</div>
-                                                <input type="email" value={supEmail} onChange={e => setSupEmail(e.target.value)} placeholder="mail@ornek.com" style={{
-                                                    width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
-                                                }} />
-                                            </div>
-                                        </div>
-                                        <div style={{ marginBottom: 10 }}>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>KONU</div>
-                                            <input type="text" value={supSubject} onChange={e => setSupSubject(e.target.value)} placeholder="Mesajınızın konusu" style={{
-                                                width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#fff',
-                                                background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
-                                            }} />
-                                        </div>
-                                        <div style={{ marginBottom: 16 }}>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>MESAJINIZ</div>
-                                            <textarea value={supMessage} onChange={e => setSupMessage(e.target.value)} placeholder="Mesajınızı buraya yazın..."
-                                                rows={5} style={{
-                                                    width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none',
-                                                }} />
-                                        </div>
-                                        <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '14px 0', fontSize: 14, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                            Mesaj Gönder <Send style={{ width: 16, height: 16 }} />
-                                        </button>
-                                    </div>
-
-                                    {/* Bilgi Kartı */}
-                                    <div style={{ flex: '0 0 280px', display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                        <div style={{ padding: '24px', borderRadius: 16, background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 16 }}>⭐ SopranoChat</h4>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                                                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                                                    <Globe style={{ width: 16, height: 16, color: '#38bdf8', marginTop: 2, flexShrink: 0 }} />
-                                                    <div>
-                                                        <div style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>Soprano Bilişim A.Ş.</div>
-                                                        <div style={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.6 }}>Türkiye genelinde dijital ses ve görüntü iletişim çözümleri</div>
-                                                    </div>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    <Phone style={{ width: 16, height: 16, color: '#34d399', flexShrink: 0 }} />
-                                                    <div style={{ fontSize: 11, color: '#e2e8f0', fontWeight: 600 }}>+90 552 036 3674</div>
-                                                </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    <Mail style={{ width: 16, height: 16, color: '#a78bfa', flexShrink: 0 }} />
-                                                    <div style={{ fontSize: 11, color: '#e2e8f0', fontWeight: 600 }}>destek@sopranochat.com</div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div style={{ padding: '20px', borderRadius: 16, background: 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(52,211,153,0.04))', border: '1px solid rgba(56,189,248,0.1)', textAlign: 'center' }}>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#38bdf8', marginBottom: 4 }}>7/24 Destek</div>
-                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>Teknik destek ekibimiz her zaman yanınızda</div>
-                                        </div>
-                                    </div>
+                                {/* Ayırıcı */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                                    <span style={{ fontSize: 8, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5 }}>Mesaj Gönderin</span>
+                                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
                                 </div>
+
+                                {/* Form */}
+                                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                                    <input type="text" value={supName} onChange={e => setSupName(e.target.value)} placeholder="Ad Soyad" style={{
+                                        flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
+                                    }} />
+                                    <input type="email" value={supEmail} onChange={e => setSupEmail(e.target.value)} placeholder="mail@ornek.com" style={{
+                                        flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
+                                    }} />
+                                </div>
+                                <input type="text" value={supSubject} onChange={e => setSupSubject(e.target.value)} placeholder="Mesajınızın konusu" style={{
+                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', marginBottom: 8,
+                                }} />
+                                <textarea value={supMessage} onChange={e => setSupMessage(e.target.value)} placeholder="Mesajınızı buraya yazın..."
+                                    rows={3} style={{
+                                        width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none', marginBottom: 12,
+                                    }} />
+                                <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                    Mesaj Gönder <Send style={{ width: 14, height: 14 }} />
+                                </button>
                             </div>
                         </div>
                     )}
@@ -1795,7 +1757,7 @@ export default function HomePage() {
                                     }}>A</div>
                                     <div>
                                         <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>AKBANK</div>
-                                        <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>Soprano Bilişim A.Ş.</div>
+                                        <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>SopranoChat Bilişim</div>
                                     </div>
                                 </div>
                                 <div style={{
