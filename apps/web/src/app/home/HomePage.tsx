@@ -6,7 +6,7 @@ import { generateGenderAvatar } from "@/lib/avatar";
 import {
     Mic, Video, Users, LogIn, Monitor,
     Headset, ShieldCheck, Play, Star, Sparkles,
-    Volume2, User, Lock, Settings
+    Volume2, User, Lock, Settings, Copy, Upload, X, Globe, Check
 } from "lucide-react";
 import { API_URL } from '@/lib/api';
 import ToastContainer from '@/components/ui/ToastContainer';
@@ -53,6 +53,29 @@ export default function HomePage() {
     const [cfgPersons, setCfgPersons] = useState(30);
     const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
     const [cfgMeeting, setCfgMeeting] = useState<'Mevcut' | 'Yok'>('Mevcut');
+
+    // Checkout state
+    const [showCheckout, setShowCheckout] = useState(false);
+    const [checkoutPlan, setCheckoutPlan] = useState<{ name: string; price: number; period: string } | null>(null);
+    const [chkName, setChkName] = useState('');
+    const [chkEmail, setChkEmail] = useState('');
+    const [chkPhone, setChkPhone] = useState('');
+    const [chkLogo, setChkLogo] = useState<File | null>(null);
+    const [chkHosting, setChkHosting] = useState<'soprano' | 'own'>('soprano');
+    const [chkBilling, setChkBilling] = useState<'monthly' | 'yearly'>('monthly');
+    const [chkPaymentCode] = useState(() => 'SPR-' + Math.random().toString(36).substring(2, 7).toUpperCase());
+    const [chkCopied, setChkCopied] = useState<string | null>(null);
+
+    const openCheckout = (name: string, price: number, period: string) => {
+        setCheckoutPlan({ name, price, period });
+        setShowCheckout(true);
+    };
+
+    const copyToClipboard = (text: string, label: string) => {
+        navigator.clipboard.writeText(text);
+        setChkCopied(label);
+        setTimeout(() => setChkCopied(null), 2000);
+    };
 
     // Auth check on mount
     useEffect(() => {
@@ -862,9 +885,9 @@ export default function HomePage() {
                                                 }}>
                                                     <div style={{ display: 'flex', gap: 12 }}>
                                                         {[
-                                                            { name: 'Ses + Metin', price: '990', period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                            { name: 'Kamera + Ses', price: '1.390', period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                            { name: 'White Label', price: '6.990', period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                            { name: 'Ses + Metin', price: '990', priceNum: 990, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                            { name: 'Kamera + Ses', price: '1.390', priceNum: 1390, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                            { name: 'White Label', price: '6.990', priceNum: 6990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
                                                         ].map((plan, i) => (
                                                             <div key={i} style={{
                                                                 flex: 1, padding: '20px 16px', borderRadius: 12,
@@ -889,7 +912,7 @@ export default function HomePage() {
                                                                         </div>
                                                                     ))}
                                                                 </div>
-                                                                <button className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                                                <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
                                                             </div>
                                                         ))}
                                                     </div>
@@ -930,7 +953,13 @@ export default function HomePage() {
                                                                 <button onClick={() => setShowCustomConfig(false)} className="btn-3d btn-3d-white" style={{ padding: '8px 16px', fontSize: 10, fontWeight: 800, borderRadius: 10 }}>
                                                                     ← Paketlere Dön
                                                                 </button>
-                                                                <button className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                                                <button onClick={() => {
+                                                                    const rc = cfgRooms * 990;
+                                                                    const cc = cfgCamera === 'Kameralı' ? cfgRooms * 400 : 0;
+                                                                    const mc = cfgMeeting === 'Mevcut' ? 590 : 0;
+                                                                    const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 150 : 0;
+                                                                    openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
+                                                                }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
                                                                     Satın Al →
                                                                 </button>
                                                             </div>
@@ -1342,6 +1371,190 @@ export default function HomePage() {
                     </footer>
                 </main>
             </div>
+
+            {/* CHECKOUT MODAL */}
+            {showCheckout && checkoutPlan && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    animation: 'fadeIn 0.3s ease',
+                }}>
+                    <div style={{
+                        width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
+                        background: 'linear-gradient(145deg, rgba(15,23,42,0.98), rgba(30,41,59,0.95))',
+                        borderRadius: 20, padding: '32px', position: 'relative',
+                        border: '1px solid rgba(56,189,248,0.15)',
+                        boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 40px rgba(56,189,248,0.1)',
+                    }}>
+                        {/* Header */}
+                        <button onClick={() => setShowCheckout(false)} style={{
+                            position: 'absolute', top: 16, right: 16, background: 'rgba(255,255,255,0.06)',
+                            border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 6,
+                            color: '#94a3b8', cursor: 'pointer',
+                        }}><X style={{ width: 16, height: 16 }} /></button>
+
+                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', marginBottom: 4 }}>Sipariş Özeti</h2>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24 }}>
+                            <span style={{ fontSize: 13, color: '#38bdf8', fontWeight: 700 }}>{checkoutPlan.name}</span>
+                            <span style={{ fontSize: 13, color: '#64748b' }}>•</span>
+                            <span style={{ fontSize: 13, color: '#fff', fontWeight: 800 }}>
+                                {chkBilling === 'yearly'
+                                    ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺/yıl`
+                                    : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺${checkoutPlan.period}`}
+                            </span>
+                        </div>
+
+                        {/* Aylık / Yıllık Toggle */}
+                        <div style={{ display: 'flex', gap: 0, marginBottom: 24, background: 'rgba(0,0,0,0.3)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <button onClick={() => setChkBilling('monthly')} style={{
+                                flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                background: chkBilling === 'monthly' ? 'rgba(56,189,248,0.2)' : 'transparent',
+                                color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b',
+                                transition: 'all 0.3s',
+                            }}>Aylık</button>
+                            <button onClick={() => setChkBilling('yearly')} style={{
+                                flex: 1, padding: '10px 0', borderRadius: 10, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                background: chkBilling === 'yearly' ? 'rgba(52,211,153,0.2)' : 'transparent',
+                                color: chkBilling === 'yearly' ? '#34d399' : '#64748b',
+                                transition: 'all 0.3s',
+                            }}>Yıllık <span style={{ fontSize: 9, color: '#ef4444', fontWeight: 800 }}>2 AY HEDİYE 🎁</span></button>
+                        </div>
+
+                        {/* Form Fields */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                            {[
+                                { label: 'Adınız Soyadınız', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz' },
+                                { label: 'E-Posta Adresi', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com' },
+                                { label: 'Telefon Numarası', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx' },
+                            ].map((field, i) => (
+                                <div key={i}>
+                                    <label style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, display: 'block' }}>{field.label}</label>
+                                    <input
+                                        type={field.type} value={field.value} onChange={e => field.setter(e.target.value)}
+                                        placeholder={field.placeholder}
+                                        style={{
+                                            width: '100%', padding: '12px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600, color: '#fff',
+                                            background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
+                                            outline: 'none',
+                                        }}
+                                    />
+                                </div>
+                            ))}
+
+                            {/* Logo Yükleme */}
+                            <div>
+                                <label style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6, display: 'block' }}>Müşteri Logosu</label>
+                                <label style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                                    padding: '14px', borderRadius: 10, cursor: 'pointer',
+                                    background: 'rgba(56,189,248,0.06)', border: '1px dashed rgba(56,189,248,0.3)',
+                                    color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700,
+                                    transition: 'all 0.2s',
+                                }}>
+                                    <Upload style={{ width: 16, height: 16 }} />
+                                    {chkLogo ? chkLogo.name : 'Logo Yükle'}
+                                    <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                                </label>
+                            </div>
+
+                            {/* Hosting Tercihi */}
+                            <div>
+                                <label style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8, display: 'block' }}>Hosting Tercihiniz</label>
+                                <div style={{ display: 'flex', gap: 10 }}>
+                                    <div onClick={() => setChkHosting('soprano')} style={{
+                                        flex: 1, padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                                        background: chkHosting === 'soprano' ? 'rgba(56,189,248,0.1)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${chkHosting === 'soprano' ? 'rgba(56,189,248,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                                        transition: 'all 0.3s',
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                            <div style={{
+                                                width: 18, height: 18, borderRadius: '50%',
+                                                border: `2px solid ${chkHosting === 'soprano' ? '#38bdf8' : '#475569'}`,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}>
+                                                {chkHosting === 'soprano' && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#38bdf8' }} />}
+                                            </div>
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === 'soprano' ? '#38bdf8' : '#94a3b8' }}>SopranoChat</span>
+                                        </div>
+                                        <div style={{ fontSize: 10, color: '#64748b', marginLeft: 26 }}>sopranochat.com üzerinden</div>
+                                    </div>
+                                    <div onClick={() => setChkHosting('own')} style={{
+                                        flex: 1, padding: '14px 16px', borderRadius: 12, cursor: 'pointer',
+                                        background: chkHosting === 'own' ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)',
+                                        border: `1px solid ${chkHosting === 'own' ? 'rgba(167,139,250,0.4)' : 'rgba(255,255,255,0.06)'}`,
+                                        transition: 'all 0.3s',
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                            <div style={{
+                                                width: 18, height: 18, borderRadius: '50%',
+                                                border: `2px solid ${chkHosting === 'own' ? '#a78bfa' : '#475569'}`,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            }}>
+                                                {chkHosting === 'own' && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#a78bfa' }} />}
+                                            </div>
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === 'own' ? '#a78bfa' : '#94a3b8' }}>Kendi Domainin</span>
+                                        </div>
+                                        <div style={{ fontSize: 10, color: '#64748b', marginLeft: 26 }}>Embed ile kendi siten</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Banka Bilgisi */}
+                        <div style={{ marginTop: 20, background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '16px 20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: 8, background: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 900, color: '#fff' }}>A</div>
+                                <div>
+                                    <div style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>AKBANK</div>
+                                    <div style={{ fontSize: 10, color: '#64748b' }}>(Soprano Bilişim A.Ş.)</div>
+                                </div>
+                            </div>
+                            <div style={{
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                padding: '10px 14px', borderRadius: 10,
+                                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                marginBottom: 10,
+                            }}>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2, fontFamily: 'monospace' }}>TR78 0004 6006 1388 8000 0123 45</span>
+                                <button onClick={() => copyToClipboard('TR78000460061388800001234 5', 'iban')} style={{
+                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                    borderRadius: 8, padding: 6, cursor: 'pointer', color: chkCopied === 'iban' ? '#34d399' : '#38bdf8',
+                                }}>
+                                    {chkCopied === 'iban' ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
+                                </button>
+                            </div>
+
+                            {/* Ödeme Kodu */}
+                            <div style={{ marginTop: 8 }}>
+                                <div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Ödeme Kodu (Açıklamaya Yazılacak)</div>
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    padding: '12px 14px', borderRadius: 10,
+                                    background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
+                                }}>
+                                    <span style={{ fontSize: 20, fontWeight: 900, color: '#38bdf8', letterSpacing: 3, fontFamily: 'monospace' }}>{chkPaymentCode}</span>
+                                    <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{
+                                        background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                        borderRadius: 8, padding: 6, cursor: 'pointer', color: chkCopied === 'code' ? '#34d399' : '#38bdf8',
+                                    }}>
+                                        {chkCopied === 'code' ? <Check style={{ width: 14, height: 14 }} /> : <Copy style={{ width: 14, height: 14 }} />}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Ödemeyi Tamamla Butonu */}
+                        <button className="btn-3d btn-3d-blue" style={{
+                            width: '100%', padding: '14px 0', fontSize: 14, fontWeight: 800, borderRadius: 12,
+                            marginTop: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                        }}>
+                            Ödemeyi Gönderdim, Tamamla <Check style={{ width: 16, height: 16 }} />
+                        </button>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
