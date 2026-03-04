@@ -1548,6 +1548,71 @@ export default function HomePage() {
                         </div>
                     )}
 
+                    {/* FİYATLAR SECTION */}
+                    {activeSection === 'fiyatlar' && (
+                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 720, margin: '0 auto' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px' }}>
+                                {/* Başlık */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+                                    <div style={{
+                                        width: 44, height: 44, borderRadius: 14,
+                                        background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        boxShadow: '0 6px 16px rgba(251,191,36,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                    }}>
+                                        <Star style={{ width: 20, height: 20, color: '#fff' }} />
+                                    </div>
+                                    <div>
+                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Fiyatlandırma</h2>
+                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>İşletmenize uygun çözüm modelini seçin.</p>
+                                    </div>
+                                </div>
+
+                                {/* Paket Kartları */}
+                                <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                                    {[
+                                        { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                        { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                        { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                    ].map((plan, i) => (
+                                        <div key={i} style={{
+                                            flex: 1, padding: '20px 16px', borderRadius: 14,
+                                            background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
+                                            border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                            position: 'relative', overflow: 'hidden',
+                                            display: 'flex', flexDirection: 'column',
+                                        }}>
+                                            {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                                <span style={{ fontSize: 18 }}>{plan.icon}</span>
+                                                <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
+                                            </div>
+                                            <div style={{ marginBottom: 16 }}>
+                                                <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
+                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
+                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
+                                                {plan.features.map((f, fi) => (
+                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                        <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Alt bilgi */}
+                                <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.1)' }}>
+                                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
+                                        Tüm paketler <span style={{ color: '#34d399', fontWeight: 700 }}>7 gün ücretsiz deneme</span> ile başlar. İstediğiniz zaman iptal edebilirsiniz.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* FOOTER */}
                     <footer style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                         &copy; 2026 SopranoChat Systems.
