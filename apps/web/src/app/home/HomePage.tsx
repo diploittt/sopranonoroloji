@@ -689,7 +689,7 @@ export default function HomePage() {
                     <nav className="header-nav">
                         {[
                             { label: 'HOME', section: 'home' },
-                            { label: 'SCENE', section: 'scene' },
+                            { label: 'DEMO', section: 'scene' },
                             { label: 'REHBER', section: 'rehber' },
                             { label: 'FİYATLAR', section: 'fiyatlar' },
                             { label: 'REFERANSLAR', section: 'referanslar' },
