@@ -759,7 +759,7 @@ export default function HomePage() {
                                             </div>
 
                                             {/* 3D TV Efekti */}
-                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -5, perspective: 600 }}>
+                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -45, perspective: 600 }}>
                                                 <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
                                                     <div className="tv-screen">
                                                         {/* Sohbet Simülasyonu */}
