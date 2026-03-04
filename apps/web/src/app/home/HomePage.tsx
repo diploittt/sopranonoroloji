@@ -1832,7 +1832,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, #3d4555 0%, #2a3040 20%, #1e2535 50%, #232a3a 80%, #2e3445 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(80,90,110,0.3)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.04)' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, rgba(70,80,100,0.85) 0%, rgba(45,55,75,0.75) 20%, rgba(35,45,65,0.7) 50%, rgba(40,50,70,0.75) 80%, rgba(55,65,85,0.8) 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(80,90,110,0.3)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.04)' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                     <div style={{
