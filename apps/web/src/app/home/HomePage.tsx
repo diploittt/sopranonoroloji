@@ -885,9 +885,9 @@ export default function HomePage() {
                                                 }}>
                                                     <div style={{ display: 'flex', gap: 12 }}>
                                                         {[
-                                                            { name: 'Ses + Metin', price: '990', priceNum: 990, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                            { name: 'Kamera + Ses', price: '1.390', priceNum: 1390, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                            { name: 'White Label', price: '6.990', priceNum: 6990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                            { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                            { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                            { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
                                                         ].map((plan, i) => (
                                                             <div key={i} style={{
                                                                 flex: 1, padding: '20px 16px', borderRadius: 12,
@@ -954,10 +954,10 @@ export default function HomePage() {
                                                                     ← Paketlere Dön
                                                                 </button>
                                                                 <button onClick={() => {
-                                                                    const rc = cfgRooms * 990;
-                                                                    const cc = cfgCamera === 'Kameralı' ? cfgRooms * 400 : 0;
-                                                                    const mc = cfgMeeting === 'Mevcut' ? 590 : 0;
-                                                                    const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 150 : 0;
+                                                                    const rc = cfgRooms * 200;
+                                                                    const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                                    const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                                    const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
                                                                     openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
                                                                 }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
                                                                     Satın Al →
@@ -1013,10 +1013,10 @@ export default function HomePage() {
 
                                                         {/* Tahmini Fiyatlandırma */}
                                                         {(() => {
-                                                            const roomCost = cfgRooms * 990;
-                                                            const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 400 : 0;
-                                                            const meetingCost = cfgMeeting === 'Mevcut' ? 590 : 0;
-                                                            const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 150 : 0;
+                                                            const roomCost = cfgRooms * 200;
+                                                            const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                            const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                            const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
                                                             const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
                                                             const yearlyTotal = monthlyTotal * 10; // 2 ay hediye
                                                             return (
