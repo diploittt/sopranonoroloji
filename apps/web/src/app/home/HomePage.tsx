@@ -33,6 +33,8 @@ export default function HomePage() {
     const [memberPassword, setMemberPassword] = useState('');
     const [memberError, setMemberError] = useState('');
     const [memberLoading, setMemberLoading] = useState(false);
+    const [loginTab, setLoginTab] = useState<'guest' | 'member'>('guest');
+    const [tvTilt, setTvTilt] = useState({ x: 0, y: 0 });
     const [dbRooms, setDbRooms] = useState<any[]>([]);
     const addToast = useAdminStore((s) => s.addToast);
 
@@ -386,17 +388,20 @@ export default function HomePage() {
                     width: 100%;
                     height: 100%;
                     background: #1a1a1a;
-                    border: 4px solid #dcdcdc;
-                    border-radius: 10px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.8);
+                    border: 3px solid #c0c8d5;
+                    border-top-color: #f0f2f6;
+                    border-bottom-color: #6a7588;
+                    border-left-color: #8a95a8;
+                    border-right-color: #8a95a8;
+                    border-radius: 18px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(192,200,213,0.15);
                     position: relative;
                     overflow: hidden;
-                    transition: transform 0.4s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+                    transition: transform 0.4s ease, box-shadow 0.3s ease;
                 }
                 .tv-wrapper:hover .tv-monitor {
-                    transform: scale(1.02);
-                    border-color: #fff;
-                    box-shadow: 0 12px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.8);
+                    box-shadow: 0 12px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.8), 0 0 25px rgba(192,200,213,0.3);
+                    border-color: #f0f2f6;
                 }
                 .tv-screen {
                     width: 100%;
@@ -483,6 +488,88 @@ export default function HomePage() {
                     filter: blur(15px);
                     opacity: 0.6;
                 }
+
+                /* === TABLO LAMBASI (SVG Gallery Lamp) === */
+                .gallery-lamp-svg {
+                    position: absolute;
+                    top: -52px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 60;
+                    pointer-events: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    animation: lampSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 1.5s both;
+                }
+                @keyframes lampSlideDown {
+                    0% {
+                        opacity: 0;
+                        transform: translateX(-50%) translateY(-100%);
+                    }
+                    40% {
+                        opacity: 1;
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateX(-50%) translateY(0);
+                    }
+                }
+                .gallery-lamp-svg svg {
+                    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+                }
+                .gallery-lamp-glow {
+                    position: absolute;
+                    top: 32px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 200px;
+                    height: 90px;
+                    background: radial-gradient(ellipse at top center, rgba(255,210,120,0.22) 0%, rgba(255,180,80,0.08) 50%, transparent 80%);
+                    pointer-events: none;
+                    animation: galleryGlowPulse 4s ease-in-out infinite alternate;
+                }
+                @keyframes galleryGlowPulse {
+                    0% { opacity: 0.75; transform: translateX(-50%) scale(1); }
+                    50% { opacity: 1; transform: translateX(-50%) scale(1.04); }
+                    100% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
+                }
+
+                @keyframes tvSettle {
+                    0% { transform: rotateX(0deg) rotateY(10deg); }
+                    25% { transform: rotateX(-2deg) rotateY(-8deg); }
+                    50% { transform: rotateX(1deg) rotateY(4deg); }
+                    75% { transform: rotateX(-1deg) rotateY(-2deg); }
+                    100% { transform: rotateX(0deg) rotateY(0deg); }
+                }
+                @keyframes btnSlideUp {
+                    0% { opacity: 0; transform: translateY(20px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+
+                /* ====== ANTI-GRAVITY EFFECTS ====== */
+                @keyframes floatY {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-6px); }
+                }
+                @keyframes badgePulseGlow {
+                    0%, 100% { box-shadow: 0 0 6px var(--badge-color, rgba(56,189,248,0.4)); }
+                    50% { box-shadow: 0 0 16px var(--badge-color, rgba(56,189,248,0.7)), 0 0 30px var(--badge-color, rgba(56,189,248,0.25)); }
+                }
+                .antigravity-float {
+                    animation: floatY 3s ease-in-out infinite;
+                }
+                .badge-glow {
+                    animation: badgePulseGlow 2s ease-in-out infinite;
+                    border: 1px solid var(--badge-color, rgba(56,189,248,0.5)) !important;
+                }
+                .btn-3d-gold-float {
+                    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+                }
+                .btn-3d-gold-float:hover {
+                    transform: translateY(-4px) !important;
+                    box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(0,0,0,0.2), 0 10px 0 #b45309, 0 14px 30px rgba(251,191,36,0.4), 0 0 40px rgba(251,191,36,0.2) !important;
+                }
             `}</style>
 
             <ToastContainer />
@@ -516,66 +603,145 @@ export default function HomePage() {
                         {/* SOL ALAN */}
                         <div style={{ flex: '1 1 60%', minWidth: 400, display: 'flex', flexDirection: 'column', gap: 32 }}>
 
-                            {/* Karşılama Kartı */}
-                            <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
-                                <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
+                            {/* Karşılama Kartı + Tablo Lambası */}
+                            <div style={{ position: 'relative' }}>
+                                {/* ===== TABLO LAMBASI (geniş — Hoşgeldiniz kartı) ===== */}
+                                <div className="gallery-lamp-svg">
+                                    <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <linearGradient id="glBarMetalW" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#4a4a4a" />
+                                                <stop offset="25%" stopColor="#2a2a2a" />
+                                                <stop offset="50%" stopColor="#1a1a1a" />
+                                                <stop offset="75%" stopColor="#2a2a2a" />
+                                                <stop offset="100%" stopColor="#3a3a3a" />
+                                            </linearGradient>
+                                            <linearGradient id="glMountPlateW" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#555" />
+                                                <stop offset="50%" stopColor="#2a2a2a" />
+                                                <stop offset="100%" stopColor="#1a1a1a" />
+                                            </linearGradient>
+                                            <linearGradient id="glArmMetalW" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#555" />
+                                                <stop offset="50%" stopColor="#333" />
+                                                <stop offset="100%" stopColor="#2a2a2a" />
+                                            </linearGradient>
+                                            <linearGradient id="glLightSpreadW" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" />
+                                                <stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                            </linearGradient>
+                                            <linearGradient id="glLedStripW" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" />
+                                                <stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                <stop offset="50%" stopColor="#fff0cc" stopOpacity="1" />
+                                                <stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                <stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadW)" opacity="0.5" />
+                                        <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateW)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                        <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                        <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
+                                        <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                        <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
+                                        <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                        <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalW)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                        <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                        <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                        <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripW)" />
+                                        <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                        <circle cx="205" cy="34" r="1" fill="#555" />
+                                        <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                        <circle cx="295" cy="34" r="1" fill="#555" />
+                                    </svg>
+                                    <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
+                                </div>
 
-                                <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
-                                    <div style={{ flex: 1, minWidth: 280 }}>
-                                        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                            SopranoChat&apos;e Hoşgeldiniz
-                                        </h2>
-                                        <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.7, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                            <strong style={{ color: '#fff' }}>Sesli ve görüntülü sohbet</strong> için web kameranızı açın, arkadaşlarınızla gerçek zamanlı iletişim kurun.
-                                        </p>
+                                <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
+                                    <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
-                                        <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                            {[
-                                                { icon: <ShieldCheck style={{ width: 20, height: 20, color: '#34d399' }} />, text: 'Tüm iletişimler şifreli ve güvenlidir' },
-                                                { icon: <Volume2 style={{ width: 20, height: 20, color: '#38bdf8' }} />, text: 'Düşük bant genişliğinde yüksek ses kalitesi' },
-                                                { icon: <Video style={{ width: 20, height: 20, color: '#a78bfa' }} />, text: 'Web kameranızı açarak karşılıklı görüntülü sohbet' },
-                                                { icon: <Lock style={{ width: 20, height: 20, color: '#fbbf24' }} />, text: 'Odalar şifre ile korunabilir' },
-                                                { icon: <Settings style={{ width: 20, height: 20, color: '#f87171' }} />, text: 'Admin paneli ile tam oda yönetimi' },
-                                            ].map((item, i) => (
-                                                <li key={i} style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: 13, color: '#e2e8f0', fontWeight: 500 }}>
-                                                    <span style={{ width: 34, height: 34, borderRadius: 8, background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid rgba(255,255,255,0.08)' }}>{item.icon}</span>
-                                                    {item.text}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
+                                    <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
+                                        <div style={{ flex: 1, minWidth: 280 }}>
+                                            <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                Kendi Dijital Sahneni Yarat
+                                            </h2>
+                                            <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
+                                                HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
+                                                sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
+                                                Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
+                                            </p>
 
-                                    {/* 3D TV Efekti */}
-                                    <div className="tv-wrapper" style={{ flexShrink: 0 }}>
-                                        <div className="tv-monitor">
-                                            <div className="tv-screen">
-                                                {/* Sohbet Simülasyonu */}
-                                                <div className="chat-sim">
-                                                    <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
-                                                    {[
-                                                        { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
-                                                        { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
-                                                        { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
-                                                        { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
-                                                        { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
-                                                    ].map((c, i) => (
-                                                        <div key={i} className="chat-bubble">
-                                                            <div className="chat-avatar" style={{ background: c.bg }}></div>
-                                                            <div>
-                                                                <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
-                                                                <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
-                                                            </div>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
+                                                {[
+                                                    { icon: <ShieldCheck style={{ width: 18, height: 18 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme ile tüm iletişim güvende', color: '#34d399' },
+                                                    { icon: <Video style={{ width: 18, height: 18 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntülü sohbet deneyimi', color: '#a78bfa' },
+                                                    { icon: <Mic style={{ width: 18, height: 18 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite ses iletimi', color: '#38bdf8' },
+                                                    { icon: <Settings style={{ width: 18, height: 18 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli ve oda ayarları', color: '#fbbf24' },
+                                                ].map((t, i) => (
+                                                    <div key={i} style={{
+                                                        display: 'flex', alignItems: 'center', gap: 12,
+                                                        padding: '8px 12px', borderRadius: 10,
+                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                    }}>
+                                                        <div style={{
+                                                            width: 34, height: 34, borderRadius: 8, flexShrink: 0,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            background: `${t.color}15`, color: t.color,
+                                                            border: `1px solid ${t.color}30`,
+                                                        }}>{t.icon}</div>
+                                                        <div>
+                                                            <div style={{ fontSize: 12, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                                {/* Statik noise */}
-                                                <div className="tv-static"></div>
+                                                    </div>
+                                                ))}
                                             </div>
-                                            {/* Scanlines + Flash */}
-                                            <div className="tv-overlay"></div>
-                                            <div className="tv-flash"></div>
                                         </div>
-                                        <div className="tv-reflection"></div>
+
+                                        {/* 3D TV Efekti */}
+                                        <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -45, perspective: 600 }}>
+                                            <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
+                                                <div className="tv-screen">
+                                                    {/* Sohbet Simülasyonu */}
+                                                    <div className="chat-sim">
+                                                        <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
+                                                        {[
+                                                            { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
+                                                            { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
+                                                            { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
+                                                            { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
+                                                            { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
+                                                        ].map((c, i) => (
+                                                            <div key={i} className="chat-bubble">
+                                                                <div className="chat-avatar" style={{ background: c.bg }}></div>
+                                                                <div>
+                                                                    <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
+                                                                    <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    {/* Statik noise */}
+                                                    <div className="tv-static"></div>
+                                                </div>
+                                                {/* Scanlines + Flash */}
+                                                <div className="tv-overlay"></div>
+                                                <div className="tv-flash"></div>
+                                            </div>
+                                            <div className="tv-reflection"></div>
+                                            {/* Modelleri İncele Butonu — monitörün hemen altında */}
+                                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: -8, position: 'relative', zIndex: 20, animation: 'btnSlideUp 0.8s ease-out 3.5s both' }}>
+                                                <button className="btn-3d btn-3d-blue" style={{
+                                                    padding: '10px 28px', fontSize: 12, fontWeight: 800,
+                                                    letterSpacing: 1.5, textTransform: 'uppercase',
+                                                    borderRadius: '0 0 16px 16px', gap: 6,
+                                                    boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
+                                                }}>
+                                                    <Monitor style={{ width: 16, height: 16 }} /> Modelleri İncele
+                                                </button>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -583,8 +749,8 @@ export default function HomePage() {
                             {/* Oda Listesi */}
                             <div className="glossy-panel content-fade content-fade-2" style={{ padding: '24px 32px' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                                    <h3 style={{ fontSize: 20, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                        <Play style={{ width: 24, height: 24, color: '#38bdf8' }} fill="currentColor" /> Aktif Sahneler
+                                    <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                        <Play style={{ width: 24, height: 24, color: '#38bdf8' }} fill="currentColor" /> Sistemi Test Et: Ücretsiz Deneme Odaları
                                     </h3>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}>
                                         <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 10px rgba(239,68,68,1)', display: 'inline-block' }}></span>
@@ -594,7 +760,7 @@ export default function HomePage() {
 
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                     {ACTIVE_ROOMS.map((room) => (
-                                        <div key={room.id} className="room-item" style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }}>
+                                        <div key={room.id} className="room-item" style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => goRoom()}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
                                                 <div style={{
                                                     width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -610,7 +776,7 @@ export default function HomePage() {
                                             </div>
 
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                                                <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.2)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}>
+                                                <span className="badge-glow" style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: 8, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)', '--badge-color': room.type === 'Kamera + Ses' ? 'rgba(56,189,248,0.5)' : room.type === 'Yayın' ? 'rgba(52,211,153,0.5)' : 'rgba(99,102,241,0.5)' } as React.CSSProperties}>
                                                     {room.type}
                                                 </span>
                                                 <div style={{ textAlign: 'center', width: 56 }}>
@@ -626,62 +792,162 @@ export default function HomePage() {
                         {/* SAĞ ALAN */}
                         <div style={{ flex: '1 1 30%', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-                            {/* GİRİŞ PANELİ */}
-                            <div className="glossy-panel content-fade content-fade-3" style={{ padding: '24px 32px' }}>
-                                <h3 style={{ fontSize: 14, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: 16, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                    <User style={{ width: 20, height: 20, color: '#38bdf8' }} /> Hesap Paneli
-                                </h3>
+                            {/* GİRİŞ PANELİ + TABLO LAMBASI */}
+                            <div className="content-fade content-fade-3" style={{ position: 'relative' }}>
+                                {/* ===== TABLO LAMBASI (SVG Gallery Lamp) ===== */}
+                                <div className="gallery-lamp-svg">
+                                    <svg width="300" height="52" viewBox="0 0 300 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <defs>
+                                            <linearGradient id="glBarMetal" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#4a4a4a" />
+                                                <stop offset="25%" stopColor="#2a2a2a" />
+                                                <stop offset="50%" stopColor="#1a1a1a" />
+                                                <stop offset="75%" stopColor="#2a2a2a" />
+                                                <stop offset="100%" stopColor="#3a3a3a" />
+                                            </linearGradient>
+                                            <linearGradient id="glMountPlate" x1="150" y1="0" x2="150" y2="14" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#555" />
+                                                <stop offset="50%" stopColor="#2a2a2a" />
+                                                <stop offset="100%" stopColor="#1a1a1a" />
+                                            </linearGradient>
+                                            <linearGradient id="glArmMetal" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#555" />
+                                                <stop offset="50%" stopColor="#333" />
+                                                <stop offset="100%" stopColor="#2a2a2a" />
+                                            </linearGradient>
+                                            <linearGradient id="glLightSpread" x1="150" y1="44" x2="150" y2="52" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" />
+                                                <stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                            </linearGradient>
+                                            <linearGradient id="glLedStrip" x1="50" y1="43" x2="250" y2="43" gradientUnits="userSpaceOnUse">
+                                                <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" />
+                                                <stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                <stop offset="50%" stopColor="#fff0cc" stopOpacity="1" />
+                                                <stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                <stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        <path d="M58 44 L35 52 L265 52 L242 44 Z" fill="url(#glLightSpread)" opacity="0.5" />
+                                        <rect x="135" y="0" width="30" height="10" rx="2" fill="url(#glMountPlate)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                        <rect x="138" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                        <line x1="142" y1="10" x2="115" y2="30" stroke="url(#glArmMetal)" strokeWidth="3" strokeLinecap="round" />
+                                        <line x1="142.5" y1="10.5" x2="115.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                        <line x1="158" y1="10" x2="185" y2="30" stroke="url(#glArmMetal)" strokeWidth="3" strokeLinecap="round" />
+                                        <line x1="157.5" y1="10.5" x2="184.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                        <rect x="48" y="30" width="204" height="14" rx="7" fill="url(#glBarMetal)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                        <rect x="58" y="32" width="184" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                        <rect x="58" y="42" width="184" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                        <rect x="55" y="43.5" width="190" height="1.5" rx="0.75" fill="url(#glLedStrip)" />
+                                        <circle cx="115" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                        <circle cx="115" cy="34" r="1" fill="#555" />
+                                        <circle cx="185" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                        <circle cx="185" cy="34" r="1" fill="#555" />
+                                    </svg>
+                                    <div className="gallery-lamp-glow" style={{ width: 280 }}></div>
+                                </div>
 
-                                {!user ? (
-                                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-                                        <div>
-                                            <label style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 4, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>Kullanıcı Adınız</label>
-                                            <input
-                                                type="text"
-                                                value={guestNick}
-                                                onChange={(e) => setGuestNick(e.target.value)}
-                                                className="input-inset"
-                                                style={{ width: '100%', padding: '14px 16px', fontSize: 14, boxSizing: 'border-box' }}
-                                                placeholder="Buraya yazın..."
-                                            />
+                                <div className="glossy-panel" style={{ padding: '24px 28px', position: 'relative', zIndex: 10 }}>
+                                    {/* Üst başlık */}
+                                    <h3 style={{ fontSize: 13, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                        <User style={{ width: 18, height: 18, color: user ? '#fbbf24' : '#38bdf8' }} /> Hesap Paneli
+                                    </h3>
+
+                                    {!user ? (
+                                        <>
+                                            {/* Sekmeler */}
+                                            <div style={{ display: 'flex', marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                                <button
+                                                    onClick={() => setLoginTab('guest')}
+                                                    style={{
+                                                        flex: 1, padding: '10px 0', fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+                                                        textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                                        background: loginTab === 'guest' ? 'linear-gradient(180deg, #38bdf8, #0284c7)' : 'rgba(0,0,0,0.3)',
+                                                        color: loginTab === 'guest' ? '#fff' : 'rgba(255,255,255,0.5)',
+                                                        transition: 'all 0.3s ease',
+                                                        boxShadow: loginTab === 'guest' ? 'inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                                                    }}
+                                                >👤 Misafir</button>
+                                                <button
+                                                    onClick={() => setLoginTab('member')}
+                                                    style={{
+                                                        flex: 1, padding: '10px 0', fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+                                                        textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                                        background: loginTab === 'member' ? 'linear-gradient(180deg, #fbbf24, #d97706)' : 'rgba(0,0,0,0.3)',
+                                                        color: loginTab === 'member' ? '#fff' : 'rgba(255,255,255,0.5)',
+                                                        transition: 'all 0.3s ease',
+                                                        boxShadow: loginTab === 'member' ? 'inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                                                    }}
+                                                >⭐ Üye Giriş</button>
+                                            </div>
+
+                                            {loginTab === 'guest' ? (
+                                                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
+                                                        <input
+                                                            type="text"
+                                                            value={guestNick}
+                                                            onChange={(e) => setGuestNick(e.target.value)}
+                                                            className="input-inset"
+                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
+                                                            placeholder="Nickname girin..."
+                                                        />
+                                                    </div>
+                                                    {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
+                                                    <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '14px 0', fontSize: 13, gap: 8 }} disabled={guestLoading}>
+                                                        <LogIn style={{ width: 18, height: 18 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
+                                                    </button>
+                                                </form>
+                                            ) : (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı</label>
+                                                        <input
+                                                            type="text"
+                                                            value={memberUsername}
+                                                            onChange={(e) => setMemberUsername(e.target.value)}
+                                                            className="input-inset"
+                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
+                                                            placeholder="Üye adınız"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
+                                                        <input
+                                                            type="password"
+                                                            value={memberPassword}
+                                                            onChange={(e) => setMemberPassword(e.target.value)}
+                                                            className="input-inset"
+                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
+                                                            placeholder="••••••••"
+                                                        />
+                                                    </div>
+                                                    {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
+                                                    <button onClick={handleMemberLogin} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '14px 0', fontSize: 13, gap: 8 }} disabled={memberLoading}>
+                                                        <LogIn style={{ width: 18, height: 18 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div style={{ textAlign: 'center', padding: '8px 0' }}>
+                                            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 20 }}>
+                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                <img src={user.avatar} style={{ width: 80, height: 80, borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', background: '#1e293b', objectFit: 'cover' }} alt="Avatar" />
+                                            </div>
+                                            <h4 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
+                                            <p style={{ fontSize: 12, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 6, marginBottom: 24, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
+                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '12px 0', fontSize: 13, gap: 8 }}>
+                                                    Odaya Gir
+                                                </button>
+                                                <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '12px 0', fontSize: 13 }}>
+                                                    Çıkış Yap
+                                                </button>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <label style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 4, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>Şifre (Aboneler)</label>
-                                            <input
-                                                type="password"
-                                                value={memberPassword}
-                                                onChange={(e) => setMemberPassword(e.target.value)}
-                                                className="input-inset"
-                                                style={{ width: '100%', padding: '14px 16px', fontSize: 14, boxSizing: 'border-box' }}
-                                                placeholder="Gizli kelime"
-                                            />
-                                        </div>
-                                        {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
-                                        {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
-                                        <div style={{ paddingTop: 12 }}>
-                                            <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '16px 0', fontSize: 14, gap: 8 }} disabled={guestLoading}>
-                                                <LogIn style={{ width: 20, height: 20 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Sohbete Gir'}
-                                            </button>
-                                        </div>
-                                    </form>
-                                ) : (
-                                    <div style={{ textAlign: 'center', padding: '8px 0' }}>
-                                        <div style={{ position: 'relative', display: 'inline-block', marginBottom: 24 }}>
-                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                            <img src={user.avatar} style={{ width: 96, height: 96, borderRadius: 18, border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 15px 30px rgba(0,0,0,0.5)', background: '#1e293b', objectFit: 'cover' }} alt="Avatar" />
-                                        </div>
-                                        <h4 style={{ fontSize: 24, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
-                                        <p style={{ fontSize: 14, fontWeight: 700, color: '#38bdf8', marginTop: 8, marginBottom: 32, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                            <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '14px 0', fontSize: 14, gap: 8 }}>
-                                                Odaya Gir
-                                            </button>
-                                            <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '14px 0', fontSize: 14 }}>
-                                                Çıkış Yap
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
 
                             {/* ODA SATIN AL */}
@@ -696,7 +962,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500, marginBottom: 32, lineHeight: 1.7, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                                         Yönetici yetkileri, HD yayın kalitesi ve şifreli koruma ile kendi topluluğunu oluştur.
                                     </p>
-                                    <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '16px 0', fontSize: 14 }}>
+                                    <button className="btn-3d btn-3d-gold btn-3d-gold-float" style={{ width: '100%', padding: '16px 0', fontSize: 14 }}>
                                         Paketleri İncele
                                     </button>
                                 </div>
@@ -723,8 +989,8 @@ export default function HomePage() {
                             <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Gizlilik Sözleşmesi</a>
                         </div>
                     </footer>
-                </main >
-            </div >
+                </main>
+            </div>
         </>
     );
 }
