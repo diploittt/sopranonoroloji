@@ -347,21 +347,34 @@ export default function HomePage() {
                     border: none;
                     outline: none;
                     cursor: pointer;
-                    border-radius: 12px;
-                    font-weight: 800;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 9px;
                     text-transform: uppercase;
                     letter-spacing: 1px;
-                    transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+                    transition: all 0.3s ease;
+                    overflow: hidden;
                 }
 
-                .btn-3d-blue { background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.4); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(0,0,0,0.3), 0 6px 0 #0369a1, 0 10px 20px rgba(0,0,0,0.4); }
-                .btn-3d-blue:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(0,0,0,0.3), 0 2px 0 #0369a1, 0 4px 10px rgba(0,0,0,0.4); }
+                .btn-3d-blue { background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%); color: #bae6fd; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .btn-3d-blue:hover { background: linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(2,132,199,0.45) 100%); box-shadow: 0 6px 24px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.08); transform: translateY(-1px); }
+                .btn-3d-blue:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
 
-                .btn-3d-green { background: linear-gradient(180deg, #34d399 0%, #059669 100%); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.4); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(0,0,0,0.3), 0 6px 0 #047857, 0 10px 20px rgba(0,0,0,0.4); }
-                .btn-3d-green:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), inset 0 -2px 0 rgba(0,0,0,0.3), 0 2px 0 #047857, 0 4px 10px rgba(0,0,0,0.4); }
+                .btn-3d-green { background: linear-gradient(180deg, rgba(52,211,153,0.25) 0%, rgba(5,150,105,0.35) 100%); color: #a7f3d0; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .btn-3d-green:hover { background: linear-gradient(180deg, rgba(52,211,153,0.35) 0%, rgba(5,150,105,0.45) 100%); box-shadow: 0 6px 24px rgba(52,211,153,0.2), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.08); transform: translateY(-1px); }
+                .btn-3d-green:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
 
-                .btn-3d-gold { background: linear-gradient(180deg, #fbbf24 0%, #d97706 100%); color: #fffbeb; text-shadow: 0 1px 2px rgba(0,0,0,0.4); box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(0,0,0,0.2), 0 6px 0 #b45309, 0 10px 20px rgba(0,0,0,0.4); }
-                .btn-3d-gold:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(0,0,0,0.2), 0 2px 0 #b45309, 0 4px 10px rgba(0,0,0,0.4); }
+                .btn-3d-gold { background: linear-gradient(180deg, rgba(251,191,36,0.25) 0%, rgba(217,119,6,0.35) 100%); color: #fef3c7; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .btn-3d-gold:hover { background: linear-gradient(180deg, rgba(251,191,36,0.35) 0%, rgba(217,119,6,0.45) 100%); box-shadow: 0 6px 24px rgba(251,191,36,0.2), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.08); transform: translateY(-1px); }
+                .btn-3d-gold:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+                .btn-3d-red { background: linear-gradient(180deg, rgba(220,38,38,0.3) 0%, rgba(153,27,27,0.45) 100%); color: #fca5a5; box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px rgba(220,38,38,0.15), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04); }
+                .btn-3d-red:hover { background: linear-gradient(180deg, rgba(220,38,38,0.4) 0%, rgba(153,27,27,0.55) 100%); box-shadow: 0 6px 24px rgba(220,38,38,0.25), 0 0 18px rgba(220,38,38,0.2), inset 0 1px 0 rgba(255,255,255,0.18), inset 0 -1px 0 rgba(255,255,255,0.06); transform: translateY(-1px); }
+                .btn-3d-red:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
+
+                .btn-3d-white { background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(200,210,225,0.2) 100%); color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.08); border-top: 1px solid rgba(255,255,255,0.25); }
+                .btn-3d-white:hover { background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(210,220,235,0.3) 100%); box-shadow: 0 6px 24px rgba(255,255,255,0.15), inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(255,255,255,0.12); transform: translateY(-1px); }
+                .btn-3d-white:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3); }
 
                 .input-inset { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(0,0,0,0.4); box-shadow: inset 0 3px 6px rgba(0,0,0,0.3); border-radius: 10px; color: #fff; transition: all 0.2s ease; }
                 .input-inset:focus { outline: none; background: rgba(0,0,0,0.3); border-color: #38bdf8; box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56, 189, 248, 0.2); }
@@ -370,8 +383,12 @@ export default function HomePage() {
                 .room-item { transition: all 0.2s ease; border: 1px solid transparent; }
                 .room-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: scale(1.01); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-                .btn-3d-logout { background: linear-gradient(180deg, #94a3b8 0%, #64748b 100%); color: white; text-shadow: 0 1px 2px rgba(0,0,0,0.4); box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 6px 0 #475569, 0 10px 20px rgba(0,0,0,0.4); }
-                .btn-3d-logout:active { transform: translateY(4px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 2px 0 #475569, 0 4px 10px rgba(0,0,0,0.4); }
+                .feature-toast { transition: all 0.3s ease; cursor: default; }
+                .feature-toast:hover { background: rgba(255,255,255,0.08) !important; transform: translateX(4px) scale(1.02); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+
+                .btn-3d-logout { background: linear-gradient(180deg, rgba(148,163,184,0.15) 0%, rgba(71,85,105,0.25) 100%); color: #94a3b8; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.03); }
+                .btn-3d-logout:hover { background: linear-gradient(180deg, rgba(148,163,184,0.25) 0%, rgba(71,85,105,0.35) 100%); color: #e2e8f0; box-shadow: 0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); transform: translateY(-1px); }
+                .btn-3d-logout:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
 
                 /* 3D TV Efekti */
                 .tv-wrapper {
@@ -678,7 +695,7 @@ export default function HomePage() {
                                                     { icon: <Mic style={{ width: 18, height: 18 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite ses iletimi', color: '#38bdf8' },
                                                     { icon: <Settings style={{ width: 18, height: 18 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli ve oda ayarları', color: '#fbbf24' },
                                                 ].map((t, i) => (
-                                                    <div key={i} style={{
+                                                    <div key={i} className="feature-toast" style={{
                                                         display: 'flex', alignItems: 'center', gap: 12,
                                                         padding: '8px 12px', borderRadius: 10,
                                                         background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
@@ -734,14 +751,13 @@ export default function HomePage() {
                                                 {/* Kablo */}
                                                 <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
                                                 {/* Buton */}
-                                                <button className="btn-3d btn-3d-blue model-btn" style={{
-                                                    padding: '10px 28px', fontSize: 12, fontWeight: 800,
+                                                <button className="btn-3d btn-3d-white model-btn" style={{
+                                                    padding: '8px 22px', fontSize: 10, fontWeight: 700,
                                                     letterSpacing: 1.5, textTransform: 'uppercase',
-                                                    borderRadius: 12, gap: 6,
-                                                    boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(0,0,0,0.3), 0 6px 0 #0369a1, 0 10px 20px rgba(0,0,0,0.5), 0 0 12px rgba(56,189,248,0.15)',
+                                                    borderRadius: 10, gap: 6,
                                                     animation: 'floatY 3s ease-in-out infinite',
                                                 }}>
-                                                    <Play style={{ width: 14, height: 14 }} fill="currentColor" /> Test Et
+                                                    <Play style={{ width: 12, height: 12 }} fill="currentColor" /> Test Et
                                                 </button>
                                             </div>
                                         </div>
@@ -858,27 +874,29 @@ export default function HomePage() {
                                     {!user ? (
                                         <>
                                             {/* Sekmeler */}
-                                            <div style={{ display: 'flex', marginBottom: 20, borderRadius: 10, overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)' }}>
+                                            <div style={{ display: 'flex', marginBottom: 20, borderRadius: 10, overflow: 'hidden', gap: 8 }}>
                                                 <button
                                                     onClick={() => setLoginTab('guest')}
                                                     style={{
-                                                        flex: 1, padding: '10px 0', fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+                                                        flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
                                                         textTransform: 'uppercase', border: 'none', cursor: 'pointer',
-                                                        background: loginTab === 'guest' ? 'linear-gradient(180deg, #38bdf8, #0284c7)' : 'rgba(0,0,0,0.3)',
-                                                        color: loginTab === 'guest' ? '#fff' : 'rgba(255,255,255,0.5)',
+                                                        borderRadius: 8,
+                                                        background: loginTab === 'guest' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'rgba(0,0,0,0.25)',
+                                                        color: loginTab === 'guest' ? '#7dd3fc' : 'rgba(255,255,255,0.35)',
                                                         transition: 'all 0.3s ease',
-                                                        boxShadow: loginTab === 'guest' ? 'inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                                                        boxShadow: loginTab === 'guest' ? '0 0 16px rgba(56,189,248,0.3), 0 0 4px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
                                                     }}
                                                 >👤 Misafir</button>
                                                 <button
                                                     onClick={() => setLoginTab('member')}
                                                     style={{
-                                                        flex: 1, padding: '10px 0', fontSize: 11, fontWeight: 800, letterSpacing: 1.5,
+                                                        flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
                                                         textTransform: 'uppercase', border: 'none', cursor: 'pointer',
-                                                        background: loginTab === 'member' ? 'linear-gradient(180deg, #fbbf24, #d97706)' : 'rgba(0,0,0,0.3)',
-                                                        color: loginTab === 'member' ? '#fff' : 'rgba(255,255,255,0.5)',
+                                                        borderRadius: 8,
+                                                        background: loginTab === 'member' ? 'linear-gradient(180deg, rgba(239,68,68,0.3), rgba(185,28,28,0.4))' : 'rgba(0,0,0,0.25)',
+                                                        color: loginTab === 'member' ? '#fca5a5' : 'rgba(255,255,255,0.35)',
                                                         transition: 'all 0.3s ease',
-                                                        boxShadow: loginTab === 'member' ? 'inset 0 1px 0 rgba(255,255,255,0.4)' : 'none',
+                                                        boxShadow: loginTab === 'member' ? '0 0 16px rgba(239,68,68,0.3), 0 0 4px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
                                                     }}
                                                 >⭐ Üye Giriş</button>
                                             </div>
@@ -897,8 +915,8 @@ export default function HomePage() {
                                                         />
                                                     </div>
                                                     {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
-                                                    <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '14px 0', fontSize: 13, gap: 8 }} disabled={guestLoading}>
-                                                        <LogIn style={{ width: 18, height: 18 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
+                                                    <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
+                                                        <LogIn style={{ width: 14, height: 14 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
                                                     </button>
                                                 </form>
                                             ) : (
@@ -926,8 +944,8 @@ export default function HomePage() {
                                                         />
                                                     </div>
                                                     {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
-                                                    <button onClick={handleMemberLogin} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '14px 0', fontSize: 13, gap: 8 }} disabled={memberLoading}>
-                                                        <LogIn style={{ width: 18, height: 18 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
+                                                    <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
+                                                        <LogIn style={{ width: 14, height: 14 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
                                                     </button>
                                                 </div>
                                             )}
@@ -941,10 +959,10 @@ export default function HomePage() {
                                             <h4 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
                                             <p style={{ fontSize: 12, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 6, marginBottom: 24, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
                                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                                <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '12px 0', fontSize: 13, gap: 8 }}>
+                                                <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
                                                     Odaya Gir
                                                 </button>
-                                                <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '12px 0', fontSize: 13 }}>
+                                                <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '10px 0', fontSize: 11 }}>
                                                     Çıkış Yap
                                                 </button>
                                             </div>
@@ -965,7 +983,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500, marginBottom: 32, lineHeight: 1.7, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                                         Yönetici yetkileri, HD yayın kalitesi ve şifreli koruma ile kendi topluluğunu oluştur.
                                     </p>
-                                    <button className="btn-3d btn-3d-gold btn-3d-gold-float" style={{ width: '100%', padding: '16px 0', fontSize: 14 }}>
+                                    <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
                                         Paketleri İncele
                                     </button>
                                 </div>
@@ -977,7 +995,7 @@ export default function HomePage() {
                                     <Headset style={{ width: 28, height: 28, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
                                 </div>
                                 <h4 style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 20, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Müşteri Hizmetleri</h4>
-                                <button className="btn-3d btn-3d-green" style={{ width: '100%', padding: '16px 0', fontSize: 12 }}>
+                                <button className="btn-3d btn-3d-green" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
                                     Canlı Desteğe Bağlan
                                 </button>
                             </div>
