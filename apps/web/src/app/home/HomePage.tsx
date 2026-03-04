@@ -1465,7 +1465,7 @@ export default function HomePage() {
                                     </div>
                                     <div>
                                         <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Bizimle İletişime Geçin</h2>
-                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>Sorularınız ve önerileriniz için bize ulaşın.</p>
+                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat Bilişim · Sorularınız ve önerileriniz için bize ulaşın.</p>
                                     </div>
                                 </div>
 
