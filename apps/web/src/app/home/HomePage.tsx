@@ -1451,9 +1451,9 @@ export default function HomePage() {
 
                     {/* İLETİŞİM SECTION */}
                     {activeSection === 'iletisim' && (
-                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 680, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg">
+                            <div className="gallery-lamp-svg" style={{ animation: 'fadeIn 0.4s ease both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1488,7 +1488,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'fadeIn 0.5s ease 0.35s both' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
                                     <div style={{
@@ -1586,9 +1586,9 @@ export default function HomePage() {
 
                     {/* FİYATLAR SECTION */}
                     {activeSection === 'fiyatlar' && (
-                        <div style={{ animation: 'fadeIn 0.5s ease', maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg">
+                            <div className="gallery-lamp-svg" style={{ animation: 'fadeIn 0.4s ease both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <defs>
                                         <linearGradient id="glBarMetalP" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1623,7 +1623,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'fadeIn 0.5s ease 0.35s both' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                     <div style={{
