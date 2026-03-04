@@ -708,19 +708,19 @@ export default function HomePage() {
                                 <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
                                     <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
-                                    <div style={{ position: 'relative', zIndex: 10, display: 'flex', gap: 32, alignItems: 'center', flexWrap: 'wrap' }}>
-                                        <div style={{ flex: 1, minWidth: 280, position: 'relative' }}>
-
-                                            {/* Original Content — fades out */}
-                                            <div style={{
-                                                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                opacity: showPackages ? 0 : 1,
-                                                filter: showPackages ? 'blur(8px)' : 'blur(0)',
-                                                transform: showPackages ? 'scale(0.97)' : 'scale(1)',
-                                                maxHeight: showPackages ? 0 : 2000,
-                                                overflow: 'hidden',
-                                                pointerEvents: showPackages ? 'none' : 'auto',
-                                            }}>
+                                    <div style={{ position: 'relative', zIndex: 10 }}>
+                                        {/* Orijinal içerik — tümü birlikte fade/blur olur */}
+                                        <div style={{
+                                            display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap',
+                                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            opacity: showPackages ? 0 : 1,
+                                            filter: showPackages ? 'blur(8px)' : 'blur(0)',
+                                            transform: showPackages ? 'scale(0.97)' : 'scale(1)',
+                                            maxHeight: showPackages ? 0 : 2000,
+                                            overflow: 'hidden',
+                                            pointerEvents: showPackages ? 'none' : 'auto',
+                                        }}>
+                                            <div style={{ flex: 1, minWidth: 280 }}>
                                                 <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                                                     Kendi Dijital Sahneni Yarat
                                                 </h2>
@@ -758,137 +758,113 @@ export default function HomePage() {
                                                 </div>
                                             </div>
 
-                                            {/* Package Cards — fades in */}
-                                            <div style={{
-                                                transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s',
-                                                opacity: showPackages ? 1 : 0,
-                                                filter: showPackages ? 'blur(0)' : 'blur(8px)',
-                                                transform: showPackages ? 'translateY(0)' : 'translateY(20px)',
-                                                maxHeight: showPackages ? 2000 : 0,
-                                                overflow: 'hidden',
-                                                pointerEvents: showPackages ? 'auto' : 'none',
-                                                position: showPackages ? 'relative' : 'absolute',
-                                                top: 0, left: 0, right: 0,
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                    <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                                        Çözüm Modelleri
-                                                    </h2>
-                                                    <button onClick={() => setShowPackages(false)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', color: '#94a3b8', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
-                                                </div>
-                                                <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, marginBottom: 20 }}>İşletmenizin ihtiyacına göre iki farklı entegrasyon modeli.</p>
-
-                                                <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
-                                                    {/* Soprano Hosted */}
-                                                    <div className="feature-toast" style={{
-                                                        flex: 1, padding: '20px', borderRadius: 14,
-                                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(56,189,248,0.15)',
-                                                        display: 'flex', flexDirection: 'column', gap: 12,
-                                                    }}>
-                                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                            <Monitor style={{ width: 20, height: 20, color: '#38bdf8' }} />
+                                            {/* 3D TV Efekti */}
+                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -5, perspective: 600 }}>
+                                                <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
+                                                    <div className="tv-screen">
+                                                        {/* Sohbet Simülasyonu */}
+                                                        <div className="chat-sim">
+                                                            <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
+                                                            {[
+                                                                { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
+                                                                { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
+                                                                { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
+                                                                { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
+                                                                { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
+                                                            ].map((c, i) => (
+                                                                <div key={i} className="chat-bubble">
+                                                                    <div className="chat-avatar" style={{ background: c.bg }}></div>
+                                                                    <div>
+                                                                        <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
+                                                                        <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
                                                         </div>
-                                                        <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Soprano Hosted</h3>
-                                                        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>
-                                                            Tamamen bizim sunucularımızda barınan, teknik kurulum gerektirmeyen hızlı çözüm. Saniyeler içinde kendi odanızı yayına alın.
-                                                        </p>
+                                                        {/* Statik noise */}
+                                                        <div className="tv-static"></div>
                                                     </div>
-
-                                                    {/* White-Label Embed */}
-                                                    <div className="feature-toast" style={{
-                                                        flex: 1, padding: '20px', borderRadius: 14,
-                                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,191,36,0.15)',
-                                                        display: 'flex', flexDirection: 'column', gap: 12,
-                                                    }}>
-                                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                            <Sparkles style={{ width: 20, height: 20, color: '#fbbf24' }} />
-                                                        </div>
-                                                        <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>White-Label Embed</h3>
-                                                        <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>
-                                                            Kendi sitenize iframe veya SDK ile gömün. Kullanıcılar sitenizden ayrılmadan SopranoChat deneyimini markanızla yaşasın.
-                                                        </p>
-                                                    </div>
+                                                    {/* Scanlines + Flash */}
+                                                    <div className="tv-overlay"></div>
+                                                    <div className="tv-flash"></div>
                                                 </div>
 
-                                                {/* Fiyatlandırma */}
-                                                <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                    <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
-                                                    <div style={{ display: 'flex', gap: 12 }}>
-                                                        {[
-                                                            { name: 'Başlangıç', price: '149', period: '/ay', features: ['1 Oda', '25 Kişi', 'Sesli Sohbet', 'Temel Yönetim'], color: '#38bdf8', popular: false },
-                                                            { name: 'Profesyonel', price: '349', period: '/ay', features: ['5 Oda', '100 Kişi', 'HD Video + Ses', 'Gelişmiş Panel', 'Şifreli Giriş'], color: '#a78bfa', popular: true },
-                                                            { name: 'Kurumsal', price: '799', period: '/ay', features: ['Sınırsız Oda', '500 Kişi', '4K Video', 'White-Label', 'Özel Destek', 'API Erişimi'], color: '#fbbf24', popular: false },
-                                                        ].map((plan, i) => (
-                                                            <div key={i} style={{
-                                                                flex: 1, padding: '20px 16px', borderRadius: 12, textAlign: 'center',
-                                                                background: plan.popular ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)',
-                                                                border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                                                position: 'relative', overflow: 'hidden',
-                                                            }}>
-                                                                {plan.popular && <div style={{ position: 'absolute', top: 8, right: -24, background: '#a78bfa', color: '#fff', fontSize: 8, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>POPÜLER</div>}
-                                                                <div style={{ fontSize: 11, fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>{plan.name}</div>
-                                                                <div style={{ marginBottom: 16 }}>
-                                                                    <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>₺{plan.price}</span>
-                                                                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{plan.period}</span>
-                                                                </div>
-                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
-                                                                    {plan.features.map((f, fi) => (
-                                                                        <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>✓ {f}</div>
-                                                                    ))}
-                                                                </div>
-                                                                <button className={`btn-3d ${plan.popular ? 'btn-3d-gold' : 'btn-3d-blue'}`} style={{ width: '100%', padding: '8px 0', fontSize: 10 }}>Seç</button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
+                                                {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
+                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
+                                                    {/* Kablo */}
+                                                    <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
+                                                    {/* Buton */}
+                                                    <button className="btn-3d btn-3d-white model-btn" style={{
+                                                        padding: '8px 22px', fontSize: 10, fontWeight: 700,
+                                                        letterSpacing: 1.5, textTransform: 'uppercase',
+                                                        borderRadius: 10, gap: 6,
+                                                        animation: 'floatY 3s ease-in-out infinite',
+                                                    }}>
+                                                        <Play style={{ width: 12, height: 12 }} fill="currentColor" /> Test Et
+                                                    </button>
                                                 </div>
                                             </div>
-
                                         </div>
 
-                                        {/* 3D TV Efekti */}
-                                        <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -45, perspective: 600 }}>
-                                            <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
-                                                <div className="tv-screen">
-                                                    {/* Sohbet Simülasyonu */}
-                                                    <div className="chat-sim">
-                                                        <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
-                                                        {[
-                                                            { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
-                                                            { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
-                                                            { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
-                                                            { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
-                                                            { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
-                                                        ].map((c, i) => (
-                                                            <div key={i} className="chat-bubble">
-                                                                <div className="chat-avatar" style={{ background: c.bg }}></div>
-                                                                <div>
-                                                                    <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
-                                                                    <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
-                                                                </div>
-                                                            </div>
-                                                        ))}
+                                        {/* Paket Kartları — showPackages açıkken görünür */}
+                                        <div style={{
+                                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s',
+                                            opacity: showPackages ? 1 : 0,
+                                            filter: showPackages ? 'blur(0)' : 'blur(8px)',
+                                            transform: showPackages ? 'translateY(0)' : 'translateY(20px)',
+                                            maxHeight: showPackages ? 2000 : 0,
+                                            overflow: 'hidden',
+                                            pointerEvents: showPackages ? 'auto' : 'none',
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                    Çözüm Modelleri
+                                                </h2>
+                                                <button onClick={() => setShowPackages(false)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', color: '#94a3b8', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
+                                            </div>
+                                            <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, marginBottom: 20 }}>İşletmenizin ihtiyacına göre iki farklı entegrasyon modeli.</p>
+
+                                            <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
+                                                <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Monitor style={{ width: 20, height: 20, color: '#38bdf8' }} />
                                                     </div>
-                                                    {/* Statik noise */}
-                                                    <div className="tv-static"></div>
+                                                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Soprano Hosted</h3>
+                                                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Tamamen bizim sunucularımızda barınan, teknik kurulum gerektirmeyen hızlı çözüm. Saniyeler içinde kendi odanızı yayına alın.</p>
                                                 </div>
-                                                {/* Scanlines + Flash */}
-                                                <div className="tv-overlay"></div>
-                                                <div className="tv-flash"></div>
+                                                <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <Sparkles style={{ width: 20, height: 20, color: '#fbbf24' }} />
+                                                    </div>
+                                                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>White-Label Embed</h3>
+                                                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Kendi sitenize iframe veya SDK ile gömün. Kullanıcılar sitenizden ayrılmadan SopranoChat deneyimini markanızla yaşasın.</p>
+                                                </div>
                                             </div>
 
-                                            {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
-                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
-                                                {/* Kablo */}
-                                                <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
-                                                {/* Buton */}
-                                                <button className="btn-3d btn-3d-white model-btn" style={{
-                                                    padding: '8px 22px', fontSize: 10, fontWeight: 700,
-                                                    letterSpacing: 1.5, textTransform: 'uppercase',
-                                                    borderRadius: 10, gap: 6,
-                                                    animation: 'floatY 3s ease-in-out infinite',
-                                                }}>
-                                                    <Play style={{ width: 12, height: 12 }} fill="currentColor" /> Test Et
-                                                </button>
+                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
+                                                <div style={{ display: 'flex', gap: 12 }}>
+                                                    {[
+                                                        { name: 'Başlangıç', price: '149', period: '/ay', features: ['1 Oda', '25 Kişi', 'Sesli Sohbet', 'Temel Yönetim'], color: '#38bdf8', popular: false },
+                                                        { name: 'Profesyonel', price: '349', period: '/ay', features: ['5 Oda', '100 Kişi', 'HD Video + Ses', 'Gelişmiş Panel', 'Şifreli Giriş'], color: '#a78bfa', popular: true },
+                                                        { name: 'Kurumsal', price: '799', period: '/ay', features: ['Sınırsız Oda', '500 Kişi', '4K Video', 'White-Label', 'Özel Destek', 'API Erişimi'], color: '#fbbf24', popular: false },
+                                                    ].map((plan, i) => (
+                                                        <div key={i} style={{ flex: 1, padding: '20px 16px', borderRadius: 12, textAlign: 'center', background: plan.popular ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`, position: 'relative', overflow: 'hidden' }}>
+                                                            {plan.popular && <div style={{ position: 'absolute', top: 8, right: -24, background: '#a78bfa', color: '#fff', fontSize: 8, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>POPÜLER</div>}
+                                                            <div style={{ fontSize: 11, fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>{plan.name}</div>
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>₺{plan.price}</span>
+                                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{plan.period}</span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+                                                                {plan.features.map((f, fi) => (
+                                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>✓ {f}</div>
+                                                                ))}
+                                                            </div>
+                                                            <button className={`btn-3d ${plan.popular ? 'btn-3d-gold' : 'btn-3d-blue'}`} style={{ width: '100%', padding: '8px 0', fontSize: 10 }}>Seç</button>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
