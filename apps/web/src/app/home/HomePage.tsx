@@ -1465,7 +1465,7 @@ export default function HomePage() {
 
                     {/* İLETİŞİM SECTION */}
                     {activeSection === 'iletisim' && (
-                        <div style={{ maxWidth: 680, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
                             <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1600,7 +1600,7 @@ export default function HomePage() {
 
                     {/* FİYATLAR SECTION */}
                     {activeSection === 'fiyatlar' && (
-                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
                             <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1791,7 +1791,7 @@ export default function HomePage() {
 
                     {/* REHBER SECTION */}
                     {activeSection === 'rehber' && (
-                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
                             <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1828,7 +1828,7 @@ export default function HomePage() {
                                 </svg>
                                 <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
                             </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
+                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, rgba(40, 52, 72, 0.9) 0%, rgba(25, 35, 55, 0.7) 100%)' }}>
                                 {/* Başlık */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                     <div style={{
@@ -1939,7 +1939,7 @@ export default function HomePage() {
 
                     {/* REFERANSLAR SECTION */}
                     {activeSection === 'referanslar' && (
-                        <div style={{ maxWidth: 720, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
                             <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
