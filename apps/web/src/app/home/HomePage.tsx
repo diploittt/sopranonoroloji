@@ -1380,9 +1380,9 @@ export default function HomePage() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     animation: 'fadeIn 0.4s ease',
                 }} onClick={(e) => { if (e.target === e.currentTarget) setShowCheckout(false); }}>
-                    <div className="glossy-panel" style={{
-                        width: '100%', maxWidth: 540, maxHeight: '92vh', overflowY: 'auto',
-                        borderRadius: 22, position: 'relative',
+                    <div className="glossy-panel modal-scrollbar" style={{
+                        width: '100%', maxWidth: 460, maxHeight: '85vh', overflowY: 'auto',
+                        borderRadius: 18, position: 'relative',
                         border: '1px solid rgba(251,191,36,0.15)',
                         boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(251,191,36,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
                         padding: 0,
@@ -1391,13 +1391,13 @@ export default function HomePage() {
                         <div style={{
                             background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))',
                             borderBottom: '1px solid rgba(251,191,36,0.12)',
-                            padding: '20px 28px', borderRadius: '22px 22px 0 0',
+                            padding: '14px 22px', borderRadius: '18px 18px 0 0',
                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                         }}>
                             <div>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }}>⭐ Sipariş Özeti</div>
+                                <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
                                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                                    <span style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
                                         {chkBilling === 'yearly'
                                             ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺`
                                             : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}
@@ -1413,18 +1413,18 @@ export default function HomePage() {
                             }}><X style={{ width: 14, height: 14 }} /></button>
                         </div>
 
-                        <div style={{ padding: '24px 28px' }}>
+                        <div style={{ padding: '16px 22px' }}>
                             {/* Aylık / Yıllık Toggle */}
-                            <div style={{ display: 'flex', gap: 0, marginBottom: 22, background: 'rgba(0,0,0,0.25)', borderRadius: 14, padding: 4, border: '1px solid rgba(255,255,255,0.05)' }}>
+                            <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
                                 <button onClick={() => setChkBilling('monthly')} style={{
-                                    flex: 1, padding: '11px 0', borderRadius: 11, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                    flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
                                     background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent',
                                     color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b',
                                     boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none',
                                     transition: 'all 0.3s',
                                 }}>💳 Aylık Ödeme</button>
                                 <button onClick={() => setChkBilling('yearly')} style={{
-                                    flex: 1, padding: '11px 0', borderRadius: 11, fontSize: 12, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                    flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
                                     background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent',
                                     color: chkBilling === 'yearly' ? '#34d399' : '#64748b',
                                     boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none',
@@ -1433,11 +1433,11 @@ export default function HomePage() {
                             </div>
 
                             {/* Kişisel Bilgiler Section */}
-                            <div style={{ marginBottom: 20 }}>
-                                <div style={{ fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <User style={{ width: 12, height: 12 }} /> Kişisel Bilgiler
+                            <div style={{ marginBottom: 14 }}>
+                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                     {[
                                         { label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' },
                                         { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' },
@@ -1449,7 +1449,7 @@ export default function HomePage() {
                                                 type={field.type} value={field.value} onChange={e => field.setter(e.target.value)}
                                                 placeholder={field.placeholder}
                                                 style={{
-                                                    width: '100%', padding: '12px 14px 12px 36px', borderRadius: 12, fontSize: 13, fontWeight: 600, color: '#fff',
+                                                    width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
                                                     background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)',
                                                     outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
                                                 }}
@@ -1462,13 +1462,13 @@ export default function HomePage() {
                             </div>
 
                             {/* Logo Upload */}
-                            <div style={{ marginBottom: 20 }}>
-                                <div style={{ fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <Upload style={{ width: 12, height: 12 }} /> Müşteri Logosu
+                            <div style={{ marginBottom: 14 }}>
+                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu
                                 </div>
                                 <label style={{
                                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                    padding: '16px', borderRadius: 14, cursor: 'pointer',
+                                    padding: '12px', borderRadius: 12, cursor: 'pointer',
                                     background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)',
                                     border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`,
                                     color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700,
@@ -1481,9 +1481,9 @@ export default function HomePage() {
                             </div>
 
                             {/* Hosting Tercihi */}
-                            <div style={{ marginBottom: 22 }}>
-                                <div style={{ fontSize: 10, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <Globe style={{ width: 12, height: 12 }} /> Hosting Tercihiniz
+                            <div style={{ marginBottom: 16 }}>
+                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                    <Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz
                                 </div>
                                 <div style={{ display: 'flex', gap: 10 }}>
                                     {[
@@ -1491,7 +1491,7 @@ export default function HomePage() {
                                         { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' },
                                     ].map(opt => (
                                         <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{
-                                            flex: 1, padding: '16px', borderRadius: 14, cursor: 'pointer',
+                                            flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer',
                                             background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)',
                                             border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`,
                                             transition: 'all 0.3s',
@@ -1515,22 +1515,22 @@ export default function HomePage() {
                             </div>
 
                             {/* Ödeme Bilgileri Decorative Divider */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 18 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                                 <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
-                                <span style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
+                                <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
                                 <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
                             </div>
 
                             {/* IBAN Card */}
                             <div style={{
                                 background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
-                                borderRadius: 16, padding: '18px 20px',
+                                borderRadius: 14, padding: '14px 16px',
                                 border: '1px solid rgba(251,191,36,0.1)',
-                                marginBottom: 12,
+                                marginBottom: 10,
                             }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
                                     <div style={{
-                                        width: 32, height: 32, borderRadius: 10,
+                                        width: 28, height: 28, borderRadius: 8,
                                         background: 'linear-gradient(135deg, #ef4444, #dc2626)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                         fontSize: 15, fontWeight: 900, color: '#fff',
@@ -1563,9 +1563,9 @@ export default function HomePage() {
                             {/* Ödeme Kodu Card */}
                             <div style={{
                                 background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))',
-                                borderRadius: 16, padding: '16px 20px',
+                                borderRadius: 14, padding: '12px 16px',
                                 border: '1px solid rgba(56,189,248,0.12)',
-                                marginBottom: 22,
+                                marginBottom: 16,
                             }}>
                                 <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
                                 <div style={{
@@ -1573,7 +1573,7 @@ export default function HomePage() {
                                     padding: '14px 16px', borderRadius: 12,
                                     background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)',
                                 }}>
-                                    <span style={{ fontSize: 22, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
+                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
                                     <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{
                                         background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
                                         border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
@@ -1589,7 +1589,7 @@ export default function HomePage() {
 
                             {/* Ödemeyi Tamamla Butonu */}
                             <button className="btn-3d btn-3d-gold" style={{
-                                width: '100%', padding: '16px 0', fontSize: 14, fontWeight: 900, borderRadius: 14,
+                                width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                                 letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
                             }}>
