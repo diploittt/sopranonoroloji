@@ -37,6 +37,16 @@ export default function HomePage() {
     const [tvTilt, setTvTilt] = useState({ x: 0, y: 0 });
     const [dbRooms, setDbRooms] = useState<any[]>([]);
     const addToast = useAdminStore((s) => s.addToast);
+    const [guestGender, setGuestGender] = useState<'Erkek' | 'Kadın' | 'Belirsiz'>('Belirsiz');
+    const [showRegister, setShowRegister] = useState(false);
+    const [regUsername, setRegUsername] = useState('');
+    const [regEmail, setRegEmail] = useState('');
+    const [regPassword, setRegPassword] = useState('');
+    const [regPasswordConfirm, setRegPasswordConfirm] = useState('');
+    const [regGender, setRegGender] = useState<'Erkek' | 'Kadın' | 'Belirsiz'>('Belirsiz');
+    const [regAcceptTerms, setRegAcceptTerms] = useState(false);
+    const [regError, setRegError] = useState('');
+    const [regLoading, setRegLoading] = useState(false);
 
     // Auth check on mount
     useEffect(() => {
@@ -73,12 +83,12 @@ export default function HomePage() {
         setGuestError(''); setGuestLoading(true);
         localStorage.removeItem(AUTH_TOKEN_KEY); removeAuthUser();
         try {
-            const res = await fetch(`${API_URL}/auth/guest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: guestNick.trim(), gender: 'Belirsiz' }) });
+            const res = await fetch(`${API_URL}/auth/guest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: guestNick.trim(), gender: guestGender }) });
             const data = await res.json();
             if (data.error) { setGuestError(data.error); return; }
             localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
-            const avatarUrl = generateGenderAvatar(guestNick.trim(), 'Belirsiz');
-            const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: data.user?.avatar || avatarUrl, isMember: false, role: 'guest' as const, gender: 'Belirsiz' };
+            const avatarUrl = generateGenderAvatar(guestNick.trim(), guestGender);
+            const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: data.user?.avatar || avatarUrl, isMember: false, role: 'guest' as const, gender: guestGender };
             setAuthUser(u);
             window.location.href = '/room/genel-sohbet';
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
@@ -97,6 +107,27 @@ export default function HomePage() {
                 setAuthUser(u); setUser(u); window.dispatchEvent(new Event('auth-change'));
             } else { setMemberError(data.message || 'Giriş başarısız.'); }
         } catch { setMemberError('Bağlantı hatası.'); } finally { setMemberLoading(false); }
+    };
+
+    const handleRegister = async () => {
+        if (!regUsername.trim()) { setRegError('Kullanıcı adı gerekli.'); return; }
+        if (!regEmail.trim()) { setRegError('E-posta gerekli.'); return; }
+        if (!regPassword || regPassword.length < 6) { setRegError('Şifre en az 6 karakter olmalı.'); return; }
+        if (regPassword !== regPasswordConfirm) { setRegError('Şifreler eşleşmiyor.'); return; }
+        if (!regAcceptTerms) { setRegError('Üyelik sözleşmesini onaylayın.'); return; }
+        setRegError(''); setRegLoading(true);
+        try {
+            const res = await fetch(`${API_URL}/auth/register`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: regUsername.trim(), email: regEmail.trim(), password: regPassword, gender: regGender })
+            });
+            const data = await res.json();
+            if (!res.ok) { setRegError(data.message || 'Kayıt başarısız.'); return; }
+            addToast?.('Üyelik başarıyla oluşturuldu! Giriş yapabilirsiniz.', 'success');
+            setShowRegister(false);
+            setMemberUsername(regUsername.trim());
+            setRegUsername(''); setRegEmail(''); setRegPassword(''); setRegPasswordConfirm(''); setRegGender('Belirsiz'); setRegAcceptTerms(false);
+        } catch { setRegError('Bağlantı hatası.'); } finally { setRegLoading(false); }
     };
 
     const handleLogout = () => {
@@ -383,8 +414,8 @@ export default function HomePage() {
                 .room-item { transition: all 0.2s ease; border: 1px solid transparent; }
                 .room-item:hover { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); transform: scale(1.01); border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
 
-                .feature-toast { transition: all 0.3s ease; cursor: default; }
-                .feature-toast:hover { background: rgba(255,255,255,0.08) !important; transform: translateX(4px) scale(1.02); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+                .feature-toast { transition: background 0.3s ease, box-shadow 0.3s ease; cursor: default; }
+                .feature-toast:hover { background: rgba(255,255,255,0.08) !important; box-shadow: 0 2px 12px rgba(0,0,0,0.15); }
 
                 .btn-3d-logout { background: linear-gradient(180deg, rgba(148,163,184,0.15) 0%, rgba(71,85,105,0.25) 100%); color: #94a3b8; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.03); }
                 .btn-3d-logout:hover { background: linear-gradient(180deg, rgba(148,163,184,0.25) 0%, rgba(71,85,105,0.35) 100%); color: #e2e8f0; box-shadow: 0 6px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); transform: translateY(-1px); }
@@ -902,7 +933,7 @@ export default function HomePage() {
                                             </div>
 
                                             {loginTab === 'guest' ? (
-                                                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                                                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                                     <div>
                                                         <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
                                                         <input
@@ -912,7 +943,21 @@ export default function HomePage() {
                                                             className="input-inset"
                                                             style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
                                                             placeholder="Nickname girin..."
+                                                            autoComplete="off"
                                                         />
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
+                                                                <button key={g} type="button" onClick={() => setGuestGender(g)} style={{
+                                                                    flex: 1, padding: '7px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
+                                                                    background: guestGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
+                                                                    color: guestGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
+                                                                    boxShadow: guestGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                                                }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
+                                                            ))}
+                                                        </div>
                                                     </div>
                                                     {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
                                                     <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
@@ -920,33 +965,74 @@ export default function HomePage() {
                                                     </button>
                                                 </form>
                                             ) : (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-                                                    <div>
-                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı</label>
-                                                        <input
-                                                            type="text"
-                                                            value={memberUsername}
-                                                            onChange={(e) => setMemberUsername(e.target.value)}
-                                                            className="input-inset"
-                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
-                                                            placeholder="Üye adınız"
-                                                        />
+                                                <div style={{ position: 'relative', overflow: 'hidden' }}>
+                                                    {/* Login / Register geçiş container */}
+                                                    <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(-100%)' : 'translateX(0)', opacity: showRegister ? 0 : 1, maxHeight: showRegister ? 0 : 600, overflow: 'hidden' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                                            <div>
+                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı</label>
+                                                                <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız" autoComplete="off" />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
+                                                                <input type="password" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="new-password" />
+                                                            </div>
+                                                            {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
+                                                            <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
+                                                                <LogIn style={{ width: 14, height: 14 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
+                                                            </button>
+                                                            <button type="button" onClick={() => setShowRegister(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '4px 0', transition: 'color 0.2s' }}>
+                                                                Hesabın yok mu? <span style={{ color: '#fca5a5', fontWeight: 700 }}>Üye Ol</span>
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    <div>
-                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
-                                                        <input
-                                                            type="password"
-                                                            value={memberPassword}
-                                                            onChange={(e) => setMemberPassword(e.target.value)}
-                                                            className="input-inset"
-                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
-                                                            placeholder="••••••••"
-                                                        />
+
+                                                    {/* Register Form */}
+                                                    <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(0)' : 'translateX(100%)', opacity: showRegister ? 1 : 0, maxHeight: showRegister ? 800 : 0, overflow: 'hidden', position: showRegister ? 'relative' : 'absolute', top: 0, left: 0, right: 0 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                            <h4 style={{ fontSize: 12, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', marginBottom: 4 }}>✨ Yeni Üyelik</h4>
+                                                            <div>
+                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Kullanıcı Adı</label>
+                                                                <input type="text" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Kullanıcı adınız" autoComplete="off" />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>E-posta</label>
+                                                                <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="off" />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre</label>
+                                                                <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 6 karakter" autoComplete="new-password" />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre Tekrar</label>
+                                                                <input type="password" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Şifrenizi tekrarlayın" autoComplete="new-password" />
+                                                            </div>
+                                                            <div>
+                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                                                <div style={{ display: 'flex', gap: 6 }}>
+                                                                    {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
+                                                                        <button key={g} type="button" onClick={() => setRegGender(g)} style={{
+                                                                            flex: 1, padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
+                                                                            background: regGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
+                                                                            color: regGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
+                                                                            boxShadow: regGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                                                        }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
+                                                                <input type="checkbox" checked={regAcceptTerms} onChange={(e) => setRegAcceptTerms(e.target.checked)} style={{ accentColor: '#ef4444', width: 16, height: 16, cursor: 'pointer' }} />
+                                                                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}><span style={{ color: '#fca5a5', textDecoration: 'underline', cursor: 'pointer' }}>Üyelik Sözleşmesini</span> okudum ve kabul ediyorum</span>
+                                                            </label>
+                                                            {regError && <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{regError}</p>}
+                                                            <button onClick={handleRegister} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={regLoading}>
+                                                                <Sparkles style={{ width: 14, height: 14 }} /> {regLoading ? 'Kayıt yapılıyor...' : 'Üye Ol'}
+                                                            </button>
+                                                            <button type="button" onClick={() => setShowRegister(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '2px 0', transition: 'color 0.2s' }}>
+                                                                ← Giriş ekranına dön
+                                                            </button>
+                                                        </div>
                                                     </div>
-                                                    {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
-                                                    <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
-                                                        <LogIn style={{ width: 14, height: 14 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
-                                                    </button>
                                                 </div>
                                             )}
                                         </>
