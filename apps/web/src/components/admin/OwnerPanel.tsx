@@ -2172,37 +2172,37 @@ export default function OwnerPanel() {
                                         {/* ── FİYATLANDIRMA ── */}
                                         {settingsTab === 'pricing' && (
                                             <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
-                                                <div className="p-5 border-b border-white/5">
-                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2"><Wallet className="w-5 h-5 text-green-400" /> Fiyatlandırma</h2>
-                                                    <p className="text-xs text-gray-500 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
+                                                <div className="p-6 border-b border-white/5">
+                                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><Wallet className="w-5 h-5 text-green-400" /> Fiyatlandırma</h2>
+                                                    <p className="text-sm text-gray-500 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
                                                 </div>
-                                                <div className="p-5 space-y-5">
+                                                <div className="p-6 space-y-6">
                                                     {/* Yıllık indirim metni */}
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Yıllık İndirim Mesajı</label>
-                                                        <input value={siteConfig.pricing?.yearlyDiscount || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), yearlyDiscount: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="2 Ay Hediye 🎁" />
+                                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Yıllık İndirim Mesajı</label>
+                                                        <input value={siteConfig.pricing?.yearlyDiscount || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), yearlyDiscount: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="2 Ay Hediye 🎁" />
                                                     </div>
                                                     {/* Paketler */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                                         {[
                                                             { key: 'p1', label: 'Paket 1', color: 'amber' },
                                                             { key: 'p2', label: 'Paket 2 (Popüler)', color: 'green' },
                                                             { key: 'p3', label: 'Paket 3 (Bayi)', color: 'blue' },
                                                         ].map(pkg => (
-                                                            <div key={pkg.key} className={`rounded-xl border border-white/10 p-4 space-y-3 bg-white/[0.02]`}>
-                                                                <div className="text-xs font-bold text-white uppercase tracking-wider">{pkg.label}</div>
+                                                            <div key={pkg.key} className={`rounded-xl border border-white/10 p-5 space-y-4 bg-white/[0.02]`}>
+                                                                <div className="text-sm font-bold text-white uppercase tracking-wider">{pkg.label}</div>
                                                                 <div>
-                                                                    <label className="text-[10px] text-gray-500 block mb-1">Paket Adı</label>
-                                                                    <input value={siteConfig.pricing?.[`${pkg.key}Name`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Name`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" />
+                                                                    <label className="text-xs text-gray-500 block mb-1.5">Paket Adı</label>
+                                                                    <input value={siteConfig.pricing?.[`${pkg.key}Name`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Name`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" />
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-2">
+                                                                <div className="grid grid-cols-2 gap-3">
                                                                     <div>
-                                                                        <label className="text-[10px] text-gray-500 block mb-1">Aylık (₺)</label>
-                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Monthly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Monthly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="990" />
+                                                                        <label className="text-xs text-gray-500 block mb-1.5">Aylık (₺)</label>
+                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Monthly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Monthly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="990" />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-[10px] text-gray-500 block mb-1">Yıllık (₺)</label>
-                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Yearly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Yearly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="9.900" />
+                                                                        <label className="text-xs text-gray-500 block mb-1.5">Yıllık (₺)</label>
+                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Yearly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Yearly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="9.900" />
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -3122,7 +3122,7 @@ export default function OwnerPanel() {
                                         )}
                                     </div>
                                     {/* Sağ Taraf — Ana Sayfa Önizleme (rooms sekmesi hariç, o kendi önizlemesine sahip) */}
-                                    {settingsTab !== 'rooms' && (
+                                    {settingsTab !== 'rooms' && settingsTab !== 'pricing' && (
                                         <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
                                             <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md overflow-hidden">
                                                 <div className="p-3 border-b border-white/5 flex items-center justify-between">
