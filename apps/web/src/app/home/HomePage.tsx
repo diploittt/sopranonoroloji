@@ -1699,7 +1699,7 @@ export default function HomePage() {
                                     </div>
                                     <div>
                                         <div style={{ fontSize: 11, fontWeight: 800, color: '#25d366' }}>WhatsApp</div>
-                                        <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 500 }}>+9 552 036 3674</div>
+                                        <div style={{ fontSize: 9, color: '#94a3b8', fontWeight: 500 }}>+90 552 036 3674</div>
                                     </div>
                                 </a>
                                 <a href="mailto:destek@sopranochat.com" style={{
