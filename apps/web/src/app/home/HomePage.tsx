@@ -48,6 +48,11 @@ export default function HomePage() {
     const [regError, setRegError] = useState('');
     const [regLoading, setRegLoading] = useState(false);
     const [showPackages, setShowPackages] = useState(false);
+    const [showCustomConfig, setShowCustomConfig] = useState(false);
+    const [cfgRooms, setCfgRooms] = useState(1);
+    const [cfgPersons, setCfgPersons] = useState(30);
+    const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
+    const [cfgMeeting, setCfgMeeting] = useState<'Mevcut' | 'Yok'>('Mevcut');
 
     // Auth check on mount
     useEffect(() => {
@@ -730,36 +735,10 @@ export default function HomePage() {
                                                     sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
                                                     Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
                                                 </p>
-
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 4 }}>
-                                                    {[
-                                                        { icon: <ShieldCheck style={{ width: 18, height: 18 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme ile tüm iletişim güvende', color: '#34d399' },
-                                                        { icon: <Video style={{ width: 18, height: 18 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntülü sohbet deneyimi', color: '#a78bfa' },
-                                                        { icon: <Mic style={{ width: 18, height: 18 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite ses iletimi', color: '#38bdf8' },
-                                                        { icon: <Settings style={{ width: 18, height: 18 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli ve oda ayarları', color: '#fbbf24' },
-                                                    ].map((t, i) => (
-                                                        <div key={i} className="feature-toast" style={{
-                                                            display: 'flex', alignItems: 'center', gap: 12,
-                                                            padding: '8px 12px', borderRadius: 10,
-                                                            background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
-                                                        }}>
-                                                            <div style={{
-                                                                width: 34, height: 34, borderRadius: 8, flexShrink: 0,
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                background: `${t.color}15`, color: t.color,
-                                                                border: `1px solid ${t.color}30`,
-                                                            }}>{t.icon}</div>
-                                                            <div>
-                                                                <div style={{ fontSize: 12, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
-                                                                <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
                                             </div>
 
                                             {/* 3D TV Efekti */}
-                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: -45, perspective: 600 }}>
+                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: 15, marginRight: 40, perspective: 600 }}>
                                                 <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
                                                     <div className="tv-screen">
                                                         {/* Sohbet Simülasyonu */}
@@ -804,6 +783,33 @@ export default function HomePage() {
                                                     </button>
                                                 </div>
                                             </div>
+
+                                            {/* Feature Toasts — tam genişlik 2x2 grid */}
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, width: '100%' }}>
+                                                {[
+                                                    { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
+                                                    { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
+                                                    { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
+                                                    { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
+                                                ].map((t, i) => (
+                                                    <div key={i} className="feature-toast" style={{
+                                                        display: 'flex', alignItems: 'center', gap: 10,
+                                                        padding: '8px 12px', borderRadius: 10,
+                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                    }}>
+                                                        <div style={{
+                                                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            background: `${t.color}15`, color: t.color,
+                                                            border: `1px solid ${t.color}30`,
+                                                        }}>{t.icon}</div>
+                                                        <div>
+                                                            <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
 
                                         {/* Paket Kartları — showPackages açıkken görünür */}
@@ -845,25 +851,173 @@ export default function HomePage() {
                                                 <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
                                                 <div style={{ display: 'flex', gap: 12 }}>
                                                     {[
-                                                        { name: 'Başlangıç', price: '149', period: '/ay', features: ['1 Oda', '25 Kişi', 'Sesli Sohbet', 'Temel Yönetim'], color: '#38bdf8', popular: false },
-                                                        { name: 'Profesyonel', price: '349', period: '/ay', features: ['5 Oda', '100 Kişi', 'HD Video + Ses', 'Gelişmiş Panel', 'Şifreli Giriş'], color: '#a78bfa', popular: true },
-                                                        { name: 'Kurumsal', price: '799', period: '/ay', features: ['Sınırsız Oda', '500 Kişi', '4K Video', 'White-Label', 'Özel Destek', 'API Erişimi'], color: '#fbbf24', popular: false },
+                                                        { name: 'Ses + Metin', price: '990', period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                        { name: 'Kamera + Ses', price: '1.390', period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                        { name: 'White Label', price: '6.990', period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
                                                     ].map((plan, i) => (
-                                                        <div key={i} style={{ flex: 1, padding: '20px 16px', borderRadius: 12, textAlign: 'center', background: plan.popular ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)', border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`, position: 'relative', overflow: 'hidden' }}>
-                                                            {plan.popular && <div style={{ position: 'absolute', top: 8, right: -24, background: '#a78bfa', color: '#fff', fontSize: 8, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>POPÜLER</div>}
-                                                            <div style={{ fontSize: 11, fontWeight: 700, color: plan.color, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 12 }}>{plan.name}</div>
-                                                            <div style={{ marginBottom: 16 }}>
-                                                                <span style={{ fontSize: 32, fontWeight: 900, color: '#fff' }}>₺{plan.price}</span>
-                                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}>{plan.period}</span>
+                                                        <div key={i} style={{
+                                                            flex: 1, padding: '20px 16px', borderRadius: 12,
+                                                            background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
+                                                            border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                            position: 'relative', overflow: 'hidden',
+                                                            display: 'flex', flexDirection: 'column',
+                                                        }}>
+                                                            {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                                                <span style={{ fontSize: 18 }}>{plan.icon}</span>
+                                                                <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
                                                             </div>
-                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 16 }}>
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
+                                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
+                                                            </div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
                                                                 {plan.features.map((f, fi) => (
-                                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>✓ {f}</div>
+                                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                        <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                                    </div>
                                                                 ))}
                                                             </div>
-                                                            <button className={`btn-3d ${plan.popular ? 'btn-3d-gold' : 'btn-3d-blue'}`} style={{ width: '100%', padding: '8px 0', fontSize: 10 }}>Seç</button>
+                                                            <button className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
                                                         </div>
                                                     ))}
+                                                </div>
+
+                                                {/* Özel Yapılandırma Butonu */}
+                                                <div style={{ textAlign: 'center', marginTop: 20 }}>
+                                                    <button
+                                                        onClick={() => setShowCustomConfig(!showCustomConfig)}
+                                                        className="btn-3d btn-3d-blue"
+                                                        style={{ padding: '10px 28px', fontSize: 12, fontWeight: 800, borderRadius: 10, letterSpacing: 1 }}
+                                                    >
+                                                        ⚙️ Özel Yapılandırma
+                                                    </button>
+                                                </div>
+
+                                                {/* Özel Yapılandırma Paneli */}
+                                                <div style={{
+                                                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    maxHeight: showCustomConfig ? 600 : 0,
+                                                    overflow: 'hidden',
+                                                    opacity: showCustomConfig ? 1 : 0,
+                                                    marginTop: showCustomConfig ? 20 : 0,
+                                                }}>
+                                                    <div style={{
+                                                        background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
+                                                        border: '1px solid rgba(56,189,248,0.2)',
+                                                    }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                                            <div>
+                                                                <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 8 }}>⚙️ Özel Yapılandırma</div>
+                                                                <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>Kendi Paketini Oluştur</h4>
+                                                                <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>İhtiyacın kadar oda, dilediğin kadar limit.</p>
+                                                            </div>
+                                                            <button className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                                                Hesapla & Al →
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Dropdown'lar */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginTop: 16 }}>
+                                                            {/* Oda Sayısı */}
+                                                            <div>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>🏠 Oda Sayısı</div>
+                                                                <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
+                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                    cursor: 'pointer', outline: 'none',
+                                                                }}>
+                                                                    {[1, 2, 3, 5, 10].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
+                                                                </select>
+                                                            </div>
+                                                            {/* Kişi Limiti */}
+                                                            <div>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>👥 Oda Başına Kişi Limiti</div>
+                                                                <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
+                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                    cursor: 'pointer', outline: 'none',
+                                                                }}>
+                                                                    {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
+                                                                </select>
+                                                            </div>
+                                                            {/* Kamera */}
+                                                            <div>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>📹 Kamera Özelliği</div>
+                                                                <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
+                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                    cursor: 'pointer', outline: 'none',
+                                                                }}>
+                                                                    <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
+                                                                    <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
+                                                                </select>
+                                                            </div>
+                                                            {/* Toplantı Modu */}
+                                                            <div>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>💛 Toplantı Modu</div>
+                                                                <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
+                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                    cursor: 'pointer', outline: 'none',
+                                                                }}>
+                                                                    <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
+                                                                    <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Tahmini Fiyatlandırma */}
+                                                        {(() => {
+                                                            const roomCost = cfgRooms * 990;
+                                                            const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 400 : 0;
+                                                            const meetingCost = cfgMeeting === 'Mevcut' ? 590 : 0;
+                                                            const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 150 : 0;
+                                                            const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
+                                                            const yearlyTotal = monthlyTotal * 10; // 2 ay hediye
+                                                            return (
+                                                                <div style={{ marginTop: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, padding: '16px 20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                        <span style={{ color: '#38bdf8' }}>₺</span> Tahmini Fiyatlandırma
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                            <span>🏠 {cfgRooms} Oda</span>
+                                                                            <span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
+                                                                        </div>
+                                                                        {cameraCost > 0 && (
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                <span>📹 Kamera</span>
+                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {meetingCost > 0 && (
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                <span>💛 Toplantı Modu</span>
+                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
+                                                                            </div>
+                                                                        )}
+                                                                        {personExtra > 0 && (
+                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                <span>👥 Ek Kişi Kapasitesi ({cfgPersons} kişi)</span>
+                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 12, paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                        <div>
+                                                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>Aylık</div>
+                                                                            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div>
+                                                                        </div>
+                                                                        <div style={{ textAlign: 'right' }}>
+                                                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: 1 }}>Yıllık (2 Ay Ücretsiz)</div>
+                                                                            <div style={{ fontSize: 22, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -885,7 +1039,7 @@ export default function HomePage() {
                                         { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
                                         { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
                                     ].map((p, i) => (
-                                        <div key={i} style={{
+                                        <div key={i} className="feature-toast" style={{
                                             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                             padding: '14px 16px', borderRadius: 14,
                                             background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
