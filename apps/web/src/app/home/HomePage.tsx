@@ -394,14 +394,9 @@ export default function HomePage() {
                     border-left-color: #8a95a8;
                     border-right-color: #8a95a8;
                     border-radius: 18px;
-                    box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(192,200,213,0.15);
+                    box-shadow: 0 16px 50px rgba(0,0,0,0.7), 0 6px 16px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.8), 0 0 15px rgba(192,200,213,0.15);
                     position: relative;
                     overflow: hidden;
-                    transition: transform 0.4s ease, box-shadow 0.3s ease;
-                }
-                .tv-wrapper:hover .tv-monitor {
-                    box-shadow: 0 12px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.8), 0 0 25px rgba(192,200,213,0.3);
-                    border-color: #f0f2f6;
                 }
                 .tv-screen {
                     width: 100%;
@@ -478,16 +473,7 @@ export default function HomePage() {
                     padding: 3px 6px; border-radius: 6px; max-width: 75%;
                     line-height: 1.3;
                 }
-                .tv-reflection {
-                    position: absolute;
-                    bottom: -30px;
-                    right: 20px;
-                    width: 80%;
-                    height: 20px;
-                    background: black;
-                    filter: blur(15px);
-                    opacity: 0.6;
-                }
+
 
                 /* === TABLO LAMBASI (SVG Gallery Lamp) === */
                 .gallery-lamp-svg {
@@ -545,6 +531,19 @@ export default function HomePage() {
                 @keyframes btnSlideUp {
                     0% { opacity: 0; transform: translateY(20px); }
                     100% { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes btnSlideDown {
+                    0% { opacity: 0; transform: translateY(-20px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes btnSway {
+                    0%, 100% { transform: rotateX(-6deg) translateY(2px); }
+                    50% { transform: rotateX(6deg) translateY(-2px); }
+                }
+                .model-btn:hover {
+                    animation-play-state: paused !important;
+                    transform: scale(1.03) !important;
+                    transition: transform 0.5s ease !important;
                 }
 
                 /* ====== ANTI-GRAVITY EFFECTS ====== */
@@ -729,16 +728,20 @@ export default function HomePage() {
                                                 <div className="tv-overlay"></div>
                                                 <div className="tv-flash"></div>
                                             </div>
-                                            <div className="tv-reflection"></div>
-                                            {/* Modelleri İncele Butonu — monitörün hemen altında */}
-                                            <div style={{ display: 'flex', justifyContent: 'center', marginTop: -8, position: 'relative', zIndex: 20, animation: 'btnSlideUp 0.8s ease-out 3.5s both' }}>
-                                                <button className="btn-3d btn-3d-blue" style={{
+
+                                            {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
+                                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
+                                                {/* Kablo */}
+                                                <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
+                                                {/* Buton */}
+                                                <button className="btn-3d btn-3d-blue model-btn" style={{
                                                     padding: '10px 28px', fontSize: 12, fontWeight: 800,
                                                     letterSpacing: 1.5, textTransform: 'uppercase',
-                                                    borderRadius: '0 0 16px 16px', gap: 6,
-                                                    boxShadow: '0 6px 18px rgba(0,0,0,0.4)',
+                                                    borderRadius: 12, gap: 6,
+                                                    boxShadow: 'inset 0 2px 0 rgba(255,255,255,0.4), inset 0 -2px 0 rgba(0,0,0,0.3), 0 6px 0 #0369a1, 0 10px 20px rgba(0,0,0,0.5), 0 0 12px rgba(56,189,248,0.15)',
+                                                    animation: 'floatY 3s ease-in-out infinite',
                                                 }}>
-                                                    <Monitor style={{ width: 16, height: 16 }} /> Modelleri İncele
+                                                    <Play style={{ width: 14, height: 14 }} fill="currentColor" /> Test Et
                                                 </button>
                                             </div>
                                         </div>
@@ -746,43 +749,43 @@ export default function HomePage() {
                                 </div>
                             </div>
 
-                            {/* Oda Listesi */}
+                            {/* Müşteri Platformları */}
                             <div className="glossy-panel content-fade content-fade-2" style={{ padding: '24px 32px' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, paddingBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                                <div style={{ paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
                                     <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                        <Play style={{ width: 24, height: 24, color: '#38bdf8' }} fill="currentColor" /> Sistemi Test Et: Ücretsiz Deneme Odaları
+                                        <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Müşteri Platformları
                                     </h3>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)' }}>
-                                        <span style={{ width: 10, height: 10, borderRadius: '50%', background: '#ef4444', boxShadow: '0 0 10px rgba(239,68,68,1)', display: 'inline-block' }}></span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>Canlı İzle</span>
-                                    </div>
+                                    <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: 500 }}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</p>
                                 </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {ACTIVE_ROOMS.map((room) => (
-                                        <div key={room.id} className="room-item" style={{ padding: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer' }} onClick={() => goRoom()}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                    {[
+                                        { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
+                                        { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
+                                    ].map((p, i) => (
+                                        <div key={i} style={{
+                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                            padding: '14px 16px', borderRadius: 14,
+                                            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                        }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                                                 <div style={{
-                                                    width: 48, height: 48, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)', borderTop: '1px solid rgba(255,255,255,0.3)',
-                                                    background: room.isVip ? 'linear-gradient(180deg, #fbbf24, #ea580c)' : 'linear-gradient(180deg, #64748b, #334155)'
-                                                }}>
-                                                    {room.isVip ? <Star style={{ width: 24, height: 24, color: '#fef3c7', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} fill="currentColor" /> : <Mic style={{ width: 24, height: 24, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />}
-                                                </div>
+                                                    width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    background: `linear-gradient(135deg, ${p.color}33, ${p.color}11)`,
+                                                    border: `1px solid ${p.color}44`, fontSize: 22,
+                                                }}>{p.emoji}</div>
                                                 <div>
-                                                    <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff', textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>{room.name}</h4>
-                                                    <p style={{ fontSize: 11, color: '#bae6fd', fontWeight: 800, marginTop: 4, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>Yönetici: <span style={{ color: '#fff' }}>{room.owner}</span></p>
+                                                    <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{p.name}</div>
+                                                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.room}</div>
+                                                    <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.users}</span>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.rooms} oda</span>
+                                                    </div>
                                                 </div>
                                             </div>
-
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
-                                                <span className="badge-glow" style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: 'rgba(0,0,0,0.4)', padding: '6px 12px', borderRadius: 8, boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.3)', '--badge-color': room.type === 'Kamera + Ses' ? 'rgba(56,189,248,0.5)' : room.type === 'Yayın' ? 'rgba(52,211,153,0.5)' : 'rgba(99,102,241,0.5)' } as React.CSSProperties}>
-                                                    {room.type}
-                                                </span>
-                                                <div style={{ textAlign: 'center', width: 56 }}>
-                                                    <div style={{ fontSize: 18, fontWeight: 900, color: '#34d399', textShadow: '0 0 8px rgba(52,211,153,0.8)' }}>{room.users}</div>
-                                                </div>
-                                            </div>
+                                            <button className="btn-3d btn-3d-blue" style={{
+                                                padding: '6px 18px', fontSize: 11, fontWeight: 800, borderRadius: 10,
+                                            }}>Katıl</button>
                                         </div>
                                     ))}
                                 </div>
