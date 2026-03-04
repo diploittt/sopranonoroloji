@@ -198,6 +198,7 @@ export default function HomePage() {
                     color: #f8fafc;
                     min-height: 100vh;
                     overflow-x: hidden;
+                    overflow-y: scroll;
                 }
 
                 .main-content {
