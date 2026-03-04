@@ -920,7 +920,7 @@ export default function HomePage() {
                                                         background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
                                                         border: '1px solid rgba(56,189,248,0.2)',
                                                     }}>
-                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 12 }}>
                                                             <div>
                                                                 <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 8 }}>⚙️ Özel Yapılandırma</div>
                                                                 <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>Kendi Paketini Oluştur</h4>
@@ -931,27 +931,25 @@ export default function HomePage() {
                                                                     ← Paketlere Dön
                                                                 </button>
                                                                 <button className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
-                                                                    Hesapla & Al →
+                                                                    Satın Al →
                                                                 </button>
                                                             </div>
                                                         </div>
 
                                                         {/* Dropdown'lar */}
                                                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginTop: 16 }}>
-                                                            {/* Oda Sayısı */}
-                                                            <div>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>🏠 Oda Sayısı</div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>🏠 Oda Sayısı</div>
                                                                 <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
                                                                     width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
                                                                     background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
                                                                     cursor: 'pointer', outline: 'none',
                                                                 }}>
-                                                                    {[1, 2, 3, 5, 10].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
+                                                                    {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
                                                                 </select>
                                                             </div>
-                                                            {/* Kişi Limiti */}
-                                                            <div>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>👥 Oda Başına Kişi Limiti</div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>👥 Oda Kişi Limiti</div>
                                                                 <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
                                                                     width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
                                                                     background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
@@ -960,9 +958,8 @@ export default function HomePage() {
                                                                     {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
                                                                 </select>
                                                             </div>
-                                                            {/* Kamera */}
-                                                            <div>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>📹 Kamera Özelliği</div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>📹 Kamera</div>
                                                                 <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
                                                                     width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
                                                                     background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
@@ -972,9 +969,8 @@ export default function HomePage() {
                                                                     <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
                                                                 </select>
                                                             </div>
-                                                            {/* Toplantı Modu */}
-                                                            <div>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>💛 Toplantı Modu</div>
+                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>💛 Toplantı Modu</div>
                                                                 <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
                                                                     width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
                                                                     background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
