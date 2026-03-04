@@ -1604,7 +1604,7 @@ export default function HomePage() {
 
                     {/* FİYATLAR SECTION */}
                     {activeSection === 'fiyatlar' && (
-                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+                        <div style={{ maxWidth: 960, margin: '0 auto', position: 'relative' }}>
                             {/* Gallery Lamp */}
                             <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
