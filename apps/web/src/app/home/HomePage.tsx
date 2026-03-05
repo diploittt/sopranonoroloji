@@ -787,7 +787,7 @@ export default function HomePage() {
                         {/* SOL ALAN */}
                         <div style={{ flex: '1 1 60%', minWidth: 400, display: 'flex', flexDirection: 'column', gap: 32 }}>
                             {activeSection === 'home' && (
-                                <div style={{ display: 'contents' }}>
+                                <div key={'home-content-' + sectionChangeKey} style={{ display: 'contents' }}>
 
                                     {/* Karşılama Kartı + Tablo Lambası */}
                                     <div style={{ position: 'relative' }}>
@@ -1589,7 +1589,7 @@ export default function HomePage() {
                                         </svg>
                                         <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
                                     </div>
-                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, rgba(70,80,100,0.85) 0%, rgba(45,55,75,0.75) 20%, rgba(35,45,65,0.7) 50%, rgba(40,50,70,0.75) 80%, rgba(65,75,95,0.85) 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(140,150,170,0.4)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.12)' }}>
+                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both', transformOrigin: 'top center', zIndex: 10, background: 'linear-gradient(180deg, rgba(70,80,100,0.85) 0%, rgba(45,55,75,0.75) 20%, rgba(35,45,65,0.7) 50%, rgba(40,50,70,0.75) 80%, rgba(65,75,95,0.85) 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(140,150,170,0.4)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.12)' }}>
                                         {/* Başlık */}
                                         <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                             <div style={{
