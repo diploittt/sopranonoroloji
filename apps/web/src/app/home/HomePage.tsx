@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { getAuthUser, setAuthUser, removeAuthUser, clearAllSopranoAuth, AuthUser } from "@/lib/auth";
 import { generateGenderAvatar } from "@/lib/avatar";
@@ -26,6 +26,10 @@ const ACTIVE_ROOMS = [
 
 export default function HomePage() {
     const router = useRouter();
+
+    // Section geçiş animasyonu
+    const isInitialLoad = useRef(true);
+    const [sectionChangeKey, setSectionChangeKey] = useState(0);
     const [guestNick, setGuestNick] = useState("");
     const [user, setUser] = useState<AuthUser | null>(null);
     const [guestLoading, setGuestLoading] = useState(false);
@@ -103,6 +107,17 @@ export default function HomePage() {
     };
 
     // Auth check on mount
+
+    // Track section changes for lamp dip animation
+    useEffect(() => {
+        if (isInitialLoad.current) {
+            const timer = setTimeout(() => { isInitialLoad.current = false; }, 3000);
+            return () => clearTimeout(timer);
+        }
+        setSectionChangeKey(k => k + 1);
+    }, [activeSection]);
+
+
     useEffect(() => {
         const initialUser = getAuthUser();
         if (initialUser && !initialUser.isMember) {
@@ -645,6 +660,27 @@ export default function HomePage() {
                     100% { opacity: 0.8; transform: translateX(-50%) scale(0.98); }
                 }
 
+
+                /* Lamba hafif aşağı sarkma - section geçişi */
+                @keyframes lampDip {
+                    0% { transform: translateX(-50%) translateY(0); }
+                    40% { transform: translateX(-50%) translateY(12px); }
+                    100% { transform: translateX(-50%) translateY(0); }
+                }
+
+                /* Kart yukarıdan aşağı kayma - fade yok */
+                @keyframes cardSlideIn {
+                    0% { transform: translateY(-40px); }
+                    100% { transform: translateY(0); }
+                }
+
+                /* Işık yavaş açılma - kartlar oturduktan sonra */
+                @keyframes glowReveal {
+                    0% { opacity: 0; transform: translateX(-50%) scale(0.5); }
+                    100% { opacity: 1; transform: translateX(-50%) scale(1); }
+                }
+
+
                 @keyframes cardDropDown {
                     0% {
                         opacity: 0;
@@ -750,1020 +786,1020 @@ export default function HomePage() {
 
                         {/* SOL ALAN */}
                         <div style={{ flex: '1 1 60%', minWidth: 400, display: 'flex', flexDirection: 'column', gap: 32 }}>
-                        {activeSection === 'home' && (
-                        <div style={{ display: 'contents' }}>
+                            {activeSection === 'home' && (
+                                <div style={{ display: 'contents' }}>
 
-                            {/* Karşılama Kartı + Tablo Lambası */}
-                            <div style={{ position: 'relative' }}>
-                                {/* ===== TABLO LAMBASI (geniş — Hoşgeldiniz kartı) ===== */}
-                                <div className="gallery-lamp-svg">
-                                    <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <defs>
-                                            <linearGradient id="glBarMetalW" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
-                                                <stop offset="0%" stopColor="#4a4a4a" />
-                                                <stop offset="25%" stopColor="#2a2a2a" />
-                                                <stop offset="50%" stopColor="#1a1a1a" />
-                                                <stop offset="75%" stopColor="#2a2a2a" />
-                                                <stop offset="100%" stopColor="#3a3a3a" />
-                                            </linearGradient>
-                                            <linearGradient id="glMountPlateW" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
-                                                <stop offset="0%" stopColor="#555" />
-                                                <stop offset="50%" stopColor="#2a2a2a" />
-                                                <stop offset="100%" stopColor="#1a1a1a" />
-                                            </linearGradient>
-                                            <linearGradient id="glArmMetalW" x1="0" y1="0" x2="0" y2="1">
-                                                <stop offset="0%" stopColor="#555" />
-                                                <stop offset="50%" stopColor="#333" />
-                                                <stop offset="100%" stopColor="#2a2a2a" />
-                                            </linearGradient>
-                                            <linearGradient id="glLightSpreadW" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
-                                                <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" />
-                                                <stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
-                                            </linearGradient>
-                                            <linearGradient id="glLedStripW" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
-                                                <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" />
-                                                <stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" />
-                                                <stop offset="50%" stopColor="#fff0cc" stopOpacity="1" />
-                                                <stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" />
-                                                <stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
-                                            </linearGradient>
-                                        </defs>
-                                        <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadW)" opacity="0.5" />
-                                        <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateW)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-                                        <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
-                                        <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
-                                        <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                        <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
-                                        <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                        <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalW)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
-                                        <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
-                                        <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
-                                        <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripW)" />
-                                        <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
-                                        <circle cx="205" cy="34" r="1" fill="#555" />
-                                        <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
-                                        <circle cx="295" cy="34" r="1" fill="#555" />
-                                    </svg>
-                                    <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
-                                </div>
-
-                                <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
-                                    <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
-
-                                    <div style={{ position: 'relative', zIndex: 10 }}>
-                                        {/* Orijinal içerik — tümü birlikte fade/blur olur */}
-                                        <div style={{
-                                            display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap',
-                                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            opacity: showPackages ? 0 : 1,
-                                            filter: showPackages ? 'blur(8px)' : 'blur(0)',
-                                            transform: showPackages ? 'scale(0.97)' : 'scale(1)',
-                                            maxHeight: showPackages ? 0 : 2000,
-                                            overflow: 'hidden',
-                                            pointerEvents: showPackages ? 'none' : 'auto',
-                                        }}>
-                                            <div style={{ flex: 1, minWidth: 280 }}>
-                                                <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                                    Kendi Dijital Sahneni Yarat
-                                                </h2>
-                                                <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                                    <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
-                                                    HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
-                                                    sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
-                                                    Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
-                                                </p>
-                                            </div>
-
-                                            {/* 3D TV Efekti */}
-                                            <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: 15, marginRight: 40, perspective: 600 }}>
-                                                <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
-                                                    <div className="tv-screen">
-                                                        {/* Sohbet Simülasyonu */}
-                                                        <div className="chat-sim">
-                                                            <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
-                                                            {[
-                                                                { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
-                                                                { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
-                                                                { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
-                                                                { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
-                                                                { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
-                                                            ].map((c, i) => (
-                                                                <div key={i} className="chat-bubble">
-                                                                    <div className="chat-avatar" style={{ background: c.bg }}></div>
-                                                                    <div>
-                                                                        <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
-                                                                        <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
-                                                                    </div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        {/* Statik noise */}
-                                                        <div className="tv-static"></div>
-                                                    </div>
-                                                    {/* Scanlines + Flash */}
-                                                    <div className="tv-overlay"></div>
-                                                    <div className="tv-flash"></div>
-                                                </div>
-
-                                                {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
-                                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
-                                                    {/* Kablo */}
-                                                    <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
-                                                    {/* Buton */}
-                                                    <button className="btn-3d btn-3d-white model-btn" style={{
-                                                        padding: '8px 22px', fontSize: 10, fontWeight: 700,
-                                                        letterSpacing: 1.5, textTransform: 'uppercase',
-                                                        borderRadius: 10, gap: 6,
-                                                        animation: 'floatY 3s ease-in-out infinite',
-                                                    }}>
-                                                        <Play style={{ width: 12, height: 12 }} fill="currentColor" /> Test Et
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {/* Feature Toasts — tam genişlik 2x2 grid */}
-                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, width: '100%' }}>
-                                                {[
-                                                    { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
-                                                    { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
-                                                    { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
-                                                    { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
-                                                ].map((t, i) => (
-                                                    <div key={i} className="feature-toast" style={{
-                                                        display: 'flex', alignItems: 'center', gap: 10,
-                                                        padding: '8px 12px', borderRadius: 10,
-                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
-                                                    }}>
-                                                        <div style={{
-                                                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            background: `${t.color}15`, color: t.color,
-                                                            border: `1px solid ${t.color}30`,
-                                                        }}>{t.icon}</div>
-                                                        <div>
-                                                            <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
-                                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
+                                    {/* Karşılama Kartı + Tablo Lambası */}
+                                    <div style={{ position: 'relative' }}>
+                                        {/* ===== TABLO LAMBASI (geniş — Hoşgeldiniz kartı) ===== */}
+                                        <div className="gallery-lamp-svg" key={'lamp-home-' + sectionChangeKey} style={!isInitialLoad.current ? { animation: 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' } : undefined}>
+                                            <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <defs>
+                                                    <linearGradient id="glBarMetalW" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#4a4a4a" />
+                                                        <stop offset="25%" stopColor="#2a2a2a" />
+                                                        <stop offset="50%" stopColor="#1a1a1a" />
+                                                        <stop offset="75%" stopColor="#2a2a2a" />
+                                                        <stop offset="100%" stopColor="#3a3a3a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glMountPlateW" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#555" />
+                                                        <stop offset="50%" stopColor="#2a2a2a" />
+                                                        <stop offset="100%" stopColor="#1a1a1a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glArmMetalW" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#555" />
+                                                        <stop offset="50%" stopColor="#333" />
+                                                        <stop offset="100%" stopColor="#2a2a2a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glLightSpreadW" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" />
+                                                        <stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glLedStripW" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" />
+                                                        <stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                        <stop offset="50%" stopColor="#fff0cc" stopOpacity="1" />
+                                                        <stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" />
+                                                        <stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadW)" opacity="0.5" />
+                                                <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateW)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                                <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                                <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
+                                                <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                                <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalW)" strokeWidth="3" strokeLinecap="round" />
+                                                <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                                <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalW)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                                <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                                <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                                <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripW)" />
+                                                <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                                <circle cx="205" cy="34" r="1" fill="#555" />
+                                                <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
+                                                <circle cx="295" cy="34" r="1" fill="#555" />
+                                            </svg>
+                                            <div className="gallery-lamp-glow" key={'glow-home-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
                                         </div>
 
-                                        {/* Paket Kartları — showPackages açıkken görünür */}
-                                        <div style={{
-                                            transition: 'opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, filter 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
-                                            opacity: showPackages ? 1 : 0,
-                                            filter: showPackages ? 'blur(0px)' : 'blur(12px)',
-                                            transform: showPackages ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
-                                            maxHeight: showPackages ? 9999 : 0,
-                                            overflow: 'hidden',
-                                            pointerEvents: showPackages ? 'auto' : 'none',
-                                            willChange: 'opacity, transform, filter',
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                                                <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                                    Çözüm Modelleri
-                                                </h2>
-                                                <button onClick={() => setShowPackages(false)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', color: '#94a3b8', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
-                                            </div>
-                                            <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, marginBottom: 20 }}>İşletmenizin ihtiyacına göre iki farklı entegrasyon modeli.</p>
+                                        <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
+                                            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
 
-                                            <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
-                                                <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Monitor style={{ width: 20, height: 20, color: '#38bdf8' }} />
-                                                    </div>
-                                                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Soprano Hosted</h3>
-                                                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Tamamen bizim sunucularımızda barınan, teknik kurulum gerektirmeyen hızlı çözüm. Saniyeler içinde kendi odanızı yayına alın.</p>
-                                                </div>
-                                                <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                        <Sparkles style={{ width: 20, height: 20, color: '#fbbf24' }} />
-                                                    </div>
-                                                    <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>White-Label Embed</h3>
-                                                    <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Kendi sitenize iframe veya SDK ile gömün. Kullanıcılar sitenizden ayrılmadan SopranoChat deneyimini markanızla yaşasın.</p>
-                                                </div>
-                                            </div>
-
-                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
-
-                                                {/* Kampanyalı Paketler — fade out */}
+                                            <div style={{ position: 'relative', zIndex: 10 }}>
+                                                {/* Orijinal içerik — tümü birlikte fade/blur olur */}
                                                 <div style={{
-                                                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                    opacity: showCustomConfig ? 0 : 1,
-                                                    filter: showCustomConfig ? 'blur(6px)' : 'blur(0)',
-                                                    transform: showCustomConfig ? 'scale(0.97)' : 'scale(1)',
-                                                    maxHeight: showCustomConfig ? 0 : 2000,
+                                                    display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap',
+                                                    transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    opacity: showPackages ? 0 : 1,
+                                                    filter: showPackages ? 'blur(8px)' : 'blur(0)',
+                                                    transform: showPackages ? 'scale(0.97)' : 'scale(1)',
+                                                    maxHeight: showPackages ? 0 : 2000,
                                                     overflow: 'hidden',
-                                                    pointerEvents: showCustomConfig ? 'none' : 'auto',
+                                                    pointerEvents: showPackages ? 'none' : 'auto',
                                                 }}>
-                                                    <div style={{ display: 'flex', gap: 12 }}>
-                                                        {[
-                                                            { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                            { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                            { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
-                                                        ].map((plan, i) => (
-                                                            <div key={i} style={{
-                                                                flex: 1, padding: '20px 16px', borderRadius: 12,
-                                                                background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
-                                                                border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                                                position: 'relative', overflow: 'hidden',
-                                                                display: 'flex', flexDirection: 'column',
-                                                            }}>
-                                                                {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
-                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                                                                    <span style={{ fontSize: 18 }}>{plan.icon}</span>
-                                                                    <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
-                                                                </div>
-                                                                <div style={{ marginBottom: 16 }}>
-                                                                    <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
-                                                                    <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
-                                                                </div>
-                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
-                                                                    {plan.features.map((f, fi) => (
-                                                                        <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                                            <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                    <div style={{ flex: 1, minWidth: 280 }}>
+                                                        <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                            Kendi Dijital Sahneni Yarat
+                                                        </h2>
+                                                        <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                            <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
+                                                            HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
+                                                            sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
+                                                            Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
+                                                        </p>
+                                                    </div>
+
+                                                    {/* 3D TV Efekti */}
+                                                    <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: 15, marginRight: 40, perspective: 600 }}>
+                                                        <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
+                                                            <div className="tv-screen">
+                                                                {/* Sohbet Simülasyonu */}
+                                                                <div className="chat-sim">
+                                                                    <div style={{ fontSize: 7, color: '#38bdf8', fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', padding: '2px 0 4px', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 2 }}>🎙️ Goygoy & Müzik — 142 kişi</div>
+                                                                    {[
+                                                                        { name: 'Celine', color: '#f472b6', bg: '#831843', msg: 'Herkese merhaba! 🎵' },
+                                                                        { name: 'DJ.Bora', color: '#38bdf8', bg: '#0c4a6e', msg: 'Bu şarkıyı sevenler +1 🎧' },
+                                                                        { name: 'Admin', color: '#fbbf24', bg: '#713f12', msg: 'Hoş geldiniz, kuralları okuyun' },
+                                                                        { name: 'Karanlik', color: '#a78bfa', bg: '#3b0764', msg: 'Ses kalitesi harika 🔥' },
+                                                                        { name: 'GamerTR', color: '#34d399', bg: '#064e3b', msg: 'Kameramı açtım görüyor musunuz?' },
+                                                                    ].map((c, i) => (
+                                                                        <div key={i} className="chat-bubble">
+                                                                            <div className="chat-avatar" style={{ background: c.bg }}></div>
+                                                                            <div>
+                                                                                <span style={{ fontSize: 7, fontWeight: 700, color: c.color }}>{c.name}</span>
+                                                                                <div className="chat-msg" style={{ background: 'rgba(255,255,255,0.06)', color: '#cbd5e1' }}>{c.msg}</div>
+                                                                            </div>
                                                                         </div>
                                                                     ))}
                                                                 </div>
-                                                                <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                                                {/* Statik noise */}
+                                                                <div className="tv-static"></div>
+                                                            </div>
+                                                            {/* Scanlines + Flash */}
+                                                            <div className="tv-overlay"></div>
+                                                            <div className="tv-flash"></div>
+                                                        </div>
+
+                                                        {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
+                                                            {/* Kablo */}
+                                                            <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
+                                                            {/* Buton */}
+                                                            <button className="btn-3d btn-3d-white model-btn" style={{
+                                                                padding: '8px 22px', fontSize: 10, fontWeight: 700,
+                                                                letterSpacing: 1.5, textTransform: 'uppercase',
+                                                                borderRadius: 10, gap: 6,
+                                                                animation: 'floatY 3s ease-in-out infinite',
+                                                            }}>
+                                                                <Play style={{ width: 12, height: 12 }} fill="currentColor" /> Test Et
+                                                            </button>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Feature Toasts — tam genişlik 2x2 grid */}
+                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, width: '100%' }}>
+                                                        {[
+                                                            { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
+                                                            { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
+                                                            { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
+                                                            { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
+                                                        ].map((t, i) => (
+                                                            <div key={i} className="feature-toast" style={{
+                                                                display: 'flex', alignItems: 'center', gap: 10,
+                                                                padding: '8px 12px', borderRadius: 10,
+                                                                background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                            }}>
+                                                                <div style={{
+                                                                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    background: `${t.color}15`, color: t.color,
+                                                                    border: `1px solid ${t.color}30`,
+                                                                }}>{t.icon}</div>
+                                                                <div>
+                                                                    <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                                </div>
                                                             </div>
                                                         ))}
                                                     </div>
-
-                                                    {/* Özel Yapılandırma Butonu */}
-                                                    <div style={{ textAlign: 'center', marginTop: 20 }}>
-                                                        <button
-                                                            onClick={() => setShowCustomConfig(true)}
-                                                            className="btn-3d btn-3d-blue"
-                                                            style={{ padding: '10px 28px', fontSize: 12, fontWeight: 800, borderRadius: 10, letterSpacing: 1 }}
-                                                        >
-                                                            ⚙️ Özel Yapılandırma
-                                                        </button>
-                                                    </div>
                                                 </div>
 
-                                                {/* Özel Yapılandırma Paneli — fade in */}
+                                                {/* Paket Kartları — showPackages açıkken görünür */}
                                                 <div style={{
-                                                    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
-                                                    opacity: showCustomConfig ? 1 : 0,
-                                                    filter: showCustomConfig ? 'blur(0)' : 'blur(6px)',
-                                                    transform: showCustomConfig ? 'translateY(0)' : 'translateY(20px)',
-                                                    maxHeight: showCustomConfig ? 2000 : 0,
+                                                    transition: 'opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, filter 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
+                                                    opacity: showPackages ? 1 : 0,
+                                                    filter: showPackages ? 'blur(0px)' : 'blur(12px)',
+                                                    transform: showPackages ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
+                                                    maxHeight: showPackages ? 9999 : 0,
                                                     overflow: 'hidden',
-                                                    pointerEvents: showCustomConfig ? 'auto' : 'none',
+                                                    pointerEvents: showPackages ? 'auto' : 'none',
+                                                    willChange: 'opacity, transform, filter',
                                                 }}>
-                                                    <div style={{
-                                                        background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
-                                                        border: '1px solid rgba(56,189,248,0.2)',
-                                                    }}>
-                                                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 12 }}>
-                                                            <div>
-                                                                <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 8 }}>⚙️ Özel Yapılandırma</div>
-                                                                <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>Kendi Paketini Oluştur</h4>
-                                                                <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>İhtiyacın kadar oda, dilediğin kadar limit.</p>
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                                                        <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                            Çözüm Modelleri
+                                                        </h2>
+                                                        <button onClick={() => setShowPackages(false)} style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, width: 28, height: 28, cursor: 'pointer', color: '#94a3b8', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s' }}>✕</button>
+                                                    </div>
+                                                    <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500, marginBottom: 20 }}>İşletmenizin ihtiyacına göre iki farklı entegrasyon modeli.</p>
+
+                                                    <div style={{ display: 'flex', gap: 16, marginBottom: 28 }}>
+                                                        <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(56,189,248,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(56,189,248,0.15)', border: '1px solid rgba(56,189,248,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Monitor style={{ width: 20, height: 20, color: '#38bdf8' }} />
                                                             </div>
-                                                            <div style={{ display: 'flex', gap: 8 }}>
-                                                                <button onClick={() => setShowCustomConfig(false)} className="btn-3d btn-3d-white" style={{ padding: '8px 16px', fontSize: 10, fontWeight: 800, borderRadius: 10 }}>
-                                                                    ← Paketlere Dön
-                                                                </button>
-                                                                <button onClick={() => {
-                                                                    const rc = cfgRooms * 200;
-                                                                    const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
-                                                                    const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
-                                                                    const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
-                                                                    openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
-                                                                }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
-                                                                    Satın Al →
+                                                            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>Soprano Hosted</h3>
+                                                            <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Tamamen bizim sunucularımızda barınan, teknik kurulum gerektirmeyen hızlı çözüm. Saniyeler içinde kendi odanızı yayına alın.</p>
+                                                        </div>
+                                                        <div className="feature-toast" style={{ flex: 1, padding: '20px', borderRadius: 14, background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(251,191,36,0.15)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                            <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(251,191,36,0.15)', border: '1px solid rgba(251,191,36,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                                <Sparkles style={{ width: 20, height: 20, color: '#fbbf24' }} />
+                                                            </div>
+                                                            <h3 style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>White-Label Embed</h3>
+                                                            <p style={{ fontSize: 12, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>Kendi sitenize iframe veya SDK ile gömün. Kullanıcılar sitenizden ayrılmadan SopranoChat deneyimini markanızla yaşasın.</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                        <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
+
+                                                        {/* Kampanyalı Paketler — fade out */}
+                                                        <div style={{
+                                                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                            opacity: showCustomConfig ? 0 : 1,
+                                                            filter: showCustomConfig ? 'blur(6px)' : 'blur(0)',
+                                                            transform: showCustomConfig ? 'scale(0.97)' : 'scale(1)',
+                                                            maxHeight: showCustomConfig ? 0 : 2000,
+                                                            overflow: 'hidden',
+                                                            pointerEvents: showCustomConfig ? 'none' : 'auto',
+                                                        }}>
+                                                            <div style={{ display: 'flex', gap: 12 }}>
+                                                                {[
+                                                                    { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                                    { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                                    { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                                ].map((plan, i) => (
+                                                                    <div key={i} style={{
+                                                                        flex: 1, padding: '20px 16px', borderRadius: 12,
+                                                                        background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
+                                                                        border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                                        position: 'relative', overflow: 'hidden',
+                                                                        display: 'flex', flexDirection: 'column',
+                                                                    }}>
+                                                                        {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                                                            <span style={{ fontSize: 18 }}>{plan.icon}</span>
+                                                                            <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
+                                                                        </div>
+                                                                        <div style={{ marginBottom: 16 }}>
+                                                                            <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
+                                                                            <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
+                                                                        </div>
+                                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
+                                                                            {plan.features.map((f, fi) => (
+                                                                                <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                                    <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                                                </div>
+                                                                            ))}
+                                                                        </div>
+                                                                        <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+
+                                                            {/* Özel Yapılandırma Butonu */}
+                                                            <div style={{ textAlign: 'center', marginTop: 20 }}>
+                                                                <button
+                                                                    onClick={() => setShowCustomConfig(true)}
+                                                                    className="btn-3d btn-3d-blue"
+                                                                    style={{ padding: '10px 28px', fontSize: 12, fontWeight: 800, borderRadius: 10, letterSpacing: 1 }}
+                                                                >
+                                                                    ⚙️ Özel Yapılandırma
                                                                 </button>
                                                             </div>
                                                         </div>
 
-                                                        {/* Dropdown'lar */}
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginTop: 16 }}>
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>🏠 Oda Sayısı</div>
-                                                                <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
-                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
-                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
-                                                                    cursor: 'pointer', outline: 'none',
-                                                                }}>
-                                                                    {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
-                                                                </select>
-                                                            </div>
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>👥 Oda Kişi Limiti</div>
-                                                                <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
-                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
-                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
-                                                                    cursor: 'pointer', outline: 'none',
-                                                                }}>
-                                                                    {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
-                                                                </select>
-                                                            </div>
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>📹 Kamera</div>
-                                                                <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
-                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
-                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
-                                                                    cursor: 'pointer', outline: 'none',
-                                                                }}>
-                                                                    <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
-                                                                    <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
-                                                                </select>
-                                                            </div>
-                                                            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>💛 Toplantı Modu</div>
-                                                                <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
-                                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
-                                                                    background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
-                                                                    cursor: 'pointer', outline: 'none',
-                                                                }}>
-                                                                    <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
-                                                                    <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-
-                                                        {/* Tahmini Fiyatlandırma */}
-                                                        {(() => {
-                                                            const roomCost = cfgRooms * 200;
-                                                            const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
-                                                            const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
-                                                            const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
-                                                            const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
-                                                            const yearlyTotal = monthlyTotal * 10; // 2 ay hediye
-                                                            return (
-                                                                <div style={{ marginTop: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, padding: '16px 20px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                        <span style={{ color: '#38bdf8' }}>₺</span> Tahmini Fiyatlandırma
+                                                        {/* Özel Yapılandırma Paneli — fade in */}
+                                                        <div style={{
+                                                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
+                                                            opacity: showCustomConfig ? 1 : 0,
+                                                            filter: showCustomConfig ? 'blur(0)' : 'blur(6px)',
+                                                            transform: showCustomConfig ? 'translateY(0)' : 'translateY(20px)',
+                                                            maxHeight: showCustomConfig ? 2000 : 0,
+                                                            overflow: 'hidden',
+                                                            pointerEvents: showCustomConfig ? 'auto' : 'none',
+                                                        }}>
+                                                            <div style={{
+                                                                background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
+                                                                border: '1px solid rgba(56,189,248,0.2)',
+                                                            }}>
+                                                                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 6, flexWrap: 'wrap', gap: 12 }}>
+                                                                    <div>
+                                                                        <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 8 }}>⚙️ Özel Yapılandırma</div>
+                                                                        <h4 style={{ fontSize: 16, fontWeight: 900, color: '#fff' }}>Kendi Paketini Oluştur</h4>
+                                                                        <p style={{ fontSize: 11, color: '#64748b', marginTop: 4 }}>İhtiyacın kadar oda, dilediğin kadar limit.</p>
                                                                     </div>
-                                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-                                                                            <span>🏠 {cfgRooms} Oda</span>
-                                                                            <span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
-                                                                        </div>
-                                                                        {cameraCost > 0 && (
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-                                                                                <span>📹 Kamera</span>
-                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
-                                                                            </div>
-                                                                        )}
-                                                                        {meetingCost > 0 && (
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-                                                                                <span>💛 Toplantı Modu</span>
-                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
-                                                                            </div>
-                                                                        )}
-                                                                        {personExtra > 0 && (
-                                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
-                                                                                <span>👥 Ek Kişi Kapasitesi ({cfgPersons} kişi)</span>
-                                                                                <span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
-                                                                            </div>
-                                                                        )}
-                                                                    </div>
-                                                                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 12, paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-                                                                        <div>
-                                                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>Aylık</div>
-                                                                            <div style={{ fontSize: 22, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div>
-                                                                        </div>
-                                                                        <div style={{ textAlign: 'right' }}>
-                                                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: 1 }}>Yıllık (2 Ay Ücretsiz)</div>
-                                                                            <div style={{ fontSize: 22, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div>
-                                                                        </div>
+                                                                    <div style={{ display: 'flex', gap: 8 }}>
+                                                                        <button onClick={() => setShowCustomConfig(false)} className="btn-3d btn-3d-white" style={{ padding: '8px 16px', fontSize: 10, fontWeight: 800, borderRadius: 10 }}>
+                                                                            ← Paketlere Dön
+                                                                        </button>
+                                                                        <button onClick={() => {
+                                                                            const rc = cfgRooms * 200;
+                                                                            const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                                            const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                                            const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                                                            openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
+                                                                        }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                                                            Satın Al →
+                                                                        </button>
                                                                     </div>
                                                                 </div>
-                                                            );
-                                                        })()}
+
+                                                                {/* Dropdown'lar */}
+                                                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginTop: 16 }}>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>🏠 Oda Sayısı</div>
+                                                                        <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
+                                                                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                            background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                            cursor: 'pointer', outline: 'none',
+                                                                        }}>
+                                                                            {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>👥 Oda Kişi Limiti</div>
+                                                                        <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
+                                                                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                            background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                            cursor: 'pointer', outline: 'none',
+                                                                        }}>
+                                                                            {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
+                                                                        </select>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>📹 Kamera</div>
+                                                                        <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
+                                                                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                            background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                            cursor: 'pointer', outline: 'none',
+                                                                        }}>
+                                                                            <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
+                                                                            <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
+                                                                        </select>
+                                                                    </div>
+                                                                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                                                        <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase', minHeight: 24, display: 'flex', alignItems: 'flex-end' }}>💛 Toplantı Modu</div>
+                                                                        <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
+                                                                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 13, fontWeight: 700, color: '#fff',
+                                                                            background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)',
+                                                                            cursor: 'pointer', outline: 'none',
+                                                                        }}>
+                                                                            <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
+                                                                            <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
+                                                                        </select>
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Tahmini Fiyatlandırma */}
+                                                                {(() => {
+                                                                    const roomCost = cfgRooms * 200;
+                                                                    const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                                    const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                                    const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                                                    const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
+                                                                    const yearlyTotal = monthlyTotal * 10; // 2 ay hediye
+                                                                    return (
+                                                                        <div style={{ marginTop: 16, background: 'rgba(0,0,0,0.2)', borderRadius: 12, padding: '16px 20px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff', marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                                <span style={{ color: '#38bdf8' }}>₺</span> Tahmini Fiyatlandırma
+                                                                            </div>
+                                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                                                                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                    <span>🏠 {cfgRooms} Oda</span>
+                                                                                    <span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
+                                                                                </div>
+                                                                                {cameraCost > 0 && (
+                                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                        <span>📹 Kamera</span>
+                                                                                        <span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {meetingCost > 0 && (
+                                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                        <span>💛 Toplantı Modu</span>
+                                                                                        <span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
+                                                                                    </div>
+                                                                                )}
+                                                                                {personExtra > 0 && (
+                                                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8' }}>
+                                                                                        <span>👥 Ek Kişi Kapasitesi ({cfgPersons} kişi)</span>
+                                                                                        <span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                            <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 12, paddingTop: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                                                                                <div>
+                                                                                    <div style={{ fontSize: 10, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1 }}>Aylık</div>
+                                                                                    <div style={{ fontSize: 22, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div>
+                                                                                </div>
+                                                                                <div style={{ textAlign: 'right' }}>
+                                                                                    <div style={{ fontSize: 10, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase', letterSpacing: 1 }}>Yıllık (2 Ay Ücretsiz)</div>
+                                                                                    <div style={{ fontSize: 22, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
 
-                            {/* Müşteri Platformları */}
-                            <div className="glossy-panel content-fade content-fade-2" style={{ padding: '24px 32px' }}>
-                                <div style={{ paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
-                                    <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                        <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Müşteri Platformları
-                                    </h3>
-                                    <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: 500 }}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</p>
-                                </div>
+                                    {/* Müşteri Platformları */}
+                                    <div className="glossy-panel content-fade content-fade-2" style={{ padding: '24px 32px' }}>
+                                        <div style={{ paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                                            <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Müşteri Platformları
+                                            </h3>
+                                            <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: 500 }}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</p>
+                                        </div>
 
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    {[
-                                        { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
-                                        { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
-                                    ].map((p, i) => (
-                                        <div key={i} className="feature-toast" style={{
-                                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                            padding: '14px 16px', borderRadius: 14,
-                                            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                                <div style={{
-                                                    width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    background: `linear-gradient(135deg, ${p.color}33, ${p.color}11)`,
-                                                    border: `1px solid ${p.color}44`, fontSize: 22,
-                                                }}>{p.emoji}</div>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                            {[
+                                                { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
+                                                { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
+                                            ].map((p, i) => (
+                                                <div key={i} className="feature-toast" style={{
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                    padding: '14px 16px', borderRadius: 14,
+                                                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                                        <div style={{
+                                                            width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            background: `linear-gradient(135deg, ${p.color}33, ${p.color}11)`,
+                                                            border: `1px solid ${p.color}44`, fontSize: 22,
+                                                        }}>{p.emoji}</div>
+                                                        <div>
+                                                            <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{p.name}</div>
+                                                            <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.room}</div>
+                                                            <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.users}</span>
+                                                                <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.rooms} oda</span>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <button className="btn-3d btn-3d-blue" style={{
+                                                        padding: '6px 18px', fontSize: 11, fontWeight: 800, borderRadius: 10,
+                                                    }}>Katıl</button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* İLETİŞİM SECTION */}
+                            {activeSection === 'iletisim' && (
+                                <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+                                    {/* Gallery Lamp */}
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                        <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                                </linearGradient>
+                                                <linearGradient id="glMountPlateC" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                                </linearGradient>
+                                                <linearGradient id="glArmMetalC" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                                </linearGradient>
+                                                <linearGradient id="glLightSpreadC" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                </linearGradient>
+                                                <linearGradient id="glLedStripC" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadC)" opacity="0.5" />
+                                            <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateC)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                            <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                            <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalC)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                            <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                            <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                            <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripC)" />
+                                            <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                            <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                        </svg>
+                                        <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
+                                    </div>
+                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both', transformOrigin: 'top center', zIndex: 10 }}>
+                                        {/* Başlık */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                                            <div style={{
+                                                width: 44, height: 44, borderRadius: 14,
+                                                background: 'linear-gradient(135deg, #38bdf8, #06b6d4)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 6px 16px rgba(56,189,248,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                            }}>
+                                                <Phone style={{ width: 20, height: 20, color: '#fff' }} />
+                                            </div>
+                                            <div>
+                                                <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Bizimle İletişime Geçin</h2>
+                                                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat Bilişim · Sorularınız ve önerileriniz için bize ulaşın.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* İletişim Butonları — yatay */}
+                                        <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+                                            <a href="https://wa.me/905520363674" target="_blank" rel="noopener noreferrer" style={{
+                                                flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                                padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
+                                                background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.18)',
+                                                transition: 'all 0.3s',
+                                            }}>
+                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #25d366, #128c7e)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <MessageCircle style={{ width: 15, height: 15, color: '#fff' }} />
+                                                </div>
                                                 <div>
-                                                    <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{p.name}</div>
-                                                    <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.room}</div>
-                                                    <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.users}</span>
-                                                        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.rooms} oda</span>
-                                                    </div>
+                                                    <div style={{ fontSize: 11, fontWeight: 800, color: '#25d366' }}>WhatsApp</div>
+                                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>+90 552 036 3674</div>
+                                                </div>
+                                            </a>
+                                            <a href="mailto:destek@sopranochat.com" style={{
+                                                flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                                padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
+                                                background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.18)',
+                                                transition: 'all 0.3s',
+                                            }}>
+                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Mail style={{ width: 15, height: 15, color: '#fff' }} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8' }}>E-Posta</div>
+                                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>destek@sopranochat.com</div>
+                                                </div>
+                                            </a>
+                                            <div style={{
+                                                flex: 1, display: 'flex', alignItems: 'center', gap: 10,
+                                                padding: '12px 14px', borderRadius: 12,
+                                                background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)',
+                                            }}>
+                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                    <Globe style={{ width: 15, height: 15, color: '#fff' }} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24' }}>Web</div>
+                                                    <div style={{ fontSize: 9, color: '#94a3b8' }}>sopranochat.com</div>
                                                 </div>
                                             </div>
-                                            <button className="btn-3d btn-3d-blue" style={{
-                                                padding: '6px 18px', fontSize: 11, fontWeight: 800, borderRadius: 10,
-                                            }}>Katıl</button>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                        )}
 
-                    {/* İLETİŞİM SECTION */}
-                    {activeSection === 'iletisim' && (
-                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
-                            {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
-                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
-                                        </linearGradient>
-                                        <linearGradient id="glMountPlateC" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
-                                        </linearGradient>
-                                        <linearGradient id="glArmMetalC" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
-                                        </linearGradient>
-                                        <linearGradient id="glLightSpreadC" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
-                                        </linearGradient>
-                                        <linearGradient id="glLedStripC" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadC)" opacity="0.5" />
-                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateC)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
-                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalC)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
-                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
-                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
-                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripC)" />
-                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
-                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
-                                </svg>
-                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
-                            </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
-                                {/* Başlık */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-                                    <div style={{
-                                        width: 44, height: 44, borderRadius: 14,
-                                        background: 'linear-gradient(135deg, #38bdf8, #06b6d4)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 6px 16px rgba(56,189,248,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
-                                    }}>
-                                        <Phone style={{ width: 20, height: 20, color: '#fff' }} />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Bizimle İletişime Geçin</h2>
-                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat Bilişim · Sorularınız ve önerileriniz için bize ulaşın.</p>
-                                    </div>
-                                </div>
+                                        {/* Ayırıcı */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+                                            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                                            <span style={{ fontSize: 8, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5 }}>Mesaj Gönderin</span>
+                                            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
+                                        </div>
 
-                                {/* İletişim Butonları — yatay */}
-                                <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                                    <a href="https://wa.me/905520363674" target="_blank" rel="noopener noreferrer" style={{
-                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
-                                        padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
-                                        background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.18)',
-                                        transition: 'all 0.3s',
-                                    }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #25d366, #128c7e)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <MessageCircle style={{ width: 15, height: 15, color: '#fff' }} />
+                                        {/* Form */}
+                                        <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                                            <input type="text" value={supName} onChange={e => setSupName(e.target.value)} placeholder="Ad Soyad" style={{
+                                                flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
+                                            }} />
+                                            <input type="email" value={supEmail} onChange={e => setSupEmail(e.target.value)} placeholder="mail@ornek.com" style={{
+                                                flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
+                                            }} />
                                         </div>
-                                        <div>
-                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#25d366' }}>WhatsApp</div>
-                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>+90 552 036 3674</div>
-                                        </div>
-                                    </a>
-                                    <a href="mailto:destek@sopranochat.com" style={{
-                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
-                                        padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
-                                        background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.18)',
-                                        transition: 'all 0.3s',
-                                    }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Mail style={{ width: 15, height: 15, color: '#fff' }} />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8' }}>E-Posta</div>
-                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>destek@sopranochat.com</div>
-                                        </div>
-                                    </a>
-                                    <div style={{
-                                        flex: 1, display: 'flex', alignItems: 'center', gap: 10,
-                                        padding: '12px 14px', borderRadius: 12,
-                                        background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.18)',
-                                    }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: 'linear-gradient(135deg, #fbbf24, #f59e0b)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            <Globe style={{ width: 15, height: 15, color: '#fff' }} />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24' }}>Web</div>
-                                            <div style={{ fontSize: 9, color: '#94a3b8' }}>sopranochat.com</div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Ayırıcı */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-                                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                                    <span style={{ fontSize: 8, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: 1.5 }}>Mesaj Gönderin</span>
-                                    <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
-                                </div>
-
-                                {/* Form */}
-                                <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
-                                    <input type="text" value={supName} onChange={e => setSupName(e.target.value)} placeholder="Ad Soyad" style={{
-                                        flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
-                                    }} />
-                                    <input type="email" value={supEmail} onChange={e => setSupEmail(e.target.value)} placeholder="mail@ornek.com" style={{
-                                        flex: 1, padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none',
-                                    }} />
-                                </div>
-                                <input type="text" value={supSubject} onChange={e => setSupSubject(e.target.value)} placeholder="Mesajınızın konusu" style={{
-                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', marginBottom: 8,
-                                }} />
-                                <textarea value={supMessage} onChange={e => setSupMessage(e.target.value)} placeholder="Mesajınızı buraya yazın..."
-                                    rows={3} style={{
-                                        width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none', marginBottom: 12,
-                                    }} />
-                                <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                    Mesaj Gönder <Send style={{ width: 14, height: 14 }} />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* FİYATLAR SECTION */}
-                    {activeSection === 'fiyatlar' && (
-                        <div style={{ maxWidth: 960, margin: '0 auto', position: 'relative' }}>
-                            {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
-                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="glBarMetalP" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
-                                        </linearGradient>
-                                        <linearGradient id="glMountPlateP" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
-                                        </linearGradient>
-                                        <linearGradient id="glArmMetalP" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
-                                        </linearGradient>
-                                        <linearGradient id="glLightSpreadP" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
-                                        </linearGradient>
-                                        <linearGradient id="glLedStripP" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadP)" opacity="0.5" />
-                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateP)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
-                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalP)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
-                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
-                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
-                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripP)" />
-                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
-                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
-                                </svg>
-                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
-                            </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
-                                {/* Başlık */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                                    <div style={{
-                                        width: 44, height: 44, borderRadius: 14,
-                                        background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 6px 16px rgba(251,191,36,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
-                                    }}>
-                                        <Star style={{ width: 20, height: 20, color: '#fff' }} />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Fiyatlandırma</h2>
-                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>İşletmenize uygun çözüm modelini seçin.</p>
-                                    </div>
-                                </div>
-
-                                {/* Paket Kartları */}
-                                <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-                                    {[
-                                        { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                        { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                        { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
-                                    ].map((plan, i) => (
-                                        <div key={i} style={{
-                                            flex: 1, padding: '20px 16px', borderRadius: 14,
-                                            background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
-                                            border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                                            position: 'relative', overflow: 'hidden',
-                                            display: 'flex', flexDirection: 'column',
-                                        }}>
-                                            {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                                                <span style={{ fontSize: 18 }}>{plan.icon}</span>
-                                                <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
-                                            </div>
-                                            <div style={{ marginBottom: 16 }}>
-                                                <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
-                                                <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
-                                            </div>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
-                                                {plan.features.map((f, fi) => (
-                                                    <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                        <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                            <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
-                                        </div>
-                                    ))}
-                                </div>
-
-                                {/* Özel Yapılandırma */}
-                                <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '20px', border: '1px solid rgba(56,189,248,0.15)', marginBottom: 16 }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-                                        <div>
-                                            <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 6 }}>⚙️ Özel Yapılandırma</div>
-                                            <h4 style={{ fontSize: 14, fontWeight: 900, color: '#fff', margin: 0 }}>Kendi Paketini Oluştur</h4>
-                                        </div>
-                                        <button onClick={() => {
-                                            const rc = cfgRooms * 200;
-                                            const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
-                                            const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
-                                            const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
-                                            openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
-                                        }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
-                                            Satın Al →
+                                        <input type="text" value={supSubject} onChange={e => setSupSubject(e.target.value)} placeholder="Mesajınızın konusu" style={{
+                                            width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                            background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', marginBottom: 8,
+                                        }} />
+                                        <textarea value={supMessage} onChange={e => setSupMessage(e.target.value)} placeholder="Mesajınızı buraya yazın..."
+                                            rows={3} style={{
+                                                width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none', marginBottom: 12,
+                                            }} />
+                                        <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                            Mesaj Gönder <Send style={{ width: 14, height: 14 }} />
                                         </button>
                                     </div>
-                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
-                                        <div>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>🏠 Oda Sayısı</div>
-                                            <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
-                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
-                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
-                                            }}>
-                                                {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>👥 Kişi Limiti</div>
-                                            <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
-                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
-                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
-                                            }}>
-                                                {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>📹 Kamera</div>
-                                            <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
-                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
-                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
-                                            }}>
-                                                <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
-                                                <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>💛 Toplantı</div>
-                                            <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
-                                                width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
-                                                background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
-                                            }}>
-                                                <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
-                                                <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    {/* Fiyat Hesaplama */}
-                                    {(() => {
-                                        const roomCost = cfgRooms * 200;
-                                        const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
-                                        const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
-                                        const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
-                                        const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
-                                        const yearlyTotal = monthlyTotal * 10;
-                                        return (
-                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
-                                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
-                                                        <span>🏠 {cfgRooms} Oda</span><span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
-                                                    </div>
-                                                    {cameraCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
-                                                        <span>📹 Kamera</span><span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
-                                                    </div>}
-                                                    {meetingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
-                                                        <span>💛 Toplantı</span><span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
-                                                    </div>}
-                                                    {personExtra > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
-                                                        <span>👥 Ek Kapasite ({cfgPersons} kişi)</span><span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
-                                                    </div>}
-                                                </div>
-                                                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 10, display: 'flex', justifyContent: 'space-between' }}>
-                                                    <div><div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Aylık</div><div style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div></div>
-                                                    <div style={{ textAlign: 'right' }}><div style={{ fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase' }}>Yıllık (2 Ay Ücretsiz)</div><div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div></div>
-                                                </div>
-                                            </div>
-                                        );
-                                    })()}
                                 </div>
+                            )}
 
-                                {/* Alt bilgi */}
-                                <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.1)' }}>
-                                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
-                                        Tüm paketler <span style={{ color: '#34d399', fontWeight: 700 }}>7 gün ücretsiz deneme</span> ile başlar. İstediğiniz zaman iptal edebilirsiniz.
+                            {/* FİYATLAR SECTION */}
+                            {activeSection === 'fiyatlar' && (
+                                <div style={{ maxWidth: 960, margin: '0 auto', position: 'relative' }}>
+                                    {/* Gallery Lamp */}
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                        <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="glBarMetalP" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                                </linearGradient>
+                                                <linearGradient id="glMountPlateP" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                                </linearGradient>
+                                                <linearGradient id="glArmMetalP" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                                </linearGradient>
+                                                <linearGradient id="glLightSpreadP" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                </linearGradient>
+                                                <linearGradient id="glLedStripP" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadP)" opacity="0.5" />
+                                            <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateP)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                            <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                            <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalP)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalP)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                            <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                            <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                            <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripP)" />
+                                            <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                            <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                        </svg>
+                                        <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* REHBER SECTION */}
-                    {activeSection === 'rehber' && (
-                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
-                            {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
-                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="glBarMetalR" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
-                                        </linearGradient>
-                                        <linearGradient id="glMountPlateR" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
-                                        </linearGradient>
-                                        <linearGradient id="glArmMetalR" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
-                                        </linearGradient>
-                                        <linearGradient id="glLightSpreadR" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
-                                        </linearGradient>
-                                        <linearGradient id="glLedStripR" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadR)" opacity="0.5" />
-                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateR)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
-                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalR)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
-                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
-                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
-                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripR)" />
-                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
-                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
-                                </svg>
-                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
-                            </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, rgba(70,80,100,0.85) 0%, rgba(45,55,75,0.75) 20%, rgba(35,45,65,0.7) 50%, rgba(40,50,70,0.75) 80%, rgba(65,75,95,0.85) 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(140,150,170,0.4)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.12)' }}>
-                                {/* Başlık */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                                    <div style={{
-                                        width: 44, height: 44, borderRadius: 14,
-                                        background: 'linear-gradient(135deg, #34d399, #10b981)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 6px 16px rgba(52,211,153,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
-                                    }}>
-                                        <BookOpen style={{ width: 20, height: 20, color: '#fff' }} />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Kullanım Rehberi</h2>
-                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat'i en verimli şekilde kullanmanız için rehber.</p>
-                                    </div>
-                                </div>
-
-                                {/* Accordion */}
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {[
-                                        {
-                                            id: 'baslangic', icon: '🚀', title: 'Hızlı Başlangıç', color: '#38bdf8',
-                                            items: [
-                                                { q: 'Hesap Oluşturma', a: 'Ana sayfadaki "Kayıt Ol" butonuna tıklayın. Kullanıcı adı, e-posta ve şifrenizi girin. E-posta doğrulaması sonrası hesabınız aktif olacaktır.' },
-                                                { q: 'İlk Odaya Giriş', a: 'Giriş yaptıktan sonra oda listesinden istediğiniz odaya tıklayın. Bazı odalar şifreli olabilir, şifreyi oda sahibinden öğrenebilirsiniz.' },
-                                                { q: 'Mikrofon & Kamera İzinleri', a: 'Tarayıcınız mikrofon ve kamera erişimi isteyecektir. "İzin Ver" butonuna tıklayarak sesli/görüntülü sohbete katılabilirsiniz.' },
-                                            ],
-                                        },
-                                        {
-                                            id: 'oda', icon: '🎙️', title: 'Oda Kullanım Rehberi', color: '#a78bfa',
-                                            items: [
-                                                { q: 'Sesli Sohbet', a: 'Odaya girdikten sonra mikrofon butonuna tıklayarak sesli konuşmaya başlayabilirsiniz. Push-to-talk veya sürekli açık mod seçenekleri mevcuttur.' },
-                                                { q: 'Kamera Yayını', a: 'Kamera destekli odalarda kamera ikonuna tıklayarak görüntülü yayın başlatabilirsiniz. HD kalitede eşzamanlı yayın yapılır.' },
-                                                { q: 'Metin Sohbeti', a: 'Alt kısımdaki mesaj kutusundan yazılı mesajlar gönderebilirsiniz. Emoji, bağlantı ve özel formatlar desteklenir.' },
-                                                { q: 'Özel Mesaj (Private Chat)', a: 'Bir kullanıcıya sağ tıklayıp "Özel Mesaj" seçeneğini kullanarak birebir yazışma başlatabilirsiniz.' },
-                                                { q: 'One2One Görüşme', a: 'Bir kullanıcıya sağ tıklayıp "One2One Davet" ile özel birebir sesli/görüntülü görüşme başlatabilirsiniz.' },
-                                            ],
-                                        },
-                                        {
-                                            id: 'roller', icon: '👑', title: 'Roller & Yetkiler', color: '#fbbf24',
-                                            items: [
-                                                { q: 'Rol Sıralaması', a: 'Misafir → Üye → VIP → Operatör → Moderatör → Admin → Süper Admin → Owner → GodMaster. Her üst rol, altındaki tüm yetkilere sahiptir.' },
-                                                { q: 'Misafir & Üye', a: 'Temel sohbet özellikleri: mesaj yazma, sesli dinleme, özel mesaj gönderme. Üyeler ayrıca nudge ve düello gönderebilir.' },
-                                                { q: 'VIP', a: 'Özel VIP rozeti, öncelikli mikrofon sırası ve genişletilmiş profil özellikleri.' },
-                                                { q: 'Operatör & Moderatör', a: 'Kullanıcıları susturma (mute/gag), odadan atma (kick), mikrofon yönetimi ve kısa süreli ban yetkileri.' },
-                                                { q: 'Admin & Süper Admin', a: 'Uzun süreli ban, rol atama/kaldırma, admin paneli erişimi, oda izleme ve gelişmiş yönetim araçları.' },
-                                                { q: 'Owner', a: 'Oda sahibi. Kalıcı ban, tüm rolleri atama, oda ayarlarını değiştirme ve tam yönetim yetkisi.' },
-                                            ],
-                                        },
-                                        {
-                                            id: 'yonetim', icon: '🏠', title: 'Oda Yönetimi', color: '#ef4444',
-                                            items: [
-                                                { q: 'Oda Satın Alma', a: 'Fiyatlar bölümünden size uygun paketi seçin veya Özel Yapılandırma ile ihtiyacınıza göre paket oluşturun. Ödeme sonrası odanız anında aktif olur.' },
-                                                { q: 'Şifre Koruması', a: 'Admin panelinden odanıza şifre koyabilirsiniz. Şifreli odalara sadece şifreyi bilen kullanıcılar girebilir.' },
-                                                { q: 'Toplantı Modu', a: 'Toplantı modunu aktif ederek odayı kapalı bir konferans ortamına dönüştürebilirsiniz. Sadece davet edilen kullanıcılar katılabilir.' },
-                                                { q: 'Ban & Gag Listesi', a: 'Admin panelinden yasaklı (ban) ve susturulmuş (gag) kullanıcı listelerini yönetebilir, yasakları kaldırabilirsiniz.' },
-                                                { q: 'Oda İzleme (Monitor)', a: 'Süper Admin ve üzeri roller, Oda İzleme özelliğiyle odadaki tüm aktiviteleri gerçek zamanlı takip edebilir.' },
-                                            ],
-                                        },
-                                        {
-                                            id: 'yapilandirma', icon: '⚙️', title: 'Özel Yapılandırma', color: '#38bdf8',
-                                            items: [
-                                                { q: 'Kendi Paketini Oluştur', a: 'Fiyatlar sayfasındaki Özel Yapılandırma bölümünden oda sayısı, kişi limiti, kamera ve toplantı modu seçeneklerini istediğiniz gibi ayarlayabilirsiniz.' },
-                                                { q: 'White Label / Domain', a: 'White Label pakette kendi domaininizi kullanarak SopranoChat altyapısını kendi markanızla sunabilirsiniz. HTML/PHP embed desteği mevcuttur.' },
-                                                { q: 'Farklı Domain Desteği', a: 'Birden fazla domain üzerinden aynı altyapıyı kullanabilirsiniz. Her domain için ayrı oda yapılandırması mümkündür.' },
-                                            ],
-                                        },
-                                        {
-                                            id: 'sss', icon: '❓', title: 'Sık Sorulan Sorular', color: '#f472b6',
-                                            items: [
-                                                { q: 'Sesim karşı tarafa gitmiyorsa ne yapmalıyım?', a: 'Tarayıcı ayarlarından mikrofon izninin verildiğinden emin olun. Farklı bir mikrofon seçmeyi deneyin. Sayfayı yenileyip tekrar giriş yapın.' },
-                                                { q: 'Nasıl oda satın alabilirim?', a: 'Üst menüden FİYATLAR sekmesine gidin, size uygun paketi seçin ve ödeme adımlarını takip edin. 7 gün ücretsiz deneme ile başlayabilirsiniz.' },
-                                                { q: 'Kamera açılmıyorsa ne yapmalıyım?', a: 'Tarayıcınızın kamera iznini kontrol edin. Başka bir uygulama kamerayı kullanıyor olabilir, kapatıp tekrar deneyin.' },
-                                                { q: 'Ban yedim, ne yapabilirim?', a: 'Ban süresine bağlı olarak otomatik kalkar. Kalıcı banlarda oda sahibi veya adminlerle iletişime geçin. İletişim bölümünden destek alabilirsiniz.' },
-                                                { q: 'Odamdaki rolleri nasıl yönetirim?', a: 'Admin panelinden kullanıcılara sağ tıklayarak rol atama/kaldırma işlemlerini yapabilirsiniz. Yalnızca kendi rolünüzden düşük rolleri atayabilirsiniz.' },
-                                            ],
-                                        },
-                                    ].map((section) => (
-                                        <div key={section.id} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${guideOpen === section.id ? `${section.color}30` : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.3s' }}>
-                                            <button onClick={() => setGuideOpen(guideOpen === section.id ? null : section.id)} style={{
-                                                width: '100%', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
-                                                background: guideOpen === section.id ? `${section.color}10` : 'rgba(0,0,0,0.15)',
-                                                border: 'none', cursor: 'pointer', transition: 'all 0.3s',
-                                            }}>
-                                                <span style={{ fontSize: 18 }}>{section.icon}</span>
-                                                <span style={{ fontSize: 13, fontWeight: 800, color: guideOpen === section.id ? section.color : '#fff', flex: 1, textAlign: 'left' }}>{section.title}</span>
-                                                <span style={{ color: '#64748b', fontSize: 16, transition: 'transform 0.3s', transform: guideOpen === section.id ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
-                                            </button>
+                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both', transformOrigin: 'top center', zIndex: 10 }}>
+                                        {/* Başlık */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
                                             <div style={{
-                                                maxHeight: guideOpen === section.id ? 1200 : 0,
-                                                overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                background: 'rgba(0,0,0,0.1)',
+                                                width: 44, height: 44, borderRadius: 14,
+                                                background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 6px 16px rgba(251,191,36,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
                                             }}>
-                                                <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                                    {section.items.map((item, ii) => (
-                                                        <div key={ii} style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.04)' }}>
-                                                            <div style={{ fontSize: 12, fontWeight: 700, color: section.color, marginBottom: 6 }}>{item.q}</div>
-                                                            <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>{item.a}</div>
-                                                        </div>
-                                                    ))}
-                                                </div>
+                                                <Star style={{ width: 20, height: 20, color: '#fff' }} />
+                                            </div>
+                                            <div>
+                                                <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Fiyatlandırma</h2>
+                                                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>İşletmenize uygun çözüm modelini seçin.</p>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* REFERANSLAR SECTION */}
-                    {activeSection === 'referanslar' && (
-                        <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
-                            {/* Gallery Lamp */}
-                            <div className="gallery-lamp-svg" style={{ animation: 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' }}>
-                                <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <defs>
-                                        <linearGradient id="glBarMetalF" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
-                                        </linearGradient>
-                                        <linearGradient id="glMountPlateF" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
-                                        </linearGradient>
-                                        <linearGradient id="glArmMetalF" x1="0" y1="0" x2="0" y2="1">
-                                            <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
-                                        </linearGradient>
-                                        <linearGradient id="glLightSpreadF" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
-                                        </linearGradient>
-                                        <linearGradient id="glLedStripF" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
-                                            <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
-                                        </linearGradient>
-                                    </defs>
-                                    <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadF)" opacity="0.5" />
-                                    <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateF)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
-                                    <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
-                                    <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
-                                    <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
-                                    <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalF)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
-                                    <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
-                                    <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
-                                    <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripF)" />
-                                    <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
-                                    <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
-                                </svg>
-                                <div className="gallery-lamp-glow" style={{ width: 450 }}></div>
-                            </div>
-                            <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center' }}>
-                                {/* Başlık */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
-                                    <div style={{
-                                        width: 44, height: 44, borderRadius: 14,
-                                        background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        boxShadow: '0 6px 16px rgba(167,139,250,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
-                                    }}>
-                                        <Users style={{ width: 20, height: 20, color: '#fff' }} />
-                                    </div>
-                                    <div>
-                                        <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Referanslarımız</h2>
-                                        <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat altyapısını kullanan müşterilerimiz.</p>
-                                    </div>
-                                </div>
+                                        {/* Paket Kartları */}
+                                        <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                                            {[
+                                                { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                            ].map((plan, i) => (
+                                                <div key={i} style={{
+                                                    flex: 1, padding: '20px 16px', borderRadius: 14,
+                                                    background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
+                                                    border: `1px solid ${plan.popular ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                                                    position: 'relative', overflow: 'hidden',
+                                                    display: 'flex', flexDirection: 'column',
+                                                }}>
+                                                    {plan.badge && <div style={{ position: 'absolute', top: 8, right: -24, background: plan.popular ? '#a78bfa' : '#fbbf24', color: plan.popular ? '#fff' : '#000', fontSize: 7, fontWeight: 800, padding: '2px 28px', transform: 'rotate(45deg)', letterSpacing: 1 }}>{plan.badge}</div>}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+                                                        <span style={{ fontSize: 18 }}>{plan.icon}</span>
+                                                        <span style={{ fontSize: 14, fontWeight: 800, color: '#fff' }}>{plan.name}</span>
+                                                    </div>
+                                                    <div style={{ marginBottom: 16 }}>
+                                                        <span style={{ fontSize: 28, fontWeight: 900, color: plan.color }}>{plan.price} ₺</span>
+                                                        <span style={{ fontSize: 12, color: '#64748b', fontWeight: 600 }}> {plan.period}</span>
+                                                    </div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20, flex: 1 }}>
+                                                        {plan.features.map((f, fi) => (
+                                                            <div key={fi} style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                <span style={{ color: '#34d399', fontSize: 12 }}>✓</span> {f}
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <button onClick={() => openCheckout(plan.name, plan.priceNum, plan.period)} className={`btn-3d ${plan.btnClass}`} style={{ width: '100%', padding: '10px 0', fontSize: 11, fontWeight: 800 }}>{plan.btnText}</button>
+                                                </div>
+                                            ))}
+                                        </div>
 
-                                {/* Açıklama */}
-                                <div style={{ textAlign: 'center', padding: '16px', marginBottom: 20, borderRadius: 12, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' }}>
-                                    <div style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600, marginBottom: 4 }}>🌐 White Label & Domain Müşterilerimiz</div>
-                                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>Kendi domainleriyle SopranoChat altyapısını kullanan kurumsal müşterilerimiz aşağıda listelenmiştir.</div>
-                                </div>
-
-                                {/* Referans Kartları */}
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                    {[
-                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#38bdf8', icon: '🌐' },
-                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#a78bfa', icon: '🌐' },
-                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#fbbf24', icon: '🌐' },
-                                        { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#34d399', icon: '🌐' },
-                                    ].map((ref, i) => (
-                                        <div key={i} style={{
-                                            padding: '18px 16px', borderRadius: 12,
-                                            background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.06)',
-                                            display: 'flex', flexDirection: 'column', gap: 10, transition: 'all 0.3s',
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                <div style={{
-                                                    width: 36, height: 36, borderRadius: 10,
-                                                    background: `linear-gradient(135deg, ${ref.color}20, ${ref.color}08)`,
-                                                    border: `1px solid ${ref.color}25`,
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: 18,
-                                                }}>{ref.icon}</div>
+                                        {/* Özel Yapılandırma */}
+                                        <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '20px', border: '1px solid rgba(56,189,248,0.15)', marginBottom: 16 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                                                 <div>
-                                                    <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ref.name}</div>
-                                                    <div style={{ fontSize: 10, color: ref.color, fontWeight: 600 }}>{ref.domain}</div>
+                                                    <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 6 }}>⚙️ Özel Yapılandırma</div>
+                                                    <h4 style={{ fontSize: 14, fontWeight: 900, color: '#fff', margin: 0 }}>Kendi Paketini Oluştur</h4>
+                                                </div>
+                                                <button onClick={() => {
+                                                    const rc = cfgRooms * 200;
+                                                    const cc = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                    const mc = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                    const pe = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                                    openCheckout('Özel Paket', rc + cc + mc + pe, '/ay');
+                                                }} className="btn-3d btn-3d-red" style={{ padding: '8px 20px', fontSize: 11, fontWeight: 800, borderRadius: 10 }}>
+                                                    Satın Al →
+                                                </button>
+                                            </div>
+                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, marginBottom: 14 }}>
+                                                <div>
+                                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>🏠 Oda Sayısı</div>
+                                                    <select value={cfgRooms} onChange={e => setCfgRooms(Number(e.target.value))} style={{
+                                                        width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                        background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                                    }}>
+                                                        {[1, 2, 3, 5, 10, 15, 20, 30, 50, 75, 100].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Oda</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#38bdf8', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>👥 Kişi Limiti</div>
+                                                    <select value={cfgPersons} onChange={e => setCfgPersons(Number(e.target.value))} style={{
+                                                        width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                        background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                                    }}>
+                                                        {[30, 50, 100, 200, 500].map(v => <option key={v} value={v} style={{ background: '#1e293b' }}>{v} Kişi</option>)}
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#a78bfa', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>📹 Kamera</div>
+                                                    <select value={cfgCamera} onChange={e => setCfgCamera(e.target.value as any)} style={{
+                                                        width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                        background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                                    }}>
+                                                        <option value="Kameralı" style={{ background: '#1e293b' }}>Kameralı</option>
+                                                        <option value="Kamerasız" style={{ background: '#1e293b' }}>Kamerasız</option>
+                                                    </select>
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' }}>💛 Toplantı</div>
+                                                    <select value={cfgMeeting} onChange={e => setCfgMeeting(e.target.value as any)} style={{
+                                                        width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 12, fontWeight: 700, color: '#fff',
+                                                        background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.25)', cursor: 'pointer', outline: 'none',
+                                                    }}>
+                                                        <option value="Mevcut" style={{ background: '#1e293b' }}>Mevcut</option>
+                                                        <option value="Yok" style={{ background: '#1e293b' }}>Yok</option>
+                                                    </select>
                                                 </div>
                                             </div>
-                                            <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500, lineHeight: 1.6 }}>{ref.desc}</div>
+                                            {/* Fiyat Hesaplama */}
+                                            {(() => {
+                                                const roomCost = cfgRooms * 200;
+                                                const cameraCost = cfgCamera === 'Kameralı' ? cfgRooms * 200 : 0;
+                                                const meetingCost = cfgMeeting === 'Mevcut' ? 200 : 0;
+                                                const personExtra = cfgPersons > 30 ? Math.floor((cfgPersons - 30) / 20) * cfgRooms * 50 : 0;
+                                                const monthlyTotal = roomCost + cameraCost + meetingCost + personExtra;
+                                                const yearlyTotal = monthlyTotal * 10;
+                                                return (
+                                                    <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '14px 16px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 10 }}>
+                                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                                <span>🏠 {cfgRooms} Oda</span><span style={{ color: '#fff', fontWeight: 700 }}>+{roomCost.toLocaleString('tr-TR')} ₺</span>
+                                                            </div>
+                                                            {cameraCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                                <span>📹 Kamera</span><span style={{ color: '#fff', fontWeight: 700 }}>+{cameraCost.toLocaleString('tr-TR')} ₺</span>
+                                                            </div>}
+                                                            {meetingCost > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                                <span>💛 Toplantı</span><span style={{ color: '#fff', fontWeight: 700 }}>+{meetingCost.toLocaleString('tr-TR')} ₺</span>
+                                                            </div>}
+                                                            {personExtra > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, color: '#94a3b8' }}>
+                                                                <span>👥 Ek Kapasite ({cfgPersons} kişi)</span><span style={{ color: '#fff', fontWeight: 700 }}>+{personExtra.toLocaleString('tr-TR')} ₺</span>
+                                                            </div>}
+                                                        </div>
+                                                        <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: 10, display: 'flex', justifyContent: 'space-between' }}>
+                                                            <div><div style={{ fontSize: 9, fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>Aylık</div><div style={{ fontSize: 18, fontWeight: 900, color: '#fff' }}>{monthlyTotal.toLocaleString('tr-TR')} ₺</div></div>
+                                                            <div style={{ textAlign: 'right' }}><div style={{ fontSize: 9, fontWeight: 800, color: '#ef4444', textTransform: 'uppercase' }}>Yıllık (2 Ay Ücretsiz)</div><div style={{ fontSize: 18, fontWeight: 900, color: '#34d399' }}>{yearlyTotal.toLocaleString('tr-TR')} ₺</div></div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })()}
                                         </div>
-                                    ))}
-                                </div>
 
-                                {/* Alt bilgi */}
-                                <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.1)' }}>
-                                    <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
-                                        Siz de <span style={{ color: '#34d399', fontWeight: 700 }}>SopranoChat altyapısı</span> ile kendi markanızı oluşturun. <span style={{ color: '#38bdf8', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setActiveSection('iletisim'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>İletişime geçin →</span>
+                                        {/* Alt bilgi */}
+                                        <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.1)' }}>
+                                            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
+                                                Tüm paketler <span style={{ color: '#34d399', fontWeight: 700 }}>7 gün ücretsiz deneme</span> ile başlar. İstediğiniz zaman iptal edebilirsiniz.
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                    )}
+                            )}
+
+                            {/* REHBER SECTION */}
+                            {activeSection === 'rehber' && (
+                                <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+                                    {/* Gallery Lamp */}
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                        <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="glBarMetalR" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                                </linearGradient>
+                                                <linearGradient id="glMountPlateR" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                                </linearGradient>
+                                                <linearGradient id="glArmMetalR" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                                </linearGradient>
+                                                <linearGradient id="glLightSpreadR" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                </linearGradient>
+                                                <linearGradient id="glLedStripR" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadR)" opacity="0.5" />
+                                            <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateR)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                            <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                            <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalR)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalR)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                            <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                            <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                            <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripR)" />
+                                            <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                            <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                        </svg>
+                                        <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
+                                    </div>
+                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both', transformOrigin: 'top center', background: 'linear-gradient(180deg, rgba(70,80,100,0.85) 0%, rgba(45,55,75,0.75) 20%, rgba(35,45,65,0.7) 50%, rgba(40,50,70,0.75) 80%, rgba(65,75,95,0.85) 100%)', border: '1px solid rgba(100,110,130,0.4)', borderTop: '1px solid rgba(160,170,190,0.5)', borderBottom: '1px solid rgba(140,150,170,0.4)', boxShadow: '0 40px 60px -15px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.12)' }}>
+                                        {/* Başlık */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+                                            <div style={{
+                                                width: 44, height: 44, borderRadius: 14,
+                                                background: 'linear-gradient(135deg, #34d399, #10b981)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 6px 16px rgba(52,211,153,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                            }}>
+                                                <BookOpen style={{ width: 20, height: 20, color: '#fff' }} />
+                                            </div>
+                                            <div>
+                                                <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Kullanım Rehberi</h2>
+                                                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat'i en verimli şekilde kullanmanız için rehber.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Accordion */}
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                            {[
+                                                {
+                                                    id: 'baslangic', icon: '🚀', title: 'Hızlı Başlangıç', color: '#38bdf8',
+                                                    items: [
+                                                        { q: 'Hesap Oluşturma', a: 'Ana sayfadaki "Kayıt Ol" butonuna tıklayın. Kullanıcı adı, e-posta ve şifrenizi girin. E-posta doğrulaması sonrası hesabınız aktif olacaktır.' },
+                                                        { q: 'İlk Odaya Giriş', a: 'Giriş yaptıktan sonra oda listesinden istediğiniz odaya tıklayın. Bazı odalar şifreli olabilir, şifreyi oda sahibinden öğrenebilirsiniz.' },
+                                                        { q: 'Mikrofon & Kamera İzinleri', a: 'Tarayıcınız mikrofon ve kamera erişimi isteyecektir. "İzin Ver" butonuna tıklayarak sesli/görüntülü sohbete katılabilirsiniz.' },
+                                                    ],
+                                                },
+                                                {
+                                                    id: 'oda', icon: '🎙️', title: 'Oda Kullanım Rehberi', color: '#a78bfa',
+                                                    items: [
+                                                        { q: 'Sesli Sohbet', a: 'Odaya girdikten sonra mikrofon butonuna tıklayarak sesli konuşmaya başlayabilirsiniz. Push-to-talk veya sürekli açık mod seçenekleri mevcuttur.' },
+                                                        { q: 'Kamera Yayını', a: 'Kamera destekli odalarda kamera ikonuna tıklayarak görüntülü yayın başlatabilirsiniz. HD kalitede eşzamanlı yayın yapılır.' },
+                                                        { q: 'Metin Sohbeti', a: 'Alt kısımdaki mesaj kutusundan yazılı mesajlar gönderebilirsiniz. Emoji, bağlantı ve özel formatlar desteklenir.' },
+                                                        { q: 'Özel Mesaj (Private Chat)', a: 'Bir kullanıcıya sağ tıklayıp "Özel Mesaj" seçeneğini kullanarak birebir yazışma başlatabilirsiniz.' },
+                                                        { q: 'One2One Görüşme', a: 'Bir kullanıcıya sağ tıklayıp "One2One Davet" ile özel birebir sesli/görüntülü görüşme başlatabilirsiniz.' },
+                                                    ],
+                                                },
+                                                {
+                                                    id: 'roller', icon: '👑', title: 'Roller & Yetkiler', color: '#fbbf24',
+                                                    items: [
+                                                        { q: 'Rol Sıralaması', a: 'Misafir → Üye → VIP → Operatör → Moderatör → Admin → Süper Admin → Owner → GodMaster. Her üst rol, altındaki tüm yetkilere sahiptir.' },
+                                                        { q: 'Misafir & Üye', a: 'Temel sohbet özellikleri: mesaj yazma, sesli dinleme, özel mesaj gönderme. Üyeler ayrıca nudge ve düello gönderebilir.' },
+                                                        { q: 'VIP', a: 'Özel VIP rozeti, öncelikli mikrofon sırası ve genişletilmiş profil özellikleri.' },
+                                                        { q: 'Operatör & Moderatör', a: 'Kullanıcıları susturma (mute/gag), odadan atma (kick), mikrofon yönetimi ve kısa süreli ban yetkileri.' },
+                                                        { q: 'Admin & Süper Admin', a: 'Uzun süreli ban, rol atama/kaldırma, admin paneli erişimi, oda izleme ve gelişmiş yönetim araçları.' },
+                                                        { q: 'Owner', a: 'Oda sahibi. Kalıcı ban, tüm rolleri atama, oda ayarlarını değiştirme ve tam yönetim yetkisi.' },
+                                                    ],
+                                                },
+                                                {
+                                                    id: 'yonetim', icon: '🏠', title: 'Oda Yönetimi', color: '#ef4444',
+                                                    items: [
+                                                        { q: 'Oda Satın Alma', a: 'Fiyatlar bölümünden size uygun paketi seçin veya Özel Yapılandırma ile ihtiyacınıza göre paket oluşturun. Ödeme sonrası odanız anında aktif olur.' },
+                                                        { q: 'Şifre Koruması', a: 'Admin panelinden odanıza şifre koyabilirsiniz. Şifreli odalara sadece şifreyi bilen kullanıcılar girebilir.' },
+                                                        { q: 'Toplantı Modu', a: 'Toplantı modunu aktif ederek odayı kapalı bir konferans ortamına dönüştürebilirsiniz. Sadece davet edilen kullanıcılar katılabilir.' },
+                                                        { q: 'Ban & Gag Listesi', a: 'Admin panelinden yasaklı (ban) ve susturulmuş (gag) kullanıcı listelerini yönetebilir, yasakları kaldırabilirsiniz.' },
+                                                        { q: 'Oda İzleme (Monitor)', a: 'Süper Admin ve üzeri roller, Oda İzleme özelliğiyle odadaki tüm aktiviteleri gerçek zamanlı takip edebilir.' },
+                                                    ],
+                                                },
+                                                {
+                                                    id: 'yapilandirma', icon: '⚙️', title: 'Özel Yapılandırma', color: '#38bdf8',
+                                                    items: [
+                                                        { q: 'Kendi Paketini Oluştur', a: 'Fiyatlar sayfasındaki Özel Yapılandırma bölümünden oda sayısı, kişi limiti, kamera ve toplantı modu seçeneklerini istediğiniz gibi ayarlayabilirsiniz.' },
+                                                        { q: 'White Label / Domain', a: 'White Label pakette kendi domaininizi kullanarak SopranoChat altyapısını kendi markanızla sunabilirsiniz. HTML/PHP embed desteği mevcuttur.' },
+                                                        { q: 'Farklı Domain Desteği', a: 'Birden fazla domain üzerinden aynı altyapıyı kullanabilirsiniz. Her domain için ayrı oda yapılandırması mümkündür.' },
+                                                    ],
+                                                },
+                                                {
+                                                    id: 'sss', icon: '❓', title: 'Sık Sorulan Sorular', color: '#f472b6',
+                                                    items: [
+                                                        { q: 'Sesim karşı tarafa gitmiyorsa ne yapmalıyım?', a: 'Tarayıcı ayarlarından mikrofon izninin verildiğinden emin olun. Farklı bir mikrofon seçmeyi deneyin. Sayfayı yenileyip tekrar giriş yapın.' },
+                                                        { q: 'Nasıl oda satın alabilirim?', a: 'Üst menüden FİYATLAR sekmesine gidin, size uygun paketi seçin ve ödeme adımlarını takip edin. 7 gün ücretsiz deneme ile başlayabilirsiniz.' },
+                                                        { q: 'Kamera açılmıyorsa ne yapmalıyım?', a: 'Tarayıcınızın kamera iznini kontrol edin. Başka bir uygulama kamerayı kullanıyor olabilir, kapatıp tekrar deneyin.' },
+                                                        { q: 'Ban yedim, ne yapabilirim?', a: 'Ban süresine bağlı olarak otomatik kalkar. Kalıcı banlarda oda sahibi veya adminlerle iletişime geçin. İletişim bölümünden destek alabilirsiniz.' },
+                                                        { q: 'Odamdaki rolleri nasıl yönetirim?', a: 'Admin panelinden kullanıcılara sağ tıklayarak rol atama/kaldırma işlemlerini yapabilirsiniz. Yalnızca kendi rolünüzden düşük rolleri atayabilirsiniz.' },
+                                                    ],
+                                                },
+                                            ].map((section) => (
+                                                <div key={section.id} style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${guideOpen === section.id ? `${section.color}30` : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.3s' }}>
+                                                    <button onClick={() => setGuideOpen(guideOpen === section.id ? null : section.id)} style={{
+                                                        width: '100%', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12,
+                                                        background: guideOpen === section.id ? `${section.color}10` : 'rgba(0,0,0,0.15)',
+                                                        border: 'none', cursor: 'pointer', transition: 'all 0.3s',
+                                                    }}>
+                                                        <span style={{ fontSize: 18 }}>{section.icon}</span>
+                                                        <span style={{ fontSize: 13, fontWeight: 800, color: guideOpen === section.id ? section.color : '#fff', flex: 1, textAlign: 'left' }}>{section.title}</span>
+                                                        <span style={{ color: '#64748b', fontSize: 16, transition: 'transform 0.3s', transform: guideOpen === section.id ? 'rotate(180deg)' : 'rotate(0)' }}>▼</span>
+                                                    </button>
+                                                    <div style={{
+                                                        maxHeight: guideOpen === section.id ? 1200 : 0,
+                                                        overflow: 'hidden', transition: 'max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        background: 'rgba(0,0,0,0.1)',
+                                                    }}>
+                                                        <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                            {section.items.map((item, ii) => (
+                                                                <div key={ii} style={{ padding: '10px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.04)' }}>
+                                                                    <div style={{ fontSize: 12, fontWeight: 700, color: section.color, marginBottom: 6 }}>{item.q}</div>
+                                                                    <div style={{ fontSize: 11, color: '#94a3b8', lineHeight: 1.7, fontWeight: 500 }}>{item.a}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* REFERANSLAR SECTION */}
+                            {activeSection === 'referanslar' && (
+                                <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+                                    {/* Gallery Lamp */}
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                        <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="glBarMetalF" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                                </linearGradient>
+                                                <linearGradient id="glMountPlateF" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                                </linearGradient>
+                                                <linearGradient id="glArmMetalF" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                                </linearGradient>
+                                                <linearGradient id="glLightSpreadF" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                </linearGradient>
+                                                <linearGradient id="glLedStripF" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                    <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                </linearGradient>
+                                            </defs>
+                                            <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadF)" opacity="0.5" />
+                                            <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateF)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                            <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                            <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalF)" strokeWidth="3" strokeLinecap="round" />
+                                            <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                            <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalF)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                            <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                            <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                            <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripF)" />
+                                            <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                            <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                        </svg>
+                                        <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
+                                    </div>
+                                    <div className="glossy-panel" style={{ padding: '28px 32px', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both', transformOrigin: 'top center', zIndex: 10 }}>
+                                        {/* Başlık */}
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 24 }}>
+                                            <div style={{
+                                                width: 44, height: 44, borderRadius: 14,
+                                                background: 'linear-gradient(135deg, #a78bfa, #7c3aed)',
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 6px 16px rgba(167,139,250,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                            }}>
+                                                <Users style={{ width: 20, height: 20, color: '#fff' }} />
+                                            </div>
+                                            <div>
+                                                <h2 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', margin: 0 }}>Referanslarımız</h2>
+                                                <p style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500, margin: 0 }}>SopranoChat altyapısını kullanan müşterilerimiz.</p>
+                                            </div>
+                                        </div>
+
+                                        {/* Açıklama */}
+                                        <div style={{ textAlign: 'center', padding: '16px', marginBottom: 20, borderRadius: 12, background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.12)' }}>
+                                            <div style={{ fontSize: 12, color: '#c4b5fd', fontWeight: 600, marginBottom: 4 }}>🌐 White Label & Domain Müşterilerimiz</div>
+                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>Kendi domainleriyle SopranoChat altyapısını kullanan kurumsal müşterilerimiz aşağıda listelenmiştir.</div>
+                                        </div>
+
+                                        {/* Referans Kartları */}
+                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                                            {[
+                                                { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#38bdf8', icon: '🌐' },
+                                                { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#a78bfa', icon: '🌐' },
+                                                { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#fbbf24', icon: '🌐' },
+                                                { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#34d399', icon: '🌐' },
+                                            ].map((ref, i) => (
+                                                <div key={i} style={{
+                                                    padding: '18px 16px', borderRadius: 12,
+                                                    background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.06)',
+                                                    display: 'flex', flexDirection: 'column', gap: 10, transition: 'all 0.3s',
+                                                }}>
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                        <div style={{
+                                                            width: 36, height: 36, borderRadius: 10,
+                                                            background: `linear-gradient(135deg, ${ref.color}20, ${ref.color}08)`,
+                                                            border: `1px solid ${ref.color}25`,
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            fontSize: 18,
+                                                        }}>{ref.icon}</div>
+                                                        <div>
+                                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ref.name}</div>
+                                                            <div style={{ fontSize: 10, color: ref.color, fontWeight: 600 }}>{ref.domain}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500, lineHeight: 1.6 }}>{ref.desc}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        {/* Alt bilgi */}
+                                        <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(52,211,153,0.05)', border: '1px solid rgba(52,211,153,0.1)' }}>
+                                            <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
+                                                Siz de <span style={{ color: '#34d399', fontWeight: 700 }}>SopranoChat altyapısı</span> ile kendi markanızı oluşturun. <span style={{ color: '#38bdf8', fontWeight: 700, cursor: 'pointer' }} onClick={() => { setActiveSection('iletisim'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}>İletişime geçin →</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                         </div>
 
