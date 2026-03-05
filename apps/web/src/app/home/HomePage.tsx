@@ -518,7 +518,7 @@ export default function HomePage() {
 
                 /* 3D TV Efekti */
                 .tv-wrapper {
-                    width: 260px;
+                    width: 290px;
                     height: 200px;
                     position: relative;
                     animation: tvSlideIn 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both;
@@ -592,6 +592,20 @@ export default function HomePage() {
                     96% { opacity: 0.08; }
                     97% { opacity: 0; }
                     98% { opacity: 0.05; }
+                }
+                /* Akan scanline efekti */
+                .tv-scanline {
+                    position: absolute;
+                    inset: 0;
+                    background: linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0.04) 52%, transparent 100%);
+                    background-size: 100% 30%;
+                    animation: tvScanMove 5s linear infinite;
+                    pointer-events: none;
+                    z-index: 2;
+                }
+                @keyframes tvScanMove {
+                    0% { background-position: 0 -100%; }
+                    100% { background-position: 0 300%; }
                 }
                 /* Sohbet simülasyonu */
                 .chat-sim { display: flex; flex-direction: column; gap: 6px; padding: 8px; height: 100%; overflow: hidden; position: relative; z-index: 1; }
@@ -937,10 +951,11 @@ export default function HomePage() {
                                                             {/* Scanlines + Flash */}
                                                             <div className="tv-overlay"></div>
                                                             <div className="tv-flash"></div>
+                                                            <div className="tv-scanline"></div>
                                                         </div>
 
                                                         {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
-                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: 8, position: 'relative', zIndex: 1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 2.0s both', perspective: 500 }}>
                                                             {/* Kablo kaldırıldı */}
                                                             {/* Buton */}
                                                             <button className="btn-3d btn-3d-white model-btn" style={{
@@ -1895,13 +1910,16 @@ export default function HomePage() {
                                     </svg>
                                     <div className="gallery-lamp-glow" style={{
                                         width: 280,
-                                        opacity: lampAnimDone.current['rightGlow'] ? 1 : 0,
+                                        opacity: lampAnimDone.current['rightGlow'] ? (user ? 1 : 0.3) : 0,
                                         animation: lampAnimDone.current['rightGlow'] ? 'none' : 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 2.8s forwards',
+                                        transition: 'opacity 1.5s ease, height 1s ease, background 1s ease',
                                         ...(user ? {
                                             height: 110,
                                             background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%)',
-                                            transition: 'height 1s ease, background 1s ease',
-                                        } : {}),
+                                        } : {
+                                            height: 60,
+                                            background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.10) 0%, rgba(255,180,80,0.04) 40%, transparent 70%)',
+                                        }),
                                     }} onAnimationEnd={() => { lampAnimDone.current['rightGlow'] = true; }}></div>
                                 </div>
 
