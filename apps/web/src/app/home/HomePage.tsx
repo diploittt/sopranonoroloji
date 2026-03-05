@@ -66,6 +66,8 @@ export default function HomePage() {
     const [regLoading, setRegLoading] = useState(false);
     const [showPackages, setShowPackages] = useState(false);
     const [showDemoToast, setShowDemoToast] = useState(false);
+    const [demoPhase, setDemoPhase] = useState<'idle' | 'cards-out' | 'bar-up' | 'bar-down' | 'lamp-center' | 'active' | 'exit-lamp' | 'exit-bar-up' | 'exit-bar-down' | 'exit-cards-in'>('idle');
+    const demoMode = demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
     const [showCustomConfig, setShowCustomConfig] = useState(false);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
@@ -119,6 +121,40 @@ export default function HomePage() {
         setSectionChangeKey(k => k + 1);
         lampAnimDone.current = { right: lampAnimDone.current['right'], homeGlow: lampAnimDone.current['homeGlow'], rightGlow: lampAnimDone.current['rightGlow'] };
     }, [activeSection]);
+
+    // Demo geçiş animasyonu
+    const startDemoTransition = () => {
+        setDemoPhase('cards-out');
+        setTimeout(() => {
+            setDemoPhase('bar-up');
+            setTimeout(() => {
+                setDemoPhase('bar-down');
+                setTimeout(() => {
+                    setDemoPhase('lamp-center');
+                    setTimeout(() => {
+                        setDemoPhase('active');
+                    }, 600);
+                }, 500);
+            }, 400);
+        }, 600);
+    };
+
+    const exitDemoTransition = () => {
+        setDemoPhase('exit-lamp');
+        setTimeout(() => {
+            setDemoPhase('exit-bar-up');
+            setTimeout(() => {
+                setDemoPhase('exit-bar-down');
+                setTimeout(() => {
+                    setDemoPhase('exit-cards-in');
+                    setTimeout(() => {
+                        setDemoPhase('idle');
+                        setActiveSection('home');
+                    }, 600);
+                }, 500);
+            }, 400);
+        }, 600);
+    };
 
 
     useEffect(() => {
@@ -793,47 +829,124 @@ export default function HomePage() {
             <div className="main-content">
 
                 {/* PREMIUM HEADER */}
-                <header className="premium-header">
+                <header className="premium-header" style={{
+                    transition: 'transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1)',
+                    transform: (demoPhase === 'bar-up' || demoPhase === 'exit-bar-up') ? 'translateY(-100%)' : 'translateY(0)',
+                }}>
                     <div className="header-logo">
                         <h1 className="retro-logo-text">SopranoChat</h1>
                         <span className="tagline">hear my voice</span>
                     </div>
 
                     <nav className="header-nav">
-                        {[
-                            { label: 'HOME', section: 'home' },
-                            { label: 'DEMO', section: 'scene' },
-                            { label: 'REHBER', section: 'rehber' },
-                            { label: 'FİYATLAR', section: 'fiyatlar' },
-                            { label: 'REFERANSLAR', section: 'referanslar' },
-                            { label: 'İLETİŞİM', section: 'iletisim' },
-                        ].map((item, i, arr) => (
-                            <React.Fragment key={i}>
+                        {demoMode ? (
+                            <>
+                                {['Lobby', 'Room1', 'Room2', 'Room3'].map((room, i, arr) => (
+                                    <React.Fragment key={room}>
+                                        <button className="nav-link" style={{
+                                            color: i === 0 ? '#fbbf24' : '#94a3b8',
+                                            textShadow: i === 0 ? '0 0 10px rgba(251,191,36,0.4)' : undefined,
+                                            animation: `contentFadeIn 0.4s ease ${0.1 * i}s both`,
+                                        }}>{room}</button>
+                                        {i < arr.length - 1 && <span className="nav-dot" />}
+                                    </React.Fragment>
+                                ))}
+                                <span className="nav-dot" />
                                 <button
-                                    className={`nav-link nav-link-${i}`}
-                                    onClick={() => {
-                                        if (item.section === 'scene' && !user) {
-                                            setShowDemoToast(true);
-                                            setTimeout(() => setShowDemoToast(false), 4000);
-                                            return;
-                                        }
-                                        setActiveSection(item.section);
-                                        window.scrollTo({ top: 0, behavior: 'smooth' });
-                                    }}
-                                    style={{
-                                        color: activeSection === item.section ? '#38bdf8' : undefined,
-                                        textShadow: activeSection === item.section ? '0 0 10px rgba(56,189,248,0.4)' : undefined,
-                                    }}
-                                >{item.label}</button>
-                                {i < arr.length - 1 && <span className="nav-dot" />}
-                            </React.Fragment>
-                        ))}
+                                    className="nav-link"
+                                    onClick={exitDemoTransition}
+                                    style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, animation: 'contentFadeIn 0.4s ease 0.4s both' }}
+                                >
+                                    🏠 Ana Sayfa
+                                </button>
+                            </>
+                        ) : (
+                            [
+                                { label: 'HOME', section: 'home' },
+                                { label: 'DEMO', section: 'scene' },
+                                { label: 'REHBER', section: 'rehber' },
+                                { label: 'FİYATLAR', section: 'fiyatlar' },
+                                { label: 'REFERANSLAR', section: 'referanslar' },
+                                { label: 'İLETİŞİM', section: 'iletisim' },
+                            ].map((item, i, arr) => (
+                                <React.Fragment key={i}>
+                                    <button
+                                        className={`nav-link nav-link-${i}`}
+                                        onClick={() => {
+                                            if (item.section === 'scene' && !user) {
+                                                setShowDemoToast(true);
+                                                setTimeout(() => setShowDemoToast(false), 4000);
+                                                return;
+                                            }
+                                            if (item.section === 'scene' && user) {
+                                                startDemoTransition();
+                                                return;
+                                            }
+                                            setActiveSection(item.section);
+                                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                                        }}
+                                        style={{
+                                            color: activeSection === item.section ? '#38bdf8' : undefined,
+                                            textShadow: activeSection === item.section ? '0 0 10px rgba(56,189,248,0.4)' : undefined,
+                                        }}
+                                    >{item.label}</button>
+                                    {i < arr.length - 1 && <span className="nav-dot" />}
+                                </React.Fragment>
+                            ))
+                        )}
                     </nav>
                 </header>
 
-                {/* İÇERİK ALANI */}
-                < main style={{ width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0 }
-                }>
+                {/* DEMO MODU — Orta Lamba */}
+                {(demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp') && (
+                    <div style={{
+                        display: 'flex', flexDirection: 'column', alignItems: 'center',
+                        padding: '20px 0 0',
+                        animation: demoPhase === 'exit-lamp' ? 'contentFadeIn 0.5s ease reverse forwards' : 'contentFadeIn 0.5s ease both',
+                    }}>
+                        <div className="gallery-lamp-svg-right" style={{ position: 'relative', top: 0 }}>
+                            <svg width="300" height="52" viewBox="0 0 300 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <defs>
+                                    <linearGradient id="glBarMetalDemo" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                    </linearGradient>
+                                    <linearGradient id="glMountPlateDemo" x1="150" y1="0" x2="150" y2="14" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                    </linearGradient>
+                                    <linearGradient id="glArmMetalDemo" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                    </linearGradient>
+                                    <linearGradient id="glLightSpreadDemo" x1="150" y1="44" x2="150" y2="52" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                    </linearGradient>
+                                    <linearGradient id="glLedStripDemo" x1="40" y1="43" x2="260" y2="43" gradientUnits="userSpaceOnUse">
+                                        <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <path d="M48 44 L30 52 L270 52 L252 44 Z" fill="url(#glLightSpreadDemo)" opacity="0.5" />
+                                <rect x="135" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateDemo)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                <line x1="142" y1="10" x2="115" y2="30" stroke="url(#glArmMetalDemo)" strokeWidth="3" strokeLinecap="round" />
+                                <line x1="158" y1="10" x2="185" y2="30" stroke="url(#glArmMetalDemo)" strokeWidth="3" strokeLinecap="round" />
+                                <rect x="45" y="30" width="210" height="14" rx="3" fill="url(#glBarMetalDemo)" stroke="rgba(255,255,255,0.06)" strokeWidth="0.5" />
+                                <rect x="40" y="43.5" width="220" height="1.5" rx="0.75" fill="url(#glLedStripDemo)" />
+                                <circle cx="120" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="120" cy="34" r="1" fill="#555" />
+                                <circle cx="180" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="180" cy="34" r="1" fill="#555" />
+                            </svg>
+                            <div className="gallery-lamp-glow" style={{
+                                width: 300, height: 110, opacity: 1,
+                                background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%)',
+                            }}></div>
+                        </div>
+                        <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginTop: 16, letterSpacing: 1, textTransform: 'uppercase' }}>Demo Oturumu Aktif</p>
+                    </div>
+                )}
+                <main style={{
+                    width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0,
+                    transition: 'transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease',
+                    transform: (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up') ? 'translateY(-100vh) scale(0.8)' : (demoPhase === 'exit-bar-down') ? 'translateY(-60vh) scale(0.9)' : 'translateY(0) scale(1)',
+                    opacity: (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up' || demoPhase === 'exit-bar-down') ? 0 : 1,
+                    pointerEvents: demoPhase !== 'idle' && demoPhase !== 'exit-cards-in' ? 'none' : 'auto',
+                }}>
 
                     {activeSection !== 'scene' && (<div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'flex-start' }}>
 
