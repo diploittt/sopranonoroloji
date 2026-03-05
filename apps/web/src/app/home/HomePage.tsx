@@ -947,14 +947,14 @@ export default function HomePage() {
 
                                                 {/* Paket Kartları — showPackages açıkken görünür */}
                                                 <div style={{
-                                                    transition: 'opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, filter 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
+                                                    transition: 'opacity 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, filter 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, transform 2.2s cubic-bezier(0.16, 1, 0.3, 1) 0.3s, max-height 2s cubic-bezier(0.16, 1, 0.3, 1) 0.1s',
                                                     opacity: showPackages ? 1 : 0,
-                                                    filter: showPackages ? 'blur(0px)' : 'blur(12px)',
-                                                    transform: showPackages ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
+                                                    filter: showPackages ? 'blur(0px)' : 'blur(16px)',
+                                                    transform: showPackages ? 'translateY(0) scale(1)' : 'translateY(50px) scale(0.95)',
                                                     maxHeight: showPackages ? 9999 : 0,
                                                     overflow: 'hidden',
                                                     pointerEvents: showPackages ? 'auto' : 'none',
-                                                    willChange: 'opacity, transform, filter',
+                                                    willChange: 'opacity, transform, filter, max-height',
                                                 }}>
                                                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                                                         <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
@@ -2186,7 +2186,7 @@ export default function HomePage() {
                                     <p style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500, marginBottom: 32, lineHeight: 1.7, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                                         Yönetici yetkileri, HD yayın kalitesi ve şifreli koruma ile kendi topluluğunu oluştur.
                                     </p>
-                                    <button onClick={() => setShowPackages(true)} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
+                                    <button onClick={() => { if (activeSection === 'home') { setShowPackages(true); } else { setActiveSection('fiyatlar'); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
                                         Paketleri İncele
                                     </button>
                                 </div>
