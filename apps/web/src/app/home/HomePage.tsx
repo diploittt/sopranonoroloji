@@ -38,7 +38,18 @@ export default function HomePage() {
     const [tvTilt, setTvTilt] = useState({ x: 0, y: 0 });
     const [dbRooms, setDbRooms] = useState<any[]>([]);
     const addToast = useAdminStore((s) => s.addToast);
-    const [guestGender, setGuestGender] = useState<'Erkek' | 'Kadın' | 'Belirsiz'>('Belirsiz');
+    const [guestGender, setGuestGender] = useState<'Erkek' | 'Kadın' | 'Belirsiz' | ''>('');
+    const [selectedAvatar, setSelectedAvatar] = useState<string>('');
+    const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+    const [memberGender, setMemberGender] = useState<'Erkek' | 'Kadın' | 'Belirsiz' | ''>('');
+    const [profileTab, setProfileTab] = useState<'profil' | 'ayarlar' | 'mesajlar'>('profil');
+    const [editName, setEditName] = useState('');
+    const [editEmail, setEditEmail] = useState('');
+    const [editPassword, setEditPassword] = useState('');
+    const [profileSaving, setProfileSaving] = useState(false);
+    const [profileMsg, setProfileMsg] = useState('');
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showMemberAvatars, setShowMemberAvatars] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [regUsername, setRegUsername] = useState('');
     const [regEmail, setRegEmail] = useState('');
@@ -130,10 +141,9 @@ export default function HomePage() {
             const data = await res.json();
             if (data.error) { setGuestError(data.error); return; }
             localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
-            const avatarUrl = generateGenderAvatar(guestNick.trim(), guestGender);
-            const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: data.user?.avatar || avatarUrl, isMember: false, role: 'guest' as const, gender: guestGender };
-            setAuthUser(u);
-            window.location.href = '/room/genel-sohbet';
+            const avatarUrl = selectedAvatar || generateGenderAvatar(guestNick.trim(), guestGender);
+            const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: avatarUrl, isMember: false, role: 'guest' as const, gender: guestGender };
+            setAuthUser(u); setUser(u);
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
     };
 
@@ -146,10 +156,28 @@ export default function HomePage() {
             if (!res.ok) { setMemberError(data.message === 'Invalid credentials' ? 'Geçersiz kullanıcı adı veya şifre.' : (data.message || 'Giriş başarısız.')); return; }
             if (data.access_token) {
                 localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
-                const u: AuthUser = { userId: data.user?.sub || memberUsername.trim(), username: data.user?.displayName || memberUsername.trim(), avatar: data.user?.avatar || generateGenderAvatar(memberUsername.trim()), isMember: true, role: (data.user?.role || 'member') as any };
-                setAuthUser(u); setUser(u); window.dispatchEvent(new Event('auth-change'));
+                const memberAvatar = selectedAvatar || data.user?.avatar || generateGenderAvatar(memberUsername.trim(), memberGender || undefined);
+                const u: AuthUser = { userId: data.user?.sub || memberUsername.trim(), username: data.user?.displayName || memberUsername.trim(), avatar: memberAvatar, isMember: true, role: (data.user?.role || 'member') as any, gender: (memberGender || 'Belirsiz') as any, email: data.user?.username || '' };
+                setAuthUser(u); setUser(u); setEditName(u.username); setEditEmail(u.email || data.user?.username || ''); window.dispatchEvent(new Event('auth-change'));
             } else { setMemberError(data.message || 'Giriş başarısız.'); }
         } catch { setMemberError('Bağlantı hatası.'); } finally { setMemberLoading(false); }
+    };
+
+    const handleProfileUpdate = async (field: 'displayName' | 'avatar' | 'email' | 'password', value: string) => {
+        setProfileSaving(true); setProfileMsg('');
+        try {
+            const token = localStorage.getItem(AUTH_TOKEN_KEY);
+            const res = await fetch(`${API_URL}/auth/update-profile`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ [field]: value }),
+            });
+            if (res.ok) {
+                setProfileMsg('✅ Güncellendi!');
+                if (field === 'displayName' && user) { const u = { ...user, username: value }; setUser(u); setAuthUser(u); }
+                if (field === 'avatar' && user) { const u = { ...user, avatar: value }; setUser(u); setAuthUser(u); setSelectedAvatar(value); }
+                setTimeout(() => setProfileMsg(''), 2000);
+            } else { setProfileMsg('❌ Güncelleme başarısız.'); }
+        } catch { setProfileMsg('❌ Bağlantı hatası.'); } finally { setProfileSaving(false); }
     };
 
     const handleRegister = async () => {
@@ -881,13 +909,14 @@ export default function HomePage() {
 
                                         {/* Paket Kartları — showPackages açıkken görünür */}
                                         <div style={{
-                                            transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1) 0.15s',
+                                            transition: 'opacity 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, filter 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.15s',
                                             opacity: showPackages ? 1 : 0,
-                                            filter: showPackages ? 'blur(0)' : 'blur(8px)',
-                                            transform: showPackages ? 'translateY(0)' : 'translateY(20px)',
-                                            maxHeight: showPackages ? 2000 : 0,
+                                            filter: showPackages ? 'blur(0px)' : 'blur(12px)',
+                                            transform: showPackages ? 'translateY(0) scale(1)' : 'translateY(40px) scale(0.97)',
+                                            maxHeight: showPackages ? 9999 : 0,
                                             overflow: 'hidden',
                                             pointerEvents: showPackages ? 'auto' : 'none',
+                                            willChange: 'opacity, transform, filter',
                                         }}>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                                                 <h2 style={{ fontSize: 22, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
@@ -1276,6 +1305,32 @@ export default function HomePage() {
                                                             ))}
                                                         </div>
                                                     </div>
+                                                    {/* Cinsiyet seçimine göre avatarlar otomatik açılır */}
+                                                    <div style={{
+                                                        maxHeight: guestGender ? 200 : 0,
+                                                        opacity: guestGender ? 1 : 0,
+                                                        overflow: 'hidden',
+                                                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                        marginTop: guestGender ? 4 : 0,
+                                                    }}>
+                                                        <div key={guestGender} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                            {(guestGender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
+                                                                guestGender === 'Kadın' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
+                                                                    ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
+                                                            ).map((av) => (
+                                                                <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{
+                                                                    padding: 3, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                    background: 'transparent', transition: 'all 0.25s ease',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                    opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
+                                                                }}>
+                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                    <img src={av} alt="Avatar" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                </button>
+                                                            ))}
+                                                        </div>
+                                                    </div>
                                                     {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
                                                     <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
                                                         <LogIn style={{ width: 14, height: 14 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
@@ -1287,12 +1342,45 @@ export default function HomePage() {
                                                     <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(-100%)' : 'translateX(0)', opacity: showRegister ? 0 : 1, maxHeight: showRegister ? 0 : 600, overflow: 'hidden' }}>
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                                             <div>
-                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı</label>
-                                                                <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız" autoComplete="off" />
+                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı veya E-posta</label>
+                                                                <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="off" />
                                                             </div>
                                                             <div>
                                                                 <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
                                                                 <input type="password" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="new-password" />
+                                                            </div>
+                                                            {/* Üye giriş: Avatar Seçimi — toggle ile açılır/kapanır */}
+                                                            <button type="button" onClick={() => setShowMemberAvatars(!showMemberAvatars)} style={{
+                                                                width: '100%', padding: '8px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+                                                                border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
+                                                                background: showMemberAvatars ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
+                                                                color: showMemberAvatars ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                                            }}>
+                                                                {showMemberAvatars ? '▲ Kapat' : '🎭 Avatar Seç'}
+                                                            </button>
+                                                            <div style={{
+                                                                maxHeight: showMemberAvatars ? 200 : 0, opacity: showMemberAvatars ? 1 : 0, overflow: 'hidden',
+                                                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', marginTop: showMemberAvatars ? 6 : 0,
+                                                            }}>
+                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                                    {[
+                                                                        '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                        '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                        '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+                                                                    ].map((av) => (
+                                                                        <button key={av} type="button" onClick={() => { setSelectedAvatar(av); setShowMemberAvatars(false); }} style={{
+                                                                            padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                            background: 'transparent', transition: 'all 0.25s ease',
+                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                            transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                            opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
+                                                                        }}>
+                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                            <img src={av} alt="Avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
                                                             </div>
                                                             {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
                                                             <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
@@ -1339,7 +1427,7 @@ export default function HomePage() {
                                                             </div>
                                                             <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
                                                                 <input type="checkbox" checked={regAcceptTerms} onChange={(e) => setRegAcceptTerms(e.target.checked)} style={{ accentColor: '#ef4444', width: 16, height: 16, cursor: 'pointer' }} />
-                                                                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}><span style={{ color: '#fca5a5', textDecoration: 'underline', cursor: 'pointer' }}>Üyelik Sözleşmesini</span> okudum ve kabul ediyorum</span>
+                                                                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}><span onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} style={{ color: '#fca5a5', textDecoration: 'underline', cursor: 'pointer' }}>Üyelik Sözleşmesini</span> okudum ve kabul ediyorum</span>
                                                             </label>
                                                             {regError && <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{regError}</p>}
                                                             <button onClick={handleRegister} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={regLoading}>
@@ -1354,21 +1442,115 @@ export default function HomePage() {
                                             )}
                                         </>
                                     ) : (
-                                        <div style={{ textAlign: 'center', padding: '8px 0' }}>
-                                            <div style={{ position: 'relative', display: 'inline-block', marginBottom: 20 }}>
-                                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                <img src={user.avatar} style={{ width: 80, height: 80, borderRadius: 16, border: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 10px 25px rgba(0,0,0,0.5)', background: '#1e293b', objectFit: 'cover' }} alt="Avatar" />
+                                        <div style={{ padding: '8px 0' }}>
+                                            {/* Profil Header */}
+                                            <div style={{ textAlign: 'center', marginBottom: 16 }}>
+                                                <div style={{ position: 'relative', display: 'inline-block', marginBottom: 12 }}>
+                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                    <img src={user.avatar} style={{ width: 72, height: 72, borderRadius: '50%', border: '3px solid rgba(56,189,248,0.4)', boxShadow: '0 0 20px rgba(56,189,248,0.2), 0 10px 25px rgba(0,0,0,0.5)', background: 'linear-gradient(135deg, #1e293b, #0f172a)', objectFit: 'cover' }} alt="Avatar" />
+                                                </div>
+                                                <h4 style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
+                                                <p style={{ fontSize: 11, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 4, textTransform: 'uppercase', letterSpacing: 2 }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
                                             </div>
-                                            <h4 style={{ fontSize: 20, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
-                                            <p style={{ fontSize: 12, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 6, marginBottom: 24, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
-                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                                <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
-                                                    Odaya Gir
-                                                </button>
-                                                <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '10px 0', fontSize: 11 }}>
-                                                    Çıkış Yap
-                                                </button>
-                                            </div>
+
+                                            {/* Tab Navigation — üyeler için */}
+                                            {user.isMember && (
+                                                <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '3px', background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
+                                                    {([['profil', '👤'], ['ayarlar', '⚙️'], ['mesajlar', '💬']] as const).map(([tab, icon]) => (
+                                                        <button key={tab} onClick={() => setProfileTab(tab as any)} style={{
+                                                            flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer',
+                                                            textTransform: 'uppercase', letterSpacing: 1, transition: 'all 0.25s ease',
+                                                            background: profileTab === tab ? 'rgba(56,189,248,0.2)' : 'transparent',
+                                                            color: profileTab === tab ? '#7dd3fc' : 'rgba(255,255,255,0.4)',
+                                                        }}>{icon} {tab === 'profil' ? 'Profil' : tab === 'ayarlar' ? 'Ayarlar' : 'Mesajlar'}</button>
+                                                    ))}
+                                                </div>
+                                            )}
+
+                                            {/* Profil Tab */}
+                                            {profileTab === 'profil' && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                    {/* Avatar Değiştir */}
+                                                    {user.isMember && (
+                                                        <div>
+                                                            <button type="button" onClick={() => setShowAvatarPicker(!showAvatarPicker)} style={{
+                                                                width: '100%', padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+                                                                border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
+                                                                background: showAvatarPicker ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
+                                                                color: showAvatarPicker ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                                            }}>
+                                                                🎨 {showAvatarPicker ? 'Kapat' : 'Avatar Değiştir'}
+                                                            </button>
+                                                            <div style={{ maxHeight: showAvatarPicker ? 200 : 0, opacity: showAvatarPicker ? 1 : 0, overflow: 'hidden', transition: 'all 0.4s ease', marginTop: showAvatarPicker ? 8 : 0 }}>
+                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                                                                    {(user.gender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
+                                                                        user.gender === 'Kadın' || user.gender === 'Kadin' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
+                                                                            user.gender === 'Belirsiz' ? ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] :
+                                                                                ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                                    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                                    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
+                                                                    ).map((av) => (
+                                                                        <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); }} style={{
+                                                                            padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                            background: 'transparent', transition: 'all 0.25s ease',
+                                                                            transform: user.avatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                            opacity: user.avatar !== av ? 0.6 : 1,
+                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        }}>
+                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                            <img src={av} alt="Avatar" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                    <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
+                                                        Odaya Gir
+                                                    </button>
+                                                    <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '10px 0', fontSize: 11 }}>
+                                                        Çıkış Yap
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Ayarlar Tab */}
+                                            {profileTab === 'ayarlar' && user.isMember && (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                    <div>
+                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Kullanıcı Adı</label>
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder={user.username} />
+                                                            <button onClick={() => editName.trim() && handleProfileUpdate('displayName', editName.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>E-posta</label>
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="yeni@mail.com" />
+                                                            <button onClick={() => editEmail.trim() && handleProfileUpdate('email', editEmail.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Yeni Şifre</label>
+                                                        <div style={{ display: 'flex', gap: 6 }}>
+                                                            <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="••••••••" />
+                                                            <button onClick={() => editPassword.trim() && handleProfileUpdate('password', editPassword.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                        </div>
+                                                    </div>
+                                                    {profileMsg && <p style={{ fontSize: 11, fontWeight: 600, color: profileMsg.includes('✅') ? '#34d399' : '#ef4444', textAlign: 'center' }}>{profileMsg}</p>}
+                                                </div>
+                                            )}
+
+                                            {/* Mesajlar Tab */}
+                                            {profileTab === 'mesajlar' && user.isMember && (
+                                                <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                                    <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
+                                                    <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Henüz mesajınız yok</p>
+                                                    <p style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Odada birileri size mesaj gönderdiğinde burada görünecek.</p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -2051,269 +2233,297 @@ export default function HomePage() {
                             <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Gizlilik Sözleşmesi</a>
                         </div>
                     </footer>
-                </main>
-            </div>
+                </main >
+            </div >
 
             {/* CHECKOUT MODAL */}
-            {showCheckout && checkoutPlan && (
-                <div style={{
-                    position: 'fixed', inset: 0, zIndex: 9999,
-                    background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    animation: 'fadeIn 0.4s ease',
-                }} onClick={(e) => { if (e.target === e.currentTarget) setShowCheckout(false); }}>
-                    <div className="glossy-panel modal-scrollbar" style={{
-                        width: '100%', maxWidth: 460, maxHeight: '85vh', overflowY: 'auto',
-                        borderRadius: 18, position: 'relative',
-                        border: '1px solid rgba(251,191,36,0.15)',
-                        boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(251,191,36,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
-                        padding: 0,
-                    }}>
-                        {/* Golden Header Bar */}
-                        <div style={{
-                            background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))',
-                            borderBottom: '1px solid rgba(251,191,36,0.12)',
-                            padding: '14px 22px', borderRadius: '18px 18px 0 0',
-                            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            {
+                showCheckout && checkoutPlan && (
+                    <div style={{
+                        position: 'fixed', inset: 0, zIndex: 9999,
+                        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        animation: 'fadeIn 0.4s ease',
+                    }} onClick={(e) => { if (e.target === e.currentTarget) setShowCheckout(false); }}>
+                        <div className="glossy-panel modal-scrollbar" style={{
+                            width: '100%', maxWidth: 460, maxHeight: '85vh', overflowY: 'auto',
+                            borderRadius: 18, position: 'relative',
+                            border: '1px solid rgba(251,191,36,0.15)',
+                            boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(251,191,36,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
+                            padding: 0,
                         }}>
-                            <div>
-                                <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                                        {chkBilling === 'yearly'
-                                            ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺`
-                                            : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}
-                                    </span>
-                                    <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{chkBilling === 'yearly' ? '/yıl' : checkoutPlan.period}</span>
-                                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>• {checkoutPlan.name}</span>
+                            {/* Golden Header Bar */}
+                            <div style={{
+                                background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))',
+                                borderBottom: '1px solid rgba(251,191,36,0.12)',
+                                padding: '14px 22px', borderRadius: '18px 18px 0 0',
+                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                            }}>
+                                <div>
+                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
+                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                        <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                                            {chkBilling === 'yearly'
+                                                ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺`
+                                                : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}
+                                        </span>
+                                        <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{chkBilling === 'yearly' ? '/yıl' : checkoutPlan.period}</span>
+                                        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>• {checkoutPlan.name}</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <button onClick={() => setShowCheckout(false)} style={{
-                                background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                                borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
-                            }}><X style={{ width: 14, height: 14 }} /></button>
-                        </div>
-
-                        <div style={{ padding: '16px 22px' }}>
-                            {/* Aylık / Yıllık Toggle */}
-                            <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
-                                <button onClick={() => setChkBilling('monthly')} style={{
-                                    flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                    background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent',
-                                    color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b',
-                                    boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none',
-                                    transition: 'all 0.3s',
-                                }}>💳 Aylık Ödeme</button>
-                                <button onClick={() => setChkBilling('yearly')} style={{
-                                    flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                    background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent',
-                                    color: chkBilling === 'yearly' ? '#34d399' : '#64748b',
-                                    boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none',
-                                    transition: 'all 0.3s',
-                                }}>🎁 Yıllık <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 900, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4, marginLeft: 4 }}>2 AY HEDİYE</span></button>
+                                <button onClick={() => setShowCheckout(false)} style={{
+                                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
+                                    borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
+                                }}><X style={{ width: 14, height: 14 }} /></button>
                             </div>
 
-                            {/* Kişisel Bilgiler Section */}
-                            <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler
+                            <div style={{ padding: '16px 22px' }}>
+                                {/* Aylık / Yıllık Toggle */}
+                                <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                    <button onClick={() => setChkBilling('monthly')} style={{
+                                        flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                        background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent',
+                                        color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b',
+                                        boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none',
+                                        transition: 'all 0.3s',
+                                    }}>💳 Aylık Ödeme</button>
+                                    <button onClick={() => setChkBilling('yearly')} style={{
+                                        flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
+                                        background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent',
+                                        color: chkBilling === 'yearly' ? '#34d399' : '#64748b',
+                                        boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none',
+                                        transition: 'all 0.3s',
+                                    }}>🎁 Yıllık <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 900, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4, marginLeft: 4 }}>2 AY HEDİYE</span></button>
                                 </div>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                    {[
-                                        { label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' },
-                                        { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' },
-                                        { label: 'Telefon', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx', icon: '📱' },
-                                    ].map((field, i) => (
-                                        <div key={i} style={{ position: 'relative' }}>
-                                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>{field.icon}</span>
+
+                                {/* Kişisel Bilgiler Section */}
+                                <div style={{ marginBottom: 14 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                        {[
+                                            { label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' },
+                                            { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' },
+                                            { label: 'Telefon', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx', icon: '📱' },
+                                        ].map((field, i) => (
+                                            <div key={i} style={{ position: 'relative' }}>
+                                                <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>{field.icon}</span>
+                                                <input
+                                                    type={field.type} value={field.value} onChange={e => field.setter(e.target.value)}
+                                                    placeholder={field.placeholder}
+                                                    style={{
+                                                        width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)',
+                                                        outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
+                                                    }}
+                                                    onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.4)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
+                                                    onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Logo Upload */}
+                                <div style={{ marginBottom: 14 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu
+                                    </div>
+                                    <label style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                        padding: '12px', borderRadius: 12, cursor: 'pointer',
+                                        background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)',
+                                        border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`,
+                                        color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700,
+                                        transition: 'all 0.3s',
+                                    }}>
+                                        {chkLogo ? <Check style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
+                                        {chkLogo ? chkLogo.name : 'Logo Yükle (.png, .jpg)'}
+                                        <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                                    </label>
+                                </div>
+
+                                {/* Hosting Tercihi */}
+                                <div style={{ marginBottom: 16 }}>
+                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
+                                        <Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz
+                                    </div>
+                                    <div style={{ display: 'flex', gap: 10 }}>
+                                        {[
+                                            { key: 'soprano' as const, label: 'SopranoChat', sub: 'sopranochat.com üzerinden', color: '#38bdf8', icon: '🎙️' },
+                                            { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' },
+                                        ].map(opt => (
+                                            <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{
+                                                flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer',
+                                                background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)',
+                                                border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`,
+                                                transition: 'all 0.3s',
+                                                boxShadow: chkHosting === opt.key ? `0 4px 16px ${opt.color}15` : 'none',
+                                            }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                                    <div style={{
+                                                        width: 20, height: 20, borderRadius: '50%',
+                                                        border: `2px solid ${chkHosting === opt.key ? opt.color : '#475569'}`,
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        transition: 'all 0.3s',
+                                                    }}>
+                                                        {chkHosting === opt.key && <div style={{ width: 10, height: 10, borderRadius: '50%', background: opt.color, boxShadow: `0 0 6px ${opt.color}` }} />}
+                                                    </div>
+                                                    <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === opt.key ? opt.color : '#94a3b8' }}>{opt.icon} {opt.label}</span>
+                                                </div>
+                                                <div style={{ fontSize: 10, color: '#64748b', marginLeft: 30, fontWeight: 500 }}>{opt.sub}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    {chkHosting === 'soprano' && (
+                                        <div style={{ marginTop: 8 }}>
                                             <input
-                                                type={field.type} value={field.value} onChange={e => field.setter(e.target.value)}
-                                                placeholder={field.placeholder}
+                                                type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)}
+                                                placeholder="Oda Adınız"
                                                 style={{
-                                                    width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)',
+                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                    background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
                                                     outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
                                                 }}
-                                                onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.4)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
-                                                onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
+                                                onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
+                                                onBlur={e => { e.target.style.borderColor = 'rgba(56,189,248,0.2)'; e.target.style.boxShadow = 'none'; }}
                                             />
+                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
                                         </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Logo Upload */}
-                            <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu
-                                </div>
-                                <label style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                    padding: '12px', borderRadius: 12, cursor: 'pointer',
-                                    background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)',
-                                    border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                                    color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700,
-                                    transition: 'all 0.3s',
-                                }}>
-                                    {chkLogo ? <Check style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
-                                    {chkLogo ? chkLogo.name : 'Logo Yükle (.png, .jpg)'}
-                                    <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
-                                </label>
-                            </div>
-
-                            {/* Hosting Tercihi */}
-                            <div style={{ marginBottom: 16 }}>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz
-                                </div>
-                                <div style={{ display: 'flex', gap: 10 }}>
-                                    {[
-                                        { key: 'soprano' as const, label: 'SopranoChat', sub: 'sopranochat.com üzerinden', color: '#38bdf8', icon: '🎙️' },
-                                        { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' },
-                                    ].map(opt => (
-                                        <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{
-                                            flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer',
-                                            background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)',
-                                            border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`,
-                                            transition: 'all 0.3s',
-                                            boxShadow: chkHosting === opt.key ? `0 4px 16px ${opt.color}15` : 'none',
-                                        }}>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                                                <div style={{
-                                                    width: 20, height: 20, borderRadius: '50%',
-                                                    border: `2px solid ${chkHosting === opt.key ? opt.color : '#475569'}`,
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    transition: 'all 0.3s',
-                                                }}>
-                                                    {chkHosting === opt.key && <div style={{ width: 10, height: 10, borderRadius: '50%', background: opt.color, boxShadow: `0 0 6px ${opt.color}` }} />}
-                                                </div>
-                                                <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === opt.key ? opt.color : '#94a3b8' }}>{opt.icon} {opt.label}</span>
-                                            </div>
-                                            <div style={{ fontSize: 10, color: '#64748b', marginLeft: 30, fontWeight: 500 }}>{opt.sub}</div>
+                                    )}
+                                    {chkHosting === 'own' && (
+                                        <div style={{ marginTop: 8 }}>
+                                            <input
+                                                type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)}
+                                                placeholder="ornek.com"
+                                                style={{
+                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
+                                                    background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)',
+                                                    outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
+                                                }}
+                                                onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(167,139,250,0.1)'; }}
+                                                onBlur={e => { e.target.style.borderColor = 'rgba(167,139,250,0.2)'; e.target.style.boxShadow = 'none'; }}
+                                            />
+                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
-                                {chkHosting === 'soprano' && (
-                                    <div style={{ marginTop: 8 }}>
-                                        <input
-                                            type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)}
-                                            placeholder="Oda Adınız"
-                                            style={{
-                                                width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
-                                                outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                                            }}
-                                            onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
-                                            onBlur={e => { e.target.style.borderColor = 'rgba(56,189,248,0.2)'; e.target.style.boxShadow = 'none'; }}
-                                        />
-                                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
-                                    </div>
-                                )}
-                                {chkHosting === 'own' && (
-                                    <div style={{ marginTop: 8 }}>
-                                        <input
-                                            type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)}
-                                            placeholder="ornek.com"
-                                            style={{
-                                                width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)',
-                                                outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                                            }}
-                                            onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(167,139,250,0.1)'; }}
-                                            onBlur={e => { e.target.style.borderColor = 'rgba(167,139,250,0.2)'; e.target.style.boxShadow = 'none'; }}
-                                        />
-                                        <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div>
-                                    </div>
-                                )}
-                            </div>
 
-                            {/* Ödeme Bilgileri Decorative Divider */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
-                                <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
-                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
-                            </div>
-
-                            {/* IBAN Card */}
-                            <div style={{
-                                background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
-                                borderRadius: 14, padding: '14px 16px',
-                                border: '1px solid rgba(251,191,36,0.1)',
-                                marginBottom: 10,
-                            }}>
+                                {/* Ödeme Bilgileri Decorative Divider */}
                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                    <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                    <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
+                                    <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                </div>
+
+                                {/* IBAN Card */}
+                                <div style={{
+                                    background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
+                                    borderRadius: 14, padding: '14px 16px',
+                                    border: '1px solid rgba(251,191,36,0.1)',
+                                    marginBottom: 10,
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                        <div style={{
+                                            width: 28, height: 28, borderRadius: 8,
+                                            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                            fontSize: 15, fontWeight: 900, color: '#fff',
+                                            boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                                        }}>A</div>
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>AKBANK</div>
+                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>SopranoChat Bilişim</div>
+                                        </div>
+                                    </div>
                                     <div style={{
-                                        width: 28, height: 28, borderRadius: 8,
-                                        background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                        fontSize: 15, fontWeight: 900, color: '#fff',
-                                        boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
-                                    }}>A</div>
-                                    <div>
-                                        <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>AKBANK</div>
-                                        <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>SopranoChat Bilişim</div>
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '12px 16px', borderRadius: 12,
+                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+                                    }}>
+                                        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>TR78 0004 6006 1388 8000 0123 45</span>
+                                        <button onClick={() => copyToClipboard('TR78000460061388800001234 5', 'iban')} style={{
+                                            background: chkCopied === 'iban' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
+                                            border: `1px solid ${chkCopied === 'iban' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
+                                            borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
+                                            color: chkCopied === 'iban' ? '#34d399' : '#38bdf8',
+                                            display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
+                                            transition: 'all 0.2s',
+                                        }}>
+                                            {chkCopied === 'iban' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                        </button>
                                     </div>
                                 </div>
-                                <div style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    padding: '12px 16px', borderRadius: 12,
-                                    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                                }}>
-                                    <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>TR78 0004 6006 1388 8000 0123 45</span>
-                                    <button onClick={() => copyToClipboard('TR78000460061388800001234 5', 'iban')} style={{
-                                        background: chkCopied === 'iban' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
-                                        border: `1px solid ${chkCopied === 'iban' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
-                                        borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-                                        color: chkCopied === 'iban' ? '#34d399' : '#38bdf8',
-                                        display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-                                        transition: 'all 0.2s',
-                                    }}>
-                                        {chkCopied === 'iban' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
-                                    </button>
-                                </div>
-                            </div>
 
-                            {/* Ödeme Kodu Card */}
-                            <div style={{
-                                background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))',
-                                borderRadius: 14, padding: '12px 16px',
-                                border: '1px solid rgba(56,189,248,0.12)',
-                                marginBottom: 16,
-                            }}>
-                                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
+                                {/* Ödeme Kodu Card */}
                                 <div style={{
-                                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                    padding: '14px 16px', borderRadius: 12,
-                                    background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)',
+                                    background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))',
+                                    borderRadius: 14, padding: '12px 16px',
+                                    border: '1px solid rgba(56,189,248,0.12)',
+                                    marginBottom: 16,
                                 }}>
-                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
-                                    <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{
-                                        background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
-                                        border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
-                                        borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-                                        color: chkCopied === 'code' ? '#34d399' : '#38bdf8',
-                                        display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-                                        transition: 'all 0.2s',
+                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
+                                    <div style={{
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                        padding: '14px 16px', borderRadius: 12,
+                                        background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)',
                                     }}>
-                                        {chkCopied === 'code' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
-                                    </button>
+                                        <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
+                                        <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{
+                                            background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
+                                            border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
+                                            borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
+                                            color: chkCopied === 'code' ? '#34d399' : '#38bdf8',
+                                            display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
+                                            transition: 'all 0.2s',
+                                        }}>
+                                            {chkCopied === 'code' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Ödemeyi Tamamla Butonu */}
-                            <button className="btn-3d btn-3d-gold" style={{
-                                width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
-                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                            }}>
-                                Ödemeyi Gönderdim, Tamamla <Check style={{ width: 18, height: 18 }} />
-                            </button>
+                                {/* Ödemeyi Tamamla Butonu */}
+                                <button className="btn-3d btn-3d-gold" style={{
+                                    width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                    letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                }}>
+                                    Ödemeyi Gönderdim, Tamamla <Check style={{ width: 18, height: 18 }} />
+                                </button>
+                            </div>
                         </div>
+                    </div>
+                )
+            }
+
+            {/* Üyelik Sözleşmesi Modal */}
+            {showTermsModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTermsModal(false)}>
+                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 16, padding: '28px 32px', maxWidth: 520, width: '90%', maxHeight: '70vh', overflow: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.6)', color: '#e2e8f0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 900, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2 }}>Üyelik Sözleşmesi</h3>
+                            <button onClick={() => setShowTermsModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 20, cursor: 'pointer', padding: 4, lineHeight: 1 }}>✕</button>
+                        </div>
+                        <div style={{ fontSize: 12, lineHeight: 1.8, color: '#cbd5e1' }}>
+                            <p style={{ fontWeight: 700, marginBottom: 12 }}>Son Güncelleme: Mart 2026</p>
+                            <p style={{ marginBottom: 10 }}>Bu sözleşme, SopranoChat platformuna üye olan kullanıcılar ile SopranoChat yönetimi arasında geçerli olan kullanım koşullarını belirler.</p>
+                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>1. Üyelik Koşulları</h4>
+                            <p>Üye olmak için geçerli bir e-posta adresi ve en az 4 karakterlik bir şifre gerekmektedir. Kullanıcı adı benzersiz olmalıdır. Sahte veya yanıltıcı bilgi verilmesi durumunda hesap askıya alınabilir.</p>
+                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>2. Kullanım Kuralları</h4>
+                            <p>Platform içerisinde hakaret, küfür, ırkçılık, cinsel içerik ve diğer topluma aykırı davranışlar yasaktır. Bu kurallara uymayan kullanıcıların hesapları kalıcı olarak kapatılabilir.</p>
+                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>3. Gizlilik</h4>
+                            <p>Kullanıcı bilgileri üçüncü şahıslarla paylaşılmaz. E-posta adresleri yalnızca hesap doğrulama ve bildirim amaçlı kullanılır.</p>
+                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>4. Sorumluluk</h4>
+                            <p>Kullanıcılar kendi hesaplarının güvenliğinden sorumludur. Şifre paylaşımı veya hesap devri yapılmamalıdır.</p>
+                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>5. Değişiklikler</h4>
+                            <p>SopranoChat yönetimi bu sözleşmeyi önceden bildirim yapmaksızın güncelleme hakkını saklı tutar.</p>
+                        </div>
+                        <button onClick={() => setShowTermsModal(false)} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, marginTop: 20 }}>Anladım, Kapat</button>
                     </div>
                 </div>
             )}
-
         </>
     );
 }

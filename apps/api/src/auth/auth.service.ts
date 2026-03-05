@@ -68,7 +68,10 @@ export class AuthService {
     const user = await this.prisma.user.findFirst({
       where: {
         tenantId: tenantId,
-        OR: [{ email: identifier }, { displayName: identifier }],
+        OR: [
+          { email: { equals: identifier, mode: 'insensitive' } },
+          { displayName: { equals: identifier, mode: 'insensitive' } },
+        ],
       },
     });
 
@@ -94,10 +97,11 @@ export class AuthService {
       nameColor: user.nameColor || null,
     };
 
-    // Full user response includes avatar (not in JWT to avoid bloat)
+    // Full user response includes avatar and gender (not in JWT to avoid bloat)
     const userResponse = {
       ...jwtPayload,
       avatar: user.avatarUrl || null,
+      gender: user.gender || null,
     };
 
     // Update login stats
@@ -270,6 +274,7 @@ export class AuthService {
         email: data.email,
         passwordHash: hashedPassword,
         avatarUrl,
+        gender: data.gender || null,
         role: 'member',
         isOnline: true,
         lastLoginAt: new Date(),
