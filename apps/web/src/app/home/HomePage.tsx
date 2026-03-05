@@ -30,6 +30,7 @@ export default function HomePage() {
     // Section geçiş animasyonu
     const isInitialLoad = useRef(true);
     const [sectionChangeKey, setSectionChangeKey] = useState(0);
+    const lampAnimDone = useRef<Record<string, boolean>>({});
     const [guestNick, setGuestNick] = useState("");
     const [user, setUser] = useState<AuthUser | null>(null);
     const [guestLoading, setGuestLoading] = useState(false);
@@ -64,6 +65,7 @@ export default function HomePage() {
     const [regError, setRegError] = useState('');
     const [regLoading, setRegLoading] = useState(false);
     const [showPackages, setShowPackages] = useState(false);
+    const [showDemoToast, setShowDemoToast] = useState(false);
     const [showCustomConfig, setShowCustomConfig] = useState(false);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
@@ -115,6 +117,7 @@ export default function HomePage() {
             return () => clearTimeout(timer);
         }
         setSectionChangeKey(k => k + 1);
+        lampAnimDone.current = { right: lampAnimDone.current['right'], homeGlow: lampAnimDone.current['homeGlow'], rightGlow: lampAnimDone.current['rightGlow'] };
     }, [activeSection]);
 
 
@@ -399,6 +402,7 @@ export default function HomePage() {
                 .nav-link-2 { animation-delay: 0.6s; }
                 .nav-link-3 { animation-delay: 0.7s; }
                 .nav-link-4 { animation-delay: 0.8s; }
+                .nav-link-5 { animation-delay: 0.9s; }
 
                 .nav-link::after {
                     content: '';
@@ -429,18 +433,18 @@ export default function HomePage() {
                     flex-shrink: 0;
                 }
 
-                /* 6) İçerik kartları — sırayla fade-in */
+                /* 6) İçerik kartları — sırayla süzülerek belirme */
                 @keyframes contentFadeIn {
-                    0% { transform: translateY(30px); opacity: 0; }
+                    0% { transform: translateY(-30px); opacity: 0; }
                     100% { transform: translateY(0); opacity: 1; }
                 }
-                .content-fade { opacity: 0; animation: contentFadeIn 0.6s ease-out forwards; }
-                .content-fade-1 { animation-delay: 1.2s; }
-                .content-fade-2 { animation-delay: 1.4s; }
-                .content-fade-3 { animation-delay: 1.6s; }
-                .content-fade-4 { animation-delay: 1.8s; }
-                .content-fade-5 { animation-delay: 2.0s; }
-                .content-fade-6 { animation-delay: 2.2s; }
+                .content-fade { opacity: 0; animation: contentFadeIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) forwards; }
+                .content-fade-1 { animation-delay: 0.6s; }
+                .content-fade-2 { animation-delay: 0.8s; }
+                .content-fade-3 { animation-delay: 1.0s; }
+                .content-fade-4 { animation-delay: 1.2s; }
+                .content-fade-5 { animation-delay: 1.4s; }
+                .content-fade-6 { animation-delay: 1.6s; }
 
                 .glossy-panel {
                     background:
@@ -519,6 +523,7 @@ export default function HomePage() {
                     position: relative;
                     animation: tvSlideIn 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both;
                 }
+                .tv-wrapper::before, .tv-wrapper::after { display: none !important; }
                 @keyframes tvSlideIn {
                     from { opacity: 0; transform: translateX(80px) scale(0.8); }
                     to { opacity: 1; transform: translateX(0) scale(1); }
@@ -617,7 +622,7 @@ export default function HomePage() {
                 /* === TABLO LAMBASI (SVG Gallery Lamp) === */
                 .gallery-lamp-svg {
                     position: absolute;
-                    top: -52px;
+                    top: -48px;
                     left: 50%;
                     transform: translateX(-50%);
                     z-index: 60;
@@ -625,7 +630,6 @@ export default function HomePage() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                    animation: lampSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 1.5s both;
                 }
                 @keyframes lampSlideDown {
                     0% {
@@ -643,6 +647,20 @@ export default function HomePage() {
                 .gallery-lamp-svg svg {
                     filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
                 }
+                .gallery-lamp-svg-right {
+                    position: absolute;
+                    top: -48px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    z-index: 60;
+                    pointer-events: none;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
+                .gallery-lamp-svg-right svg {
+                    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+                }
                 .gallery-lamp-glow {
                     position: absolute;
                     top: 32px;
@@ -650,9 +668,14 @@ export default function HomePage() {
                     transform: translateX(-50%);
                     width: 200px;
                     height: 90px;
-                    background: radial-gradient(ellipse at top center, rgba(255,210,120,0.22) 0%, rgba(255,180,80,0.08) 50%, transparent 80%);
+                    background: radial-gradient(ellipse at top center, rgba(255,210,120,0.22) 0%, rgba(255,180,80,0.08) 40%, transparent 70%);
                     pointer-events: none;
-                    animation: galleryGlowPulse 4s ease-in-out infinite alternate;
+                    border-radius: 0 0 50% 50%;
+                    filter: blur(8px);
+                }
+                @keyframes glowLightUp {
+                    0% { opacity: 0; transform: translateX(-50%) scale(0.7); }
+                    100% { opacity: 1; transform: translateX(-50%) scale(1); }
                 }
                 @keyframes galleryGlowPulse {
                     0% { opacity: 0.75; transform: translateX(-50%) scale(1); }
@@ -693,11 +716,11 @@ export default function HomePage() {
                 }
 
                 @keyframes tvSettle {
-                    0% { transform: rotateX(0deg) rotateY(10deg); }
-                    25% { transform: rotateX(-2deg) rotateY(-8deg); }
-                    50% { transform: rotateX(1deg) rotateY(4deg); }
-                    75% { transform: rotateX(-1deg) rotateY(-2deg); }
-                    100% { transform: rotateX(0deg) rotateY(0deg); }
+                    0% { opacity: 0; transform: rotateX(0deg) rotateY(10deg) scale(0.95); }
+                    30% { opacity: 1; }
+                    50% { transform: rotateX(1deg) rotateY(4deg) scale(1); }
+                    75% { transform: rotateX(-1deg) rotateY(-2deg) scale(1); }
+                    100% { opacity: 1; transform: rotateX(0deg) rotateY(0deg) scale(1); }
                 }
                 @keyframes btnSlideUp {
                     0% { opacity: 0; transform: translateY(20px); }
@@ -740,6 +763,14 @@ export default function HomePage() {
                     transform: translateY(-4px) !important;
                     box-shadow: inset 0 2px 0 rgba(255,255,255,0.6), inset 0 -2px 0 rgba(0,0,0,0.2), 0 10px 0 #b45309, 0 14px 30px rgba(251,191,36,0.4), 0 0 40px rgba(251,191,36,0.2) !important;
                 }
+                @keyframes demoToastIn {
+                    0% { opacity: 0; transform: translateX(-30px) scale(0.9); }
+                    100% { opacity: 1; transform: translateX(0) scale(1); }
+                }
+                @keyframes arrowBounce {
+                    0%, 100% { transform: translateX(0); }
+                    50% { transform: translateX(6px); }
+                }
             `}</style>
 
             <ToastContainer />
@@ -766,7 +797,15 @@ export default function HomePage() {
                             <React.Fragment key={i}>
                                 <button
                                     className={`nav-link nav-link-${i}`}
-                                    onClick={() => { setActiveSection(item.section); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                    onClick={() => {
+                                        if (item.section === 'scene' && !user) {
+                                            setShowDemoToast(true);
+                                            setTimeout(() => setShowDemoToast(false), 4000);
+                                            return;
+                                        }
+                                        setActiveSection(item.section);
+                                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                                    }}
                                     style={{
                                         color: activeSection === item.section ? '#38bdf8' : undefined,
                                         textShadow: activeSection === item.section ? '0 0 10px rgba(56,189,248,0.4)' : undefined,
@@ -782,7 +821,7 @@ export default function HomePage() {
                 < main style={{ width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0 }
                 }>
 
-                    {activeSection !== 'scene' && (<div style={{ display: 'flex', gap: 32, flexWrap: 'wrap' }}>
+                    {activeSection !== 'scene' && (<div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', alignItems: 'flex-start' }}>
 
                         {/* SOL ALAN */}
                         <div style={{ flex: '1 1 60%', minWidth: 400, display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -792,7 +831,7 @@ export default function HomePage() {
                                     {/* Karşılama Kartı + Tablo Lambası */}
                                     <div style={{ position: 'relative' }}>
                                         {/* ===== TABLO LAMBASI (geniş — Hoşgeldiniz kartı) ===== */}
-                                        <div className="gallery-lamp-svg" key={'lamp-home-' + sectionChangeKey} style={!isInitialLoad.current ? { animation: 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' } : undefined}>
+                                        <div className="gallery-lamp-svg" key={'lamp-home-' + sectionChangeKey} style={{ animation: lampAnimDone.current['home'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['home'] = true; }}>
                                             <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <defs>
                                                     <linearGradient id="glBarMetalW" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -840,11 +879,10 @@ export default function HomePage() {
                                                 <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
                                                 <circle cx="295" cy="34" r="1" fill="#555" />
                                             </svg>
-                                            <div className="gallery-lamp-glow" key={'glow-home-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
+                                            <div className="gallery-lamp-glow" style={{ width: 450, opacity: lampAnimDone.current['homeGlow'] ? 1 : 0, animation: lampAnimDone.current['homeGlow'] ? 'none' : 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 2.0s forwards' }} onAnimationEnd={() => { lampAnimDone.current['homeGlow'] = true; }}></div>
                                         </div>
 
-                                        <div className="glossy-panel content-fade content-fade-1" style={{ padding: '40px', position: 'relative', overflow: 'hidden' }}>
-                                            <div style={{ position: 'absolute', top: '-20%', right: '-10%', width: 256, height: 256, background: 'rgba(56, 189, 248, 0.2)', filter: 'blur(80px)', borderRadius: '50%', pointerEvents: 'none' }}></div>
+                                        <div className="glossy-panel" style={{ padding: '40px', position: 'relative', overflow: 'hidden', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both', transformOrigin: 'top center' }}>
 
                                             <div style={{ position: 'relative', zIndex: 10 }}>
                                                 {/* Orijinal içerik — tümü birlikte fade/blur olur */}
@@ -872,7 +910,7 @@ export default function HomePage() {
 
                                                     {/* 3D TV Efekti */}
                                                     <div className="tv-wrapper" style={{ flexShrink: 0, marginTop: 15, marginRight: 40, perspective: 600 }}>
-                                                        <div className="tv-monitor" style={{ animation: 'tvSettle 3s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' }}>
+                                                        <div className="tv-monitor" style={{ animation: 'tvSettle 2s cubic-bezier(0.22, 0.61, 0.36, 1) 1.4s both' }}>
                                                             <div className="tv-screen">
                                                                 {/* Sohbet Simülasyonu */}
                                                                 <div className="chat-sim">
@@ -903,8 +941,7 @@ export default function HomePage() {
 
                                                         {/* Test Et — monitörün ARKASINDAN çıkan kablolu menü */}
                                                         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, position: 'relative', zIndex: -1, animation: 'btnSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 3.5s both', perspective: 500 }}>
-                                                            {/* Kablo */}
-                                                            <div style={{ width: 2, height: 50, background: 'linear-gradient(to bottom, #8a95a8, #4a4e5e)', borderRadius: 1 }}></div>
+                                                            {/* Kablo kaldırıldı */}
                                                             {/* Buton */}
                                                             <button className="btn-3d btn-3d-white model-btn" style={{
                                                                 padding: '8px 22px', fontSize: 10, fontWeight: 700,
@@ -1228,7 +1265,7 @@ export default function HomePage() {
                             {activeSection === 'iletisim' && (
                                 <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                                     {/* Gallery Lamp */}
-                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: lampAnimDone.current['iletisim'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['iletisim'] = true; }}>
                                         <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
                                                 <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1702,7 +1739,7 @@ export default function HomePage() {
                             {activeSection === 'referanslar' && (
                                 <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                                     {/* Gallery Lamp */}
-                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
+                                    <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: lampAnimDone.current['referanslar'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['referanslar'] = true; }}>
                                         <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                             <defs>
                                                 <linearGradient id="glBarMetalF" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1805,11 +1842,10 @@ export default function HomePage() {
 
                         {/* SAĞ ALAN */}
                         <div style={{ flex: '1 1 30%', minWidth: 300, display: 'flex', flexDirection: 'column', gap: 24 }}>
-
                             {/* GİRİŞ PANELİ + TABLO LAMBASI */}
-                            <div className="content-fade content-fade-3" style={{ position: 'relative' }}>
-                                {/* ===== TABLO LAMBASI (SVG Gallery Lamp) ===== */}
-                                <div className="gallery-lamp-svg">
+                            <div style={{ position: 'relative' }}>
+                                {/* ===== TABLO LAMBASI (SVG Gallery Lamp) — bağımsız, content-fade dışı ===== */}
+                                <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['right'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['right'] = true; }}>
                                     <svg width="300" height="52" viewBox="0 0 300 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <defs>
                                             <linearGradient id="glBarMetal" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -1857,325 +1893,367 @@ export default function HomePage() {
                                         <circle cx="185" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" />
                                         <circle cx="185" cy="34" r="1" fill="#555" />
                                     </svg>
-                                    <div className="gallery-lamp-glow" style={{ width: 280 }}></div>
+                                    <div className="gallery-lamp-glow" style={{
+                                        width: 280,
+                                        opacity: lampAnimDone.current['rightGlow'] ? 1 : 0,
+                                        animation: lampAnimDone.current['rightGlow'] ? 'none' : 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 2.8s forwards',
+                                        ...(user ? {
+                                            height: 110,
+                                            background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%)',
+                                            transition: 'height 1s ease, background 1s ease',
+                                        } : {}),
+                                    }} onAnimationEnd={() => { lampAnimDone.current['rightGlow'] = true; }}></div>
                                 </div>
 
-                                <div className="glossy-panel" style={{ padding: '24px 28px', position: 'relative', zIndex: 10 }}>
-                                    {/* Üst başlık */}
-                                    <h3 style={{ fontSize: 13, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                        <User style={{ width: 18, height: 18, color: user ? '#fbbf24' : '#38bdf8' }} /> Hesap Paneli
-                                    </h3>
-
-                                    {!user ? (
-                                        <>
-                                            {/* Sekmeler */}
-                                            <div style={{ display: 'flex', marginBottom: 20, borderRadius: 10, overflow: 'hidden', gap: 8 }}>
-                                                <button
-                                                    onClick={() => setLoginTab('guest')}
-                                                    style={{
-                                                        flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
-                                                        textTransform: 'uppercase', border: 'none', cursor: 'pointer',
-                                                        borderRadius: 8,
-                                                        background: loginTab === 'guest' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'rgba(0,0,0,0.25)',
-                                                        color: loginTab === 'guest' ? '#7dd3fc' : 'rgba(255,255,255,0.35)',
-                                                        transition: 'all 0.3s ease',
-                                                        boxShadow: loginTab === 'guest' ? '0 0 16px rgba(56,189,248,0.3), 0 0 4px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                                                    }}
-                                                >👤 Misafir</button>
-                                                <button
-                                                    onClick={() => setLoginTab('member')}
-                                                    style={{
-                                                        flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
-                                                        textTransform: 'uppercase', border: 'none', cursor: 'pointer',
-                                                        borderRadius: 8,
-                                                        background: loginTab === 'member' ? 'linear-gradient(180deg, rgba(239,68,68,0.3), rgba(185,28,28,0.4))' : 'rgba(0,0,0,0.25)',
-                                                        color: loginTab === 'member' ? '#fca5a5' : 'rgba(255,255,255,0.35)',
-                                                        transition: 'all 0.3s ease',
-                                                        boxShadow: loginTab === 'member' ? '0 0 16px rgba(239,68,68,0.3), 0 0 4px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
-                                                    }}
-                                                >⭐ Üye Giriş</button>
+                                {/* ══ DEMO TOAST ══ */}
+                                {showDemoToast && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: 140,
+                                        right: '103%',
+                                        zIndex: 100,
+                                        animation: 'demoToastIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both',
+                                    }}>
+                                        <div style={{
+                                            background: 'linear-gradient(135deg, rgba(251,191,36,0.88), rgba(245,158,11,0.82))',
+                                            backdropFilter: 'blur(12px)',
+                                            borderRadius: 10,
+                                            padding: '10px 14px',
+                                            display: 'flex', alignItems: 'center', gap: 10,
+                                            boxShadow: '0 4px 16px rgba(251,191,36,0.25), 0 1px 0 rgba(255,255,255,0.3) inset',
+                                            whiteSpace: 'nowrap' as const,
+                                        }}>
+                                            <span style={{ fontSize: 16 }}>🔑</span>
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: '#1a1a2e' }}>Önce giriş yapın</div>
+                                                <div style={{ fontSize: 9, fontWeight: 500, color: 'rgba(26,26,46,0.55)', marginTop: 1 }}>Misafir veya üye girişi gerekli</div>
                                             </div>
-
-                                            {loginTab === 'guest' ? (
-                                                <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                                                    <div>
-                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
-                                                        <input
-                                                            type="text"
-                                                            value={guestNick}
-                                                            onChange={(e) => setGuestNick(e.target.value)}
-                                                            className="input-inset"
-                                                            style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
-                                                            placeholder="Nickname girin..."
-                                                            autoComplete="off"
-                                                        />
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
-                                                        <div style={{ display: 'flex', gap: 6 }}>
-                                                            {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
-                                                                <button key={g} type="button" onClick={() => setGuestGender(g)} style={{
-                                                                    flex: 1, padding: '7px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
-                                                                    background: guestGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
-                                                                    color: guestGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
-                                                                    boxShadow: guestGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
-                                                                }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    {/* Cinsiyet seçimine göre avatarlar otomatik açılır */}
-                                                    <div style={{
-                                                        maxHeight: guestGender ? 200 : 0,
-                                                        opacity: guestGender ? 1 : 0,
-                                                        overflow: 'hidden',
-                                                        transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                        marginTop: guestGender ? 4 : 0,
-                                                    }}>
-                                                        <div key={guestGender} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out' }}>
-                                                            {(guestGender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
-                                                                guestGender === 'Kadın' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
-                                                                    ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
-                                                            ).map((av) => (
-                                                                <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{
-                                                                    padding: 3, border: 'none', borderRadius: '50%', cursor: 'pointer',
-                                                                    background: 'transparent', transition: 'all 0.25s ease',
-                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
-                                                                    opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
-                                                                }}>
-                                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                    <img src={av} alt="Avatar" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-                                                                </button>
-                                                            ))}
-                                                        </div>
-                                                    </div>
-                                                    {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
-                                                    <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
-                                                        <LogIn style={{ width: 14, height: 14 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
-                                                    </button>
-                                                </form>
-                                            ) : (
-                                                <div style={{ position: 'relative', overflow: 'hidden' }}>
-                                                    {/* Login / Register geçiş container */}
-                                                    <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(-100%)' : 'translateX(0)', opacity: showRegister ? 0 : 1, maxHeight: showRegister ? 0 : 600, overflow: 'hidden' }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                                                            <div>
-                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı veya E-posta</label>
-                                                                <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="off" />
-                                                            </div>
-                                                            <div>
-                                                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
-                                                                <input type="password" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="new-password" />
-                                                            </div>
-                                                            {/* Üye giriş: Avatar Seçimi — toggle ile açılır/kapanır */}
-                                                            <button type="button" onClick={() => setShowMemberAvatars(!showMemberAvatars)} style={{
-                                                                width: '100%', padding: '8px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
-                                                                border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
-                                                                background: showMemberAvatars ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
-                                                                color: showMemberAvatars ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                                            }}>
-                                                                {showMemberAvatars ? '▲ Kapat' : '🎭 Avatar Seç'}
-                                                            </button>
-                                                            <div style={{
-                                                                maxHeight: showMemberAvatars ? 200 : 0, opacity: showMemberAvatars ? 1 : 0, overflow: 'hidden',
-                                                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', marginTop: showMemberAvatars ? 6 : 0,
-                                                            }}>
-                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, animation: 'avatarFadeIn 0.4s ease-out' }}>
-                                                                    {[
-                                                                        '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
-                                                                        '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
-                                                                        '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
-                                                                    ].map((av) => (
-                                                                        <button key={av} type="button" onClick={() => { setSelectedAvatar(av); setShowMemberAvatars(false); }} style={{
-                                                                            padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
-                                                                            background: 'transparent', transition: 'all 0.25s ease',
-                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                            transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
-                                                                            opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
-                                                                        }}>
-                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                            <img src={av} alt="Avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                            {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
-                                                            <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
-                                                                <LogIn style={{ width: 14, height: 14 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
-                                                            </button>
-                                                            <button type="button" onClick={() => setShowRegister(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '4px 0', transition: 'color 0.2s' }}>
-                                                                Hesabın yok mu? <span style={{ color: '#fca5a5', fontWeight: 700 }}>Üye Ol</span>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Register Form */}
-                                                    <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(0)' : 'translateX(100%)', opacity: showRegister ? 1 : 0, maxHeight: showRegister ? 800 : 0, overflow: 'hidden', position: showRegister ? 'relative' : 'absolute', top: 0, left: 0, right: 0 }}>
-                                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                                            <h4 style={{ fontSize: 12, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', marginBottom: 4 }}>✨ Yeni Üyelik</h4>
-                                                            <div>
-                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Kullanıcı Adı</label>
-                                                                <input type="text" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Kullanıcı adınız" autoComplete="off" />
-                                                            </div>
-                                                            <div>
-                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>E-posta</label>
-                                                                <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="off" />
-                                                            </div>
-                                                            <div>
-                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre</label>
-                                                                <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 6 karakter" autoComplete="new-password" />
-                                                            </div>
-                                                            <div>
-                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre Tekrar</label>
-                                                                <input type="password" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Şifrenizi tekrarlayın" autoComplete="new-password" />
-                                                            </div>
-                                                            <div>
-                                                                <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
-                                                                <div style={{ display: 'flex', gap: 6 }}>
-                                                                    {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
-                                                                        <button key={g} type="button" onClick={() => setRegGender(g)} style={{
-                                                                            flex: 1, padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
-                                                                            background: regGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
-                                                                            color: regGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
-                                                                            boxShadow: regGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
-                                                                        }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
-                                                                <input type="checkbox" checked={regAcceptTerms} onChange={(e) => setRegAcceptTerms(e.target.checked)} style={{ accentColor: '#ef4444', width: 16, height: 16, cursor: 'pointer' }} />
-                                                                <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}><span onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} style={{ color: '#fca5a5', textDecoration: 'underline', cursor: 'pointer' }}>Üyelik Sözleşmesini</span> okudum ve kabul ediyorum</span>
-                                                            </label>
-                                                            {regError && <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{regError}</p>}
-                                                            <button onClick={handleRegister} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={regLoading}>
-                                                                <Sparkles style={{ width: 14, height: 14 }} /> {regLoading ? 'Kayıt yapılıyor...' : 'Üye Ol'}
-                                                            </button>
-                                                            <button type="button" onClick={() => setShowRegister(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '2px 0', transition: 'color 0.2s' }}>
-                                                                ← Giriş ekranına dön
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                        </>
-                                    ) : (
-                                        <div style={{ padding: '8px 0' }}>
-                                            {/* Profil Header */}
-                                            <div style={{ textAlign: 'center', marginBottom: 16 }}>
-                                                <div style={{ position: 'relative', display: 'inline-block', marginBottom: 12 }}>
-                                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                    <img src={user.avatar} style={{ width: 72, height: 72, borderRadius: '50%', border: '3px solid rgba(56,189,248,0.4)', boxShadow: '0 0 20px rgba(56,189,248,0.2), 0 10px 25px rgba(0,0,0,0.5)', background: 'linear-gradient(135deg, #1e293b, #0f172a)', objectFit: 'cover' }} alt="Avatar" />
-                                                </div>
-                                                <h4 style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
-                                                <p style={{ fontSize: 11, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 4, textTransform: 'uppercase', letterSpacing: 2 }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
-                                            </div>
-
-                                            {/* Tab Navigation — üyeler için */}
-                                            {user.isMember && (
-                                                <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '3px', background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
-                                                    {([['profil', '👤'], ['ayarlar', '⚙️'], ['mesajlar', '💬']] as const).map(([tab, icon]) => (
-                                                        <button key={tab} onClick={() => setProfileTab(tab as any)} style={{
-                                                            flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer',
-                                                            textTransform: 'uppercase', letterSpacing: 1, transition: 'all 0.25s ease',
-                                                            background: profileTab === tab ? 'rgba(56,189,248,0.2)' : 'transparent',
-                                                            color: profileTab === tab ? '#7dd3fc' : 'rgba(255,255,255,0.4)',
-                                                        }}>{icon} {tab === 'profil' ? 'Profil' : tab === 'ayarlar' ? 'Ayarlar' : 'Mesajlar'}</button>
-                                                    ))}
-                                                </div>
-                                            )}
-
-                                            {/* Profil Tab */}
-                                            {profileTab === 'profil' && (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                                                    {/* Avatar Değiştir */}
-                                                    {user.isMember && (
-                                                        <div>
-                                                            <button type="button" onClick={() => setShowAvatarPicker(!showAvatarPicker)} style={{
-                                                                width: '100%', padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
-                                                                border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
-                                                                background: showAvatarPicker ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
-                                                                color: showAvatarPicker ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                                            }}>
-                                                                🎨 {showAvatarPicker ? 'Kapat' : 'Avatar Değiştir'}
-                                                            </button>
-                                                            <div style={{ maxHeight: showAvatarPicker ? 200 : 0, opacity: showAvatarPicker ? 1 : 0, overflow: 'hidden', transition: 'all 0.4s ease', marginTop: showAvatarPicker ? 8 : 0 }}>
-                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                                                                    {(user.gender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
-                                                                        user.gender === 'Kadın' || user.gender === 'Kadin' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
-                                                                            user.gender === 'Belirsiz' ? ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] :
-                                                                                ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
-                                                                                    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
-                                                                                    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
-                                                                    ).map((av) => (
-                                                                        <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); }} style={{
-                                                                            padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
-                                                                            background: 'transparent', transition: 'all 0.25s ease',
-                                                                            transform: user.avatar === av ? 'scale(1.15)' : 'scale(1)',
-                                                                            opacity: user.avatar !== av ? 0.6 : 1,
-                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                        }}>
-                                                                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                                                                            <img src={av} alt="Avatar" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
-                                                                        </button>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    )}
-                                                    <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
-                                                        Odaya Gir
-                                                    </button>
-                                                    <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '10px 0', fontSize: 11 }}>
-                                                        Çıkış Yap
-                                                    </button>
-                                                </div>
-                                            )}
-
-                                            {/* Ayarlar Tab */}
-                                            {profileTab === 'ayarlar' && user.isMember && (
-                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                                    <div>
-                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Kullanıcı Adı</label>
-                                                        <div style={{ display: 'flex', gap: 6 }}>
-                                                            <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder={user.username} />
-                                                            <button onClick={() => editName.trim() && handleProfileUpdate('displayName', editName.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>E-posta</label>
-                                                        <div style={{ display: 'flex', gap: 6 }}>
-                                                            <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="yeni@mail.com" />
-                                                            <button onClick={() => editEmail.trim() && handleProfileUpdate('email', editEmail.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Yeni Şifre</label>
-                                                        <div style={{ display: 'flex', gap: 6 }}>
-                                                            <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="••••••••" />
-                                                            <button onClick={() => editPassword.trim() && handleProfileUpdate('password', editPassword.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
-                                                        </div>
-                                                    </div>
-                                                    {profileMsg && <p style={{ fontSize: 11, fontWeight: 600, color: profileMsg.includes('✅') ? '#34d399' : '#ef4444', textAlign: 'center' }}>{profileMsg}</p>}
-                                                </div>
-                                            )}
-
-                                            {/* Mesajlar Tab */}
-                                            {profileTab === 'mesajlar' && user.isMember && (
-                                                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                                                    <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
-                                                    <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Henüz mesajınız yok</p>
-                                                    <p style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Odada birileri size mesaj gönderdiğinde burada görünecek.</p>
-                                                </div>
-                                            )}
+                                            <span style={{
+                                                fontSize: 13, color: 'rgba(26,26,46,0.5)', marginLeft: 2,
+                                                animation: 'arrowBounce 1s ease-in-out infinite',
+                                            }}>›</span>
                                         </div>
-                                    )}
+                                    </div>
+                                )}
+
+                                <div style={{ position: 'relative', zIndex: 10, animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.0s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both', transformOrigin: 'top center' }}>
+                                    <div className="glossy-panel" style={{ padding: '16px 20px', position: 'relative', zIndex: 10, ...(user ? { border: '1px solid rgba(56,189,248,0.4)', boxShadow: '0 50px 70px -20px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 60px rgba(255,255,255,0.03), 0 0 15px rgba(56,189,248,0.15)', transition: 'border 0.8s ease, box-shadow 0.8s ease' } : {}) }}>
+                                        {/* Üst başlık */}
+                                        <h3 style={{ fontSize: 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                            <User style={{ width: 18, height: 18, color: user ? '#fbbf24' : '#38bdf8' }} /> Hesap Paneli
+                                        </h3>
+
+                                        {!user ? (
+                                            <>
+                                                {/* Sekmeler */}
+                                                <div style={{ display: 'flex', marginBottom: 12, borderRadius: 10, overflow: 'hidden', gap: 8 }}>
+                                                    <button
+                                                        onClick={() => setLoginTab('guest')}
+                                                        style={{
+                                                            flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                                                            textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                                            borderRadius: 8,
+                                                            background: loginTab === 'guest' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'rgba(0,0,0,0.25)',
+                                                            color: loginTab === 'guest' ? '#7dd3fc' : 'rgba(255,255,255,0.35)',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: loginTab === 'guest' ? '0 0 16px rgba(56,189,248,0.3), 0 0 4px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                                                        }}
+                                                    >👤 Misafir</button>
+                                                    <button
+                                                        onClick={() => setLoginTab('member')}
+                                                        style={{
+                                                            flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                                                            textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                                            borderRadius: 8,
+                                                            background: loginTab === 'member' ? 'linear-gradient(180deg, rgba(239,68,68,0.3), rgba(185,28,28,0.4))' : 'rgba(0,0,0,0.25)',
+                                                            color: loginTab === 'member' ? '#fca5a5' : 'rgba(255,255,255,0.35)',
+                                                            transition: 'all 0.3s ease',
+                                                            boxShadow: loginTab === 'member' ? '0 0 16px rgba(239,68,68,0.3), 0 0 4px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                                                        }}
+                                                    >⭐ Üye Giriş</button>
+                                                </div>
+
+                                                {loginTab === 'guest' ? (
+                                                    <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                        <div>
+                                                            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
+                                                            <input
+                                                                type="text"
+                                                                value={guestNick}
+                                                                onChange={(e) => setGuestNick(e.target.value)}
+                                                                className="input-inset"
+                                                                style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
+                                                                placeholder="Nickname girin..."
+                                                                autoComplete="off"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                                {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
+                                                                    <button key={g} type="button" onClick={() => setGuestGender(g)} style={{
+                                                                        flex: 1, padding: '7px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
+                                                                        background: guestGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
+                                                                        color: guestGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
+                                                                        boxShadow: guestGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                                                    }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {/* Cinsiyet seçimine göre avatarlar otomatik açılır */}
+                                                        <div style={{
+                                                            maxHeight: guestGender ? 200 : 0,
+                                                            opacity: guestGender ? 1 : 0,
+                                                            overflow: 'hidden',
+                                                            transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                            marginTop: guestGender ? 4 : 0,
+                                                        }}>
+                                                            <div key={guestGender} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                                {(guestGender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
+                                                                    guestGender === 'Kadın' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
+                                                                        ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
+                                                                ).map((av) => (
+                                                                    <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{
+                                                                        padding: 3, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                        background: 'transparent', transition: 'all 0.25s ease',
+                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                        opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
+                                                                    }}>
+                                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                        <img src={av} alt="Avatar" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {guestError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{guestError}</p>}
+                                                        <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
+                                                            <LogIn style={{ width: 14, height: 14 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
+                                                        </button>
+                                                    </form>
+                                                ) : (
+                                                    <div style={{ position: 'relative', overflow: 'hidden' }}>
+                                                        {/* Login / Register geçiş container */}
+                                                        <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(-100%)' : 'translateX(0)', opacity: showRegister ? 0 : 1, maxHeight: showRegister ? 0 : 600, overflow: 'hidden' }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                                                <div>
+                                                                    <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı veya E-posta</label>
+                                                                    <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="off" />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
+                                                                    <input type="password" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="new-password" />
+                                                                </div>
+                                                                {/* Üye giriş: Avatar Seçimi — toggle ile açılır/kapanır */}
+                                                                <button type="button" onClick={() => setShowMemberAvatars(!showMemberAvatars)} style={{
+                                                                    width: '100%', padding: '8px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+                                                                    border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
+                                                                    background: showMemberAvatars ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
+                                                                    color: showMemberAvatars ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                                                }}>
+                                                                    {showMemberAvatars ? '▲ Kapat' : '🎭 Avatar Seç'}
+                                                                </button>
+                                                                <div style={{
+                                                                    maxHeight: showMemberAvatars ? 200 : 0, opacity: showMemberAvatars ? 1 : 0, overflow: 'hidden',
+                                                                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', marginTop: showMemberAvatars ? 6 : 0,
+                                                                }}>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                                        {[
+                                                                            '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                            '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                            '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+                                                                        ].map((av) => (
+                                                                            <button key={av} type="button" onClick={() => { setSelectedAvatar(av); setShowMemberAvatars(false); }} style={{
+                                                                                padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                                background: 'transparent', transition: 'all 0.25s ease',
+                                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                transform: selectedAvatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                                opacity: selectedAvatar && selectedAvatar !== av ? 0.5 : 1,
+                                                                            }}>
+                                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                                <img src={av} alt="Avatar" style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                {memberError && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600 }}>{memberError}</p>}
+                                                                <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={memberLoading}>
+                                                                    <LogIn style={{ width: 14, height: 14 }} /> {memberLoading ? 'Giriş yapılıyor...' : 'Üye Girişi'}
+                                                                </button>
+                                                                <button type="button" onClick={() => setShowRegister(true)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '4px 0', transition: 'color 0.2s' }}>
+                                                                    Hesabın yok mu? <span style={{ color: '#fca5a5', fontWeight: 700 }}>Üye Ol</span>
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Register Form */}
+                                                        <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(0)' : 'translateX(100%)', opacity: showRegister ? 1 : 0, maxHeight: showRegister ? 800 : 0, overflow: 'hidden', position: showRegister ? 'relative' : 'absolute', top: 0, left: 0, right: 0 }}>
+                                                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                                <h4 style={{ fontSize: 12, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', marginBottom: 4 }}>✨ Yeni Üyelik</h4>
+                                                                <div>
+                                                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Kullanıcı Adı</label>
+                                                                    <input type="text" value={regUsername} onChange={(e) => setRegUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Kullanıcı adınız" autoComplete="off" />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>E-posta</label>
+                                                                    <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="off" />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre</label>
+                                                                    <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 6 karakter" autoComplete="new-password" />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre Tekrar</label>
+                                                                    <input type="password" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Şifrenizi tekrarlayın" autoComplete="new-password" />
+                                                                </div>
+                                                                <div>
+                                                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                                                    <div style={{ display: 'flex', gap: 6 }}>
+                                                                        {(['Erkek', 'Kadın', 'Belirsiz'] as const).map(g => (
+                                                                            <button key={g} type="button" onClick={() => setRegGender(g)} style={{
+                                                                                flex: 1, padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease',
+                                                                                background: regGender === g ? (g === 'Erkek' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : g === 'Kadın' ? 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))' : 'linear-gradient(180deg, rgba(148,163,184,0.3), rgba(71,85,105,0.4))') : 'rgba(0,0,0,0.2)',
+                                                                                color: regGender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
+                                                                                boxShadow: regGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                                                            }}>{g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}</button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', padding: '4px 0' }}>
+                                                                    <input type="checkbox" checked={regAcceptTerms} onChange={(e) => setRegAcceptTerms(e.target.checked)} style={{ accentColor: '#ef4444', width: 16, height: 16, cursor: 'pointer' }} />
+                                                                    <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 600 }}><span onClick={(e) => { e.preventDefault(); setShowTermsModal(true); }} style={{ color: '#fca5a5', textDecoration: 'underline', cursor: 'pointer' }}>Üyelik Sözleşmesini</span> okudum ve kabul ediyorum</span>
+                                                                </label>
+                                                                {regError && <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{regError}</p>}
+                                                                <button onClick={handleRegister} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={regLoading}>
+                                                                    <Sparkles style={{ width: 14, height: 14 }} /> {regLoading ? 'Kayıt yapılıyor...' : 'Üye Ol'}
+                                                                </button>
+                                                                <button type="button" onClick={() => setShowRegister(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '2px 0', transition: 'color 0.2s' }}>
+                                                                    ← Giriş ekranına dön
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div style={{ padding: '4px 0' }}>
+                                                {/* Profil Header */}
+                                                <div style={{ textAlign: 'center', marginBottom: 10 }}>
+                                                    <div style={{ position: 'relative', display: 'inline-block', marginBottom: 6 }}>
+                                                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                        <img src={user.avatar} style={{ width: 80, height: 80, borderRadius: '50%', border: '3px solid rgba(56,189,248,0.4)', boxShadow: '0 0 20px rgba(56,189,248,0.2), 0 10px 25px rgba(0,0,0,0.5)', background: 'linear-gradient(135deg, #1e293b, #0f172a)', objectFit: 'cover' }} alt="Avatar" />
+                                                    </div>
+                                                    <h4 style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>{user.username}</h4>
+                                                    <p style={{ fontSize: 11, fontWeight: 700, color: user.isMember ? '#fbbf24' : '#38bdf8', marginTop: 4, textTransform: 'uppercase', letterSpacing: 2 }}>{user.isMember ? (user.role === 'owner' ? '👑 Owner' : user.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}</p>
+                                                </div>
+
+                                                {/* Tab Navigation — üyeler için */}
+                                                {user.isMember && (
+                                                    <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '3px', background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
+                                                        {([['profil', '👤'], ['ayarlar', '⚙️'], ['mesajlar', '💬']] as const).map(([tab, icon]) => (
+                                                            <button key={tab} onClick={() => setProfileTab(tab as any)} style={{
+                                                                flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer',
+                                                                textTransform: 'uppercase', letterSpacing: 1, transition: 'all 0.25s ease',
+                                                                background: profileTab === tab ? 'rgba(56,189,248,0.2)' : 'transparent',
+                                                                color: profileTab === tab ? '#7dd3fc' : 'rgba(255,255,255,0.4)',
+                                                            }}>{icon} {tab === 'profil' ? 'Profil' : tab === 'ayarlar' ? 'Ayarlar' : 'Mesajlar'}</button>
+                                                        ))}
+                                                    </div>
+                                                )}
+
+                                                {/* Profil Tab */}
+                                                {profileTab === 'profil' && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                        {/* Avatar Değiştir */}
+                                                        {user.isMember && (
+                                                            <div>
+                                                                <button type="button" onClick={() => setShowAvatarPicker(!showAvatarPicker)} style={{
+                                                                    width: '100%', padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+                                                                    border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8, cursor: 'pointer',
+                                                                    background: showAvatarPicker ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
+                                                                    color: showAvatarPicker ? '#c4b5fd' : 'rgba(255,255,255,0.4)', transition: 'all 0.3s ease',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                                                }}>
+                                                                    🎨 {showAvatarPicker ? 'Kapat' : 'Avatar Değiştir'}
+                                                                </button>
+                                                                <div style={{ maxHeight: showAvatarPicker ? 200 : 0, opacity: showAvatarPicker ? 1 : 0, overflow: 'hidden', transition: 'all 0.4s ease', marginTop: showAvatarPicker ? 8 : 0 }}>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
+                                                                        {(user.gender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
+                                                                            user.gender === 'Kadın' || user.gender === 'Kadin' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
+                                                                                user.gender === 'Belirsiz' ? ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] :
+                                                                                    ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                                        '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                                        '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
+                                                                        ).map((av) => (
+                                                                            <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); }} style={{
+                                                                                padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                                                                background: 'transparent', transition: 'all 0.25s ease',
+                                                                                transform: user.avatar === av ? 'scale(1.15)' : 'scale(1)',
+                                                                                opacity: user.avatar !== av ? 0.6 : 1,
+                                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                            }}>
+                                                                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                                                                <img src={av} alt="Avatar" style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                        <button onClick={() => goRoom()} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
+                                                            Odaya Gir
+                                                        </button>
+                                                        <button onClick={handleLogout} className="btn-3d btn-3d-logout" style={{ width: '100%', padding: '10px 0', fontSize: 11 }}>
+                                                            Çıkış Yap
+                                                        </button>
+                                                    </div>
+                                                )}
+
+                                                {/* Ayarlar Tab */}
+                                                {profileTab === 'ayarlar' && user.isMember && (
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                        <div>
+                                                            <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Kullanıcı Adı</label>
+                                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                                <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder={user.username} />
+                                                                <button onClick={() => editName.trim() && handleProfileUpdate('displayName', editName.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>E-posta</label>
+                                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                                <input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="yeni@mail.com" />
+                                                                <button onClick={() => editEmail.trim() && handleProfileUpdate('email', editEmail.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Yeni Şifre</label>
+                                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                                <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="••••••••" />
+                                                                <button onClick={() => editPassword.trim() && handleProfileUpdate('password', editPassword.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
+                                                            </div>
+                                                        </div>
+                                                        {profileMsg && <p style={{ fontSize: 11, fontWeight: 600, color: profileMsg.includes('✅') ? '#34d399' : '#ef4444', textAlign: 'center' }}>{profileMsg}</p>}
+                                                    </div>
+                                                )}
+
+                                                {/* Mesajlar Tab */}
+                                                {profileTab === 'mesajlar' && user.isMember && (
+                                                    <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                                                        <div style={{ fontSize: 32, marginBottom: 8 }}>💬</div>
+                                                        <p style={{ fontSize: 12, color: '#94a3b8', fontWeight: 600 }}>Henüz mesajınız yok</p>
+                                                        <p style={{ fontSize: 10, color: '#64748b', marginTop: 4 }}>Odada birileri size mesaj gönderdiğinde burada görünecek.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
-                            </div>
+                            </div> {/* content-fade-3 kapanışı */}
 
                             {/* ODA SATIN AL */}
-                            <div className="glossy-panel content-fade content-fade-4" style={{ padding: '24px 32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(251, 191, 36, 0.4)' }}>
+                            <div className="glossy-panel" style={{ padding: '24px 32px', position: 'relative', overflow: 'hidden', border: '1px solid rgba(251, 191, 36, 0.4)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.2s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both', transformOrigin: 'top center' }}>
                                 <div style={{ position: 'absolute', top: 0, right: 0, width: 192, height: 192, background: 'rgba(251, 191, 36, 0.2)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
 
                                 <div style={{ position: 'relative', zIndex: 10 }}>
@@ -2193,7 +2271,7 @@ export default function HomePage() {
                             </div>
 
                             {/* CANLI DESTEK */}
-                            <div className="glossy-panel content-fade content-fade-5" style={{ padding: '24px 32px', textAlign: 'center', border: '1px solid rgba(52, 211, 153, 0.2)' }}>
+                            <div className="glossy-panel" style={{ padding: '24px 32px', textAlign: 'center', border: '1px solid rgba(52, 211, 153, 0.2)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.4s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both', transformOrigin: 'top center' }}>
                                 <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(180deg, #34d399, #059669)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 10px 20px rgba(16,185,129,0.3)' }}>
                                     <Headset style={{ width: 28, height: 28, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
                                 </div>
