@@ -58,11 +58,7 @@ export function UserInfoModal({ user, onClose }: UserInfoModalProps) {
                             fontSize: '22px', boxShadow: '0 0 20px rgba(99,102,241,0.3)',
                             overflow: 'hidden',
                         }}>
-                            {user.avatar ? (
-                                <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                            ) : (
-                                <span>👤</span>
-                            )}
+                            {user.avatar ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : <span style={{ fontSize: 22, fontWeight: 900, color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase' }}>{(user.displayName || user.username || '?').charAt(0)}</span>}
                         </div>
                         <div>
                             <div style={{

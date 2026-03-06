@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface GiftItem {
     id: string;
@@ -70,7 +71,7 @@ export function GiftPanel({ isOpen, onClose, onSendGift, socket, targetUserName,
         setTimeout(() => setSending(null), 800);
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={onClose}>
             {/* Backdrop */}
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
@@ -248,6 +249,7 @@ export function GiftPanel({ isOpen, onClose, onSendGift, socket, targetUserName,
                     to { opacity: 1; transform: scale(1) translateY(0); }
                 }
             `}</style>
-        </div>
+        </div>,
+        document.body
     );
 }

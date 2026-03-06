@@ -220,13 +220,13 @@ export function SettingsModal({
 
     const selectStyle: React.CSSProperties = {
         width: '100%',
-        background: 'rgba(0,0,0,0.4)',
+        background: 'rgba(30,41,59,0.5)',
         color: '#e8dcc8',
         fontSize: 12,
         fontWeight: 500,
         borderRadius: 8,
         padding: '8px 32px 8px 32px',
-        border: '1px solid rgba(123,159,239,0.1)',
+        border: '1px solid rgba(255,255,255,0.1)',
         outline: 'none',
         appearance: 'none' as any,
         cursor: 'pointer',
@@ -501,8 +501,8 @@ export function SettingsModal({
                             {/* ═══ Live Preview ═══ */}
                             <div style={{
                                 ...sectionStyle,
-                                background: 'rgba(0,0,0,0.3)',
-                                border: '1px solid rgba(123,159,239,0.1)',
+                                background: 'rgba(30,41,59,0.4)',
+                                border: '1px solid rgba(255,255,255,0.08)',
                             }}>
                                 <div style={{ ...labelStyle, color: '#6b7280', fontSize: 9 }}>
                                     ÖN İZLEME

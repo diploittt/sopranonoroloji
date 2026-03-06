@@ -8,6 +8,7 @@ const MALE_AVATARS = [
     '/avatars/male_1.png',
     '/avatars/male_2.png',
     '/avatars/male_3.png',
+    '/avatars/male_4.png',
 ];
 
 const FEMALE_AVATARS = [

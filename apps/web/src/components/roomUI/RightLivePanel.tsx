@@ -31,6 +31,7 @@ interface RightLivePanelProps {
     userLevel?: number;
     tvBroadcastLevel?: number;
     onSetTvVideo?: (url: string | null) => void;
+    isEmbed?: boolean;
 }
 
 export function RightLivePanel({
@@ -44,7 +45,8 @@ export function RightLivePanel({
     tvVolume = 0.7,
     userLevel = 0,
     tvBroadcastLevel = 0,
-    onSetTvVideo
+    onSetTvVideo,
+    isEmbed
 }: RightLivePanelProps) {
     const tvVideoRef = useRef<HTMLVideoElement>(null);
     const [collapsed, setCollapsed] = useState(false);
@@ -160,7 +162,7 @@ export function RightLivePanel({
     //  EXPANDED STATE — full panel
     // ═══════════════════════════════════════
     return (
-        <aside className="right-live-panel sidebar-right live-panel w-80 flex-shrink-0 bg-[#0C101A] border-l border-white/5 flex flex-col z-20 items-center pt-8 overflow-y-auto custom-scrollbar pb-4 relative transition-all duration-300 shadow-[-15px_0_50px_rgba(0,0,0,0.8)]">
+        <aside className={`right-live-panel sidebar-right live-panel ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 bg-[#0C101A] border-l border-white/5 flex flex-col z-20 items-center pt-8 overflow-y-auto custom-scrollbar pb-4 relative transition-all duration-300 shadow-[-15px_0_50px_rgba(0,0,0,0.8)]`}>
 
             {/* --- LIVE BADGE + CLOSE BUTTON --- */}
             <div className="mb-4 flex items-center gap-3 w-full px-6">

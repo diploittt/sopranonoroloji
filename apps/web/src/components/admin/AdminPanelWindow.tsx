@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useAdminPanelStore, type AdminTabId } from '@/stores/useAdminPanelStore';
 import { X, Minus, Square, Users, Home, Ban, MessageSquare, FileText, Settings, GripHorizontal, Globe, Info } from 'lucide-react';
 import { User, RoomState } from '@/types';
@@ -171,7 +172,7 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
 
     if (!isOpen) return null;
 
-    return (
+    const content = (
         <div
             ref={windowRef}
             className={`fixed z-[9999] flex flex-col overflow-hidden
@@ -183,10 +184,13 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                 transform: `translate(${posRef.current.x}px, ${posRef.current.y}px)`,
                 width: sizeRef.current.width,
                 height: sizeRef.current.height,
-                background: 'linear-gradient(145deg, rgba(10,14,24,0.98) 0%, rgba(6,8,16,0.99) 100%)',
-                boxShadow: '0 32px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(123,159,239,0.1), 0 0 60px rgba(123,159,239,0.04)',
+                background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.07) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                boxShadow: '0 40px 80px -15px rgba(0,0,0,0.7), 0 16px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.02)',
                 willChange: 'transform',
-                border: '1px solid rgba(123,159,239,0.08)',
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderTop: '1px solid rgba(255,255,255,0.30)',
             }}
             onMouseDown={handleDragStart}
             onContextMenu={(e) => {
@@ -197,26 +201,26 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
             {/* ── Premium Window Header ── */}
             <div className="window-drag-handle relative h-12 flex items-center justify-between px-4 cursor-move select-none shrink-0"
                 style={{
-                    background: 'linear-gradient(180deg, rgba(200,60,60,0.08) 0%, rgba(160,40,40,0.04) 50%, rgba(15,18,28,0.6) 100%)',
-                    borderBottom: '1px solid rgba(200,60,60,0.10)',
+                    background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 50%, transparent 100%)',
+                    borderBottom: '1px solid rgba(255,255,255,0.08)',
                 }}
                 onDoubleClick={toggleMaximize}
             >
                 {/* Subtle top edge highlight */}
-                <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(220,80,80,0.20) 30%, rgba(240,100,100,0.30) 50%, rgba(220,80,80,0.20) 70%, transparent 100%)' }} />
+                <div className="absolute top-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 30%, rgba(255,255,255,0.20) 50%, rgba(255,255,255,0.15) 70%, transparent 100%)' }} />
                 {/* Bottom accent glow line */}
-                <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(200,60,60,0.35) 25%, rgba(240,100,100,0.50) 50%, rgba(200,60,60,0.35) 75%, transparent 100%)', boxShadow: '0 0 8px rgba(200,60,60,0.12), 0 0 20px rgba(200,60,60,0.06)' }} />
+                <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 0%, rgba(56,189,248,0.25) 25%, rgba(251,191,36,0.20) 50%, rgba(56,189,248,0.25) 75%, transparent 100%)', boxShadow: '0 0 8px rgba(56,189,248,0.06)' }} />
 
                 <div className="flex items-center gap-3">
-                    <div className="relative p-2 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(123,159,239,0.15), rgba(90,127,212,0.08))', border: '1px solid rgba(123,159,239,0.15)' }}>
-                        <Settings className="w-4 h-4 text-[#a3bfff]" />
-                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-pulse" style={{ background: 'linear-gradient(135deg, #a3bfff, #7b9fef)', boxShadow: '0 0 8px rgba(123,159,239,0.5)' }} />
+                    <div className="relative p-2 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.12), rgba(56,189,248,0.05))', border: '1px solid rgba(255,255,255,0.10)' }}>
+                        <Settings className="w-4 h-4 text-[#7dd3fc]" />
+                        <div className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full animate-pulse" style={{ background: 'linear-gradient(135deg, #7dd3fc, #38bdf8)', boxShadow: '0 0 8px rgba(56,189,248,0.5)' }} />
                     </div>
                     <div className="flex flex-col">
-                        <span className="text-[14px] font-black tracking-wide leading-tight" style={{ backgroundImage: 'linear-gradient(135deg, #a3bfff 0%, #7b9fef 40%, #5a7fd4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 6px rgba(123,159,239,0.3))' }}>Soprano</span>
-                        <span className="text-[8px] font-bold text-[#7b9fef]/50 tracking-[0.2em] uppercase" style={{ marginTop: '-1px' }}>Yönetim Paneli</span>
+                        <span className="text-[14px] font-black tracking-wide leading-tight" style={{ backgroundImage: 'linear-gradient(135deg, #e2e8f0 0%, #94a3b8 40%, #64748b 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.15))' }}>Soprano</span>
+                        <span className="text-[8px] font-bold text-white/30 tracking-[0.2em] uppercase" style={{ marginTop: '-1px' }}>Yönetim Paneli</span>
                     </div>
-                    <span className="text-[8px] font-bold text-[#7b9fef]/60 px-2 py-0.5 rounded-full ml-1" style={{ background: 'linear-gradient(135deg, rgba(123,159,239,0.1), rgba(90,127,212,0.05))', border: '1px solid rgba(123,159,239,0.12)' }}>v3.0</span>
+                    <span className="text-[8px] font-bold text-white/40 px-2 py-0.5 rounded-full ml-1" style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)' }}>v3.0</span>
                 </div>
                 <div className="flex items-center gap-1">
                     <button className="p-1.5 hover:bg-white/8 rounded-lg text-gray-500 hover:text-gray-300 transition-all duration-200" onClick={() => closePanel()}>
@@ -241,15 +245,15 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                 {/* ── Premium Sidebar ── */}
                 <div className="w-[200px] flex flex-col py-4 px-3 gap-1 overflow-y-auto shrink-0 relative"
                     style={{
-                        background: 'linear-gradient(180deg, rgba(123,159,239,0.06) 0%, rgba(90,127,212,0.03) 50%, rgba(6,8,14,0.5) 100%)',
-                        borderRight: '1px solid rgba(123,159,239,0.10)',
+                        background: 'linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 50%, transparent 100%)',
+                        borderRight: '1px solid rgba(255,255,255,0.08)',
                     }}
                 >
                     {/* Right edge glow line */}
-                    <div className="absolute top-0 right-0 bottom-0 w-[1px]" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(123,159,239,0.25) 30%, rgba(163,191,255,0.35) 50%, rgba(123,159,239,0.25) 70%, transparent 100%)', boxShadow: '0 0 6px rgba(123,159,239,0.10)' }} />
+                    <div className="absolute top-0 right-0 bottom-0 w-[1px]" style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.18) 50%, rgba(255,255,255,0.12) 70%, transparent 100%)' }} />
                     {/* Sidebar section label */}
                     <div className="px-3 pb-2 mb-1">
-                        <div className="text-[8px] font-black uppercase tracking-[0.2em] text-[#7b9fef]/30">Menü</div>
+                        <div className="text-[8px] font-black uppercase tracking-[0.2em] text-white/25">Menü</div>
                     </div>
 
                     {authorizedTabs.map(tab => (
@@ -267,38 +271,38 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                             {/* Active tab glow */}
                             {activeTab === tab.id && (
                                 <>
-                                    <div className="absolute inset-0 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(123,159,239,0.12), rgba(90,127,212,0.04))' }} />
-                                    <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full" style={{ background: 'linear-gradient(180deg, #a3bfff, #5a7fd4)', boxShadow: '0 0 10px rgba(123,159,239,0.4)' }} />
+                                    <div className="absolute inset-0 rounded-xl" style={{ background: 'linear-gradient(135deg, rgba(56,189,248,0.10), rgba(56,189,248,0.03))' }} />
+                                    <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full" style={{ background: 'linear-gradient(180deg, #7dd3fc, #38bdf8)', boxShadow: '0 0 10px rgba(56,189,248,0.3)' }} />
                                 </>
                             )}
                             {/* Hover background */}
                             {activeTab !== tab.id && (
                                 <div className="absolute inset-0 rounded-xl bg-white/0 group-hover:bg-white/[0.02] transition-colors duration-200" />
                             )}
-                            <tab.icon className={`w-4 h-4 relative z-10 transition-colors duration-200 ${activeTab === tab.id ? 'text-[#a3bfff]' : 'text-gray-600 group-hover:text-gray-400'}`} />
+                            <tab.icon className={`w-4 h-4 relative z-10 transition-colors duration-200 ${activeTab === tab.id ? 'text-[#7dd3fc]' : 'text-gray-500 group-hover:text-gray-300'}`} />
                             <span className="relative z-10">{tab.label}</span>
                         </button>
                     ))}
 
                     {/* Sidebar footer */}
                     <div className="flex-1" />
-                    <div className="px-2 pt-3 mt-2" style={{ borderTop: '1px solid rgba(123,159,239,0.05)' }}>
+                    <div className="px-2 pt-3 mt-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
                         <div className="flex items-center gap-2 px-2 py-2">
-                            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, rgba(123,159,239,0.15), rgba(90,127,212,0.08))', border: '1px solid rgba(123,159,239,0.12)' }}>
-                                <Settings className="w-3 h-3 text-[#7b9fef]/50" />
+                            <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                <Settings className="w-3 h-3 text-white/30" />
                             </div>
                             <div>
-                                <div className="text-[9px] font-bold text-gray-600">SopranoChat</div>
-                                <div className="text-[7px] text-[#7b9fef]/30 font-medium tracking-wider">ADMIN PANEL</div>
+                                <div className="text-[9px] font-bold text-white/50">SopranoChat</div>
+                                <div className="text-[7px] text-white/20 font-medium tracking-wider">ADMIN PANEL</div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {/* ── Content Area ── */}
-                <div className="flex-1 relative overflow-hidden flex flex-col" style={{ background: 'linear-gradient(180deg, rgba(12,15,24,0.3) 0%, transparent 40%)' }}>
+                <div className="flex-1 relative overflow-hidden flex flex-col" style={{ background: 'rgba(255,255,255,0.01)' }}>
                     {/* Top gold accent line */}
-                    <div className="absolute inset-x-0 top-0 h-[1px] z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(123,159,239,0.08), transparent)' }} />
+                    <div className="absolute inset-x-0 top-0 h-[1px] z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)' }} />
 
                     {activeTab === 'users' && <UsersTab socket={socket} users={users} currentUser={currentUser} />}
                     {activeTab === 'rooms' && <RoomsTab socket={socket} currentUser={currentUser} systemSettings={systemSettings} />}
@@ -323,4 +327,6 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
             )}
         </div>
     );
+
+    return createPortal(content, document.body);
 }

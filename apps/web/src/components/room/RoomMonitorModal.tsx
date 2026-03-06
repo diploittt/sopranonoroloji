@@ -523,20 +523,17 @@ export function RoomMonitorModal({
                                                                 onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                                                                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                                                             >
-                                                                {/* Avatar */}
+                                                                {/* Avatar — baş harf placeholder */}
                                                                 <div style={{
                                                                     width: 22, height: 22, borderRadius: '50%',
-                                                                    overflow: 'hidden', flexShrink: 0,
+                                                                    flexShrink: 0,
                                                                     border: `1.5px solid ${color}40`,
+                                                                    background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    fontSize: 9, fontWeight: 800, color: `${color}`, textTransform: 'uppercase',
+                                                                    overflow: 'hidden',
                                                                 }}>
-                                                                    <img
-                                                                        src={user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`}
-                                                                        alt=""
-                                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                                                        onError={(e) => {
-                                                                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`;
-                                                                        }}
-                                                                    />
+                                                                    {user.avatar ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}
                                                                 </div>
                                                                 {/* Name */}
                                                                 <span className="text-xs truncate flex-1" style={{ color }}>

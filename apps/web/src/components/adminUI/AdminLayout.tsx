@@ -94,7 +94,7 @@ export default function AdminLayout() {
 
                     <div className="p-6 border-t border-white/5 bg-[#08090c]/40">
                         <div className="flex items-center gap-3">
-                            <img src="https://i.pravatar.cc/150?img=11" className="w-10 h-10 rounded-full border-2 border-amber-500/50" />
+                            <div className="w-10 h-10 rounded-full border-2 border-amber-500/50 flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 16, fontWeight: 900, color: 'rgba(245,158,11,0.8)' }}>S</div>
                             <div>
                                 <div className="text-sm font-bold text-white">Soprano Owner</div>
                                 <div className="text-[10px] text-amber-500">Root Administrator</div>
@@ -213,7 +213,7 @@ export default function AdminLayout() {
                                     </div>
                                 </div>
                                 <div className="col-span-2 flex items-center gap-2">
-                                    <img src="https://i.pravatar.cc/150?img=3" className="w-5 h-5 rounded-full" />
+                                    <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 9, fontWeight: 900, color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.08)' }}>A</div>
                                     <span className="text-sm text-gray-300">Ahmet Demir</span>
                                 </div>
                                 <div className="col-span-2 text-xs text-yellow-500 font-bold">3 Gün Kaldı</div>

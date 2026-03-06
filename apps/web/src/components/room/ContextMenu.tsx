@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 export interface ContextMenuItem {
     id: string;
@@ -66,7 +67,7 @@ export default function ContextMenu({
         e.stopPropagation();
     };
 
-    return (
+    return createPortal(
         <>
             {/* Invisible overlay */}
             <div
@@ -81,10 +82,13 @@ export default function ContextMenu({
                 style={{
                     left: adjustedPos.x,
                     top: adjustedPos.y,
-                    background: 'linear-gradient(160deg, rgba(10, 15, 28, 0.98) 0%, rgba(7, 11, 20, 0.99) 100%)',
-                    border: '1px solid rgba(123, 159, 239, 0.15)',
-                    borderRadius: '14px',
-                    boxShadow: '0 12px 48px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0,0,0,0.3), 0 0 30px rgba(123, 159, 239, 0.04), inset 0 1px 0 rgba(123, 159, 239, 0.06)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.92) 0%, rgba(15,23,42,0.88) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 50px -10px rgba(0,0,0,0.7), 0 8px 24px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.02)',
                     animation: 'ctxMenuIn 0.15s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}
                 onClick={handleMenuClick}
@@ -93,8 +97,8 @@ export default function ContextMenu({
                 {/* Accent line */}
                 <div style={{
                     height: '2px',
-                    background: 'linear-gradient(90deg, transparent, #7b9fef, #a3bfff, transparent)',
-                    opacity: 0.6,
+                    background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(251,191,36,0.3), transparent)',
+                    opacity: 0.7,
                 }} />
 
                 <div style={{ padding: '6px' }}>
@@ -132,7 +136,7 @@ export default function ContextMenu({
                                         border: 'none',
                                         borderRadius: '8px',
                                         background: 'transparent',
-                                        color: '#c8cdd3',
+                                        color: '#c8dde8',
                                         fontSize: '13px',
                                         fontWeight: 500,
                                         cursor: 'pointer',
@@ -140,12 +144,12 @@ export default function ContextMenu({
                                         textAlign: 'left',
                                     }}
                                     onMouseOver={(e) => {
-                                        e.currentTarget.style.background = 'rgba(123, 159, 239, 0.08)';
-                                        e.currentTarget.style.color = '#a3bfff';
+                                        e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                        e.currentTarget.style.color = '#fff';
                                     }}
                                     onMouseOut={(e) => {
                                         e.currentTarget.style.background = 'transparent';
-                                        e.currentTarget.style.color = '#c8cdd3';
+                                        e.currentTarget.style.color = '#e2e8f0';
                                     }}
                                 >
                                     {item.icon && (
@@ -172,7 +176,7 @@ export default function ContextMenu({
                                             marginTop: '2px',
                                             marginLeft: '12px',
                                             marginRight: '6px',
-                                            borderLeft: '2px solid rgba(123, 159, 239, 0.25)',
+                                            borderLeft: '2px solid rgba(255,255,255,0.15)',
                                             paddingLeft: '8px',
                                             animation: 'ctxSubIn 0.12s ease-out',
                                         }}
@@ -194,7 +198,7 @@ export default function ContextMenu({
                                                     border: 'none',
                                                     borderRadius: '7px',
                                                     background: 'transparent',
-                                                    color: '#c8cdd3',
+                                                    color: '#e2e8f0',
                                                     fontSize: '12px',
                                                     fontWeight: 500,
                                                     cursor: 'pointer',
@@ -202,12 +206,12 @@ export default function ContextMenu({
                                                     textAlign: 'left',
                                                 }}
                                                 onMouseOver={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(123, 159, 239, 0.08)';
-                                                    e.currentTarget.style.color = '#a3bfff';
+                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+                                                    e.currentTarget.style.color = '#fff';
                                                 }}
                                                 onMouseOut={(e) => {
                                                     e.currentTarget.style.background = 'transparent';
-                                                    e.currentTarget.style.color = '#c8cdd3';
+                                                    e.currentTarget.style.color = '#e2e8f0';
                                                 }}
                                             >
                                                 {subItem.icon && (
@@ -229,15 +233,16 @@ export default function ContextMenu({
                                             </button>
                                         ))}
                                     </div>
-                                )}
+                                )
+                                }
                             </div>
                         );
                     })}
                 </div>
-            </div>
+            </div >
 
             {/* Animations */}
-            <style>{`
+            < style > {`
                 @keyframes ctxMenuIn {
                     from { opacity: 0; transform: scale(0.95) translateY(-4px); }
                     to { opacity: 1; transform: scale(1) translateY(0); }
@@ -246,7 +251,8 @@ export default function ContextMenu({
                     from { opacity: 0; max-height: 0; }
                     to { opacity: 1; max-height: 300px; }
                 }
-            `}</style>
-        </>
+            `}</style >
+        </>,
+        document.body
     );
 }

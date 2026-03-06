@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ChangeNameModalProps {
     isOpen: boolean;
@@ -79,7 +80,7 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
         ? {}
         : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
-    return (
+    return createPortal(
         <>
             <div className="fixed inset-0 z-[10000] bg-black/40" onClick={onClose} />
             <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4" style={centered ? {} : { display: 'block' }}>
@@ -88,15 +89,18 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                     className="w-full max-w-md p-6 animate-pure-fade"
                     style={{
                         ...modalStyle,
-                        background: 'linear-gradient(160deg, #14161f 0%, #0d0f17 100%)',
-                        border: '1px solid rgba(99, 102, 241, 0.15)',
+                        background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                        backdropFilter: 'blur(24px)',
+                        WebkitBackdropFilter: 'blur(24px)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderTop: '1px solid rgba(255,255,255,0.30)',
                         borderRadius: '18px',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3)',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.02)',
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Accent */}
-                    <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7, borderRadius: '18px 18px 0 0', marginTop: '-1px' }} />
+                    <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(251,191,36,0.3), transparent)', opacity: 0.7, borderRadius: '18px 18px 0 0', marginTop: '-1px' }} />
 
                     {/* Header - Draggable */}
                     <div
@@ -125,23 +129,24 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                                 onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
                                 maxLength={20}
                                 placeholder="Yeni isminizi yazın..."
-                                className="w-full text-white text-sm rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none transition-colors placeholder:text-gray-600"
-                                style={{ background: '#10121b' }}
+                                className="w-full text-white text-sm rounded-xl px-4 py-3 border border-white/10 focus:border-sky-400/40 focus:outline-none transition-colors placeholder:text-gray-500"
+                                style={{ background: 'rgba(15,23,42,0.6)' }}
                             />
                             <div className="flex justify-between mt-1">
                                 {error && <span className="text-xs text-red-400">{error}</span>}
-                                <span className={`text-xs ml-auto ${name.trim().length > 18 ? 'text-amber-400' : 'text-gray-500'}`}>
+                                <span className={`text-xs ml-auto ${name.trim().length > 18 ? 'text-sky-400' : 'text-gray-500'}`}>
                                     {name.trim().length}/20
                                 </span>
                             </div>
                         </div>
                         <div className="flex gap-3 pt-2">
                             <button type="button" onClick={onClose} className="flex-1 px-4 py-3 text-sm font-medium text-gray-300 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors">İptal</button>
-                            <button type="submit" className="flex-1 px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 rounded-xl transition-all shadow-lg shadow-amber-600/20">Değiştir</button>
+                            <button type="submit" className="flex-1 px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 rounded-xl transition-all shadow-lg shadow-sky-600/20">Değiştir</button>
                         </div>
                     </form>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 }

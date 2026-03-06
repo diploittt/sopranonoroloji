@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { User } from '@/types';
+import { generateGenderAvatar } from '@/lib/avatar';
 import { RefreshCw, Search, Save, Trash2, Star, UserPlus, Shield, Eye, EyeOff, X, Sparkles, Type, Image, AlertTriangle } from 'lucide-react';
 import { useAdminPanelStore } from '@/stores/useAdminPanelStore';
 import { adminApi } from '@/lib/admin/api';
@@ -194,14 +195,9 @@ function getDefaultPermsForRole(role: string): Record<string, boolean> {
 
 // ─── Varsayılan Avatarlar (Login sayfasıyla senkron) ──────
 const DEFAULT_AVATARS = [
-    'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1527980965255-d3b416303d12?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=150&q=80',
-    'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&q=80',
+    '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
 ];
 
 interface DBUser {
@@ -248,6 +244,11 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
     const [showPassword, setShowPassword] = useState(false);
     const [showAvatarPicker, setShowAvatarPicker] = useState(false);
     const [showPerms, setShowPerms] = useState(false);
+
+    // Column resize state
+    const [leftPanelWidth, setLeftPanelWidth] = useState(42); // percentage
+    const resizingRef = React.useRef(false);
+    const splitRef = React.useRef<HTMLDivElement>(null);
 
     // Token loading
     const [tokenAmount, setTokenAmount] = useState('');
@@ -376,7 +377,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
             const cleanAvatar = (editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') && !editAvatar.startsWith('3d:'))
                 ? editAvatar
                 : undefined;
-            const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(editName)}`;
+            const defaultAvatar = generateGenderAvatar(editName);
             const payload: any = {
                 displayName: editName,
                 role: editRole,
@@ -538,10 +539,10 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
     };
 
     return (
-        <div className="admin-split" style={{ position: 'relative' }}>
+        <div className="admin-split" ref={splitRef} style={{ position: 'relative' }}>
 
             {/* ─── Sol Panel: Kullanıcı Listesi ─── */}
-            <div className="admin-split-left">
+            <div className="admin-split-left" style={{ width: `${leftPanelWidth}%`, minWidth: 220, maxWidth: '65%' }}>
                 {/* Toolbar */}
                 <div className="admin-toolbar">
                     <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
@@ -632,14 +633,10 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                         onClick={() => setSelectedId(user.id)}
                                     >
                                         <td style={{ textAlign: 'center', padding: '7px 6px' }}>
-                                            {user.avatarUrl && !user.avatarUrl.startsWith('animated:') && !user.avatarUrl.startsWith('gifnick:') ? (
-                                                <div style={{ width: 26, height: 26, borderRadius: 8, overflow: 'hidden', border: '1px solid rgba(123,159,239,0.12)', flexShrink: 0, display: 'inline-block' }}>
-                                                    <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                </div>
-                                            ) : isSpecialUser(user.role) ? (
+                                            {isSpecialUser(user.role) ? (
                                                 <Star style={{ width: 12, height: 12, fill: '#a3bfff', color: '#a3bfff' }} className="star-icon" />
                                             ) : (
-                                                <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(123,159,239,0.06)', border: '1px solid rgba(123,159,239,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, color: 'rgba(123,159,239,0.25)' }}>👤</div>
+                                                <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(123,159,239,0.06)', border: '1px solid rgba(123,159,239,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'rgba(123,159,239,0.35)', textTransform: 'uppercase', overflow: 'hidden' }}>{user.avatarUrl && !user.avatarUrl.startsWith('animated:') && !user.avatarUrl.startsWith('gifnick:') ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}</div>
                                             )}
                                         </td>
                                         <td style={{ fontWeight: 600, color: selectedId === user.id ? '#fff' : '#d1d5db' }}>
@@ -695,6 +692,59 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                 </div>
             </div>
 
+            {/* ─── Resize Divider ─── */}
+            <div
+                style={{
+                    width: 6,
+                    cursor: 'col-resize',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    position: 'relative',
+                    zIndex: 5,
+                    userSelect: 'none',
+                }}
+                onMouseDown={(e) => {
+                    e.preventDefault();
+                    resizingRef.current = true;
+                    const startX = e.clientX;
+                    const startWidth = leftPanelWidth;
+                    const container = splitRef.current;
+                    if (!container) return;
+                    const containerWidth = container.getBoundingClientRect().width;
+
+                    const onMouseMove = (ev: MouseEvent) => {
+                        if (!resizingRef.current) return;
+                        const deltaX = ev.clientX - startX;
+                        const newPercent = startWidth + (deltaX / containerWidth) * 100;
+                        setLeftPanelWidth(Math.max(20, Math.min(65, newPercent)));
+                    };
+                    const onMouseUp = () => {
+                        resizingRef.current = false;
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                        document.body.style.cursor = '';
+                        document.body.style.userSelect = '';
+                    };
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                    document.body.style.cursor = 'col-resize';
+                    document.body.style.userSelect = 'none';
+                }}
+            >
+                <div style={{
+                    width: 3,
+                    height: 40,
+                    borderRadius: 3,
+                    background: 'rgba(255,255,255,0.08)',
+                    transition: 'background 0.2s, height 0.2s',
+                }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(56,189,248,0.3)'; e.currentTarget.style.height = '60px'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.height = '40px'; }}
+                />
+            </div>
+
             {/* ─── Sağ Panel: Kullanıcı Detayı ─── */}
             <div className="admin-split-right">
                 {!selectedUser ? (
@@ -720,12 +770,12 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                 }}
                                 title="Avatar değiştirmek için tıklayın"
                             >
-                                {editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') ? (
-                                    <img src={editAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                ) : editAvatar && (editAvatar.startsWith('animated:') || editAvatar.startsWith('gifnick:')) ? (
+                                {editAvatar && (editAvatar.startsWith('animated:') || editAvatar.startsWith('gifnick:')) ? (
                                     <span style={{ fontSize: 20 }}>✨</span>
+                                ) : editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') ? (
+                                    <img src={editAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
-                                    <span style={{ fontSize: 22, opacity: 0.4 }}>👤</span>
+                                    <span style={{ fontSize: 22, fontWeight: 900, color: 'rgba(123,159,239,0.5)', textTransform: 'uppercase' }}>{(selectedUser.displayName || '?').charAt(0)}</span>
                                 )}
                             </div>
                             <div style={{ flex: 1 }}>
@@ -1084,7 +1134,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                         </label>
                                                     </div>
                                                     {animatedNickGifUrl && (
-                                                        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: 8, background: 'rgba(0,0,0,0.2)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: 8, background: 'rgba(30,41,59,0.5)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
                                                             <img
                                                                 src={animatedNickGifUrl}
                                                                 alt="GIF Önizleme"
@@ -1162,7 +1212,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                     min="1"
                                     style={{
                                         flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12,
-                                        background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(255,255,255,0.08)',
+                                        background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.08)',
                                         color: '#fff', outline: 'none',
                                     }}
                                 />

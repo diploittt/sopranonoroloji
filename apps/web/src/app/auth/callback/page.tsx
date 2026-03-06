@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthUser } from "@/lib/auth";
+import { generateGenderAvatar } from "@/lib/avatar";
 
 const AUTH_TOKEN_KEY = "soprano_auth_token";
 
@@ -23,7 +24,7 @@ function CallbackHandler() {
                 setAuthUser({
                     userId: user.sub,
                     username: user.displayName || user.username,
-                    avatar: user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`,
+                    avatar: user.avatar || generateGenderAvatar(user.displayName || user.username),
                     isMember: user.isMember ?? true,
                     role: user.role || "member",
                 });

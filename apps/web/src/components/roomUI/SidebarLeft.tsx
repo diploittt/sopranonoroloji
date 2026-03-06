@@ -1,4 +1,5 @@
 import { User } from '@/types';
+import { generateGenderAvatar } from '@/lib/avatar';
 import { ThreeDTextBanner, deserialize3DParams } from '@/components/room/ThreeDTextBanner';
 import { Hand, Mic, MicOff, Phone, ChevronUp, Crown, Shield, ShieldCheck, Music, Gem, User as UserIcon, MessageSquareX, Ban, CameraOff, Camera } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
@@ -27,7 +28,7 @@ interface SidebarLeftProps {
     [key: string]: any;
 }
 
-export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers, isMeetingRoom, speakingUsers }: SidebarLeftProps) {
+export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers, isMeetingRoom, speakingUsers, isEmbed }: SidebarLeftProps) {
     const { t } = useTranslation();
     const currentTheme = useCurrentTheme();
     const isHasbihal = currentTheme === 'hasbihal-islamic';
@@ -276,7 +277,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
 
     return (
         <aside
-            className="sidebar-left w-80 flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden"
+            className={`sidebar-left ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden`}
             onContextMenu={onEmptyContextMenu}
         >
 
@@ -298,6 +299,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     borderBottom: 'none',
                     boxShadow: 'none',
                     transition: 'all 0.3s ease',
+                    ...(isEmbed ? { display: 'none' } : {}),
                 }}
                 onMouseEnter={() => setShowLogoTooltip(true)}
                 onMouseLeave={() => setShowLogoTooltip(false)}
@@ -523,7 +525,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         const speakerAvSrc = (() => {
                             if (isGodMasterGif) return av;
                             if (!av || isAnimatedMode || isGifNickMode || is3DMode) {
-                                return `https://api.dicebear.com/9.x/avataaars/svg?seed=${speakerUser.username}`;
+                                return generateGenderAvatar(speakerUser.username);
                             }
                             return av;
                         })();
@@ -593,15 +595,16 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                     border: '1.5px solid rgba(239,68,68,0.15)',
                                                     animation: 'speakerRipple 2s ease-out 0.6s infinite',
                                                 }} />
-                                                <img
-                                                    src={speakerAvSrc}
-                                                    className="w-12 h-12 rounded-full object-cover"
+                                                <div
+                                                    className="w-12 h-12 rounded-full flex items-center justify-center"
                                                     style={{
                                                         border: '2px solid rgba(239,68,68,0.50)',
                                                         boxShadow: '0 0 12px rgba(239,68,68,0.25), 0 0 24px rgba(239,68,68,0.10)',
                                                         animation: 'speakerAvatarPulseRed 2s ease-in-out infinite',
+                                                        background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                                                        fontSize: 18, fontWeight: 900, color: 'rgba(239,68,68,0.7)', textTransform: 'uppercase' as const,
                                                     }}
-                                                />
+                                                ><img src={speakerAvSrc || generateGenderAvatar(displayName || '?')} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /></div>
                                             </div>
                                             {/* İsim ve durum */}
                                             <div className="flex-1 min-w-0">
@@ -784,10 +787,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             <>
                                                 {gifNickShowAvatar && (
                                                     <div className="relative flex-shrink-0 mr-2.5">
-                                                        <img
-                                                            src={`https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`}
-                                                            className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover border-white/15 group-hover:border-[#7b9fef]/40`}
-                                                        />
+                                                        <div className="w-10 h-10 rounded-full border-[1.5px] border-white/15 group-hover:border-[#7b9fef]/40 flex items-center justify-center transition-colors overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}><img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /></div>
                                                     </div>
                                                 )}
                                                 <div className={`${gifNickShowAvatar ? '' : 'w-full'} flex items-center ${gifNickShowAvatar ? 'justify-start' : 'justify-center'}`}>
@@ -806,25 +806,11 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                         ) : isAnimatedMode ? (
                                             /* ═══ Animated Text Nick Mode ═══ */
                                             <>
-                                                {animShowAvatar && (() => {
-                                                    // Kendi kullanıcımız mı? Eğer öyleyse localStorage'dan özel avatar kontrol et
-                                                    const isSelf = currentUser && (user.username === currentUser.username || user.displayName === currentUser.displayName);
-                                                    let avatarSrc = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`;
-                                                    if (isSelf) {
-                                                        try {
-                                                            const customAvatar = localStorage.getItem('soprano_custom_avatar');
-                                                            if (customAvatar) avatarSrc = customAvatar;
-                                                        } catch (e) { }
-                                                    }
-                                                    return (
-                                                        <div className="relative flex-shrink-0 mr-2.5">
-                                                            <img
-                                                                src={avatarSrc}
-                                                                className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover border-white/15 group-hover:border-[#7b9fef]/40`}
-                                                            />
-                                                        </div>
-                                                    );
-                                                })()}
+                                                {animShowAvatar && (
+                                                    <div className="relative flex-shrink-0 mr-2.5">
+                                                        <div className="w-10 h-10 rounded-full border-[1.5px] border-white/15 group-hover:border-[#7b9fef]/40 flex items-center justify-center transition-colors overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}><img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /></div>
+                                                    </div>
+                                                )}
                                                 <div className={`${animShowAvatar ? '' : 'w-full'} flex items-center ${animShowAvatar ? 'justify-start' : 'justify-center'} py-1 gap-1.5`}>
                                                     <span className={`animated-nick ${animClass}`} style={{ fontSize: animFontSize }}>
                                                         {animText}
@@ -845,34 +831,26 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             </>
                                         ) : (
                                             <>
-                                                {/* Avatar */}
+                                                {/* Avatar — baş harf placeholder */}
                                                 <div className="relative flex-shrink-0">
-                                                    <img
-                                                        src={(() => {
-                                                            const av = user.avatar;
-                                                            if (!av || av.startsWith('3d:') || av.startsWith('animated:') || av.startsWith('gifnick::')) {
-                                                                return `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`;
-                                                            }
-                                                            // GIF avatarlar sadece GodMaster'a özel — diğer roller için DiceBear fallback
-                                                            const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
-                                                            if (isGif && user.role?.toLowerCase() !== 'godmaster') {
-                                                                return `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.username}`;
-                                                            }
-                                                            return av;
-                                                        })()}
-                                                        className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover
+                                                    <div
+                                                        className={`w-10 h-10 rounded-full border-[1.5px] transition-colors flex items-center justify-center
                                             ${user.role?.toLowerCase() === 'godmaster'
                                                                 ? 'border-fuchsia-400/70 shadow-[0_0_8px_rgba(217,70,239,0.3)]'
                                                                 : isOwnerUser ? 'border-[#7b9fef]/70 shadow-[0_0_8px_rgba(123,159,239,0.3)]'
                                                                     : isSpeaker ? 'border-emerald-400/80' : 'border-white/15 group-hover:border-[#7b9fef]/40'}
                                         `}
-                                                        style={isSpeaker && user.role?.toLowerCase() !== 'godmaster' && !isOwnerUser ? {
-                                                            animation: 'speakerAvatarPulse 2s ease-in-out infinite',
-                                                            border: '2px solid transparent',
-                                                            backgroundClip: 'padding-box',
-                                                            boxShadow: '0 0 0 2px rgba(52,211,153,0.35), 0 0 14px rgba(52,211,153,0.40), 0 0 28px rgba(52,211,153,0.15), 0 0 42px rgba(16,185,129,0.06)',
-                                                        } : undefined}
-                                                    />
+                                                        style={{
+                                                            background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                                                            fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' as const,
+                                                            ...(isSpeaker && user.role?.toLowerCase() !== 'godmaster' && !isOwnerUser ? {
+                                                                animation: 'speakerAvatarPulse 2s ease-in-out infinite',
+                                                                border: '2px solid transparent',
+                                                                backgroundClip: 'padding-box',
+                                                                boxShadow: '0 0 0 2px rgba(52,211,153,0.35), 0 0 14px rgba(52,211,153,0.40), 0 0 28px rgba(52,211,153,0.15), 0 0 42px rgba(16,185,129,0.06)',
+                                                            } : {})
+                                                        }}
+                                                    >{(() => { const avSrc = user.avatar || generateGenderAvatar(user.displayName || user.username || '?'); return <img src={avSrc} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />; })()}</div>
 
 
                                                     {/* ═══ FORCE OPERATOR ICON — GodMaster hariç TÜM roller aynı operatör ikonu ═══ */}

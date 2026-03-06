@@ -4,6 +4,7 @@ import { useSocket, Message as SocketMessage, Participant as SocketParticipant }
 import { useMediasoup } from './useMediasoup';
 import { User, Message } from '@/types';
 import { ensureAuthUser, getAuthUser } from '@/lib/auth';
+import { generateGenderAvatar } from '@/lib/avatar';
 
 const AUTH_TOKEN_KEY = 'soprano_auth_token';
 
@@ -605,11 +606,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 displayName: p.displayName,
                 avatar: (() => {
                     const av = p.avatar;
-                    if (!av) return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(p.displayName)}&style=circle`;
+                    if (!av) return generateGenderAvatar(p.displayName);
                     // GIF avatarlar sadece GodMaster'a özel
                     const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
                     if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
-                        return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(p.displayName)}&style=circle`;
+                        return generateGenderAvatar(p.displayName);
                     }
                     return av;
                 })(),

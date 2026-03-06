@@ -502,6 +502,16 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const isOne2OneRoom = activeSlug.startsWith('one2one-');
     const currentTheme = useCurrentTheme();
     const isModernTheme = currentTheme === 'modern' || currentTheme === '';
+    const [isEmbed, setIsEmbed] = useState(false);
+
+    // Embed modu — iframe içinde yüklendiğinde arka planı şeffaf yap
+    useEffect(() => {
+        if (typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('embed') === '1') {
+            setIsEmbed(true);
+            document.body.style.background = 'transparent';
+            document.documentElement.style.background = 'transparent';
+        }
+    }, []);
 
 
     // ─── Active Design (dizayn preset'inden gelen bölgesel renkler) ───
@@ -1879,10 +1889,16 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 )
                             }
 
-                            <div className={`glass-panel room-container w-full max-w-[1700px] h-[88vh] rounded-[28px] flex overflow-hidden relative shadow-2xl`}
+                            <div className={`glass-panel room-container w-full max-w-[1700px] ${isEmbed ? 'h-full' : 'h-[88vh]'} rounded-[28px] flex overflow-hidden relative shadow-2xl`}
                                 style={{
-                                    animation: 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
-                                    ...(isMeetingRoom ? {
+                                    animation: isEmbed ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                                    ...(isEmbed ? {
+                                        background: 'transparent',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        borderRadius: 0,
+                                        maxWidth: '100%',
+                                    } : isMeetingRoom ? {
                                         background: 'linear-gradient(135deg, rgba(15, 10, 35, 0.95) 0%, rgba(25, 15, 50, 0.92) 50%, rgba(15, 10, 35, 0.95) 100%)',
                                         border: '1px solid rgba(139, 92, 246, 0.3)',
                                         boxShadow: '0 0 60px rgba(139, 92, 246, 0.08), 0 25px 50px rgba(0, 0, 0, 0.5)',
@@ -1903,12 +1919,14 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 }}
                             >
                                 {/* ═══ UNIFIED TOP BAR OVERLAY — spans all columns ═══ */}
-                                <div className="absolute top-0 left-0 right-0 h-[96px] z-20 pointer-events-none rounded-t-[28px]" style={{ background: 'linear-gradient(180deg, rgba(180,40,50,0.12) 0%, rgba(140,30,40,0.06) 40%, transparent 100%)' }}>
-                                    {/* Top edge highlight */}
-                                    <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[28px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(220,80,80,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(220,80,80,0.25) 75%, transparent 95%)' }} />
-                                    {/* Bottom accent glow line */}
-                                    <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(200,60,60,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(200,60,60,0.25) 75%, transparent 95%)', boxShadow: '0 1px 10px rgba(200,60,60,0.10)' }} />
-                                </div>
+                                {!isEmbed && (
+                                    <div className="absolute top-0 left-0 right-0 h-[96px] z-20 pointer-events-none rounded-t-[28px]" style={{ background: 'linear-gradient(180deg, rgba(180,40,50,0.12) 0%, rgba(140,30,40,0.06) 40%, transparent 100%)' }}>
+                                        {/* Top edge highlight */}
+                                        <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[28px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(220,80,80,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(220,80,80,0.25) 75%, transparent 95%)' }} />
+                                        {/* Bottom accent glow line */}
+                                        <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(200,60,60,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(200,60,60,0.25) 75%, transparent 95%)', boxShadow: '0 1px 10px rgba(200,60,60,0.10)' }} />
+                                    </div>
+                                )}
 
                                 {/* 1. LEFT SIDEBAR — desktop only, hidden on mobile */}
                                 <SidebarLeft
@@ -1924,10 +1942,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     ignoredUsers={ignoredUsers}
                                     isMeetingRoom={isMeetingRoom}
                                     speakingUsers={room.state.speakingUsers}
+                                    isEmbed={isEmbed}
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
-                                <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
+                                <main className="flex-1 flex flex-col min-w-0 min-h-0 relative z-10 overflow-hidden" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {isMeetingRoom ? (
                                         /* ━━━ TOPLANTI ODASI ÖZEL HEADER ━━━ */
                                         <header className="h-24 flex-shrink-0 border-b backdrop-blur-md flex items-center justify-between px-8 relative z-30"
@@ -2014,6 +2033,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             onNavigate={setActiveSlug}
                                             currentUserRole={room.state.currentUser?.role || 'guest'}
                                             activeRoomParticipants={room.state.users}
+                                            isEmbed={isEmbed}
                                         />
                                     )}
                                     {/* 💳 ÖDEME HATIRLATMA — neon uyarı banner (oda isimlerinin altında) */}
@@ -2325,6 +2345,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         onSetTvVideo={(url) => {
                                             room.socket?.emit('tv:setYoutube', { url });
                                         }}
+                                        isEmbed={isEmbed}
                                     />
                                 )}
 

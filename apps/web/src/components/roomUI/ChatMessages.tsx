@@ -1,12 +1,18 @@
 "use client";
 
 import { Message, User } from '@/types';
+import { generateGenderAvatar } from '@/lib/avatar';
 
 import { Role, ROLE_LABELS } from '@/common/roles';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRoomRealtime } from '@/hooks/useRoomRealtime';
 import { AnchorPopover } from '@/components/ui/AnchorPopover';
 import { useTranslation } from '@/i18n/LanguageProvider';
+
+// ─── System message helper (backend sends type: 'SYSTEM' uppercase) ─────
+function isSystemMsg(msg: Message): boolean {
+    return msg.type?.toLowerCase() === 'system' || msg.sender === 'system';
+}
 
 // ─── Chat Text Settings from localStorage ─────────
 function getChatTextSettings() {
@@ -163,7 +169,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     // === Avatar URL — GIF/3D/Animated modlarda avatar gösterme ===
     const getAvatarUrl = (msgOrUsername: Message | string): string | null => {
         const resolveAvatar = (avatar?: string, username?: string) => {
-            if (!avatar) return `https://api.dicebear.com/9.x/avataaars/svg?seed=${username || 'guest'}`;
+            if (!avatar) return generateGenderAvatar(username || 'guest');
             // gifnick:: prefix — parse ve URL kısmını çıkar
             if (avatar.startsWith('gifnick::')) {
                 const parts = avatar.split('::');
@@ -199,7 +205,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                 const resolved = resolveAvatar(user.avatar, msgOrUsername.sender);
                 if (resolved !== user.avatar || !user.avatar.startsWith('gifnick')) return resolved;
             }
-            return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername.sender}`;
+            return generateGenderAvatar(msgOrUsername.sender);
         }
 
         // Username string
@@ -213,7 +219,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             const resolved = resolveAvatar(user.avatar, msgOrUsername);
             return resolved;
         }
-        return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername}`;
+        return generateGenderAvatar(msgOrUsername);
     };
 
     // Format time
@@ -228,6 +234,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     return (
         <div
             className="chat-messages-container chat-area flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-1 custom-scrollbar flex flex-col items-center"
+            style={{ minHeight: 650 }}
             data-chat-messages
             ref={scrollRef}
             onContextMenu={onContextMenu}
@@ -243,26 +250,166 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             />
 
             <div className="w-full max-w-3xl space-y-1">
-                {/* Session start badge */}
-                <div className="flex justify-center mb-6">
-                    <span className="text-[10px] font-medium px-5 py-1.5 rounded-full backdrop-blur-sm" style={{ color: 'rgba(123, 159, 239, 0.7)', background: 'rgba(123, 159, 239, 0.06)', border: '1px solid rgba(123, 159, 239, 0.15)' }}>
-                        {roomName ? `${roomName} odasına hoş geldiniz` : t.chatStart} • {t.today} {sessionTime}
-                    </span>
+                {/* ═══ Premium Welcome Banner ═══ */}
+                <div className="flex justify-center mb-8" style={{ perspective: 800 }}>
+                    <div className="welcome-banner-3d" style={{
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '24px 42px 22px',
+                        borderRadius: 28,
+                        background: 'linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(245,247,252,0.96) 30%, rgba(235,240,250,0.94) 60%, rgba(225,230,242,0.92) 100%)',
+                        border: '1px solid rgba(255,255,255,0.7)',
+                        boxShadow: `
+                            0 2px 4px rgba(0,0,0,0.04),
+                            0 6px 12px rgba(0,0,0,0.06),
+                            0 14px 28px rgba(0,0,0,0.08),
+                            0 28px 56px rgba(0,0,0,0.1),
+                            inset 0 2px 4px rgba(255,255,255,1),
+                            inset 0 -3px 6px rgba(0,0,0,0.04),
+                            inset 2px 0 8px rgba(255,255,255,0.6),
+                            inset -2px 0 8px rgba(200,210,230,0.3)
+                        `,
+                        animation: 'welcomeBannerEntry 0.8s cubic-bezier(0.34,1.56,0.64,1) both',
+                        overflow: 'visible',
+                        transform: 'rotateX(2deg)',
+                    }}>
+                        {/* 3D üst parıltı — ışık vurgusu */}
+                        <div style={{
+                            position: 'absolute',
+                            top: 3, left: 12, right: 12, height: 18,
+                            borderRadius: '20px 20px 50% 50%',
+                            background: 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%)',
+                            pointerEvents: 'none',
+                        }} />
+                        {/* Alt gölge — derinlik */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: 4, left: 16, right: 16, height: 12,
+                            borderRadius: '50% 50% 18px 18px',
+                            background: 'linear-gradient(0deg, rgba(180,190,210,0.15) 0%, transparent 100%)',
+                            pointerEvents: 'none',
+                        }} />
+                        {/* Konuşma balonu kuyruğu — 3D gölgeli */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: -10,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0, height: 0,
+                            borderLeft: '12px solid transparent',
+                            borderRight: '12px solid transparent',
+                            borderTop: '12px solid rgba(232,236,244,0.95)',
+                            filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.12))',
+                        }} />
+                        {/* Kuyruk parlak kenarı */}
+                        <div style={{
+                            position: 'absolute',
+                            bottom: -8,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            width: 0, height: 0,
+                            borderLeft: '10px solid transparent',
+                            borderRight: '10px solid transparent',
+                            borderTop: '10px solid rgba(255,255,255,0.98)',
+                        }} />
+                        {/* Emoji ikonu */}
+                        <div style={{
+                            fontSize: 32,
+                            lineHeight: 1,
+                            animation: 'welcomeWave 2s ease-in-out infinite',
+                            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))',
+                        }}>
+                            👋
+                        </div>
+                        {/* Hoş geldin mesajı */}
+                        <div style={{
+                            fontSize: 15,
+                            fontWeight: 900,
+                            background: 'linear-gradient(135deg, #1e293b, #334155, #1e293b)',
+                            backgroundSize: '200% auto',
+                            WebkitBackgroundClip: 'text',
+                            WebkitTextFillColor: 'transparent',
+                            backgroundClip: 'text',
+                            animation: 'welcomeShimmer 3s linear infinite',
+                            letterSpacing: 1.5,
+                            textTransform: 'uppercase',
+                            textAlign: 'center',
+                            textShadow: 'none',
+                        }}>
+                            {(() => {
+                                const ss = (room as any).state?.systemSettings;
+                                const welcomeMsg = ss?.welcomeMessage;
+                                if (welcomeMsg && welcomeMsg.trim()) return welcomeMsg;
+                                return roomName ? `${roomName} odasına hoş geldiniz` : t.chatStart;
+                            })()}
+                        </div>
+                        {/* Alt bilgi: tarih + saat */}
+                        <div style={{
+                            fontSize: 10,
+                            fontWeight: 600,
+                            color: 'rgba(71,85,105,0.7)',
+                            letterSpacing: 0.8,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                        }}>
+                            <span style={{
+                                width: 5, height: 5, borderRadius: '50%',
+                                background: '#34d399',
+                                boxShadow: '0 0 6px rgba(52,211,153,0.5)',
+                                animation: 'pulse 2s ease-in-out infinite',
+                                display: 'inline-block',
+                            }} />
+                            {t.today} {sessionTime}
+                        </div>
+                    </div>
                 </div>
+                {/* Welcome banner animations */}
+                <style>{`
+                    @keyframes welcomeBannerEntry {
+                        0% { opacity: 0; transform: translateY(-30px) scale(0.8) rotateX(15deg); }
+                        60% { opacity: 1; transform: translateY(4px) scale(1.02) rotateX(-2deg); }
+                        100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); }
+                    }
+                    @keyframes sparkleFloat {
+                        0%, 100% { transform: translateY(0px) rotate(0deg); }
+                        50% { transform: translateY(-4px) rotate(15deg); }
+                    }
+                    @keyframes sparklePulse {
+                        0%, 100% { opacity: 0.7; transform: scale(1); }
+                        50% { opacity: 1; transform: scale(1.25); }
+                    }
+                    @keyframes welcomeWave {
+                        0%, 100% { transform: rotate(0deg); }
+                        15% { transform: rotate(14deg); }
+                        30% { transform: rotate(-8deg); }
+                        40% { transform: rotate(14deg); }
+                        50% { transform: rotate(-4deg); }
+                        60% { transform: rotate(10deg); }
+                        70% { transform: rotate(0deg); }
+                    }
+                    @keyframes welcomeShimmer {
+                        0% { background-position: -200% center; }
+                        100% { background-position: 200% center; }
+                    }
+                `}</style>
 
                 {messages
                     .filter(msg => {
-                        if (msg.type === 'system') return true;
+                        if (isSystemMsg(msg)) return true;
                         return true;
                     })
                     .map((msg, i, filteredMsgs) => {
                         const isMe = currentUser && (msg.sender === currentUser.username || msg.sender === currentUser.displayName);
                         const avatarUrl = getAvatarUrl(msg);
-                        const stickerMsg = msg.type !== 'system' && isSticker(msg.message);
+                        const stickerMsg = !isSystemMsg(msg) && isSticker(msg.message);
                         const displayMessage = stickerMsg ? getStickerContent(msg.message) : msg.message;
-                        const emojiOnly = !stickerMsg && msg.type !== 'system' && isEmojiOnly(msg.message);
-                        const gifMessage = !stickerMsg && msg.type !== 'system' && isGifUrl(msg.message);
-                        const youtubeId = !stickerMsg && msg.type !== 'system' ? getYouTubeVideoId(msg.message) : null;
+                        const emojiOnly = !stickerMsg && !isSystemMsg(msg) && isEmojiOnly(msg.message);
+                        const gifMessage = !stickerMsg && !isSystemMsg(msg) && isGifUrl(msg.message);
+                        const youtubeId = !stickerMsg && !isSystemMsg(msg) ? getYouTubeVideoId(msg.message) : null;
 
                         // YouTube role permission check
                         const isYoutubeAllowed = (() => {
@@ -277,7 +424,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                         })();
 
                         // Her mesajda avatar ve isim göster (artık gruplama yok)
-                        const showHeader = msg.type !== 'system';
+                        const showHeader = !isSystemMsg(msg);
 
                         return (
                             <div key={i} className={`animate-in slide-in-from-bottom-1 duration-300 fade-in w-full flex flex-col ${isMe ? 'items-end' : 'items-start'} ${i > 0 ? 'mt-3' : 'mt-0.5'}`}>
@@ -331,33 +478,33 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                             </div>
                                         );
                                     }
-                                })() : msg.type === 'system' ? (
-                                    <div className="flex justify-center my-3">
-                                        <span className="text-[10px] font-medium text-gray-400/70 px-4 py-1 rounded-full bg-white/[0.03] border border-white/[0.06]">
-                                            {msg.message}
-                                        </span>
+                                })() : isSystemMsg(msg) ? (
+                                    <div className="w-full overflow-hidden my-2" style={{ height: 18 }}>
+                                        <div style={{
+                                            display: 'inline-block',
+                                            whiteSpace: 'nowrap',
+                                            animation: 'marquee 20s linear infinite',
+                                            fontSize: 10,
+                                            fontWeight: 500,
+                                            color: 'rgba(148,163,184,0.5)',
+                                            letterSpacing: '0.5px',
+                                        }}>
+                                            ★ {msg.message} ★
+                                        </div>
                                     </div>
                                 ) : (
                                     <div className={`flex gap-2.5 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
-                                        {/* Avatar — sadece ilk mesajda ve avatar varsa göster */}
+                                        {/* Avatar — baş harf placeholder */}
                                         <div className="w-8 flex-shrink-0">
-                                            {showHeader && avatarUrl ? (
-                                                <img
-                                                    src={avatarUrl}
-                                                    className="w-8 h-8 rounded-full object-cover ring-1 ring-white/10"
-                                                />
-                                            ) : showHeader && !avatarUrl ? (
-                                                /* GodMaster GIF/3D mode — küçük rol emoji placeholder */
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-fuchsia-500/20 to-amber-800/20 flex items-center justify-center text-sm ring-1 ring-fuchsia-500/30">
-                                                    ??
-                                                </div>
+                                            {showHeader ? (
+                                                <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-white/10 overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{(() => { const avUrl = getAvatarUrl(msg); return avUrl ? <img src={avUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (msg.sender || '?').charAt(0); })()}</div>
                                             ) : null}
                                         </div>
 
                                         <div
                                             className={`flex flex-col max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}
                                             style={{ position: 'relative', paddingLeft: isMe ? 32 : 0, paddingRight: isMe ? 0 : 32 }}
-                                            onMouseEnter={() => msg.type !== 'system' && setHoveredMsgId(msg.id ?? null)}
+                                            onMouseEnter={() => !isSystemMsg(msg) && setHoveredMsgId(msg.id ?? null)}
                                             onMouseLeave={() => { if (openReactionMsgId !== msg.id) setHoveredMsgId(null); }}
                                         >
                                             {/* Sender name + time — sadece ilk mesajda */}
@@ -616,6 +763,12 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                         );
                     })}
             </div>
+            <style>{`
+                @keyframes marquee {
+                    0% { transform: translateX(100%); }
+                    100% { transform: translateX(-100%); }
+                }
+            `}</style>
         </div >
     );
 }

@@ -756,7 +756,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Accept both 'avatar' and 'avatarUrl' keys (frontend sends 'avatar', API sends 'avatarUrl')
         const newAvatar = data.avatarUrl ?? data.avatar;
         if (newAvatar !== undefined) {
-          participant.avatar = newAvatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(participant.displayName)}&style=circle`;
+          participant.avatar = newAvatar || undefined;
         }
 
         // Update socket data
@@ -1281,7 +1281,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       avatar:
         user.avatar ||
         payload.avatar ||
-        `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.username)}&style=circle`,
+        undefined,
       role: user.role || 'guest',
       socketId: client.id,
       roomId: scopedRoom,
@@ -1883,9 +1883,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const broadcastTarget = sender?.roomId || payload.roomId;
     this.server.to(broadcastTarget).emit('chat:message', {
       ...message,
-      senderName: user.displayName || user.username,
-      senderAvatar: user.avatar || null,
-      senderNameColor: (user as any).nameColor || null,
+      senderName: sender?.displayName || user.displayName || user.username,
+      senderAvatar: sender?.avatar || user.avatar || null,
+      senderNameColor: sender?.nameColor || (user as any).nameColor || null,
     });
   }
 
@@ -4417,11 +4417,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       tenantId: actor.tenantId || '',
       challengerId: actor.userId,
       challengerName: actor.displayName,
-      challengerAvatar: actor.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${actor.displayName}`,
+      challengerAvatar: actor.avatar || '',
       challengerSocketId: client.id,
       opponentId: targetParticipant.userId,
       opponentName: targetParticipant.displayName,
-      opponentAvatar: targetParticipant.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${targetParticipant.displayName}`,
+      opponentAvatar: targetParticipant.avatar || '',
       opponentSocketId: targetSocket,
       startedAt: 0,
       duration: 180_000, // 3 dakika

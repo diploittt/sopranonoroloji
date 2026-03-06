@@ -4,6 +4,7 @@ import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
 import { Shield, User, Lock, ArrowRight, Loader2, Eye, EyeOff, Users, Globe } from 'lucide-react';
 import { setAuthUser } from '@/lib/auth';
+import { generateGenderAvatar } from '@/lib/avatar';
 import { openChatWindow } from '@/components/ui/TitleBar';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3002';
@@ -89,7 +90,7 @@ export default function EmbedEntryPage({ params }: { params: Promise<{ slug: str
             setAuthUser({
                 userId: data.user.userId || data.user.sub || data.user.id,
                 username: data.user.username || data.user.displayName || data.user.email,
-                avatar: data.user.avatar || data.user.avatarUrl || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.user.username}`,
+                avatar: data.user.avatar || data.user.avatarUrl || generateGenderAvatar(data.user.username || data.user.displayName || formData.email),
                 isMember: true,
                 role: (data.user.role || 'member') as any,
                 gender: data.user.gender || 'Unspecified',
@@ -140,7 +141,7 @@ export default function EmbedEntryPage({ params }: { params: Promise<{ slug: str
             setAuthUser({
                 userId: data.user.sub || data.user.userId || data.user.id,
                 username: data.user.username || data.user.displayName,
-                avatar: data.user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${data.user.username}`,
+                avatar: data.user.avatar || generateGenderAvatar(data.user.username || data.user.displayName || formData.guestName),
                 isMember: false,
                 role: 'guest',
                 gender: data.user.gender || 'Unspecified',

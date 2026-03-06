@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 interface TokenPackage {
     id: string;
@@ -88,7 +89,7 @@ export function TokenShop({ isOpen, onClose, socket }: TokenShopProps) {
         }
     };
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={onClose}>
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
@@ -225,6 +226,7 @@ export function TokenShop({ isOpen, onClose, socket }: TokenShopProps) {
                     </p>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

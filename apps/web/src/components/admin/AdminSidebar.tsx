@@ -76,11 +76,10 @@ export default function AdminSidebar() {
 
             <div className="p-6 border-t border-white/5 bg-[#08090c]/40">
                 <div className="flex items-center gap-3">
-                    <img
-                        src="https://i.pravatar.cc/150?img=11"
-                        className="w-10 h-10 rounded-full border-2 border-amber-500/50"
-                        alt="Admin Avatar"
-                    />
+                    <div
+                        className="w-10 h-10 rounded-full border-2 border-amber-500/50 flex items-center justify-center"
+                        style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 16, fontWeight: 900, color: 'rgba(245,158,11,0.8)' }}
+                    >S</div>
                     <div>
                         <div className="text-sm font-bold text-white">Soprano Owner</div>
                         <div className="text-[10px] text-amber-500">

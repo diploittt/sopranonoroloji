@@ -94,7 +94,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                             setAuthUser({
                                 userId: payload.sub,
                                 username: payload.displayName || 'GodMaster',
-                                avatar: `https://api.dicebear.com/9.x/avataaars/svg?seed=godmaster`,
+                                avatar: generateGenderAvatar('godmaster'),
                                 isMember: true,
                                 role: 'godmaster' as any,
                             });

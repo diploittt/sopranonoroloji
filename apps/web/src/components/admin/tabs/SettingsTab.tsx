@@ -566,7 +566,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                         height: 40, width: 'auto', maxWidth: 80,
                                                                         objectFit: 'contain', borderRadius: 6,
                                                                         border: '1px solid rgba(255,255,255,0.1)',
-                                                                        background: 'rgba(0,0,0,0.3)',
+                                                                        background: 'rgba(30,41,59,0.5)',
                                                                     }} />
                                                                 )}
                                                                 <input

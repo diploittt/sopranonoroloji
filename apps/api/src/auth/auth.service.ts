@@ -11,20 +11,32 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
 /**
- * Cinsiyete uygun DiceBear avataaars URL'i oluşturur.
- * Erkek → kısa saç, sakal olasılığı %40
- * Kadın → uzun saç, sakal yok
+ * Cinsiyete uygun yerel PNG avatar URL'i oluşturur.
+ * seed parametresi ile deterministik seçim yapılır.
  */
+const MALE_AVATARS = ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'];
+const FEMALE_AVATARS = ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'];
+const NEUTRAL_AVATARS = ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'];
+
+function seedToIndex(seed: string, count: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return Math.abs(hash) % count;
+}
+
 function generateGenderAvatar(seed: string, gender?: string): string {
-  const base = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(seed)}&style=circle`;
   const g = (gender || '').toLowerCase();
   if (g === 'male' || g === 'erkek') {
-    return `${base}&top=shortFlat,shortRound,shortWaved,shortCurly,theCaesar,theCaesarAndSidePart,sides,shavedSides,shaggyMullet,dreads01,frizzle&facialHairProbability=40`;
+    return MALE_AVATARS[seedToIndex(seed, MALE_AVATARS.length)];
   }
   if (g === 'female' || g === 'kadın' || g === 'kadin') {
-    return `${base}&top=bigHair,bob,bun,curly,curvy,longButNotTooLong,miaWallace,straight01,straight02,straightAndStrand,frida&facialHairProbability=0`;
+    return FEMALE_AVATARS[seedToIndex(seed, FEMALE_AVATARS.length)];
   }
-  return `${base}`;
+  return NEUTRAL_AVATARS[seedToIndex(seed, NEUTRAL_AVATARS.length)];
 }
 
 @Injectable()

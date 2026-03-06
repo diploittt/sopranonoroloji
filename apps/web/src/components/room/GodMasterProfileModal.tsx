@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { generateGenderAvatar } from '@/lib/avatar';
 import { ThreeDTextBanner, DEFAULT_3D_PARAMS, serialize3DParams, ANIM_MODES, type ThreeDParams, type AnimMode } from './ThreeDTextBanner';
 
 interface GodMasterProfileModalProps {
@@ -202,7 +203,7 @@ export function GodMasterProfileModal({
         setTimeout(() => { setSuccess(''); onClose(); }, 1000);
     };
     const handleRemoveGif = () => {
-        onChangeAvatar(`https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser?.username || 'gm'}`);
+        onChangeAvatar(generateGenderAvatar(currentUser?.username || 'gm'));
         setGifPreview(null); setGifFileName('');
         setSuccess('GIF kaldırıldı.'); setTimeout(() => setSuccess(''), 1500);
     };
@@ -234,7 +235,7 @@ export function GodMasterProfileModal({
 
     if (!isOpen) return null;
 
-    const avatarUrl = `https://api.dicebear.com/9.x/${avatarStyle}/svg?seed=${avatarSeed}`;
+    const avatarUrl = generateGenderAvatar(currentUser?.username || 'gm');
     const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
     const EDITOR_SECTIONS = [
@@ -467,7 +468,7 @@ export function GodMasterProfileModal({
                     {activeTab === 'avatar' && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-4">
-                                <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20" style={{ background: '#10121b' }} />
+                                <div className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden" style={{ background: '#10121b', fontSize: 24, fontWeight: 900, color: 'rgba(233,121,249,0.6)', textTransform: 'uppercase' }}>{currentUser?.avatar ? <img src={currentUser.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (currentUser?.username || '?').charAt(0)}</div>
                                 <div className="flex-1">
                                     <label className="text-[10px] text-gray-500 mb-1 block">Seed</label>
                                     <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: '#10121b' }} />

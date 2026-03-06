@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useDraggable } from '@/hooks/useDraggable';
 
 interface ConfirmModalProps {
@@ -45,17 +46,17 @@ const variantConfig = {
     },
     info: {
         icon: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
         ),
-        iconBg: 'bg-amber-600/15',
-        iconRing: 'ring-amber-600/30',
-        buttonBg: 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-[#7b9fef] shadow-lg shadow-indigo-900/30',
-        accentColor: '#6366f1',
-        glowColor: 'rgba(99, 102, 241, 0.15)',
+        iconBg: 'bg-sky-500/15',
+        iconRing: 'ring-sky-500/30',
+        buttonBg: 'bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 shadow-lg shadow-sky-900/30',
+        accentColor: '#38bdf8',
+        glowColor: 'rgba(56, 189, 248, 0.15)',
     },
 };
 
@@ -94,7 +95,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     const config = variantConfig[variant];
 
-    return (
+    return createPortal(
         <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
             {/* Backdrop */}
             <div
@@ -104,10 +105,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
             {/* Modal */}
             <div
-                className="relative w-full max-w-[420px] rounded-2xl border border-white/10 overflow-hidden animate-pure-fade cursor-grab active:cursor-grabbing"
+                className="relative w-full max-w-[420px] rounded-2xl overflow-hidden animate-pure-fade cursor-grab active:cursor-grabbing"
                 style={{
-                    background: 'linear-gradient(180deg, rgba(20, 24, 40, 0.98) 0%, rgba(12, 14, 22, 0.98) 100%)',
-                    boxShadow: `0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px ${config.glowColor}`,
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
+                    boxShadow: `0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px ${config.glowColor}, inset 0 1px 0 rgba(255,255,255,0.1)`,
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
                 onMouseDown={onDragMouseDown}
@@ -158,6 +163,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };
