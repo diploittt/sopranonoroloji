@@ -14,6 +14,7 @@ import {
 import { API_URL } from '@/lib/api';
 import { adminApi } from '@/lib/admin/api';
 import ToastContainer from '@/components/ui/ToastContainer';
+import CRTMonitor from '@/components/home/CRTMonitor';
 import { useAdminStore } from '@/lib/admin/store';
 import { RadioPlayer } from '@/components/roomUI/RadioPlayer';
 import { ChatMessages } from '@/components/roomUI/ChatMessages';
@@ -702,6 +703,7 @@ export default function HomePage() {
     const [cachedRooms, setCachedRooms] = useState<{ name: string; slug: string }[]>([]);
     useEffect(() => { adminApi.getRooms().then((rooms: any[]) => { if (rooms?.length) setCachedRooms(rooms.map(r => ({ name: r.name, slug: r.slug }))); }).catch(() => { }); }, []);
     const [statusDropdown, setStatusDropdown] = useState(false);
+    const [crtPowerOn, setCrtPowerOn] = useState(true);
     const [demoPhase, setDemoPhase] = useState<'idle' | 'cards-out' | 'bar-up' | 'bar-down' | 'lamp-center' | 'active' | 'exit-lamp' | 'exit-bar-up' | 'exit-bar-down' | 'exit-cards-in'>('idle');
     const demoMode = demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
     const [showCustomConfig, setShowCustomConfig] = useState(false);
@@ -1854,18 +1856,19 @@ export default function HomePage() {
                                                     </div>
                                                 )}
                                                 <div style={{ position: 'relative', zIndex: 10, ...(roomsMode ? { display: 'none' } : {}) }}>
-                                                    {/* Orijinal içerik — tümü birlikte fade/blur olur */}
+                                                    {/* Orijinal içerik — Sol metin + Sağ CRT Monitör */}
                                                     <div style={{
-                                                        display: 'flex', gap: 32, alignItems: 'flex-start', flexWrap: 'wrap',
+                                                        display: 'flex', gap: 24, alignItems: 'center',
                                                         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                                                         opacity: showPackages ? 0 : 1,
                                                         filter: showPackages ? 'blur(8px)' : 'blur(0)',
                                                         transform: showPackages ? 'scale(0.97)' : 'scale(1)',
                                                         maxHeight: showPackages ? 0 : 2000,
-                                                        overflow: 'hidden',
+                                                        overflow: showPackages ? 'hidden' : 'visible',
                                                         pointerEvents: showPackages ? 'none' : 'auto',
                                                     }}>
-                                                        <div style={{ flex: 1, minWidth: 280 }}>
+                                                        {/* SOL: Metin ve Feature Toasts */}
+                                                        <div style={{ flex: 1, minWidth: 260 }}>
                                                             <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
                                                                 Kendi Dijital Sahneni Yarat
                                                             </h2>
@@ -1875,33 +1878,47 @@ export default function HomePage() {
                                                                 sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
                                                                 Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
                                                             </p>
+
+                                                            {/* Feature Toasts — 2x2 grid */}
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
+                                                                {[
+                                                                    { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
+                                                                    { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
+                                                                    { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
+                                                                    { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
+                                                                ].map((t, i) => (
+                                                                    <div key={i} className="feature-toast" style={{
+                                                                        display: 'flex', alignItems: 'center', gap: 10,
+                                                                        padding: '8px 12px', borderRadius: 10,
+                                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                                    }}>
+                                                                        <div style={{
+                                                                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                            background: `${t.color}15`, color: t.color,
+                                                                            border: `1px solid ${t.color}30`,
+                                                                        }}>{t.icon}</div>
+                                                                        <div>
+                                                                            <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
 
-                                                        {/* Feature Toasts — tam genişlik 2x2 grid */}
-                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12, width: '100%' }}>
-                                                            {[
-                                                                { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
-                                                                { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
-                                                                { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
-                                                                { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
-                                                            ].map((t, i) => (
-                                                                <div key={i} className="feature-toast" style={{
-                                                                    display: 'flex', alignItems: 'center', gap: 10,
-                                                                    padding: '8px 12px', borderRadius: 10,
-                                                                    background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
-                                                                }}>
-                                                                    <div style={{
-                                                                        width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                        background: `${t.color}15`, color: t.color,
-                                                                        border: `1px solid ${t.color}30`,
-                                                                    }}>{t.icon}</div>
-                                                                    <div>
-                                                                        <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
-                                                                        <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                        {/* SAĞ: 3D CRT Monitör — küçültülmüş */}
+                                                        <div style={{ flex: '0 0 320px', height: 340, position: 'relative', overflow: 'visible' }}>
+                                                            <div style={{ transform: 'scale(0.44)', transformOrigin: 'center center', position: 'absolute', top: '50%', left: '50%', marginTop: -300, marginLeft: -310 }}>
+                                                                <CRTMonitor isPowerOn={crtPowerOn} onPowerToggle={() => setCrtPowerOn((p: boolean) => !p)}>
+                                                                    <div style={{ width: '100%', height: '100%', background: '#0b0d14', color: '#e2e8f0', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
+                                                                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20 }}>
+                                                                            <div style={{ fontSize: 48, fontWeight: 900, background: 'linear-gradient(135deg, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SopranoChat</div>
+                                                                            <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Demo Oda Önizleme</div>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            ))}
+                                                                </CRTMonitor>
+                                                            </div>
                                                         </div>
                                                     </div>
 
