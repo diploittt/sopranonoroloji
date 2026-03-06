@@ -180,7 +180,7 @@ export function BottomToolbar({
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
-        <div className="bottom-toolbar p-4 bg-[#0F1626]/60 border-t border-white/5 backdrop-blur-2xl z-20 flex flex-col gap-3">
+        <div className="bottom-toolbar py-2 px-4 bg-[#0F1626]/60 border-t border-white/5 backdrop-blur-2xl z-20 flex flex-col gap-2">
 
             {/* Anchors */}
             <AnchorPopover
@@ -601,7 +601,10 @@ export function BottomToolbar({
                         onChange={(e) => setText(e.target.value)}
                         disabled={isChatDisabled}
                         placeholder={isCurrentUserGagged ? t.gagWarning : isChatLocked ? t.chatLocked : (isHasbihal ? 'Kelamınızı buraya yazınız...' : t.typeMessage)}
-                        className={`message-input w-full h-full bg-white/[0.03] text-gray-200 text-sm rounded-xl pl-6 focus:outline-none border ${isChatDisabled ? 'border-red-500/20 cursor-not-allowed text-gray-500' : 'border-white/10 focus:border-white/20'} relative z-10 placeholder:text-gray-600`}
+                        className={`message-input w-full h-full bg-white/[0.03] text-gray-200 text-sm rounded-xl pl-6 focus:outline-none border ${isChatDisabled ? 'border-red-500/20 cursor-not-allowed text-gray-500' : 'border-white/10 focus:border-white/25'} relative z-10 placeholder:text-gray-600`}
+                        style={{ transition: 'border-color 0.3s ease, box-shadow 0.3s ease' }}
+                        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(148,163,184,0.15), 0 0 16px rgba(148,163,184,0.08)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.3)'; }}
+                        onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = ''; }}
                     />
                 </div>
 

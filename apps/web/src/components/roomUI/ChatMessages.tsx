@@ -250,94 +250,46 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             />
 
             <div className="w-full max-w-3xl space-y-1">
-                {/* ═══ Premium Welcome Banner ═══ */}
-                <div className="flex justify-center mb-8" style={{ perspective: 800 }}>
+                {/* ═══ Compact Welcome Banner ═══ */}
+                <div className="flex justify-end mb-3" style={{ perspective: 800 }}>
                     <div className="welcome-banner-3d" style={{
                         position: 'relative',
-                        display: 'flex',
-                        flexDirection: 'column',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 6,
-                        padding: '24px 42px 22px',
-                        borderRadius: 28,
-                        background: 'linear-gradient(160deg, rgba(255,255,255,0.98) 0%, rgba(245,247,252,0.96) 30%, rgba(235,240,250,0.94) 60%, rgba(225,230,242,0.92) 100%)',
-                        border: '1px solid rgba(255,255,255,0.7)',
-                        boxShadow: `
-                            0 2px 4px rgba(0,0,0,0.04),
-                            0 6px 12px rgba(0,0,0,0.06),
-                            0 14px 28px rgba(0,0,0,0.08),
-                            0 28px 56px rgba(0,0,0,0.1),
-                            inset 0 2px 4px rgba(255,255,255,1),
-                            inset 0 -3px 6px rgba(0,0,0,0.04),
-                            inset 2px 0 8px rgba(255,255,255,0.6),
-                            inset -2px 0 8px rgba(200,210,230,0.3)
-                        `,
+                        gap: 10,
+                        padding: '10px 14px 10px 20px',
+                        borderRadius: 16,
+                        background: 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(240,243,250,0.94) 50%, rgba(228,233,245,0.92) 100%)',
+                        border: '1px solid rgba(255,255,255,0.6)',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.9)',
                         animation: 'welcomeBannerEntry 0.8s cubic-bezier(0.34,1.56,0.64,1) both',
                         overflow: 'visible',
-                        transform: 'rotateX(2deg)',
                     }}>
-                        {/* 3D üst parıltı — ışık vurgusu */}
+                        {/* Konuşma balonu kuyruğu — sağ alt */}
                         <div style={{
                             position: 'absolute',
-                            top: 3, left: 12, right: 12, height: 18,
-                            borderRadius: '20px 20px 50% 50%',
-                            background: 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0) 100%)',
-                            pointerEvents: 'none',
-                        }} />
-                        {/* Alt gölge — derinlik */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: 4, left: 16, right: 16, height: 12,
-                            borderRadius: '50% 50% 18px 18px',
-                            background: 'linear-gradient(0deg, rgba(180,190,210,0.15) 0%, transparent 100%)',
-                            pointerEvents: 'none',
-                        }} />
-                        {/* Konuşma balonu kuyruğu — 3D gölgeli */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: -10,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
+                            bottom: -6,
+                            right: 18,
                             width: 0, height: 0,
-                            borderLeft: '12px solid transparent',
-                            borderRight: '12px solid transparent',
-                            borderTop: '12px solid rgba(232,236,244,0.95)',
-                            filter: 'drop-shadow(0 3px 4px rgba(0,0,0,0.12))',
+                            borderLeft: '7px solid transparent',
+                            borderRight: '7px solid transparent',
+                            borderTop: '7px solid rgba(240,243,250,0.95)',
+                            filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.08))',
                         }} />
-                        {/* Kuyruk parlak kenarı */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: -8,
-                            left: '50%',
-                            transform: 'translateX(-50%)',
-                            width: 0, height: 0,
-                            borderLeft: '10px solid transparent',
-                            borderRight: '10px solid transparent',
-                            borderTop: '10px solid rgba(255,255,255,0.98)',
-                        }} />
-                        {/* Emoji ikonu */}
-                        <div style={{
-                            fontSize: 32,
-                            lineHeight: 1,
-                            animation: 'welcomeWave 2s ease-in-out infinite',
-                            filter: 'drop-shadow(0 3px 6px rgba(0,0,0,0.15))',
-                        }}>
-                            👋
-                        </div>
+                        {/* Emoji */}
+                        <span style={{ fontSize: 18, lineHeight: 1, animation: 'welcomeWave 2s ease-in-out infinite' }}>👋</span>
                         {/* Hoş geldin mesajı */}
-                        <div style={{
-                            fontSize: 15,
-                            fontWeight: 900,
-                            background: 'linear-gradient(135deg, #1e293b, #334155, #1e293b)',
+                        <span style={{
+                            fontSize: 11,
+                            fontWeight: 800,
+                            background: 'linear-gradient(135deg, #1e293b, #475569, #1e293b)',
                             backgroundSize: '200% auto',
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent',
                             backgroundClip: 'text',
                             animation: 'welcomeShimmer 3s linear infinite',
-                            letterSpacing: 1.5,
+                            letterSpacing: 1,
                             textTransform: 'uppercase',
-                            textAlign: 'center',
-                            textShadow: 'none',
                         }}>
                             {(() => {
                                 const ss = (room as any).state?.systemSettings;
@@ -345,26 +297,27 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                 if (welcomeMsg && welcomeMsg.trim()) return welcomeMsg;
                                 return roomName ? `${roomName} odasına hoş geldiniz` : t.chatStart;
                             })()}
-                        </div>
-                        {/* Alt bilgi: tarih + saat */}
-                        <div style={{
-                            fontSize: 10,
+                        </span>
+                        {/* Tarih + saat */}
+                        <span style={{
+                            fontSize: 9,
                             fontWeight: 600,
-                            color: 'rgba(71,85,105,0.7)',
-                            letterSpacing: 0.8,
-                            display: 'flex',
+                            color: 'rgba(71,85,105,0.6)',
+                            letterSpacing: 0.5,
+                            display: 'inline-flex',
                             alignItems: 'center',
-                            gap: 6,
+                            gap: 4,
+                            marginLeft: 4,
                         }}>
                             <span style={{
-                                width: 5, height: 5, borderRadius: '50%',
+                                width: 4, height: 4, borderRadius: '50%',
                                 background: '#34d399',
-                                boxShadow: '0 0 6px rgba(52,211,153,0.5)',
+                                boxShadow: '0 0 4px rgba(52,211,153,0.4)',
                                 animation: 'pulse 2s ease-in-out infinite',
                                 display: 'inline-block',
                             }} />
                             {t.today} {sessionTime}
-                        </div>
+                        </span>
                     </div>
                 </div>
                 {/* Welcome banner animations */}

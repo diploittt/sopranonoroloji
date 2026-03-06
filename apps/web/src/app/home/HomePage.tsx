@@ -12,6 +12,7 @@ import {
     Hand, Smile, Sticker, Clapperboard, Power, SendHorizontal
 } from "lucide-react";
 import { API_URL } from '@/lib/api';
+import { adminApi } from '@/lib/admin/api';
 import ToastContainer from '@/components/ui/ToastContainer';
 import { useAdminStore } from '@/lib/admin/store';
 import { RadioPlayer } from '@/components/roomUI/RadioPlayer';
@@ -698,6 +699,8 @@ export default function HomePage() {
     const [demoMsgText, setDemoMsgText] = useState('');
     const demoRoomRef = useRef<any>(null);
     const [demoRoomReady, setDemoRoomReady] = useState(false);
+    const [cachedRooms, setCachedRooms] = useState<{ name: string; slug: string }[]>([]);
+    useEffect(() => { adminApi.getRooms().then((rooms: any[]) => { if (rooms?.length) setCachedRooms(rooms.map(r => ({ name: r.name, slug: r.slug }))); }).catch(() => { }); }, []);
     const [statusDropdown, setStatusDropdown] = useState(false);
     const [demoPhase, setDemoPhase] = useState<'idle' | 'cards-out' | 'bar-up' | 'bar-down' | 'lamp-center' | 'active' | 'exit-lamp' | 'exit-bar-up' | 'exit-bar-down' | 'exit-cards-in'>('idle');
     const demoMode = demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
@@ -1727,41 +1730,46 @@ export default function HomePage() {
                                                 <div className="gallery-lamp-glow" style={{ width: 450, opacity: lampAnimDone.current['homeGlow'] ? 1 : 0, animation: lampAnimDone.current['homeGlow'] ? 'none' : 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 2.0s forwards' }} onAnimationEnd={() => { lampAnimDone.current['homeGlow'] = true; }}></div>
                                             </div>
 
-                                            {/* roomsMode: Arka Plan Kartı + Tab'lar */}
                                             {roomsMode && (
-                                                <div className="glossy-panel" style={{ padding: '10px 12px 0 12px', borderRadius: '12px 12px 0 0', marginBottom: -1, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                                <div className="glossy-panel" style={{ padding: '10px 12px 0 0', borderRadius: '12px 12px 0 0', marginBottom: -1, marginTop: -16, position: 'relative', zIndex: 5, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
                                                     <div style={{ display: 'flex', gap: 2, position: 'relative', zIndex: 10 }}>
                                                         {(demoRoomRef.current?.state?.rooms && demoRoomRef.current.state.rooms.length > 0
                                                             ? demoRoomRef.current.state.rooms.map((r: any) => ({ name: r.name, slug: r.slug }))
-                                                            : [{ name: 'Lobby', slug: 'genel-sohbet' }]
+                                                            : cachedRooms.length > 0 ? cachedRooms : [{ name: 'Lobby', slug: 'genel-sohbet' }]
                                                         ).map((tab: { name: string; slug: string }, i: number) => {
                                                             const isActive = tab.slug === demoSlug;
                                                             return (
                                                                 <div key={tab.slug} onClick={() => setDemoSlug(tab.slug)} style={{
-                                                                    padding: '8px 22px', fontSize: 11, fontWeight: 700,
-                                                                    color: isActive ? '#e2e8f0' : '#94a3b8',
+                                                                    padding: '14px 26px',
+                                                                    fontSize: 12,
+                                                                    fontWeight: isActive ? 700 : 500,
+                                                                    fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
+                                                                    textTransform: 'uppercase' as const,
+                                                                    letterSpacing: '0.14em',
+                                                                    color: isActive ? '#2d3348' : '#7a8a9d',
                                                                     background: isActive
-                                                                        ? 'rgba(148,163,184,0.15)'
-                                                                        : 'rgba(148,163,184,0.06)',
-                                                                    borderTop: `1px solid ${isActive ? 'rgba(148,163,184,0.25)' : 'rgba(148,163,184,0.1)'}`,
-                                                                    borderLeft: `1px solid ${isActive ? 'rgba(148,163,184,0.15)' : 'rgba(148,163,184,0.06)'}`,
-                                                                    borderRight: `1px solid ${isActive ? 'rgba(148,163,184,0.15)' : 'rgba(148,163,184,0.06)'}`,
+                                                                        ? 'linear-gradient(180deg, rgba(140,146,170,0.95) 0%, rgba(155,160,185,0.92) 40%, rgba(168,172,196,0.90) 70%, rgba(180,184,206,0.88) 100%)'
+                                                                        : 'transparent',
+                                                                    borderTop: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
+                                                                    borderLeft: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
+                                                                    borderRight: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
                                                                     borderBottom: 'none',
-                                                                    borderRadius: '10px 10px 0 0',
-                                                                    cursor: 'pointer', transition: 'all 0.3s',
-                                                                    letterSpacing: '0.06em',
-                                                                    backdropFilter: 'blur(24px)',
+                                                                    borderRadius: '14px 14px 0 0',
+                                                                    cursor: 'pointer',
+                                                                    transition: 'color 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
                                                                     boxShadow: isActive
-                                                                        ? 'inset 0 1px 0 rgba(148,163,184,0.1)'
+                                                                        ? '0 -2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.2)'
                                                                         : 'none',
-                                                                    opacity: 0, transform: 'translateY(-15px)',
+                                                                    position: 'relative',
+                                                                    zIndex: isActive ? 15 : 1,
+                                                                    opacity: 0,
                                                                     animation: `cardDropDown 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) ${0.15 + i * 0.1}s forwards`,
                                                                 }}>
-                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
                                                                         <span style={{
                                                                             width: 5, height: 5, borderRadius: '50%',
-                                                                            background: isActive ? '#94a3b8' : '#475569',
-                                                                            boxShadow: isActive ? '0 0 5px rgba(148,163,184,0.3)' : 'none',
+                                                                            background: isActive ? '#5b6180' : '#475569',
+                                                                            transition: 'background 0.3s ease',
                                                                         }} />
                                                                         {tab.name}
                                                                     </span>
@@ -1809,7 +1817,7 @@ export default function HomePage() {
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className="glossy-panel" style={{ padding: roomsMode ? '14px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 8px 8px' } : {}) }}>
+                                            <div className="glossy-panel" style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 8px 8px', marginTop: -2, maxHeight: 710, boxShadow: '0 14px 28px -4px rgba(0,0,0,0.45)' } : {}) }}>
                                                 {/* DEMO geçiş yükleniyor ikonu — chat zemini içinde */}
                                                 {roomsMode && blurToOdalar && (
                                                     <div style={{
@@ -1837,11 +1845,13 @@ export default function HomePage() {
                                                     </div>
                                                 )}
 
-                                                {roomsMode && !blurToOdalar && (
-                                                    <DemoChatRoom
-                                                        slug={demoSlug}
-                                                        onRoomData={(data) => { demoRoomRef.current = data; if (!demoRoomReady) setDemoRoomReady(true); }}
-                                                    />
+                                                {roomsMode && (
+                                                    <div style={{ opacity: blurToOdalar ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                                                        <DemoChatRoom
+                                                            slug={demoSlug}
+                                                            onRoomData={(data) => { demoRoomRef.current = data; if (!demoRoomReady) setDemoRoomReady(true); }}
+                                                        />
+                                                    </div>
                                                 )}
                                                 <div style={{ position: 'relative', zIndex: 10, ...(roomsMode ? { display: 'none' } : {}) }}>
                                                     {/* Orijinal içerik — tümü birlikte fade/blur olur */}
@@ -2133,7 +2143,8 @@ export default function HomePage() {
                                         {/* roomsMode: Gerçek BottomToolbar — ayrı glossy-panel kart */}
                                         {roomsMode && demoRoomReady && demoRoomRef.current && (
                                             <div className="glossy-panel demo-chatroom-override" style={{
-                                                padding: '12px 16px',
+                                                padding: '12px 16px', marginTop: -8, position: 'relative', zIndex: 6,
+                                                boxShadow: '0 -12px 36px rgba(0,0,0,0.5), 0 -4px 12px rgba(0,0,0,0.35), 0 20px 50px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
                                             }}>
                                                 <BottomToolbar
                                                     onSendMessage={demoRoomRef.current.actions.sendMessage}
@@ -2846,7 +2857,7 @@ export default function HomePage() {
 
 
                             {/* SAĞ ALAN */}
-                            <div key={'right-col'} style={{ width: roomsMode ? 240 : undefined, flex: roomsMode ? '0 0 240px' : '1 1 20%', minWidth: 220, maxWidth: roomsMode ? 260 : undefined, display: 'flex', flexDirection: 'column', gap: 24, order: 1, transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                            <div key={'right-col'} style={{ width: roomsMode ? 240 : undefined, flex: roomsMode ? '0 0 240px' : '1 1 20%', minWidth: 220, maxWidth: roomsMode ? 260 : undefined, display: 'flex', flexDirection: 'column', gap: 24, order: 1, transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', ...(roomsMode ? { marginLeft: -24 } : {}) }}>
                                 {/* GİRİŞ PANELİ + TABLO LAMBASI */}
                                 <div style={{ position: 'relative' }}>
                                     {/* ===== TABLO LAMBASI (SVG Gallery Lamp) — bağımsız, content-fade dışı ===== */}
@@ -3736,7 +3747,7 @@ export default function HomePage() {
 
                             {/* ODALAR — SAĞ SÜTÜN */}
                             {roomsMode && (
-                                <div style={{ width: liveHidden ? 0 : 240, flex: liveHidden ? '0 0 0px' : '0 0 240px', maxWidth: liveHidden ? 0 : 260, display: 'flex', flexDirection: 'column', gap: 16, order: 3, marginRight: liveHidden ? 0 : -20, opacity: liveHidden ? 0 : 1, transform: liveHidden ? 'translateY(-60px)' : 'translateY(0)', transition: liveHidden ? 'opacity 0.5s ease, transform 0.5s ease, width 0.5s ease 0.3s, flex 0.5s ease 0.3s, max-width 0.5s ease 0.3s, margin-right 0.5s ease 0.3s' : 'width 0.5s ease, flex 0.5s ease, max-width 0.5s ease, margin-right 0.5s ease, opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s', pointerEvents: liveHidden ? 'none' : 'auto' }}>
+                                <div style={{ width: liveHidden ? 0 : 248, flex: liveHidden ? '0 0 0px' : '0 0 248px', maxWidth: liveHidden ? 0 : 268, display: 'flex', flexDirection: 'column', gap: 16, order: 3, marginRight: liveHidden ? 0 : -24, opacity: liveHidden ? 0 : 1, transform: liveHidden ? 'translateY(-60px)' : 'translateY(0)', transition: liveHidden ? 'opacity 0.5s ease, transform 0.5s ease, width 0.5s ease 0.3s, flex 0.5s ease 0.3s, max-width 0.5s ease 0.3s, margin-right 0.5s ease 0.3s' : 'width 0.5s ease, flex 0.5s ease, max-width 0.5s ease, margin-right 0.5s ease, opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s', pointerEvents: liveHidden ? 'none' : 'auto' }}>
                                     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         {/* Lamba */}
                                         <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['rightLive'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 1.1s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['rightLive'] = true; }}>
@@ -4158,31 +4169,33 @@ export default function HomePage() {
             }
 
             {/* Üyelik Sözleşmesi Modal */}
-            {showTermsModal && (
-                <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTermsModal(false)}>
-                    <div onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 16, padding: '28px 32px', maxWidth: 520, width: '90%', maxHeight: '70vh', overflow: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.6)', color: '#e2e8f0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                            <h3 style={{ fontSize: 16, fontWeight: 900, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2 }}>Üyelik Sözleşmesi</h3>
-                            <button onClick={() => setShowTermsModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 20, cursor: 'pointer', padding: 4, lineHeight: 1 }}>✕</button>
+            {
+                showTermsModal && (
+                    <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={() => setShowTermsModal(false)}>
+                        <div onClick={(e) => e.stopPropagation()} style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', border: '1px solid rgba(56,189,248,0.2)', borderRadius: 16, padding: '28px 32px', maxWidth: 520, width: '90%', maxHeight: '70vh', overflow: 'auto', boxShadow: '0 25px 60px rgba(0,0,0,0.6)', color: '#e2e8f0' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                                <h3 style={{ fontSize: 16, fontWeight: 900, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2 }}>Üyelik Sözleşmesi</h3>
+                                <button onClick={() => setShowTermsModal(false)} style={{ background: 'none', border: 'none', color: '#94a3b8', fontSize: 20, cursor: 'pointer', padding: 4, lineHeight: 1 }}>✕</button>
+                            </div>
+                            <div style={{ fontSize: 12, lineHeight: 1.8, color: '#cbd5e1' }}>
+                                <p style={{ fontWeight: 700, marginBottom: 12 }}>Son Güncelleme: Mart 2026</p>
+                                <p style={{ marginBottom: 10 }}>Bu sözleşme, SopranoChat platformuna üye olan kullanıcılar ile SopranoChat yönetimi arasında geçerli olan kullanım koşullarını belirler.</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>1. Üyelik Koşulları</h4>
+                                <p>Üye olmak için geçerli bir e-posta adresi ve en az 4 karakterlik bir şifre gerekmektedir. Kullanıcı adı benzersiz olmalıdır. Sahte veya yanıltıcı bilgi verilmesi durumunda hesap askıya alınabilir.</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>2. Kullanım Kuralları</h4>
+                                <p>Platform içerisinde hakaret, küfür, ırkçılık, cinsel içerik ve diğer topluma aykırı davranışlar yasaktır. Bu kurallara uymayan kullanıcıların hesapları kalıcı olarak kapatılabilir.</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>3. Gizlilik</h4>
+                                <p>Kullanıcı bilgileri üçüncü şahıslarla paylaşılmaz. E-posta adresleri yalnızca hesap doğrulama ve bildirim amaçlı kullanılır.</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>4. Sorumluluk</h4>
+                                <p>Kullanıcılar kendi hesaplarının güvenliğinden sorumludur. Şifre paylaşımı veya hesap devri yapılmamalıdır.</p>
+                                <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>5. Değişiklikler</h4>
+                                <p>SopranoChat yönetimi bu sözleşmeyi önceden bildirim yapmaksızın güncelleme hakkını saklı tutar.</p>
+                            </div>
+                            <button onClick={() => setShowTermsModal(false)} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, marginTop: 20 }}>Anladım, Kapat</button>
                         </div>
-                        <div style={{ fontSize: 12, lineHeight: 1.8, color: '#cbd5e1' }}>
-                            <p style={{ fontWeight: 700, marginBottom: 12 }}>Son Güncelleme: Mart 2026</p>
-                            <p style={{ marginBottom: 10 }}>Bu sözleşme, SopranoChat platformuna üye olan kullanıcılar ile SopranoChat yönetimi arasında geçerli olan kullanım koşullarını belirler.</p>
-                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>1. Üyelik Koşulları</h4>
-                            <p>Üye olmak için geçerli bir e-posta adresi ve en az 4 karakterlik bir şifre gerekmektedir. Kullanıcı adı benzersiz olmalıdır. Sahte veya yanıltıcı bilgi verilmesi durumunda hesap askıya alınabilir.</p>
-                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>2. Kullanım Kuralları</h4>
-                            <p>Platform içerisinde hakaret, küfür, ırkçılık, cinsel içerik ve diğer topluma aykırı davranışlar yasaktır. Bu kurallara uymayan kullanıcıların hesapları kalıcı olarak kapatılabilir.</p>
-                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>3. Gizlilik</h4>
-                            <p>Kullanıcı bilgileri üçüncü şahıslarla paylaşılmaz. E-posta adresleri yalnızca hesap doğrulama ve bildirim amaçlı kullanılır.</p>
-                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>4. Sorumluluk</h4>
-                            <p>Kullanıcılar kendi hesaplarının güvenliğinden sorumludur. Şifre paylaşımı veya hesap devri yapılmamalıdır.</p>
-                            <h4 style={{ fontSize: 13, fontWeight: 800, color: '#fbbf24', marginTop: 16, marginBottom: 8 }}>5. Değişiklikler</h4>
-                            <p>SopranoChat yönetimi bu sözleşmeyi önceden bildirim yapmaksızın güncelleme hakkını saklı tutar.</p>
-                        </div>
-                        <button onClick={() => setShowTermsModal(false)} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, marginTop: 20 }}>Anladım, Kapat</button>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 }
