@@ -157,7 +157,7 @@ export function RoomMonitorModal({
         items: ContextMenuItem[];
     } | null>(null);
 
-    // Inline confirm dialog state (replaces page.tsx ConfirmModal for z-index issues)
+    // Inline confirm dialog state
     const [inlineConfirm, setInlineConfirm] = useState<{
         item: ContextMenuItem;
         targetUser: RoomUser;
@@ -242,7 +242,6 @@ export function RoomMonitorModal({
         }, (response: any) => {
             console.log('[RoomMonitor] admin:pull-user ACK:', response);
         });
-        // Re-fetch in staggered intervals so admin sees the change as user joins
         setTimeout(() => fetchMonitorData(), 500);
         setTimeout(() => fetchMonitorData(), 1500);
         setTimeout(() => fetchMonitorData(), 3000);
@@ -268,7 +267,7 @@ export function RoomMonitorModal({
         });
     }, [currentUserId, userLevel]);
 
-    // Use ref to avoid stale closure — useCallback may capture old userContextMenu
+    // Use ref to avoid stale closure
     const userContextMenuRef = useRef(userContextMenu);
     userContextMenuRef.current = userContextMenu;
 
@@ -280,7 +279,6 @@ export function RoomMonitorModal({
             return;
         }
 
-        // Intercept confirm-required actions and show inline confirm dialog
         if (item.confirm && !item._confirmed) {
             setInlineConfirm({
                 item,
@@ -298,7 +296,6 @@ export function RoomMonitorModal({
             onUserAction({ ...item, _confirmed: true }, ctx.targetUser);
         }
         setUserContextMenu(null);
-        // Re-fetch immediately so admin sees the change
         setTimeout(() => fetchMonitorData(), 500);
     }, [onUserAction, fetchMonitorData, handlePullUser, currentRoomSlug]);
 
@@ -337,61 +334,87 @@ export function RoomMonitorModal({
 
             <div
                 ref={modalRef}
-                className="relative w-full max-w-3xl max-h-[80vh] animate-pure-fade flex flex-col"
+                className="relative w-full max-w-4xl max-h-[82vh] animate-pure-fade flex flex-col"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, rgba(15,18,30,0.97) 0%, rgba(10,12,20,0.98) 100%)',
-                    border: '1px solid rgba(123,159,239,0.12)',
-                    borderRadius: '16px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(123,159,239,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
+                    background: 'linear-gradient(160deg, rgba(30,33,58,0.97) 0%, rgba(22,25,48,0.98) 100%)',
+                    border: '1px solid rgba(167,139,250,0.22)',
+                    borderRadius: 18,
+                    boxShadow: '0 24px 80px rgba(0,0,0,0.5), 0 0 1px rgba(167,139,250,0.3), inset 0 1px 0 rgba(255,255,255,0.07)',
                     backdropFilter: 'blur(40px) saturate(150%)',
                 }}
             >
-                {/* Top accent line */}
-                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(123,159,239,0.4) 40%, rgba(200,150,46,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
+                {/* Premium top accent gradient */}
+                <div style={{
+                    height: 2, borderRadius: '18px 18px 0 0',
+                    background: 'linear-gradient(90deg, transparent 5%, rgba(167,139,250,0.5) 30%, rgba(251,191,36,0.4) 50%, rgba(56,189,248,0.4) 70%, transparent 95%)',
+                }} />
 
                 {/* Header */}
                 <div
                     className="flex items-center justify-between px-5 py-3"
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none' }}
+                    style={{ cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
                 >
-                    <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3">
                         <div style={{
-                            width: 32, height: 32, borderRadius: 10,
-                            background: 'linear-gradient(135deg, rgba(123,159,239,0.12), rgba(200,150,46,0.08))',
-                            border: '1px solid rgba(123,159,239,0.15)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
+                            width: 36, height: 36, borderRadius: 12,
+                            background: 'linear-gradient(135deg, rgba(167,139,250,0.25), rgba(56,189,248,0.18))',
+                            border: '1px solid rgba(167,139,250,0.3)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 16,
+                            boxShadow: '0 4px 12px rgba(167,139,250,0.15)',
                         }}>
-                            🏠
+                            📡
                         </div>
                         <div>
-                            <h2 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.2 }}>Oda Monitör</h2>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#64748b', marginTop: 1 }}>
-                                <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 4px rgba(34,197,94,0.4)' }} />
-                                    {activeRooms} aktif
+                            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#f1f5f9', margin: 0, letterSpacing: '0.02em' }}>Oda Monitör</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
+                                <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    fontSize: 9, fontWeight: 700, color: '#34d399',
+                                    padding: '2px 8px', borderRadius: 10,
+                                    background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.25)',
+                                }}>
+                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 6px rgba(34,197,94,0.5)' }} />
+                                    {activeRooms} aktif oda
                                 </span>
-                                <span style={{ color: '#334155' }}>•</span>
-                                <span>👥 {totalUsers}</span>
+                                <span style={{
+                                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                                    fontSize: 9, fontWeight: 700, color: '#c4b5fd',
+                                    padding: '2px 8px', borderRadius: 10,
+                                    background: 'rgba(167,139,250,0.14)', border: '1px solid rgba(167,139,250,0.2)',
+                                }}>
+                                    👥 {totalUsers} kişi
+                                </span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                         <button
                             onClick={(e) => { e.stopPropagation(); fetchMonitorData(); }}
-                            style={{ padding: '4px 8px', borderRadius: 8, fontSize: 11, color: '#64748b', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 4 }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
+                            style={{
+                                padding: '5px 10px', borderRadius: 8, fontSize: 10, fontWeight: 600,
+                                color: '#94a3b8', background: 'rgba(255,255,255,0.04)',
+                                border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer',
+                                display: 'flex', alignItems: 'center', gap: 4, transition: 'all 0.2s',
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(167,139,250,0.1)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.2)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
                             title="Yenile"
                         >
-                            🔄 <span style={{ fontSize: 9, color: '#475569' }}>{lastUpdate.toLocaleTimeString('tr-TR')}</span>
+                            🔄 <span style={{ fontSize: 8, color: '#475569' }}>{lastUpdate.toLocaleTimeString('tr-TR')}</span>
                         </button>
-                        <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, transition: 'all 0.2s' }}
-                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
-                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                        <button onClick={onClose} style={{
+                            width: 30, height: 30, borderRadius: 8,
+                            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
+                            color: '#64748b', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 13, transition: 'all 0.2s',
+                        }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; e.currentTarget.style.borderColor = 'rgba(239,68,68,0.2)'; e.currentTarget.style.color = '#f87171'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#64748b'; }}
                         >
                             ✕
                         </button>
@@ -399,41 +422,43 @@ export function RoomMonitorModal({
                 </div>
 
                 {/* Search */}
-                <div style={{ padding: '0 20px 10px' }}>
+                <div style={{ padding: '8px 20px 6px' }}>
                     <div style={{ position: 'relative' }}>
-                        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#475569' }}>🔍</span>
+                        <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13, color: '#475569', pointerEvents: 'none' }}>🔍</span>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Oda veya kullanıcı ara..."
-                            style={{ width: '100%', fontSize: 12, color: '#fff', borderRadius: 10, paddingLeft: 30, paddingRight: 12, paddingTop: 7, paddingBottom: 7, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', outline: 'none', transition: 'border-color 0.2s' }}
-                            onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(200,150,46,0.25)'}
-                            onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
+                            style={{
+                                width: '100%', fontSize: 12, color: '#e2e8f0', fontWeight: 500,
+                                borderRadius: 10, paddingLeft: 34, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
+                                border: '1px solid rgba(167,139,250,0.15)', background: 'rgba(15,18,40,0.5)',
+                                outline: 'none', transition: 'all 0.25s',
+                                boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+                            }}
+                            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.3)'; e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.2), 0 0 12px rgba(167,139,250,0.08)'; }}
+                            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.1)'; e.currentTarget.style.boxShadow = 'inset 0 1px 3px rgba(0,0,0,0.2)'; }}
                         />
                     </div>
                 </div>
 
                 {/* Room Grid */}
-                <div className="flex-1 overflow-y-auto" style={{ padding: '0 20px 16px', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.06) transparent' }}>
+                <div className="flex-1 overflow-y-auto" style={{ padding: '8px 20px 16px', scrollbarWidth: 'thin', scrollbarColor: 'rgba(167,139,250,0.12) transparent' }}>
                     {loading ? (
                         <div className="flex items-center justify-center h-48">
                             <div className="flex flex-col items-center gap-3">
-                                <div className="w-8 h-8 border-2 border-amber-600/30 border-t-amber-600 rounded-full animate-spin" />
-                                <span className="text-sm text-gray-500">Yükleniyor...</span>
+                                <div className="w-8 h-8 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
+                                <span className="text-xs text-gray-500 font-medium">Odalar yükleniyor...</span>
                             </div>
                         </div>
                     ) : filteredRooms.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-48 text-gray-500">
-                            <span className="text-4xl mb-3 opacity-30">🏠</span>
-                            <p className="text-sm">Oda bulunamadı</p>
+                            <span className="text-4xl mb-3 opacity-20">📡</span>
+                            <p className="text-xs font-medium">Oda bulunamadı</p>
                         </div>
                     ) : (
-                        <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                            gap: '10px',
-                        }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 10 }}>
                             {filteredRooms.map(room => {
                                 const isCurrent = room.slug === currentRoomSlug;
                                 const hasUsers = room.userCount > 0;
@@ -441,82 +466,65 @@ export function RoomMonitorModal({
                                 const isExpanded = expandedRooms.has(room.id);
                                 const visibleUsers = isExpanded ? sortedUsers : sortedUsers.slice(0, MAX_VISIBLE_USERS);
                                 const extraCount = room.userCount - MAX_VISIBLE_USERS;
+                                const capacity = room.maxParticipants || 30;
+                                const fillPct = Math.min(100, (room.userCount / capacity) * 100);
 
                                 return (
                                     <div
                                         key={room.id}
                                         style={{
-                                            background: isCurrent
-                                                ? 'rgba(99,102,241,0.08)'
-                                                : 'rgba(255,255,255,0.02)',
-                                            border: isCurrent
-                                                ? '1px solid rgba(99,102,241,0.25)'
-                                                : '1px solid rgba(255,255,255,0.05)',
-                                            borderRadius: 12,
-                                            padding: '12px',
-                                            transition: 'all 0.2s',
+                                            padding: '14px', borderRadius: 14,
+                                            background: isCurrent ? 'rgba(167,139,250,0.12)' : 'rgba(255,255,255,0.04)',
+                                            border: `1px solid ${isCurrent ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                                            transition: 'all 0.25s ease', position: 'relative', overflow: 'hidden',
+                                            display: 'flex', flexDirection: 'column',
                                         }}
-                                        onMouseOver={(e) => {
-                                            if (!isCurrent) {
-                                                e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                                                e.currentTarget.style.borderColor = 'rgba(99,102,241,0.2)';
-                                            }
-                                        }}
-                                        onMouseOut={(e) => {
-                                            if (!isCurrent) {
-                                                e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                                                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)';
-                                            }
-                                        }}
+                                        onMouseOver={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(167,139,250,0.08)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.25)'; e.currentTarget.style.boxShadow = '0 4px 20px rgba(167,139,250,0.1)'; } }}
+                                        onMouseOut={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.boxShadow = 'none'; } }}
                                     >
-                                        {/* Room Header — click to navigate */}
-                                        <div
-                                            className="flex items-center justify-between mb-3"
-                                            style={{ cursor: isCurrent ? 'default' : 'pointer' }}
-                                            onClick={() => {
-                                                if (!isCurrent) {
-                                                    onNavigateToRoom(room.slug);
-                                                    onClose();
-                                                }
-                                            }}
-                                        >
+                                        {/* Room Header */}
+                                        <div className="flex items-center justify-between mb-2" style={{ cursor: isCurrent ? 'default' : 'pointer' }} onClick={() => { if (!isCurrent) { onNavigateToRoom(room.slug); onClose(); } }}>
                                             <div className="flex items-center gap-2 min-w-0">
-                                                <span style={{
-                                                    width: 8, height: 8, borderRadius: '50%',
-                                                    background: hasUsers ? '#22c55e' : '#374151',
-                                                    boxShadow: hasUsers ? '0 0 8px rgba(34,197,94,0.4)' : 'none',
-                                                    flexShrink: 0,
-                                                }} />
-                                                <span className="text-sm font-semibold text-white truncate">
-                                                    {room.isVipRoom ? '👑 ' : room.isMeetingRoom ? '📞 ' : room.isLocked ? '🔒 ' : ''}
-                                                    {room.name}
-                                                </span>
-                                                {isCurrent && (
-                                                    <span className="text-[9px] text-[#7b9fef] font-medium px-1.5 py-0.5 bg-blue-500/15 rounded-full whitespace-nowrap">
-                                                        buradasın
-                                                    </span>
-                                                )}
+                                                <div style={{
+                                                    width: 28, height: 28, borderRadius: 9,
+                                                    background: hasUsers ? 'linear-gradient(135deg, rgba(34,197,94,0.2), rgba(52,211,153,0.12))' : 'rgba(255,255,255,0.05)',
+                                                    border: `1px solid ${hasUsers ? 'rgba(34,197,94,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0,
+                                                }}>
+                                                    {room.isVipRoom ? '👑' : room.isLocked ? '🔒' : hasUsers ? '🎙️' : '💤'}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <div className="text-[12px] font-bold text-white truncate" style={{ lineHeight: 1.2 }}>{room.name}</div>
+                                                    {isCurrent && <span style={{ fontSize: 8, fontWeight: 700, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 1 }}>● Buradasın</span>}
+                                                </div>
                                             </div>
                                             <span style={{
-                                                fontSize: 11, fontWeight: 600,
-                                                color: hasUsers ? '#22c55e' : '#4b5563',
-                                                padding: '2px 8px',
-                                                background: hasUsers ? 'rgba(34,197,94,0.1)' : 'rgba(75,85,99,0.1)',
-                                                borderRadius: 20,
+                                                fontSize: 10, fontWeight: 700,
+                                                color: hasUsers ? '#34d399' : '#475569',
+                                                padding: '3px 8px', borderRadius: 8,
+                                                background: hasUsers ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.02)',
+                                                border: `1px solid ${hasUsers ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.04)'}`,
                                                 whiteSpace: 'nowrap',
                                             }}>
-                                                👥 {room.userCount}
+                                                {room.userCount}/{capacity}
                                             </span>
                                         </div>
 
+                                        {/* Capacity bar */}
+                                        <div style={{ height: 3, borderRadius: 2, marginBottom: 8, background: 'rgba(255,255,255,0.04)', overflow: 'hidden' }}>
+                                            <div style={{
+                                                height: '100%', borderRadius: 2, width: `${fillPct}%`,
+                                                background: fillPct > 80 ? 'linear-gradient(90deg, #f59e0b, #ef4444)' : fillPct > 50 ? 'linear-gradient(90deg, #34d399, #fbbf24)' : 'linear-gradient(90deg, rgba(167,139,250,0.4), rgba(56,189,248,0.4))',
+                                                transition: 'width 0.5s ease, background 0.3s ease',
+                                            }} />
+                                        </div>
+
                                         {/* User List */}
-                                        <div style={{ minHeight: 40 }}>
+                                        <div style={{ minHeight: 28, flex: 1 }}>
                                             {!hasUsers ? (
-                                                <div className="text-xs text-gray-600 py-2 text-center" style={{ fontStyle: 'italic' }}>
-                                                    Boş oda
-                                                </div>
+                                                <div style={{ fontSize: 10, color: '#475569', textAlign: 'center', padding: '6px 0', fontStyle: 'italic' }}>Boş oda</div>
                                             ) : (
-                                                <div className="space-y-1">
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                                     {visibleUsers.map((user) => {
                                                         const roleLower = user.role?.toLowerCase() || 'guest';
                                                         const icon = ROLE_ICONS[roleLower];
@@ -524,54 +532,42 @@ export function RoomMonitorModal({
                                                         return (
                                                             <div
                                                                 key={user.userId}
-                                                                className="flex items-center gap-2 px-2 py-1 rounded-lg transition-colors group"
-                                                                style={{ cursor: 'context-menu' }}
+                                                                style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 6px', borderRadius: 8, cursor: 'context-menu', transition: 'background 0.15s' }}
                                                                 onContextMenu={(e) => handleUserContextMenu(e, user)}
                                                                 onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
                                                                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                                                             >
-                                                                {/* Avatar — baş harf placeholder */}
                                                                 <div style={{
-                                                                    width: 22, height: 22, borderRadius: '50%',
-                                                                    flexShrink: 0,
-                                                                    border: `1.5px solid ${color}40`,
-                                                                    background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                                                                    width: 20, height: 20, borderRadius: '50%', flexShrink: 0,
+                                                                    border: `1.5px solid ${color}30`,
+                                                                    background: 'linear-gradient(135deg, rgba(30,35,50,0.9), rgba(15,18,28,0.95))',
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                    fontSize: 9, fontWeight: 800, color: `${color}`, textTransform: 'uppercase',
-                                                                    overflow: 'hidden',
+                                                                    fontSize: 8, fontWeight: 800, color, textTransform: 'uppercase', overflow: 'hidden',
                                                                 }}>
                                                                     {user.avatar ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}
                                                                 </div>
-                                                                {/* Name */}
-                                                                <span className="text-xs truncate flex-1" style={{ color }}>
-                                                                    {user.displayName}
-                                                                </span>
-                                                                {/* Role icon */}
-                                                                {icon && (
-                                                                    <span className="text-xs opacity-80" title={roleLower}>
-                                                                        {icon}
-                                                                    </span>
-                                                                )}
-                                                                {/* Moderation flags */}
-                                                                {user.isMuted && <span className="text-[10px] opacity-60" title="Susturulmuş">🔇</span>}
-                                                                {user.isGagged && <span className="text-[10px] opacity-60" title="Yazı yasağı">🤐</span>}
-                                                                {user.isBanned && <span className="text-[10px] opacity-60" title="Yasaklı">🚫</span>}
-                                                                {user.isCamBlocked && <span className="text-[10px] opacity-60" title="Kamera engelli">📷</span>}
+                                                                <span style={{ fontSize: 10, fontWeight: 600, color, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.displayName}</span>
+                                                                {icon && <span style={{ fontSize: 10, opacity: 0.7 }}>{icon}</span>}
+                                                                {user.isMuted && <span style={{ fontSize: 9, opacity: 0.5 }}>🔇</span>}
+                                                                {user.isGagged && <span style={{ fontSize: 9, opacity: 0.5 }}>🤐</span>}
+                                                                {user.isBanned && <span style={{ fontSize: 9, opacity: 0.5 }}>🚫</span>}
                                                             </div>
                                                         );
                                                     })}
                                                     {extraCount > 0 && !isExpanded && (
                                                         <button
                                                             onClick={() => setExpandedRooms(prev => new Set(prev).add(room.id))}
-                                                            className="text-[10px] text-[#7b9fef] hover:text-[#a3bfff] pl-8 py-0.5 transition-colors cursor-pointer bg-transparent border-none"
+                                                            style={{ fontSize: 9, color: '#a78bfa', fontWeight: 600, paddingLeft: 26, paddingTop: 2, paddingBottom: 2, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'color 0.2s' }}
+                                                            onMouseOver={e => e.currentTarget.style.color = '#c4b5fd'}
+                                                            onMouseOut={e => e.currentTarget.style.color = '#a78bfa'}
                                                         >
-                                                            + {extraCount} kişi daha...
+                                                            + {extraCount} kişi daha
                                                         </button>
                                                     )}
                                                     {isExpanded && sortedUsers.length > MAX_VISIBLE_USERS && (
                                                         <button
                                                             onClick={() => setExpandedRooms(prev => { const s = new Set(prev); s.delete(room.id); return s; })}
-                                                            className="text-[10px] text-gray-500 hover:text-gray-400 pl-8 py-0.5 transition-colors cursor-pointer bg-transparent border-none"
+                                                            style={{ fontSize: 9, color: '#64748b', fontWeight: 600, paddingLeft: 26, paddingTop: 2, paddingBottom: 2, background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                                                         >
                                                             ▲ gizle
                                                         </button>
@@ -582,46 +578,32 @@ export function RoomMonitorModal({
 
                                         {/* Actions */}
                                         {!isCurrent && (
-                                            <div className="mt-3 pt-3 flex gap-2" style={{ borderTop: '1px solid rgba(255,255,255,0.04)' }}>
+                                            <div style={{ display: 'flex', gap: 6, marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.04)' }}>
                                                 <button
                                                     onClick={() => { onNavigateToRoom(room.slug); onClose(); }}
-                                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all"
                                                     style={{
-                                                        background: 'rgba(99,102,241,0.12)',
-                                                        color: '#818cf8',
-                                                        border: '1px solid rgba(99,102,241,0.15)',
+                                                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                                                        padding: '6px 0', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                                                        background: 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(99,102,241,0.08))',
+                                                        color: '#a78bfa', border: '1px solid rgba(167,139,250,0.15)',
+                                                        cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.03em',
                                                     }}
-                                                    onMouseOver={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(99,102,241,0.2)';
-                                                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.3)';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(99,102,241,0.12)';
-                                                        e.currentTarget.style.borderColor = 'rgba(99,102,241,0.15)';
-                                                    }}
+                                                    onMouseOver={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(167,139,250,0.2), rgba(99,102,241,0.15))'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.3)'; }}
+                                                    onMouseOut={(e) => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(167,139,250,0.12), rgba(99,102,241,0.08))'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.15)'; }}
                                                 >
                                                     🚪 Gir
                                                 </button>
                                                 <button
-                                                    onClick={() => {
-                                                        // ★ localStorage'a yazma — backend VIP+ kullanıcıları otomatik stealth yapar
-                                                        onNavigateToRoom(room.slug);
-                                                        onClose();
-                                                    }}
-                                                    className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-medium transition-all"
+                                                    onClick={() => { onNavigateToRoom(room.slug); onClose(); }}
                                                     style={{
-                                                        background: 'rgba(168,85,247,0.12)',
-                                                        color: '#a78bfa',
-                                                        border: '1px solid rgba(168,85,247,0.15)',
+                                                        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                                                        padding: '6px 0', borderRadius: 8, fontSize: 10, fontWeight: 700,
+                                                        background: 'rgba(255,255,255,0.03)', color: '#64748b',
+                                                        border: '1px solid rgba(255,255,255,0.06)',
+                                                        cursor: 'pointer', transition: 'all 0.2s', letterSpacing: '0.03em',
                                                     }}
-                                                    onMouseOver={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(168,85,247,0.2)';
-                                                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.3)';
-                                                    }}
-                                                    onMouseOut={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(168,85,247,0.12)';
-                                                        e.currentTarget.style.borderColor = 'rgba(168,85,247,0.15)';
-                                                    }}
+                                                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(56,189,248,0.08)'; e.currentTarget.style.borderColor = 'rgba(56,189,248,0.15)'; e.currentTarget.style.color = '#38bdf8'; }}
+                                                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#64748b'; }}
                                                     title="Görünmez olarak odaya gir"
                                                 >
                                                     👁️ Gözle
@@ -635,83 +617,91 @@ export function RoomMonitorModal({
                     )}
                 </div>
 
-                {/* Tip */}
-                <div style={{ padding: '6px 20px 12px', textAlign: 'center' }}>
-                    <div style={{ fontSize: 9, color: '#475569' }}>
-                        💡 Sağ tık → moderasyon
-                    </div>
+                {/* Footer tip */}
+                <div style={{ padding: '6px 20px 10px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                    <span style={{ fontSize: 9, color: '#64748b', fontStyle: 'italic' }}>💡 Kullanıcıya sağ tık → moderasyon işlemleri</span>
                 </div>
-            </div >
+            </div>
 
             {/* User Context Menu */}
-            {
-                userContextMenu && (
-                    <ContextMenu
-                        items={userContextMenu.items}
-                        x={userContextMenu.x}
-                        y={userContextMenu.y}
-                        onClose={() => setUserContextMenu(null)}
-                        onItemClick={handleContextMenuAction}
-                    />
-                )
-            }
+            {userContextMenu && (
+                <ContextMenu
+                    items={userContextMenu.items}
+                    x={userContextMenu.x}
+                    y={userContextMenu.y}
+                    onClose={() => setUserContextMenu(null)}
+                    onItemClick={handleContextMenuAction}
+                />
+            )}
 
-            {/* Inline Confirm Dialog — renders inside the portal at higher z-index */}
-            {
-                inlineConfirm && (
-                    <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
-                        <div className="absolute inset-0 bg-black/40" onClick={() => setInlineConfirm(null)} />
-                        <div
-                            className="relative w-full max-w-[380px] rounded-2xl border border-white/10 overflow-hidden"
-                            style={{
-                                background: 'linear-gradient(180deg, rgba(20, 24, 40, 0.98) 0%, rgba(12, 14, 22, 0.98) 100%)',
-                                boxShadow: '0 25px 60px rgba(0, 0, 0, 0.6), 0 0 40px rgba(239, 68, 68, 0.12)',
-                                animation: 'inlineConfirmIn 0.15s ease-out',
-                            }}
-                            onClick={(e) => e.stopPropagation()}
-                        >
-                            <div className="h-[2px] w-full" style={{ background: 'linear-gradient(90deg, transparent, #ef4444, transparent)' }} />
-                            <div className="p-5">
-                                <div className="flex items-start gap-3 mb-3">
-                                    <div className="flex-shrink-0 w-10 h-10 rounded-xl bg-red-500/15 ring-1 ring-red-500/30 flex items-center justify-center">
-                                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="12" r="10" />
-                                            <line x1="12" y1="8" x2="12" y2="12" />
-                                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                                        </svg>
-                                    </div>
-                                    <div className="flex-1 pt-0.5">
-                                        <h3 className="text-base font-bold text-white">{inlineConfirm.targetUser.displayName}</h3>
-                                        <p className="text-[13px] text-gray-400 mt-1 leading-relaxed">{inlineConfirm.message}</p>
-                                    </div>
+            {/* Inline Confirm Dialog */}
+            {inlineConfirm && (
+                <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/40" onClick={() => setInlineConfirm(null)} />
+                    <div
+                        className="relative w-full max-w-[380px] overflow-hidden"
+                        style={{
+                            background: 'linear-gradient(180deg, rgba(30,34,55,0.98) 0%, rgba(22,25,45,0.98) 100%)',
+                            border: '1px solid rgba(167,139,250,0.15)', borderRadius: 16,
+                            boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(239,68,68,0.12)',
+                            animation: 'inlineConfirmIn 0.15s ease-out',
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, #ef4444, transparent)' }} />
+                        <div style={{ padding: 20 }}>
+                            <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 12 }}>
+                                <div style={{
+                                    width: 40, height: 40, borderRadius: 12, flexShrink: 0,
+                                    background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                }}>
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+                                    </svg>
                                 </div>
-                                <div className="h-px bg-white/5 my-4" />
-                                <div className="flex justify-end gap-2.5">
-                                    <button
-                                        onClick={() => setInlineConfirm(null)}
-                                        className="px-4 py-2 rounded-xl text-sm font-medium text-gray-300 hover:text-white border border-white/10 hover:border-white/20 transition-all"
-                                    >
-                                        İptal
-                                    </button>
-                                    <button
-                                        onClick={handleInlineConfirm}
-                                        className="px-5 py-2 rounded-xl text-sm font-semibold text-white transition-all bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 shadow-lg shadow-red-900/30"
-                                    >
-                                        Onayla
-                                    </button>
+                                <div style={{ flex: 1, paddingTop: 2 }}>
+                                    <h3 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0 }}>{inlineConfirm.targetUser.displayName}</h3>
+                                    <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 4, lineHeight: 1.5 }}>{inlineConfirm.message}</p>
                                 </div>
                             </div>
-                            <style>{`
-                                @keyframes inlineConfirmIn {
-                                    from { opacity: 0; transform: scale(0.95) translateY(-8px); }
-                                    to { opacity: 1; transform: scale(1) translateY(0); }
-                                }
-                            `}</style>
+                            <div style={{ height: 1, background: 'rgba(255,255,255,0.04)', margin: '12px 0' }} />
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                                <button
+                                    onClick={() => setInlineConfirm(null)}
+                                    style={{
+                                        padding: '7px 16px', borderRadius: 10, fontSize: 12, fontWeight: 600,
+                                        color: '#94a3b8', background: 'transparent',
+                                        border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.2s',
+                                    }}
+                                    onMouseOver={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'; e.currentTarget.style.color = '#e2e8f0'; }}
+                                    onMouseOut={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = '#94a3b8'; }}
+                                >
+                                    İptal
+                                </button>
+                                <button
+                                    onClick={handleInlineConfirm}
+                                    style={{
+                                        padding: '7px 20px', borderRadius: 10, fontSize: 12, fontWeight: 700,
+                                        color: '#fff', background: 'linear-gradient(135deg, #ef4444, #dc2626)',
+                                        border: 'none', cursor: 'pointer',
+                                        boxShadow: '0 4px 16px rgba(239,68,68,0.25)', transition: 'all 0.2s',
+                                    }}
+                                >
+                                    Onayla
+                                </button>
+                            </div>
                         </div>
+                        <style>{`
+                            @keyframes inlineConfirmIn {
+                                from { opacity: 0; transform: scale(0.95) translateY(-8px); }
+                                to { opacity: 1; transform: scale(1) translateY(0); }
+                            }
+                        `}</style>
                     </div>
-                )
-            }
-        </div >
+                </div>
+            )}
+        </div>
     );
 
     return createPortal(content, document.body);

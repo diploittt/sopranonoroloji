@@ -155,6 +155,7 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
             handleEmptyAreaContextMenu,
             localStream: room.state.localStream,
             isCameraOn: room.state.isCameraOn,
+            openAudioTest: () => { /* will be handled by parent */ },
         });
     }, [room.state.users, room.state.messages, room.state.currentSpeaker, room.state.isCameraOn, room.state.localStream, room.state.isMicOn, room.state.queue, room.state.micTimeLeft, room.state.isChatLocked, room.state.isCurrentUserMuted, room.state.isCurrentUserGagged]);
 
@@ -169,7 +170,6 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
     const [userInfoTarget, setUserInfoTarget] = useState<any>(null);
     const [userHistoryTarget, setUserHistoryTarget] = useState<{ userId: string; displayName: string } | null>(null);
     const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
-    const [audioTestOpen, setAudioTestOpen] = useState(false);
 
     // Gift system
     const [giftPanelOpen, setGiftPanelOpen] = useState(false);
@@ -382,7 +382,8 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
                 setIsProfileOpen(true);
                 break;
             case 'testUserAudio':
-                setAudioTestOpen(true);
+                // AudioTestPanel açma — parent (HomePage) scope'undaki state'i kontrol eder
+                (window as any).__sopranoOpenAudioTest?.();
                 break;
             case 'copy': {
                 const txt = savedSelectionRef.current;
@@ -620,8 +621,6 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
 
             {/* Gift System */}
             <GiftAnimation animationData={giftAnimation} onComplete={() => setGiftAnimation(null)} />
-            {/* Audio Test Panel */}
-            {audioTestOpen && <AudioTestPanel onClose={() => setAudioTestOpen(false)} />}
             <GiftPanel
                 isOpen={giftPanelOpen}
                 onClose={() => { setGiftPanelOpen(false); setGiftTargetUser(null); }}
@@ -750,6 +749,8 @@ export default function HomePage() {
     const [tvYtInputOpen, setTvYtInputOpen] = useState(false);
     const [tvYtInputValue, setTvYtInputValue] = useState('');
     const tvYtIframeRef = useRef<HTMLIFrameElement>(null);
+    const [audioTestOpen, setAudioTestOpen] = useState(false);
+    useEffect(() => { (window as any).__sopranoOpenAudioTest = () => setAudioTestOpen(true); return () => { delete (window as any).__sopranoOpenAudioTest; }; }, []);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
     const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
@@ -3405,177 +3406,183 @@ export default function HomePage() {
                                                         </div>
                                                     )}
 
-                                                    {/* roomsMode — Çevrimiçi Kullanıcılar sütunu */}
+                                                    {/* roomsMode — Çevrimiçi Kullanıcılar sütunu veya AudioTest */}
                                                     {roomsMode && (
                                                         <div className={demoEntrance === 'out' ? 'demo-exit-left' : 'demo-enter-left'} style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: 0, overflow: 'hidden', transformOrigin: 'top center' }}>
-                                                            {/* Başlık — scroll'dan bağımsız */}
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 6, borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
-                                                                <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px rgba(52,211,153,0.5)', animation: 'pulse 2s ease-in-out infinite' }} />
-                                                                <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5 }}>Çevrimiçi</span>
-                                                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>
-                                                                    {demoRoomUsers.length || dbRooms.reduce((sum: number, r: any) => sum + (r.users || 0), 0)} kişi
-                                                                </span>
-                                                            </div>
-                                                            {/* Kullanıcı listesi — scroll yapan bölüm */}
-                                                            <div className="hover-scroll" onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); demoRoomRef.current?.handleEmptyAreaContextMenu?.(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, overscrollBehavior: 'contain' }}>
-                                                                {/* Gerçek kullanıcı listesi */}
-                                                                {(() => {
-                                                                    const roomUsers: any[] = demoRoomUsers;
-                                                                    const getRoleLevel = (role?: string) => {
-                                                                        switch (role?.toLowerCase()) {
-                                                                            case 'godmaster': return 10;
-                                                                            case 'owner': return 9;
-                                                                            case 'superadmin': return 8;
-                                                                            case 'admin': return 7;
-                                                                            case 'moderator': return 6;
-                                                                            case 'operator': return 5;
-                                                                            case 'vip': return 4;
-                                                                            case 'member': return 3;
-                                                                            default: return 1;
-                                                                        }
-                                                                    };
-                                                                    const getRoleIcon = (role?: string) => {
-                                                                        switch (role?.toLowerCase()) {
-                                                                            case 'godmaster': return '🔱';
-                                                                            case 'owner': return '👑';
-                                                                            case 'superadmin': return '⚡';
-                                                                            case 'admin': return '🛡️';
-                                                                            case 'moderator': return '🔧';
-                                                                            case 'operator': return '🎯';
-                                                                            case 'vip': return '💎';
-                                                                            default: return null;
-                                                                        }
-                                                                    };
-                                                                    const getRoleColor = (role?: string) => {
-                                                                        switch (role?.toLowerCase()) {
-                                                                            case 'godmaster': return '#d946ef';
-                                                                            case 'owner': return '#fbbf24';
-                                                                            case 'superadmin': return '#7b9fef';
-                                                                            case 'admin': return '#60a5fa';
-                                                                            case 'moderator': return '#34d399';
-                                                                            case 'operator': return '#22d3ee';
-                                                                            case 'vip': return '#fde047';
-                                                                            case 'member': return '#94a3b8';
-                                                                            default: return '#64748b';
-                                                                        }
-                                                                    };
-                                                                    const getRoleLabel = (role?: string) => {
-                                                                        switch (role?.toLowerCase()) {
-                                                                            case 'godmaster': return 'GodMaster';
-                                                                            case 'owner': return 'Site Sahibi';
-                                                                            case 'superadmin': return 'Süper Admin';
-                                                                            case 'admin': return 'Yönetici';
-                                                                            case 'moderator': return 'Moderatör';
-                                                                            case 'operator': return 'Operatör';
-                                                                            case 'vip': return 'VIP';
-                                                                            case 'member': return 'Üye';
-                                                                            default: return 'Misafir';
-                                                                        }
-                                                                    };
-                                                                    const speaker = demoCurrentSpeaker;
-                                                                    const sorted = [...roomUsers].sort((a, b) => {
-                                                                        const isSpeakerA = speaker?.userId === a.userId;
-                                                                        const isSpeakerB = speaker?.userId === b.userId;
-                                                                        if (isSpeakerA && !isSpeakerB) return -1;
-                                                                        if (!isSpeakerA && isSpeakerB) return 1;
-                                                                        const la = getRoleLevel(a.role);
-                                                                        const lb = getRoleLevel(b.role);
-                                                                        if (la !== lb) return lb - la;
-                                                                        return (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '');
-                                                                    });
-                                                                    // Gerçek zamanlı kullanıcılar (botlar kaldırıldı)
-                                                                    if (sorted.length === 0) {
-                                                                        // Mevcut kullanıcıyı göster
-                                                                        return (
-                                                                            <div
-                                                                                onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, { userId: user.odaKullanicisi || user.odaWsId || user.odaId || '', displayName: user.displayName || user.username, role: user.role, avatar: user.avatar }); }}
-                                                                                style={{
-                                                                                    display: 'flex', alignItems: 'center', gap: 10,
-                                                                                    padding: '4px 6px', borderRadius: 10,
-                                                                                    background: 'transparent',
-                                                                                    cursor: 'pointer',
-                                                                                }}>
-                                                                                <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(56,189,248,0.3)' }}>
-                                                                                    <img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                                </div>
-                                                                                <div style={{ flex: 1, minWidth: 0 }}>
-                                                                                    <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.displayName || user.username}</div>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                        <span style={{ fontSize: 8, fontWeight: 600, color: '#38bdf8' }}>Siz</span>
+                                                            {audioTestOpen ? (
+                                                                <AudioTestPanel onClose={() => setAudioTestOpen(false)} />
+                                                            ) : (
+                                                                <>
+                                                                    {/* Başlık — scroll'dan bağımsız */}
+                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 6, borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+                                                                        <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px rgba(52,211,153,0.5)', animation: 'pulse 2s ease-in-out infinite' }} />
+                                                                        <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5 }}>Çevrimiçi</span>
+                                                                        <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>
+                                                                            {demoRoomUsers.length || dbRooms.reduce((sum: number, r: any) => sum + (r.users || 0), 0)} kişi
+                                                                        </span>
+                                                                    </div>
+                                                                    {/* Kullanıcı listesi — scroll yapan bölüm */}
+                                                                    <div className="hover-scroll" onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); demoRoomRef.current?.handleEmptyAreaContextMenu?.(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, overscrollBehavior: 'contain' }}>
+                                                                        {/* Gerçek kullanıcı listesi */}
+                                                                        {(() => {
+                                                                            const roomUsers: any[] = demoRoomUsers;
+                                                                            const getRoleLevel = (role?: string) => {
+                                                                                switch (role?.toLowerCase()) {
+                                                                                    case 'godmaster': return 10;
+                                                                                    case 'owner': return 9;
+                                                                                    case 'superadmin': return 8;
+                                                                                    case 'admin': return 7;
+                                                                                    case 'moderator': return 6;
+                                                                                    case 'operator': return 5;
+                                                                                    case 'vip': return 4;
+                                                                                    case 'member': return 3;
+                                                                                    default: return 1;
+                                                                                }
+                                                                            };
+                                                                            const getRoleIcon = (role?: string) => {
+                                                                                switch (role?.toLowerCase()) {
+                                                                                    case 'godmaster': return '🔱';
+                                                                                    case 'owner': return '👑';
+                                                                                    case 'superadmin': return '⚡';
+                                                                                    case 'admin': return '🛡️';
+                                                                                    case 'moderator': return '🔧';
+                                                                                    case 'operator': return '🎯';
+                                                                                    case 'vip': return '💎';
+                                                                                    default: return null;
+                                                                                }
+                                                                            };
+                                                                            const getRoleColor = (role?: string) => {
+                                                                                switch (role?.toLowerCase()) {
+                                                                                    case 'godmaster': return '#d946ef';
+                                                                                    case 'owner': return '#fbbf24';
+                                                                                    case 'superadmin': return '#7b9fef';
+                                                                                    case 'admin': return '#60a5fa';
+                                                                                    case 'moderator': return '#34d399';
+                                                                                    case 'operator': return '#22d3ee';
+                                                                                    case 'vip': return '#fde047';
+                                                                                    case 'member': return '#94a3b8';
+                                                                                    default: return '#64748b';
+                                                                                }
+                                                                            };
+                                                                            const getRoleLabel = (role?: string) => {
+                                                                                switch (role?.toLowerCase()) {
+                                                                                    case 'godmaster': return 'GodMaster';
+                                                                                    case 'owner': return 'Site Sahibi';
+                                                                                    case 'superadmin': return 'Süper Admin';
+                                                                                    case 'admin': return 'Yönetici';
+                                                                                    case 'moderator': return 'Moderatör';
+                                                                                    case 'operator': return 'Operatör';
+                                                                                    case 'vip': return 'VIP';
+                                                                                    case 'member': return 'Üye';
+                                                                                    default: return 'Misafir';
+                                                                                }
+                                                                            };
+                                                                            const speaker = demoCurrentSpeaker;
+                                                                            const sorted = [...roomUsers].sort((a, b) => {
+                                                                                const isSpeakerA = speaker?.userId === a.userId;
+                                                                                const isSpeakerB = speaker?.userId === b.userId;
+                                                                                if (isSpeakerA && !isSpeakerB) return -1;
+                                                                                if (!isSpeakerA && isSpeakerB) return 1;
+                                                                                const la = getRoleLevel(a.role);
+                                                                                const lb = getRoleLevel(b.role);
+                                                                                if (la !== lb) return lb - la;
+                                                                                return (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '');
+                                                                            });
+                                                                            // Gerçek zamanlı kullanıcılar (botlar kaldırıldı)
+                                                                            if (sorted.length === 0) {
+                                                                                // Mevcut kullanıcıyı göster
+                                                                                return (
+                                                                                    <div
+                                                                                        onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, { userId: user.odaKullanicisi || user.odaWsId || user.odaId || '', displayName: user.displayName || user.username, role: user.role, avatar: user.avatar }); }}
+                                                                                        style={{
+                                                                                            display: 'flex', alignItems: 'center', gap: 10,
+                                                                                            padding: '4px 6px', borderRadius: 10,
+                                                                                            background: 'transparent',
+                                                                                            cursor: 'pointer',
+                                                                                        }}>
+                                                                                        <div style={{ width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0, border: '2px solid rgba(56,189,248,0.3)' }}>
+                                                                                            <img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                        </div>
+                                                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                            <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.displayName || user.username}</div>
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                                <span style={{ fontSize: 8, fontWeight: 600, color: '#38bdf8' }}>Siz</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        {/* Online dot — userStatus state ile senkron */}
+                                                                                        <div style={{
+                                                                                            width: 6, height: 6, borderRadius: '50%',
+                                                                                            background: ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[userStatus] || '#34d399',
+                                                                                            boxShadow: `0 0 4px ${({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[userStatus] || 'rgba(52,211,153,0.4)'}`,
+                                                                                            flexShrink: 0,
+                                                                                        }} />
                                                                                     </div>
-                                                                                </div>
-                                                                                {/* Online dot — userStatus state ile senkron */}
-                                                                                <div style={{
-                                                                                    width: 6, height: 6, borderRadius: '50%',
-                                                                                    background: ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[userStatus] || '#34d399',
-                                                                                    boxShadow: `0 0 4px ${({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[userStatus] || 'rgba(52,211,153,0.4)'}`,
-                                                                                    flexShrink: 0,
-                                                                                }} />
-                                                                            </div>
-                                                                        );
-                                                                    }
-                                                                    return sorted.map((u: any, idx: number) => {
-                                                                        const name = u.displayName || u.username || 'Kullanıcı';
-                                                                        const role = u.role?.toLowerCase() || 'guest';
-                                                                        const roleIcon = getRoleIcon(role);
-                                                                        const roleColor = getRoleColor(role);
-                                                                        const roleLabel = getRoleLabel(role);
-                                                                        const isSpeaking = speaker?.userId === u.userId;
-                                                                        const isCurrentUser = u.userId === user.userId;
-                                                                        const avatarSrc = u.avatar || generateGenderAvatar(name);
-                                                                        const borderColor = role === 'godmaster' ? 'rgba(217,70,239,0.5)'
-                                                                            : role === 'owner' ? 'rgba(251,191,36,0.5)'
-                                                                                : isSpeaking ? 'rgba(239,68,68,0.5)'
-                                                                                    : isCurrentUser ? 'rgba(56,189,248,0.3)'
-                                                                                        : 'rgba(255,255,255,0.1)';
-                                                                        return (
-                                                                            <div key={u.odaUserId || u.odaRollId || u.odaSoketId || u.odaJoinedAt || u.userId || idx}
-                                                                                onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, u); }}
-                                                                                style={{
-                                                                                    display: 'flex', alignItems: 'center', gap: 10,
-                                                                                    padding: '4px 6px', borderRadius: 10,
-                                                                                    background: isSpeaking ? 'rgba(239,68,68,0.06)' : 'transparent',
-                                                                                    border: 'none',
-                                                                                    cursor: 'pointer',
-                                                                                    transition: 'all 0.2s ease',
-                                                                                }}>
-                                                                                {/* Avatar */}
-                                                                                <div style={{
-                                                                                    width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                                                                                    border: `2px solid ${borderColor}`,
-                                                                                    boxShadow: isSpeaking ? '0 0 10px rgba(239,68,68,0.3)' : 'none',
-                                                                                }}>
-                                                                                    <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                                                                </div>
-                                                                                {/* İsim + Rol + Status */}
-                                                                                <div style={{ flex: 1, minWidth: 0 }}>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                        <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-                                                                                        {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
-                                                                                        {isSpeaking && <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 700, animation: 'pulse 2s ease-in-out infinite' }}>🎤</span>}
+                                                                                );
+                                                                            }
+                                                                            return sorted.map((u: any, idx: number) => {
+                                                                                const name = u.displayName || u.username || 'Kullanıcı';
+                                                                                const role = u.role?.toLowerCase() || 'guest';
+                                                                                const roleIcon = getRoleIcon(role);
+                                                                                const roleColor = getRoleColor(role);
+                                                                                const roleLabel = getRoleLabel(role);
+                                                                                const isSpeaking = speaker?.userId === u.userId;
+                                                                                const isCurrentUser = u.userId === user.userId;
+                                                                                const avatarSrc = u.avatar || generateGenderAvatar(name);
+                                                                                const borderColor = role === 'godmaster' ? 'rgba(217,70,239,0.5)'
+                                                                                    : role === 'owner' ? 'rgba(251,191,36,0.5)'
+                                                                                        : isSpeaking ? 'rgba(239,68,68,0.5)'
+                                                                                            : isCurrentUser ? 'rgba(56,189,248,0.3)'
+                                                                                                : 'rgba(255,255,255,0.1)';
+                                                                                return (
+                                                                                    <div key={u.odaUserId || u.odaRollId || u.odaSoketId || u.odaJoinedAt || u.userId || idx}
+                                                                                        onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, u); }}
+                                                                                        style={{
+                                                                                            display: 'flex', alignItems: 'center', gap: 10,
+                                                                                            padding: '4px 6px', borderRadius: 10,
+                                                                                            background: isSpeaking ? 'rgba(239,68,68,0.06)' : 'transparent',
+                                                                                            border: 'none',
+                                                                                            cursor: 'pointer',
+                                                                                            transition: 'all 0.2s ease',
+                                                                                        }}>
+                                                                                        {/* Avatar */}
+                                                                                        <div style={{
+                                                                                            width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                                                                                            border: `2px solid ${borderColor}`,
+                                                                                            boxShadow: isSpeaking ? '0 0 10px rgba(239,68,68,0.3)' : 'none',
+                                                                                        }}>
+                                                                                            <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                        </div>
+                                                                                        {/* İsim + Rol + Status */}
+                                                                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                                <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                                                                                                {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
+                                                                                                {isSpeaking && <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 700, animation: 'pulse 2s ease-in-out infinite' }}>🎤</span>}
+                                                                                            </div>
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                                <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
+                                                                                            </div>
+                                                                                        </div>
+                                                                                        {/* Online dot — kendi kullanıcı için userStatus, diğerleri için u.status */}
+                                                                                        <div style={{
+                                                                                            width: 6, height: 6, borderRadius: '50%',
+                                                                                            background: isSpeaking ? '#ef4444' : (() => {
+                                                                                                const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                                return ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[st] || '#34d399';
+                                                                                            })(),
+                                                                                            boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : (() => {
+                                                                                                const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                                return ({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[st] || 'rgba(52,211,153,0.4)';
+                                                                                            })()}`,
+                                                                                            flexShrink: 0,
+                                                                                        }} />
                                                                                     </div>
-                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                        <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
-                                                                                    </div>
-                                                                                </div>
-                                                                                {/* Online dot — kendi kullanıcı için userStatus, diğerleri için u.status */}
-                                                                                <div style={{
-                                                                                    width: 6, height: 6, borderRadius: '50%',
-                                                                                    background: isSpeaking ? '#ef4444' : (() => {
-                                                                                        const st = isCurrentUser ? userStatus : (u.status || 'online');
-                                                                                        return ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[st] || '#34d399';
-                                                                                    })(),
-                                                                                    boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : (() => {
-                                                                                        const st = isCurrentUser ? userStatus : (u.status || 'online');
-                                                                                        return ({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[st] || 'rgba(52,211,153,0.4)';
-                                                                                    })()}`,
-                                                                                    flexShrink: 0,
-                                                                                }} />
-                                                                            </div>
-                                                                        );
-                                                                    });
-                                                                })()}
-                                                            </div>
+                                                                                );
+                                                                            });
+                                                                        })()}
+                                                                    </div>
+                                                                </>
+                                                            )}
                                                         </div>
                                                     )}
 
