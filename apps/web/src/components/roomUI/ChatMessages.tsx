@@ -20,7 +20,7 @@ function getChatTextSettings() {
         const raw = localStorage.getItem('soprano_chat_text_settings');
         if (raw) return JSON.parse(raw);
     } catch { }
-    return { fontSize: 13, fontWeight: '400', textColor: '#1e293b' };
+    return { fontSize: 13, fontWeight: '400', textColor: 'rgba(255,255,255,0.88)' };
 }
 
 interface ChatMessagesProps {
@@ -536,10 +536,10 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                         fontWeight: Number(chatTextSettings.fontWeight),
                                                         color: chatTextSettings.textColor,
                                                         background: isMe
-                                                            ? 'linear-gradient(160deg, rgba(235,238,255,0.95) 0%, rgba(225,228,248,0.93) 50%, rgba(215,220,245,0.91) 100%)'
-                                                            : 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(240,243,250,0.94) 50%, rgba(228,233,245,0.92) 100%)',
-                                                        border: '1px solid rgba(255,255,255,0.6)',
-                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.8)',
+                                                            ? 'rgba(180,190,220,0.12)'
+                                                            : 'rgba(180,190,220,0.10)',
+                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                        boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
                                                     }}>
                                                     {msg.message}
                                                 </div>
