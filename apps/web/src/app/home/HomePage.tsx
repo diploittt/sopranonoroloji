@@ -420,9 +420,14 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
             {/* CSS overrides — gerçek bileşenlerin arka planlarını demo glassmorphism temasına uyumlu yap */}
             <style>{`
                 .demo-chatroom-override .chat-area,
-                .demo-chatroom-override .chat-messages-container,
                 .demo-chatroom-override [data-chat-messages] {
                     background: transparent !important;
+                }
+                .demo-chatroom-override .chat-messages-container {
+                    background: transparent !important;
+                    max-height: 540px !important;
+                    padding-bottom: 20px !important;
+                    flex: none !important;
                 }
                 /* ── Bottom Toolbar ana kart: tamamen saydam, gölgesiz ── */
                 .demo-chatroom-override .bottom-toolbar {
@@ -1679,7 +1684,7 @@ export default function HomePage() {
                                     <div key={'home-content'} style={roomsMode ? { display: 'flex', flexDirection: 'column' as const, flex: 1, gap: 12, minHeight: 0 } : { display: 'contents' }}>
 
                                         {/* Karşılama Kartı + Tablo Lambası */}
-                                        <div style={{ position: 'relative', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const } : {}) }}>
+                                        <div style={{ position: 'relative', ...(roomsMode ? { display: 'flex', flexDirection: 'column' as const } : {}) }}>
                                             {/* ===== TABLO LAMBASI (geniş — Hoşgeldiniz kartı) ===== */}
                                             <div className="gallery-lamp-svg" key={'lamp-home-' + sectionChangeKey} style={{ ...(roomsMode ? { display: 'none' } : {}), animation: lampAnimDone.current['home'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.8s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['home'] = true; }}>
                                                 <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1819,7 +1824,7 @@ export default function HomePage() {
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className="glossy-panel" style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 8px 8px', marginTop: -2, maxHeight: 710, boxShadow: '0 14px 28px -4px rgba(0,0,0,0.45)' } : {}) }}>
+                                            <div className="glossy-panel" style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 8px 8px', marginTop: -2, maxHeight: 600, boxShadow: '0 14px 28px -4px rgba(0,0,0,0.45)' } : {}) }}>
                                                 {/* DEMO geçiş yükleniyor ikonu — chat zemini içinde */}
                                                 {roomsMode && blurToOdalar && (
                                                     <div style={{
@@ -2160,8 +2165,8 @@ export default function HomePage() {
                                         {/* roomsMode: Gerçek BottomToolbar — ayrı glossy-panel kart */}
                                         {roomsMode && demoRoomReady && demoRoomRef.current && (
                                             <div className="glossy-panel demo-chatroom-override" style={{
-                                                padding: '12px 16px', marginTop: -8, position: 'relative', zIndex: 6,
-                                                boxShadow: '0 -12px 36px rgba(0,0,0,0.5), 0 -4px 12px rgba(0,0,0,0.35), 0 20px 50px rgba(0,0,0,0.5), 0 8px 20px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.06)',
+                                                padding: '12px 16px', marginTop: -2, position: 'relative', zIndex: 6,
+                                                boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
                                             }}>
                                                 <BottomToolbar
                                                     onSendMessage={demoRoomRef.current.actions.sendMessage}
@@ -3348,7 +3353,7 @@ export default function HomePage() {
                                                                 </span>
                                                             </div>
                                                             {/* Kullanıcı listesi — scroll yapan bölüm */}
-                                                            <div className="custom-scrollbar" onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); demoRoomRef.current?.handleEmptyAreaContextMenu?.(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto', maxHeight: 530, scrollbarWidth: 'none' as any, paddingTop: 4 }}>
+                                                            <div className="hover-scroll" onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); demoRoomRef.current?.handleEmptyAreaContextMenu?.(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, overscrollBehavior: 'contain' }}>
                                                                 {/* Gerçek kullanıcı listesi */}
                                                                 {(() => {
                                                                     const roomUsers: any[] = demoRoomRef.current?.users || [];
@@ -3887,10 +3892,10 @@ export default function HomePage() {
                                                     <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>50 kişi</span>
                                                 </div>
                                                 {/* Kamera grid — scroll yapan bölüm */}
-                                                <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'none' as any, maxHeight: 590, paddingTop: 4 }}>
+                                                <div className="hover-scroll" style={{ flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, overscrollBehavior: 'contain' }}>
                                                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
                                                         {['Sera', 'Ece', 'Mira', 'Lina', 'Çınar', 'Ada', 'Defne', 'Eylül', 'Toprak', 'Nehir', 'Atlas', 'Duru', 'Poyraz', 'Maya', 'Rüzgar', 'Lara', 'Kayra', 'Asya', 'Yağız', 'Nil', 'Bora', 'Ela', 'Tan', 'İdil', 'Alya', 'Ege', 'Sena', 'Arda', 'Melis', 'Batu', 'Yaren', 'Doruk', 'İpek', 'Emir', 'Beril', 'Efe', 'Tuana', 'Koray', 'Ceren', 'Cenk', 'Nazlı', 'Mert', 'Ilgın', 'Aras', 'Deren', 'Umut', 'Hazal', 'Erdem', 'Gökçe', 'Kerem'].map((name, i) => (
-                                                            <div key={`cam-${i}`} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', aspectRatio: '4/3', background: `linear-gradient(${135 + i * 7}deg, rgba(${30 + i * 4},${40 + i * 3},${60 + i * 2},0.9), rgba(${20 + i * 2},${30 + i * 2},${50 + i},0.95))`, border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                            <div key={`cam-${i}`} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', aspectRatio: '4/3', background: `linear-gradient(${135 + i * 7}deg, rgba(${30 + i * 4},${40 + i * 3},${60 + i * 2},0.9), rgba(${20 + i * 2},${30 + i * 2},${50 + i},0.95))`, border: '1px solid rgba(255,255,255,0.06)', transition: 'none', transform: 'none' }}>
                                                                 <div style={{ position: 'absolute', top: 2, left: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
                                                                     <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
                                                                     <span style={{ fontSize: 7, fontWeight: 700, color: '#e2e8f0', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{name}</span>

@@ -234,7 +234,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     return (
         <div
             className="chat-messages-container chat-area flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-1 custom-scrollbar flex flex-col items-center"
-            style={{ minHeight: 650 }}
+            style={{ minHeight: 530 }}
             data-chat-messages
             ref={scrollRef}
             onContextMenu={onContextMenu}

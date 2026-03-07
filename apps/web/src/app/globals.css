@@ -88,8 +88,9 @@ body {
 /* --- HOVER-ONLY SCROLLBAR (invisible by default, appears on hover) --- */
 .hover-scroll {
     overflow-y: auto;
-    scrollbar-width: none;
-    /* Firefox: hide by default */
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+    /* Firefox: thin scrollbar with invisible colors */
 }
 
 .hover-scroll::-webkit-scrollbar {
@@ -103,7 +104,10 @@ body {
 .hover-scroll::-webkit-scrollbar-thumb {
     background: transparent;
     border-radius: 10px;
-    transition: background 0.3s ease;
+}
+
+.hover-scroll:hover {
+    scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
 }
 
 .hover-scroll:hover::-webkit-scrollbar-thumb {
@@ -112,12 +116,6 @@ body {
 
 .hover-scroll:hover::-webkit-scrollbar-thumb:hover {
     background: rgba(123, 159, 239, 0.45);
-}
-
-.hover-scroll:hover {
-    scrollbar-width: thin;
-    /* Firefox: show on hover */
-    scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
 }
 
 /* --- APP BACKGROUND --- */
@@ -297,14 +295,15 @@ body {
 /* Ensure chat messages container scrolls properly */
 .chat-messages-container {
     min-height: 0;
-    max-height: 400px;
+    max-height: 450px;
     overflow-y: auto !important;
     overflow-x: hidden !important;
-    scrollbar-width: none;
+    padding-bottom: 20px;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 }
 
 .chat-messages-container:hover {
-    scrollbar-width: thin;
     scrollbar-color: rgba(123, 159, 239, 0.25) transparent;
 }
 

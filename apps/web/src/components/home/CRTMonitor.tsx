@@ -136,7 +136,7 @@ export default function CRTMonitor({ children, isPowerOn = true, onPowerToggle }
                             textTransform: 'uppercase' as const,
                             fontFamily: 'sans-serif',
                         }}>
-                            IBM
+                            SopranoChat
                         </div>
 
                         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
