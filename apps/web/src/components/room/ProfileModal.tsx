@@ -156,41 +156,43 @@ export function ProfileModal({
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderTop: '1px solid rgba(255,255,255,0.30)',
-                    borderRadius: '18px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 40px rgba(255,255,255,0.02)',
+                    background: 'linear-gradient(160deg, rgba(20,28,48,0.97) 0%, rgba(12,18,32,0.98) 100%)',
+                    backdropFilter: 'blur(40px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
+                    border: '1px solid rgba(56,189,248,0.1)',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.03)',
                 }}
             >
                 {/* Accent */}
-                <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(251,191,36,0.3), transparent)', opacity: 0.7 }} />
+                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(56,189,248,0.35) 40%, rgba(200,150,46,0.2) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
                 {/* Header - Draggable */}
                 <div
-                    className="flex items-center justify-between p-5 pb-0"
+                    className="flex items-center justify-between px-5 py-3"
                     onMouseDown={handleMouseDown}
                     style={{ cursor: 'move', userSelect: 'none' }}
                 >
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                        <span>👤</span> Profil Ayarları
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>👤</span> Profil Ayarları
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
+                    <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    >✕</button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 px-5 pt-4 pb-2">
+                <div style={{ display: 'flex', gap: 3, padding: '6px 20px 4px' }}>
                     {TABS.map(tab => (
                         <button
                             key={tab.id}
                             onClick={() => { setActiveTab(tab.id); setError(''); }}
-                            className="flex-1 py-2 text-xs font-medium rounded-lg transition-all"
                             style={{
-                                background: activeTab === tab.id ? 'rgba(56,189,248,0.12)' : 'transparent',
-                                color: activeTab === tab.id ? '#7dd3fc' : '#94a3b8',
-                                border: activeTab === tab.id ? '1px solid rgba(56,189,248,0.2)' : '1px solid transparent',
+                                flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, borderRadius: 7, transition: 'all 0.2s', cursor: 'pointer',
+                                background: activeTab === tab.id ? 'rgba(56,189,248,0.1)' : 'transparent',
+                                color: activeTab === tab.id ? '#7dd3fc' : '#64748b',
+                                border: activeTab === tab.id ? '1px solid rgba(56,189,248,0.18)' : '1px solid transparent',
                             }}
                         >
                             {tab.icon} {tab.label}
@@ -199,7 +201,7 @@ export function ProfileModal({
                 </div>
 
                 {/* Content */}
-                <div className="p-5 pt-3 min-h-[260px]">
+                <div style={{ padding: '4px 20px 16px', minHeight: 240 }}>
                     {activeTab === 'look' && (
                         <div className="space-y-5">
                             <div className="text-center">

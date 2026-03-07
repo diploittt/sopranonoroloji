@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeakyChat — hear my voice</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@1,400;1,700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Tahoma, Arial, Helvetica, sans-serif;
+            font-size: 13px;
+            color: #2f2f2f;
+            background: #8a8ab8;
+            min-height: 100vh;
+        }
+
+        /* ========== MAIN CONTAINER (Boxed Layout) ========== */
+        .page-wrapper {
+            width: 780px;
+            margin: 0 auto;
+            background: #ebeef3;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* Sol ve sağ kenar gölgeleri */
+        .page-wrapper::before,
+        .page-wrapper::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 30px;
+            z-index: 0;
+        }
+
+        .page-wrapper::before {
+            left: -30px;
+            background: linear-gradient(to left, rgba(0, 0, 0, 0.2), transparent);
+        }
+
+        .page-wrapper::after {
+            right: -30px;
+            background: linear-gradient(to right, rgba(0, 0, 0, 0.2), transparent);
+        }
+
+        /* ========== HEADER / TOP BAR ========== */
+        .header {
+            background: linear-gradient(180deg,
+                    #3a3a4f 0%,
+                    #2e2e42 15%,
+                    #3a3a52 30%,
+                    #4a4a65 45%,
+                    #555570 55%,
+                    #5e5e78 65%,
+                    #686882 75%,
+                    #6e6e8a 85%,
+                    #58586e 95%,
+                    #4a4a60 100%);
+            height: 140px;
+            position: relative;
+            overflow: visible;
+        }
+
+        /* Üstteki ince parlak çizgi */
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* Header dalga efekti */
+        .header-wave {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background:
+                radial-gradient(ellipse at 30% 20%, rgba(80, 80, 120, 0.3) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(60, 60, 90, 0.2) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* Alttaki koyu gradient */
+        .header-bottom-shadow {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 25px;
+            background: linear-gradient(to bottom, transparent, rgba(0, 0, 0, 0.25));
+            pointer-events: none;
+        }
+
+        /* ========== LOGO ========== */
+        .logo-area {
+            position: absolute;
+            top: 18px;
+            left: 35px;
+            z-index: 2;
+        }
+
+        .logo-text {
+            font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+            font-size: 48px;
+            font-weight: 700;
+            font-style: italic;
+            color: rgba(180, 190, 210, 0.7);
+            text-shadow:
+                0 2px 4px rgba(0, 0, 0, 0.5),
+                0 0 15px rgba(140, 150, 180, 0.15),
+                1px 1px 0 rgba(0, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .logo-tagline {
+            font-family: Tahoma, Arial, sans-serif;
+            font-size: 12px;
+            color: rgba(150, 170, 200, 0.6);
+            margin-top: -6px;
+            margin-left: 8px;
+            font-style: italic;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        }
+
+        /* ========== CRT MONITOR (Sağ Üst) ========== */
+        .header-monitor {
+            position: absolute;
+            right: 25px;
+            top: 5px;
+            width: 180px;
+            height: 135px;
+            z-index: 2;
+        }
+
+        .monitor-outer {
+            position: relative;
+            width: 170px;
+            height: 125px;
+            transform: perspective(800px) rotateY(-12deg);
+        }
+
+        .monitor-bezel {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 170px;
+            height: 110px;
+            background: linear-gradient(145deg, #555 0%, #3a3a3a 20%, #2a2a2a 50%, #333 80%, #444 100%);
+            border-radius: 6px;
+            border: 1px solid #222;
+            box-shadow:
+                4px 4px 15px rgba(0, 0, 0, 0.6),
+                -1px -1px 3px rgba(100, 100, 140, 0.1),
+                inset 0 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .monitor-screen {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            background: linear-gradient(135deg, #c0c0d8, #a8a8c0, #b0b0c8, #9898b0);
+            border-radius: 2px;
+            border: 1px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Ekrandaki scan-line efekti */
+        .monitor-screen::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 1px,
+                    rgba(0, 0, 0, 0.04) 1px,
+                    rgba(0, 0, 0, 0.04) 2px);
+            pointer-events: none;
+        }
+
+        /* Ekrandaki sahte içerik çizgileri */
+        .screen-content {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            padding: 6px;
+            overflow: hidden;
+        }
+
+        .screen-line {
+            height: 2px;
+            margin-bottom: 3px;
+            border-radius: 1px;
+            opacity: 0.3;
+        }
+
+        .screen-page-title {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 30px;
+            color: rgba(90, 90, 130, 0.5);
+            letter-spacing: 6px;
+            text-shadow: 1px 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .monitor-stand-neck {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 16px;
+            background: linear-gradient(to right, #3a3a3a, #4a4a4a, #3a3a3a);
+        }
+
+        .monitor-stand-base {
+            position: absolute;
+            bottom: 2px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 65px;
+            height: 8px;
+            background: linear-gradient(to bottom, #4a4a4a, #333);
+            border-radius: 2px 2px 4px 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ========== NAVIGATION — OVAL/PILL TABS ========== */
+        .nav-tabs {
+            position: absolute;
+            bottom: 14px;
+            left: 30px;
+            display: flex;
+            gap: 5px;
+            z-index: 2;
+        }
+
+        .nav-tab {
+            padding: 7px 20px;
+            background: linear-gradient(to bottom,
+                    #c8c8d8 0%,
+                    #b0b0c0 20%,
+                    #a0a0b0 40%,
+                    #909098 60%,
+                    #808090 80%,
+                    #707080 100%);
+            border: 1px solid rgba(0, 0, 0, 0.35);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 11px;
+            font-weight: bold;
+            color: #222;
+            cursor: pointer;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.3);
+            position: relative;
+            transition: all 0.15s ease;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.4),
+                inset 0 -1px 2px rgba(0, 0, 0, 0.15),
+                0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-tab:hover {
+            background: linear-gradient(to bottom,
+                    #d8d8e8 0%,
+                    #c0c0d0 20%,
+                    #b0b0c0 40%,
+                    #a0a0a8 60%,
+                    #909098 80%,
+                    #808090 100%);
+            color: #000;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(to bottom,
+                    #e0e0f0 0%,
+                    #c8c8d8 20%,
+                    #b8b8c8 40%,
+                    #a8a8b0 60%,
+                    #989898 80%,
+                    #888890 100%);
+            color: #000;
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.6),
+                inset 0 -1px 2px rgba(0, 0, 0, 0.1),
+                0 2px 5px rgba(0, 0, 0, 0.25);
+        }
+
+        /* ========== CONTENT AREA ========== */
+        .content-area {
+            display: flex;
+            gap: 0;
+            padding: 16px 12px;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .content-card {
+            background: linear-gradient(to bottom, #f8f8fc, #f0f0f6);
+            border: 1px solid #c8c8d8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-right: 12px;
+            box-shadow: 0 2px 8px rgba(100, 100, 140, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+        }
+
+        .content-card h2 {
+            font-family: Tahoma, Arial, sans-serif;
+            font-size: 18px;
+            color: #505f72;
+            margin-bottom: 16px;
+            font-weight: bold;
+        }
+
+        .welcome-section {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            align-items: flex-start;
+        }
+
+        .speaker-icon {
+            width: 80px;
+            height: 80px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #b8c8d8, #8898a8);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .speaker-icon svg {
+            width: 48px;
+            height: 48px;
+            fill: #555;
+        }
+
+        .welcome-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #2f2f2f;
+        }
+
+        .welcome-text strong {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .feature-list {
+            margin: 16px 0;
+            padding-left: 24px;
+        }
+
+        .feature-list li {
+            margin-bottom: 6px;
+            line-height: 1.5;
+            font-size: 13px;
+            color: #2f2f2f;
+        }
+
+        .preview-images {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .preview-img {
+            width: 140px;
+            height: 100px;
+            background: linear-gradient(135deg, #d8d8e8, #c0c0d0);
+            border: 1px solid #aaa;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #666;
+            box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        /* ========== SIDEBAR ========== */
+        .sidebar {
+            width: 232px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .widget {
+            background: #fff;
+            border: 1px solid #c0c0d4;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(100, 100, 140, 0.1);
+        }
+
+        .widget-header {
+            background: linear-gradient(to bottom, #8a8ab0, #7d7da0, #6e6e90);
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid #5a5a80;
+        }
+
+        .widget-body {
+            padding: 12px;
+            font-size: 12px;
+            color: #444;
+            line-height: 1.5;
+        }
+
+        .widget-body a {
+            color: #4a5a8a;
+            text-decoration: underline;
+        }
+
+        .live-support-btn {
+            display: inline-block;
+            background: linear-gradient(to bottom, #e44, #c22);
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 12px;
+            text-decoration: none;
+            margin-top: 8px;
+            border: 1px solid #a00;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+
+        .browser-widget .widget-body {
+            text-align: center;
+        }
+
+        .new-badge {
+            background: linear-gradient(to bottom, #e44, #c22);
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-bottom: 4px;
+        }
+
+        .for-all-text {
+            font-weight: bold;
+            color: #e44;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .browser-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .browser-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .browser-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 16px;
+            font-size: 11px;
+            color: #888;
+            border-top: 1px solid #d0d0dd;
+        }
+
+        .footer a {
+            color: #6a6a9a;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="page-wrapper">
+        <!-- ===== HEADER ===== -->
+        <div class="header">
+            <div class="header-wave"></div>
+            <div class="header-bottom-shadow"></div>
+
+            <div class="logo-area">
+                <div class="logo-text">SpeakyChat</div>
+                <div class="logo-tagline">hear my voice</div>
+            </div>
+
+            <!-- CRT Monitor -->
+            <div class="header-monitor">
+                <div class="monitor-outer">
+                    <div class="monitor-bezel">
+                        <div class="monitor-screen">
+                            <div class="screen-content">
+                                <div class="screen-line" style="width:80%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:60%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:90%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:45%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:75%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:55%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:85%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:40%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:70%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:50%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:65%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:80%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:35%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:90%;background:#8888aa"></div>
+                                <div class="screen-line" style="width:55%;background:#8888aa"></div>
+                            </div>
+                            <span class="screen-page-title">HOME</span>
+                        </div>
+                    </div>
+                    <div class="monitor-stand-neck"></div>
+                    <div class="monitor-stand-base"></div>
+                </div>
+            </div>
+
+            <!-- Navigation — Oval Pill Tabs -->
+            <div class="nav-tabs">
+                <a class="nav-tab active" href="#">HOME</a>
+                <a class="nav-tab" href="#">DEMO</a>
+                <a class="nav-tab" href="#">USER GUIDE</a>
+                <a class="nav-tab" href="#">PRICING</a>
+                <a class="nav-tab" href="#">CONTACT</a>
+            </div>
+        </div>
+
+        <!-- ===== CONTENT ===== -->
+        <div class="content-area">
+            <div class="main-content">
+                <div class="content-card">
+                    <h2>Welcome to SpeakyChat</h2>
+
+                    <div class="welcome-section">
+                        <div class="speaker-icon">
+                            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M11 5L6 9H2v6h4l5 4V5z" />
+                                <path d="M15.54 8.46a5 5 0 0 1 0 7.07" fill="none" stroke="#555" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                                <path d="M19.07 4.93a10 10 0 0 1 0 14.14" fill="none" stroke="#555" stroke-width="1.5"
+                                    stroke-linecap="round" />
+                            </svg>
+                        </div>
+                        <div class="welcome-text">
+                            <strong>Add real chat with voice and webcam to your website,</strong><br>
+                            talk with peoples and see your friends through a webcam.
+                        </div>
+                    </div>
+
+                    <ul class="feature-list">
+                        <li>All communication is secure encrypted</li>
+                        <li>Good voice quality by low bandwith (1,5 KB/s), you can choose between 3 different levels of
+                            quality</li>
+                        <li>Users can publish their webcam and see any other at the same time</li>
+                        <li>all options can be changed with a mouseclick</li>
+                        <li>Rooms can be protected by password</li>
+                        <li>internal admin-interface to manage all tasks like usereditor, live-protocol, ban/gag-list
+                        </li>
+                    </ul>
+
+                    <div class="preview-images">
+                        <div class="preview-img">Chat Preview</div>
+                        <div class="preview-img">Admin Panel</div>
+                        <div class="preview-img">User Editor</div>
+                    </div>
+
+                    <ul class="feature-list">
+                        <li>many actions for operators and admins: Kick, Mute, Gag, Ban, Camblock, Free Mic...</li>
+                        <li>Permissions can be assigned for each user</li>
+                        <li>Undercover-Mode to stealth a admin as user</li>
+                        <li>you can use your own icons, pictures and animotions in the chat</li>
+                        <li>multilanguage (english/arabic/turkish/german)</li>
+                        <li>hd-serial-protection for ban/gag/mute and for secure admin-login</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="sidebar">
+                <div class="widget">
+                    <div class="widget-header">Online Support</div>
+                    <div class="widget-body">
+                        15:00 - 01:00 (GMT+1)<br>
+                        Central European Time<br>
+                        <a href="#" class="live-support-btn">LIVE SUPPORT</a>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">Download</div>
+                    <div class="widget-body">
+                        <a href="#">SpeakyChat-Installer</a>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <div class="widget-header">PHP Registration System</div>
+                    <div class="widget-body">
+                        You can get informations about the registration system for your website <a href="#">here</a>.
+                    </div>
+                </div>
+
+                <div class="widget browser-widget">
+                    <div class="widget-body">
+                        <div class="new-badge">NEW!</div>
+                        <div class="for-all-text">For all Browsers!</div>
+                        <div class="browser-list">
+                            <div class="browser-item"><span class="browser-icon">🌐</span><span>Internet Explorer</span>
+                            </div>
+                            <div class="browser-item"><span class="browser-icon">🦊</span><span>Mozilla Firefox</span>
+                            </div>
+                            <div class="browser-item"><span class="browser-icon">🔵</span><span>Google Chrome</span>
+                            </div>
+                            <div class="browser-item"><span class="browser-icon">🔴</span><span>Opera Browser</span>
+                            </div>
+                            <div class="browser-item"><span class="browser-icon">🧭</span><span>Apple Safari</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            &copy; 2011 SpeakyChat — <a href="#">All rights reserved</a>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -35,11 +35,24 @@ import { UserInfoModal } from '@/components/room/UserInfoModal';
 import { UserHistoryModal } from '@/components/room/UserHistoryModal';
 import { RoomMonitorModal } from '@/components/room/RoomMonitorModal';
 import { ROLE_HIERARCHY, ALL_PERMISSIONS, getMenuForUser, getRoleLevel, RoomMenuItem } from '@/common/roomPermissions';
+import { AudioTestPanel } from '@/components/roomUI/AudioTestPanel';
 import { ToastContainer as RoomToastContainer, useToast } from '@/components/ui/Toast';
 import { useAdminPanelStore } from '@/stores/useAdminPanelStore';
 import { AdminPanelWindow } from '@/components/admin/AdminPanelWindow';
 
 type DemoContextMenuItem = RoomMenuItem;
+
+// YouTube video ID extract — RightLivePanel'deki aynı fonksiyon
+function extractYoutubeId(url: string): string | null {
+    try {
+        const u = new URL(url.trim());
+        if (u.hostname === 'youtu.be') return u.pathname.slice(1) || null;
+        if (u.pathname === '/watch') return u.searchParams.get('v');
+        if (u.pathname.startsWith('/shorts/')) return u.pathname.split('/')[2] || null;
+        if (u.pathname.startsWith('/embed/')) return u.pathname.split('/')[2] || null;
+    } catch { return null; }
+    return null;
+}
 
 const AUTH_TOKEN_KEY = 'soprano_auth_token';
 
@@ -156,6 +169,7 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
     const [userInfoTarget, setUserInfoTarget] = useState<any>(null);
     const [userHistoryTarget, setUserHistoryTarget] = useState<{ userId: string; displayName: string } | null>(null);
     const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
+    const [audioTestOpen, setAudioTestOpen] = useState(false);
 
     // Gift system
     const [giftPanelOpen, setGiftPanelOpen] = useState(false);
@@ -368,7 +382,7 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
                 setIsProfileOpen(true);
                 break;
             case 'testUserAudio':
-                demoAddToast('info', 'Mikrofon Testi', 'Mikrofon testi başlatıldı.');
+                setAudioTestOpen(true);
                 break;
             case 'copy': {
                 const txt = savedSelectionRef.current;
@@ -591,7 +605,7 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
                 onClose={() => setIsRoomMonitorOpen(false)}
                 socket={room.socket}
                 currentRoomSlug={slug}
-                onNavigateToRoom={() => { }}
+                onNavigateToRoom={(slug: string) => { setDemoSlug(slug); demoAddToast('info', 'Oda Değiştirildi', `Odaya geçildi: ${slug}`); }}
                 onUserAction={(item, targetUser) => handleMenuItemClick(item)}
                 userLevel={userLevel}
                 currentUserId={room.state.currentUser?.userId}
@@ -606,6 +620,8 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
 
             {/* Gift System */}
             <GiftAnimation animationData={giftAnimation} onComplete={() => setGiftAnimation(null)} />
+            {/* Audio Test Panel */}
+            {audioTestOpen && <AudioTestPanel onClose={() => setAudioTestOpen(false)} />}
             <GiftPanel
                 isOpen={giftPanelOpen}
                 onClose={() => { setGiftPanelOpen(false); setGiftTargetUser(null); }}
@@ -728,6 +744,12 @@ export default function HomePage() {
     const [lampsOff, setLampsOff] = useState(false);
     const [liveHidden, setLiveHidden] = useState(false);
     const [liveCollapsed, setLiveCollapsed] = useState(false);
+    // YouTube/Video TV state
+    const [tvVideoUrl, setTvVideoUrl] = useState<string | null>(null);
+    const [tvVolume, setTvVolume] = useState(0.7);
+    const [tvYtInputOpen, setTvYtInputOpen] = useState(false);
+    const [tvYtInputValue, setTvYtInputValue] = useState('');
+    const tvYtIframeRef = useRef<HTMLIFrameElement>(null);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
     const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
@@ -974,12 +996,14 @@ export default function HomePage() {
                 }
 
                 .retro-logo-text {
-                    font-family: 'Arial Rounded MT Bold', 'Arial Black', sans-serif;
-                    background: linear-gradient(180deg, #f0f2f6 0%, #c0c8d5 35%, #8a95a8 55%, #6a7588 100%);
+                    font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
+                    font-weight: 700;
+                    font-style: italic;
+                    background: linear-gradient(180deg, #c8cfe0 0%, #a0aab8 40%, #8a94a8 70%, #9aa4b8 100%);
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
-                    filter: drop-shadow(1px 2px 2px rgba(0,0,0,0.9)) drop-shadow(-1px -1px 0px rgba(255,255,255,0.2));
-                    letter-spacing: -1.5px;
+                    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)) drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
+                    letter-spacing: 0.5px;
                     transform: scaleY(1.05);
                 }
 
@@ -3921,7 +3945,7 @@ export default function HomePage() {
                                                         borderRadius: 11,
                                                         boxShadow: 'inset 2px 0 8px rgba(255,255,255,0.04), inset -2px 0 8px rgba(255,255,255,0.04), inset 0 2px 6px rgba(255,255,255,0.03)',
                                                     }} />
-                                                    {/* TV Static veya Local Camera Preview */}
+                                                    {/* TV Content: Kamera > YouTube > Static GIF */}
                                                     {demoRoomRef.current?.isCameraOn && demoRoomRef.current?.localStream ? (
                                                         <video
                                                             autoPlay
@@ -3930,8 +3954,34 @@ export default function HomePage() {
                                                             ref={(el) => { if (el && demoRoomRef.current?.localStream) el.srcObject = demoRoomRef.current.localStream; }}
                                                             style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 11, zIndex: 1, transform: 'scaleX(-1)' }}
                                                         />
+                                                    ) : tvVideoUrl ? (
+                                                        extractYoutubeId(tvVideoUrl) ? (
+                                                            <iframe
+                                                                ref={tvYtIframeRef}
+                                                                src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=0&loop=1&enablejsapi=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
+                                                                title="TV Video"
+                                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                                allowFullScreen
+                                                                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 'none', borderRadius: 11, zIndex: 1 }}
+                                                            />
+                                                        ) : (
+                                                            <video
+                                                                src={tvVideoUrl}
+                                                                autoPlay
+                                                                loop
+                                                                playsInline
+                                                                style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain', borderRadius: 11, zIndex: 1, background: '#000' }}
+                                                            />
+                                                        )
                                                     ) : (
                                                         <div className="absolute inset-0" style={{ background: 'url(https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif) center/cover', opacity: 0.6 }} />
+                                                    )}
+                                                    {/* YouTube Badge */}
+                                                    {tvVideoUrl && !demoRoomRef.current?.isCameraOn && (
+                                                        <div style={{ position: 'absolute', top: 6, left: 6, zIndex: 40, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: 'rgba(239,68,68,0.85)', border: '1px solid rgba(239,68,68,0.5)' }}>
+                                                            <span style={{ fontSize: 7 }}>▶</span>
+                                                            <span style={{ fontSize: 7, fontWeight: 800, color: '#fff', letterSpacing: '0.05em' }}>{extractYoutubeId(tvVideoUrl) ? 'YouTube' : 'Video'}</span>
+                                                        </div>
                                                     )}
                                                     {/* Scanlines */}
                                                     <div className="absolute inset-0 pointer-events-none z-[2]" style={{ background: 'linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06))', backgroundSize: '100% 2px, 3px 100%' }} />
@@ -3945,8 +3995,48 @@ export default function HomePage() {
                                                     borderRadius: '0 0 4px 4px',
                                                 }} />
                                             </div>
-                                            <div style={{ textAlign: 'center', fontSize: 9, color: demoRoomRef.current?.isCameraOn ? '#34d399' : '#475569', fontWeight: 600, marginTop: 8 }}>
-                                                {demoRoomRef.current?.isCameraOn ? '📹 Kameranız Açık' : 'Yayın bekleniyor...'}
+                                            {/* Status text */}
+                                            <div style={{ textAlign: 'center', fontSize: 9, color: demoRoomRef.current?.isCameraOn ? '#34d399' : tvVideoUrl ? '#f87171' : '#475569', fontWeight: 600, marginTop: 8 }}>
+                                                {demoRoomRef.current?.isCameraOn ? '📹 Kameranız Açık' : tvVideoUrl ? (extractYoutubeId(tvVideoUrl) ? '▶ YouTube yayını devam ediyor' : '▶ Video yayını devam ediyor') : 'Yayın bekleniyor...'}
+                                            </div>
+                                            {/* YouTube URL Input + Controls */}
+                                            <div style={{ marginTop: 6, padding: '0 4px' }}>
+                                                {tvVideoUrl && !demoRoomRef.current?.isCameraOn ? (
+                                                    <div style={{ display: 'flex', gap: 4 }}>
+                                                        <button
+                                                            onClick={() => setTvVideoUrl(null)}
+                                                            style={{ flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: 600, background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                        >■ Yayını Durdur</button>
+                                                    </div>
+                                                ) : !demoRoomRef.current?.isCameraOn ? (
+                                                    tvYtInputOpen ? (
+                                                        <div style={{ display: 'flex', gap: 4 }}>
+                                                            <input
+                                                                type="text"
+                                                                value={tvYtInputValue}
+                                                                onChange={e => setTvYtInputValue(e.target.value)}
+                                                                placeholder="YouTube veya Video URL..."
+                                                                style={{ flex: 1, padding: '4px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', fontSize: 9, outline: 'none' }}
+                                                                onKeyDown={e => {
+                                                                    if (e.key === 'Enter' && tvYtInputValue.trim()) { setTvVideoUrl(tvYtInputValue.trim()); setTvYtInputValue(''); setTvYtInputOpen(false); }
+                                                                    if (e.key === 'Escape') { setTvYtInputOpen(false); setTvYtInputValue(''); }
+                                                                }}
+                                                                autoFocus
+                                                            />
+                                                            <button
+                                                                onClick={() => { if (tvYtInputValue.trim()) { setTvVideoUrl(tvYtInputValue.trim()); setTvYtInputValue(''); setTvYtInputOpen(false); } }}
+                                                                style={{ padding: '4px 10px', borderRadius: 6, background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', fontSize: 9, fontWeight: 700 }}
+                                                            >▶</button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => setTvYtInputOpen(true)}
+                                                            style={{ width: '100%', padding: '5px 0', borderRadius: 6, fontSize: 9, fontWeight: 600, background: 'rgba(255,255,255,0.04)', color: '#64748b', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', transition: 'all 0.2s' }}
+                                                            onMouseOver={e => { e.currentTarget.style.color = '#94a3b8'; e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; }}
+                                                            onMouseOut={e => { e.currentTarget.style.color = '#64748b'; e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
+                                                        >🎬 Video Yayını Başlat</button>
+                                                    )
+                                                ) : null}
                                             </div>
                                             {/* Kamera açan kullanıcılar — sadece kamerası açık olanlar */}
                                             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>

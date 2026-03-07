@@ -337,78 +337,85 @@ export function RoomMonitorModal({
 
             <div
                 ref={modalRef}
-                className="relative w-full max-w-5xl max-h-[85vh] animate-pure-fade flex flex-col"
+                className="relative w-full max-w-3xl max-h-[80vh] animate-pure-fade flex flex-col"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, #14161f 0%, #0d0f17 100%)',
-                    border: '1px solid rgba(99, 102, 241, 0.15)',
-                    borderRadius: '18px',
-                    boxShadow: '0 25px 80px rgba(0,0,0,0.7), 0 0 40px rgba(99,102,241,0.08)',
+                    background: 'linear-gradient(160deg, rgba(15,18,30,0.97) 0%, rgba(10,12,20,0.98) 100%)',
+                    border: '1px solid rgba(123,159,239,0.12)',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(123,159,239,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
+                    backdropFilter: 'blur(40px) saturate(150%)',
                 }}
             >
                 {/* Top accent line */}
-                <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7, borderRadius: '18px 18px 0 0' }} />
+                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(123,159,239,0.4) 40%, rgba(200,150,46,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
                 {/* Header */}
                 <div
-                    className="flex items-center justify-between px-6 py-4"
+                    className="flex items-center justify-between px-5 py-3"
                     onMouseDown={handleMouseDown}
                     style={{ cursor: 'move', userSelect: 'none' }}
                 >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2.5">
                         <div style={{
-                            width: 40, height: 40, borderRadius: 12,
-                            background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.15))',
-                            border: '1px solid rgba(99,102,241,0.2)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+                            width: 32, height: 32, borderRadius: 10,
+                            background: 'linear-gradient(135deg, rgba(123,159,239,0.12), rgba(200,150,46,0.08))',
+                            border: '1px solid rgba(123,159,239,0.15)',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15,
                         }}>
                             🏠
                         </div>
                         <div>
-                            <h2 className="text-lg font-bold text-white">Oda Monitör</h2>
-                            <div className="flex items-center gap-3 text-xs text-gray-400">
-                                <span className="flex items-center gap-1">
-                                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
-                                    {activeRooms} aktif oda
+                            <h2 style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.2 }}>Oda Monitör</h2>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 10, color: '#64748b', marginTop: 1 }}>
+                                <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                                    <span style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', display: 'inline-block', boxShadow: '0 0 4px rgba(34,197,94,0.4)' }} />
+                                    {activeRooms} aktif
                                 </span>
-                                <span>•</span>
-                                <span>👥 {totalUsers} toplam kişi</span>
+                                <span style={{ color: '#334155' }}>•</span>
+                                <span>👥 {totalUsers}</span>
                             </div>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5">
                         <button
                             onClick={(e) => { e.stopPropagation(); fetchMonitorData(); }}
-                            className="text-gray-400 hover:text-white px-3 py-1.5 rounded-lg hover:bg-white/10 transition-all text-sm flex items-center gap-1.5"
+                            style={{ padding: '4px 8px', borderRadius: 8, fontSize: 11, color: '#64748b', background: 'transparent', border: 'none', cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: 4 }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#64748b'; }}
                             title="Yenile"
                         >
-                            🔄 <span className="text-xs text-gray-500">{lastUpdate.toLocaleTimeString('tr-TR')}</span>
+                            🔄 <span style={{ fontSize: 9, color: '#475569' }}>{lastUpdate.toLocaleTimeString('tr-TR')}</span>
                         </button>
-                        <button onClick={onClose} className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">
+                        <button onClick={onClose} style={{ width: 28, height: 28, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, transition: 'all 0.2s' }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                        >
                             ✕
                         </button>
                     </div>
                 </div>
 
                 {/* Search */}
-                <div className="px-6 pb-4">
-                    <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">🔍</span>
+                <div style={{ padding: '0 20px 10px' }}>
+                    <div style={{ position: 'relative' }}>
+                        <span style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', fontSize: 12, color: '#475569' }}>🔍</span>
                         <input
                             type="text"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="Oda veya kullanıcı ara..."
-                            className="w-full text-sm text-white rounded-xl pl-9 pr-4 py-2.5 border border-white/10 focus:border-amber-600/40 focus:outline-none transition-colors"
-                            style={{ background: '#10121b' }}
+                            style={{ width: '100%', fontSize: 12, color: '#fff', borderRadius: 10, paddingLeft: 30, paddingRight: 12, paddingTop: 7, paddingBottom: 7, border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(0,0,0,0.3)', outline: 'none', transition: 'border-color 0.2s' }}
+                            onFocus={(e) => e.currentTarget.style.borderColor = 'rgba(200,150,46,0.25)'}
+                            onBlur={(e) => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'}
                         />
                     </div>
                 </div>
 
                 {/* Room Grid */}
-                <div className="flex-1 overflow-y-auto px-6 pb-6" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+                <div className="flex-1 overflow-y-auto" style={{ padding: '0 20px 16px', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.06) transparent' }}>
                     {loading ? (
                         <div className="flex items-center justify-center h-48">
                             <div className="flex flex-col items-center gap-3">
@@ -424,8 +431,8 @@ export function RoomMonitorModal({
                     ) : (
                         <div style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                            gap: '14px',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                            gap: '10px',
                         }}>
                             {filteredRooms.map(room => {
                                 const isCurrent = room.slug === currentRoomSlug;
@@ -445,8 +452,8 @@ export function RoomMonitorModal({
                                             border: isCurrent
                                                 ? '1px solid rgba(99,102,241,0.25)'
                                                 : '1px solid rgba(255,255,255,0.05)',
-                                            borderRadius: 14,
-                                            padding: '16px',
+                                            borderRadius: 12,
+                                            padding: '12px',
                                             transition: 'all 0.2s',
                                         }}
                                         onMouseOver={(e) => {
@@ -629,9 +636,9 @@ export function RoomMonitorModal({
                 </div>
 
                 {/* Tip */}
-                <div className="px-6 pb-4">
-                    <div className="text-[10px] text-gray-600 text-center">
-                        💡 Kullanıcılara sağ tıklayarak moderasyon işlemleri yapabilirsiniz
+                <div style={{ padding: '6px 20px 12px', textAlign: 'center' }}>
+                    <div style={{ fontSize: 9, color: '#475569' }}>
+                        💡 Sağ tık → moderasyon
                     </div>
                 </div>
             </div >

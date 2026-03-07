@@ -248,40 +248,44 @@ export function GodMasterProfileModal({
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose} style={centered ? {} : { display: 'block' }}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div ref={modalRef} className="relative w-full max-w-2xl animate-pure-fade" onClick={(e) => e.stopPropagation()}
+            <div ref={modalRef} className="relative w-full max-w-lg animate-pure-fade" onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, #1a0e2e 0%, #0f0a1a 50%, #1a0e2e 100%)',
-                    border: '1px solid rgba(217, 70, 239, 0.2)',
-                    borderRadius: '20px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(217, 70, 239, 0.08)',
+                    background: 'linear-gradient(160deg, rgba(20,12,35,0.97) 0%, rgba(12,8,22,0.98) 100%)',
+                    border: '1px solid rgba(168,85,247,0.12)',
+                    borderRadius: '16px',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
+                    backdropFilter: 'blur(40px) saturate(150%)',
                 }}>
-                <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #d946ef, #a855f7, #6366f1, transparent)', opacity: 0.8, borderRadius: '20px 20px 0 0' }} />
+                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(168,85,247,0.35) 40%, rgba(217,70,239,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-4 pb-0" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2.5">
-                        <span className="text-xl">🔱</span>
-                        <span className="bg-gradient-to-r from-fuchsia-400 to-[#7b9fef] bg-clip-text text-transparent">GodMaster Profil</span>
+                <div className="flex items-center justify-between px-5 pt-3 pb-0" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 15 }}>🔱</span>
+                        <span style={{ background: 'linear-gradient(90deg, #e879f9, #7b9fef)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GodMaster Profil</span>
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
+                    <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    >✕</button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 px-6 pt-3 pb-2 flex-wrap">
+                <div style={{ display: 'flex', gap: 3, padding: '6px 20px 4px', flexWrap: 'wrap' }}>
                     {TABS.map(tab => (
                         <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); setSuccess(''); }}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                             style={{
-                                background: activeTab === tab.id ? 'rgba(217, 70, 239, 0.15)' : 'transparent',
-                                color: activeTab === tab.id ? '#e879f9' : '#64748b',
-                                border: activeTab === tab.id ? '1px solid rgba(217, 70, 239, 0.25)' : '1px solid transparent',
+                                padding: '4px 8px', fontSize: 10, fontWeight: 600, borderRadius: 7, transition: 'all 0.2s', cursor: 'pointer',
+                                background: activeTab === tab.id ? 'rgba(168,85,247,0.12)' : 'transparent',
+                                color: activeTab === tab.id ? '#c084fc' : '#64748b',
+                                border: activeTab === tab.id ? '1px solid rgba(168,85,247,0.2)' : '1px solid transparent',
                             }}>{tab.icon} {tab.label}</button>
                     ))}
                 </div>
 
                 {/* Content */}
-                <div className="px-6 pb-6 pt-2" style={{ maxHeight: activeTab === '3d' ? '70vh' : 'auto', overflowY: activeTab === '3d' ? 'auto' : 'visible' }}>
+                <div style={{ padding: '4px 20px 16px', maxHeight: activeTab === '3d' ? '65vh' : 'auto', overflowY: activeTab === '3d' ? 'auto' : 'visible' }}>
                     {error && <div className="mb-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{error}</div>}
                     {success && <div className="mb-3 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs">{success}</div>}
 
