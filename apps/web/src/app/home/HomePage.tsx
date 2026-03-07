@@ -1736,7 +1736,7 @@ export default function HomePage() {
                         <div style={{ display: 'flex', gap: roomsMode ? 16 : 32, flexWrap: roomsMode ? 'nowrap' as const : 'wrap', alignItems: roomsMode ? 'stretch' : 'flex-start' }}>
 
                             {/* SOL ALAN */}
-                            <div style={{ flex: '1 1 60%', minWidth: roomsMode ? 280 : 400, display: 'flex', flexDirection: 'column', gap: roomsMode ? 16 : 32, order: 2 }}>
+                            <div style={{ flex: '1 1 60%', minWidth: roomsMode ? 280 : 400, display: 'flex', flexDirection: 'column', gap: roomsMode ? 16 : 32, order: 2, transition: roomsMode ? 'flex 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
                                 {(activeSection === 'home' || activeSection === 'odalar') && (
                                     <div key={'home-content'} style={roomsMode ? { display: 'flex', flexDirection: 'column' as const, flex: 1, gap: 12, minHeight: 0 } : { display: 'contents' }}>
 
@@ -3823,7 +3823,7 @@ export default function HomePage() {
 
                             {/* ODALAR — SAĞ SÜTÜN */}
                             {roomsMode && (
-                                <div className={demoEntrance === 'out' ? 'demo-exit-right' : 'demo-enter-right'} style={{ width: 248, flex: '0 0 248px', maxWidth: 268, display: liveCollapsed ? 'none' : 'flex', flexDirection: 'column', gap: 16, order: 3, marginRight: -24, pointerEvents: liveHidden ? 'none' : 'auto' }}>
+                                <div className={demoEntrance === 'out' ? 'demo-exit-right' : 'demo-enter-right'} style={{ width: liveCollapsed ? 0 : 248, flex: liveCollapsed ? '0 0 0px' : '0 0 248px', maxWidth: liveCollapsed ? 0 : 268, display: 'flex', flexDirection: 'column', gap: liveCollapsed ? 0 : 16, order: 3, marginRight: liveCollapsed ? 0 : -24, overflow: liveCollapsed ? 'hidden' : 'visible', pointerEvents: liveHidden ? 'none' : 'auto', transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1), flex 0.5s cubic-bezier(0.4,0,0.2,1), max-width 0.5s cubic-bezier(0.4,0,0.2,1), margin-right 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.3s ease' }}>
                                     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         {/* Lamba */}
                                         <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['rightLive'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 1.1s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'), ...(lampAnimDone.current['rightLive'] ? { transform: liveHidden ? 'translateX(-50%) translateY(-52px)' : 'translateX(-50%) translateY(0)', opacity: liveHidden ? 0 : 1, transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.6s ease' } : {}) }} onAnimationEnd={() => { lampAnimDone.current['rightLive'] = true; }}>
