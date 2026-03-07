@@ -81,6 +81,7 @@ export const ALL_PERMISSIONS: Record<string, PermissionDef> = {
     'invite-one2one': { minLevel: 1, hiddenOnSelf: true },
     'ignore': { minLevel: 0, hiddenOnSelf: true },
     'unignore': { minLevel: 0, hiddenOnSelf: true },
+    'send-gift': { minLevel: 0, hiddenOnSelf: true },
     'talk-test': { minLevel: 0 },
     'my-profile': { minLevel: 0 },
 

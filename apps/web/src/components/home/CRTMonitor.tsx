@@ -16,8 +16,8 @@ export default function CRTMonitor({ children, isPowerOn = true, onPowerToggle }
     const handleMouseMove = useCallback((e: MouseEvent) => {
         const x = (e.clientX / window.innerWidth) - 0.5;
         const y = (e.clientY / window.innerHeight) - 0.5;
-        rotRef.current.tx = 5 - (y * 10);
-        rotRef.current.ty = x * 50;
+        rotRef.current.tx = -(y * 20);
+        rotRef.current.ty = x * 70;
     }, []);
 
     useEffect(() => {

@@ -105,8 +105,8 @@ export function DMWindow({
     }, []);
 
     // Memoize message list
-    const messageList = useMemo(() => messages.map((msg) => (
-        <div key={msg.id} className={`flex ${msg.isSelf ? 'justify-end' : 'justify-start'}`}>
+    const messageList = useMemo(() => messages.map((msg, idx) => (
+        <div key={`${msg.id}-${idx}`} className={`flex ${msg.isSelf ? 'justify-end' : 'justify-start'}`}>
             <div
                 className="max-w-[80%] px-3.5 py-2 text-[13px] leading-relaxed"
                 style={msg.isSelf ? {

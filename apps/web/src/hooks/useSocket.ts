@@ -146,8 +146,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('disconnect', () => {
             console.log('Socket disconnected');
             setIsConnected(false);
-            // NOT: data-theme burada SİLİNMİYOR — oda geçişlerinde tema flash'ını önler.
-            // Yeni oda teması room:joined event'i ile gelecek ve orada set edilecek.
         });
 
         socket.on('room:joined', (data: { messages: any[], participants: any[], rooms?: RoomInfo[], roomSettings?: any, systemSettings?: any, userPermissions?: Record<string, boolean> }) => {
@@ -158,18 +156,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             if (data.rooms) setRooms(data.rooms);
             if (data.roomSettings) {
                 setRoomSettings(data.roomSettings);
-                // Oda temasını uygula — sunucu teması yoksa kullanıcının kendi tercihine dön
-                if (data.roomSettings.themeId) {
-                    document.documentElement.setAttribute('data-theme', data.roomSettings.themeId);
-                } else {
-                    // Sunucu teması yok → kullanıcının kendi seçtiği temayı koru
-                    const userTheme = localStorage.getItem('soprano_user_theme');
-                    if (userTheme && userTheme !== 'modern') {
-                        document.documentElement.setAttribute('data-theme', userTheme);
-                    } else {
-                        document.documentElement.removeAttribute('data-theme');
-                    }
-                }
             }
             if (data.systemSettings) {
                 setSystemSettings(data.systemSettings);
@@ -310,20 +296,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:settings-updated', (data: any) => {
             console.log('[Room Settings] Updated:', data);
             setRoomSettings(data);
-            // Tema değişikliğini anında uygula
-            if (data.themeId !== undefined) {
-                if (data.themeId) {
-                    document.documentElement.setAttribute('data-theme', data.themeId);
-                } else {
-                    // Sunucu teması kaldırıldı → kullanıcının kendi tercihine dön
-                    const userTheme = localStorage.getItem('soprano_user_theme');
-                    if (userTheme && userTheme !== 'modern') {
-                        document.documentElement.setAttribute('data-theme', userTheme);
-                    } else {
-                        document.documentElement.removeAttribute('data-theme');
-                    }
-                }
-            }
         });
 
         // Gerçek zamanlı oda katılımcı sayısı güncellemesi
@@ -470,29 +442,10 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         }
         // Clear stale data
         setMessages([]);
+        setParticipants([]);
         setRoomSettings(null);
         setPasswordRequired(null);
         setRoomError(null);
-        // Optimistic: add self to participants immediately so user sees themselves
-        try {
-            const authUser = JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null');
-            if (authUser) {
-                const optimistic = {
-                    userId: authUser.id || authUser.userId,
-                    displayName: authUser.displayName || authUser.username || 'Kullanıcı',
-                    role: authUser.role || 'member',
-                    avatar: authUser.avatar,
-                    gender: authUser.gender,
-                    isMuted: false,
-                    isBanned: false,
-                };
-                setParticipants([optimistic as any]);
-            } else {
-                setParticipants([]);
-            }
-        } catch {
-            setParticipants([]);
-        }
         // Join new room
         currentRoomRef.current = roomId;
         socket.emit('room:join', buildJoinPayload(roomId));

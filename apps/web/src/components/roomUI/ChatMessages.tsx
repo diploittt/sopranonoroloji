@@ -117,13 +117,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     const [openReactionMsgId, setOpenReactionMsgId] = useState<string | null>(null);
     const reactionPickerRef = useRef<HTMLDivElement>(null);
 
-    // ── WhatsApp-style tap animation ──
-    const [tappedMsgId, setTappedMsgId] = useState<string | null>(null);
-    const handleBubbleTap = (msgId?: string) => {
-        if (!msgId) return;
-        setTappedMsgId(msgId);
-        setTimeout(() => setTappedMsgId(null), 300);
-    };
+
 
     // Click outside to close reaction picker
     useEffect(() => {
@@ -238,7 +232,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     return (
         <div
             className="chat-messages-container chat-area flex-1 overflow-y-auto overflow-x-hidden p-6 space-y-1 custom-scrollbar flex flex-col items-center"
-            style={{ minHeight: 510 }}
+            style={{ minHeight: 540 }}
             data-chat-messages
             ref={scrollRef}
             onContextMenu={onContextMenu}
@@ -483,8 +477,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                             {gifMessage ? (
                                                 /* GIF mesajı › balon içinde resim */
                                                 <div
-                                                    className={`message-bubble-interactive rounded-2xl overflow-hidden ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} max-w-[280px] border border-white/[0.08] shadow-lg ${tappedMsgId === msg.id ? 'message-tap-animate' : ''}`}
-                                                    onClick={() => handleBubbleTap(msg.id)}
+                                                    className={`rounded-2xl overflow-hidden ${isMe ? 'rounded-tr-sm' : 'rounded-tl-sm'} max-w-[280px] border border-white/[0.08] shadow-lg`}
                                                 >
                                                     <img
                                                         src={msg.message.trim()}
@@ -516,28 +509,25 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                             ) : stickerMsg ? (
                                                 /* Sticker › büyük emoji (text-4xl) */
                                                 <div
-                                                    className={`message-bubble-interactive text-4xl leading-snug py-1 px-1 select-text ${isMe ? 'text-right' : 'text-left'} ${tappedMsgId === msg.id ? 'message-tap-animate' : ''}`}
-                                                    onClick={() => handleBubbleTap(msg.id)}
+                                                    className={`text-4xl leading-snug py-1 px-1 select-text ${isMe ? 'text-right' : 'text-left'}`}
                                                 >
                                                     {displayMessage}
                                                 </div>
                                             ) : emojiOnly ? (
                                                 /* Normal emoji › küçük (text-lg) */
                                                 <div
-                                                    className={`message-bubble-interactive text-lg leading-snug py-1 px-1 select-text ${isMe ? 'text-right' : 'text-left'} ${tappedMsgId === msg.id ? 'message-tap-animate' : ''}`}
-                                                    onClick={() => handleBubbleTap(msg.id)}
+                                                    className={`text-lg leading-snug py-1 px-1 select-text ${isMe ? 'text-right' : 'text-left'}`}
                                                 >
                                                     {msg.message}
                                                 </div>
                                             ) : (
-                                                <div className={`message-bubble message-bubble-interactive
+                                                <div className={`message-bubble
                                                 px-3.5 py-2 leading-relaxed select-text
                                                 transition-all duration-200 break-all
                                                 ${isMe
                                                         ? 'message-mine bg-[#1a1f2e]/80 rounded-2xl rounded-tr-sm shadow-md border border-white/[0.08]'
                                                         : 'bg-[#1a1f2e]/60 rounded-2xl rounded-tl-sm hover:bg-[#1a1f2e]/70 border border-white/[0.06]'
                                                     }
-                                                ${tappedMsgId === msg.id ? 'message-tap-animate' : ''}
                                             `}
                                                     style={{
                                                         overflowWrap: 'anywhere',
@@ -545,8 +535,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                         fontSize: chatTextSettings.fontSize,
                                                         fontWeight: Number(chatTextSettings.fontWeight),
                                                         color: chatTextSettings.textColor,
-                                                    }}
-                                                    onClick={() => handleBubbleTap(msg.id)}>
+                                                    }}>
                                                     {msg.message}
                                                 </div>
                                             )}

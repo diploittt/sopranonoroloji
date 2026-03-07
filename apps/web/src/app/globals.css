@@ -1556,12 +1556,7 @@ body {
     scrollbar-width: none;
 }
 
-/* ============================================ */
-/*  TEMA IMPORTS                                */
-/* ============================================ */
-@import '../styles/themes/telegraph-1910.css';
-@import '../styles/themes/midnight.css';
-@import '../styles/themes/hasbihal-islamic.css';
+
 
 
 /* ── GodMaster Banner: çerçeve kaldır (tüm temalar) ── */
@@ -1572,17 +1567,7 @@ body {
 .sidebar-left .godmaster-banner,
 .sidebar-left .godmaster-banner canvas,
 .sidebar-left .user-card .godmaster-banner,
-.sidebar-left .user-card .godmaster-banner canvas,
-[data-theme] .godmaster-banner,
-[data-theme] .godmaster-banner canvas,
-[data-theme] .user-card .godmaster-banner,
-[data-theme] .user-card .godmaster-banner canvas,
-[data-theme] .sidebar-left .godmaster-banner,
-[data-theme] .sidebar-left .godmaster-banner canvas,
-[data-theme] .sidebar-left .user-card .godmaster-banner,
-[data-theme] .sidebar-left .user-card .godmaster-banner canvas,
-[data-theme] .sidebar-left .user-card.user-card .godmaster-banner,
-[data-theme] .sidebar-left .user-card.user-card .godmaster-banner canvas {
+.sidebar-left .user-card .godmaster-banner canvas {
     border: none !important;
     outline: none !important;
     box-shadow: none !important;

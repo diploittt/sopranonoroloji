@@ -122,7 +122,7 @@ const DEMO_CHAT_AREA_ITEMS: DemoContextMenuItem[] = [
 ];
 
 // ─── DEMO CHAT ROOM — backend bağlantılı, tüm mekanikler entegre ───
-function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: { users: any[]; messages: any[]; currentSpeaker: any; actions: any; socket: any; state: any; demoAddToast: any; setIsSettingsOpen: any; setSettingsAnchor: any }) => void }) {
+function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: { users: any[]; messages: any[]; currentSpeaker: any; actions: any; socket: any; state: any; demoAddToast: any; setIsSettingsOpen: any; setSettingsAnchor: any; localStream: MediaStream | null; isCameraOn: boolean }) => void }) {
     const room = useRoomRealtime({ slug });
     const { toasts: demoToasts, addToast: demoAddToast, removeToast: demoRemoveToast } = useToast();
 
@@ -140,8 +140,10 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
             setSettingsAnchor,
             handleUserContextMenu,
             handleEmptyAreaContextMenu,
+            localStream: room.state.localStream,
+            isCameraOn: room.state.isCameraOn,
         });
-    }, [room.state.users, room.state.messages, room.state.currentSpeaker]);
+    }, [room.state.users, room.state.messages, room.state.currentSpeaker, room.state.isCameraOn, room.state.localStream, room.state.isMicOn, room.state.queue, room.state.micTimeLeft, room.state.isChatLocked, room.state.isCurrentUserMuted, room.state.isCurrentUserGagged]);
 
     // ─── Modal States ─────────────────────────────────────────────────
     const [isChangeNameOpen, setIsChangeNameOpen] = useState(false);
@@ -704,12 +706,18 @@ export default function HomePage() {
     const [roomsMode, setRoomsMode] = useState(false);
     useEffect(() => { document.body.style.overflow = roomsMode ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [roomsMode]);
     const [blurToOdalar, setBlurToOdalar] = useState<false | 'out' | 'silhouette'>(false);
-    const [userStatus, setUserStatus] = useState<'online' | 'busy' | 'brb' | 'away' | 'phone'>('online');
+    const [demoEntrance, setDemoEntrance] = useState<'idle' | 'in' | 'out'>('idle');
+    const [userStatus, setUserStatus] = useState<'online' | 'busy' | 'brb' | 'away' | 'phone' | 'invisible'>('online');
     const [micActive, setMicActive] = useState(false);
     const [demoSlug, setDemoSlug] = useState('genel-sohbet');
     const [demoMsgText, setDemoMsgText] = useState('');
     const demoRoomRef = useRef<any>(null);
     const [demoRoomReady, setDemoRoomReady] = useState(false);
+    const [demoRoomUsers, setDemoRoomUsers] = useState<any[]>([]);
+    const [demoCurrentSpeaker, setDemoCurrentSpeaker] = useState<any>(null);
+    const [demoIsMicOn, setDemoIsMicOn] = useState(false);
+    const [demoQueue, setDemoQueue] = useState<string[]>([]);
+    const [demoMicTimeLeft, setDemoMicTimeLeft] = useState(0);
     const [cachedRooms, setCachedRooms] = useState<{ name: string; slug: string }[]>([]);
     useEffect(() => { adminApi.getRooms().then((rooms: any[]) => { if (rooms?.length) setCachedRooms(rooms.map(r => ({ name: r.name, slug: r.slug }))); }).catch(() => { }); }, []);
     const [statusDropdown, setStatusDropdown] = useState(false);
@@ -719,6 +727,7 @@ export default function HomePage() {
     const [showCustomConfig, setShowCustomConfig] = useState(false);
     const [lampsOff, setLampsOff] = useState(false);
     const [liveHidden, setLiveHidden] = useState(false);
+    const [liveCollapsed, setLiveCollapsed] = useState(false);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
     const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
@@ -1144,6 +1153,45 @@ export default function HomePage() {
                 .content-fade-4 { animation-delay: 1.2s; }
                 .content-fade-5 { animation-delay: 1.4s; }
                 .content-fade-6 { animation-delay: 1.6s; }
+
+                /* ═══ Demo Giriş/Çıkış Animasyonları ═══ */
+                @keyframes demoSlideDown {
+                    0% { transform: translateY(-80px); opacity: 0; }
+                    100% { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes demoScaleIn {
+                    0% { transform: scale(0.92) translateY(20px); opacity: 0; }
+                    100% { transform: scale(1) translateY(0); opacity: 1; }
+                }
+                @keyframes demoSlideUp {
+                    0% { transform: translateY(30px); opacity: 0; }
+                    100% { transform: translateY(0); opacity: 1; }
+                }
+                @keyframes demoGrowDown {
+                    0% { transform: scaleY(0); opacity: 0; max-height: 0; }
+                    40% { opacity: 1; }
+                    100% { transform: scaleY(1); opacity: 1; max-height: 600px; }
+                }
+                @keyframes liveCollapseContent {
+                    0% { transform: scaleY(1) translateY(0); opacity: 1; }
+                    100% { transform: scaleY(0) translateY(-40px); opacity: 0; }
+                }
+                @keyframes liveExpandContent {
+                    0% { transform: scaleY(0) translateY(-40px); opacity: 0; }
+                    100% { transform: scaleY(1) translateY(0); opacity: 1; }
+                }
+                /* Giriş class'ları */
+                .demo-enter-left   { animation: demoGrowDown 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s both; will-change: transform, opacity; transform-origin: top center; }
+                .demo-enter-right  { animation: demoSlideDown 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s both; will-change: transform, opacity; }
+                .demo-enter-chat   { animation: demoScaleIn  0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.2s both; will-change: transform, opacity; }
+                .demo-enter-rooms  { animation: demoSlideUp  0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.35s both; will-change: transform, opacity; }
+                .demo-enter-input  { animation: demoSlideUp  0.4s cubic-bezier(0.22, 0.61, 0.36, 1) 0.4s both; will-change: transform, opacity; }
+                /* Çıkış class'ları — ters animasyon */
+                .demo-exit-left    { animation: demoGrowDown 0.35s cubic-bezier(0.55, 0.06, 0.68, 0.19) 0s reverse both; will-change: transform, opacity; transform-origin: top center; }
+                .demo-exit-right   { animation: demoSlideDown 0.4s cubic-bezier(0.55, 0.06, 0.68, 0.19) 0s reverse both; will-change: transform, opacity; }
+                .demo-exit-chat    { animation: demoScaleIn  0.35s cubic-bezier(0.55, 0.06, 0.68, 0.19) 0s reverse both; will-change: transform, opacity; }
+                .demo-exit-rooms   { animation: demoSlideUp  0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19) 0s reverse both; will-change: transform, opacity; }
+                .demo-exit-input   { animation: demoSlideUp  0.25s cubic-bezier(0.55, 0.06, 0.68, 0.19) 0s reverse both; will-change: transform, opacity; }
 
                 .glossy-panel {
                     background:
@@ -1599,19 +1647,23 @@ export default function HomePage() {
                                             }
                                             if (item.section === 'odalar' && user) {
                                                 if (roomsMode) return; // Zaten DEMO modundayız
-                                                setBlurToOdalar('out');
-                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                setTimeout(() => {
-                                                    setActiveSection('odalar');
+                                                window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+                                                setActiveSection('odalar');
+                                                requestAnimationFrame(() => {
                                                     setRoomsMode(true);
-                                                    setBlurToOdalar('silhouette');
-                                                }, 400);
-                                                setTimeout(() => {
-                                                    setBlurToOdalar(false);
-                                                }, 900);
+                                                    setDemoEntrance('in');
+                                                });
                                                 return;
                                             }
-                                            if (roomsMode) setRoomsMode(false);
+                                            if (roomsMode) {
+                                                // Çıkış animasyonu
+                                                setDemoEntrance('out');
+                                                setTimeout(() => {
+                                                    setRoomsMode(false);
+                                                    setDemoEntrance('idle');
+                                                }, 500);
+                                                return;
+                                            }
                                             setActiveSection(item.section);
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
@@ -1674,9 +1726,9 @@ export default function HomePage() {
                     width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0,
                     transition: 'transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease, filter 0.6s ease',
                     transform: (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up') ? 'translateY(-100vh) scale(0.8)' : (demoPhase === 'exit-bar-down') ? 'translateY(-60vh) scale(0.9)' : 'translateY(0) scale(1)',
-                    opacity: blurToOdalar ? 0 : (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up' || demoPhase === 'exit-bar-down') ? 0 : 1,
-                    filter: blurToOdalar === 'out' ? 'blur(8px)' : blurToOdalar === 'silhouette' ? 'blur(6px)' : 'blur(0px)',
-                    pointerEvents: demoPhase !== 'idle' && demoPhase !== 'exit-cards-in' ? 'none' : blurToOdalar ? 'none' : 'auto',
+                    opacity: (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up' || demoPhase === 'exit-bar-down') ? 0 : 1,
+                    filter: 'blur(0px)',
+                    pointerEvents: demoPhase !== 'idle' && demoPhase !== 'exit-cards-in' ? 'none' : 'auto',
                 }}>
 
 
@@ -1808,11 +1860,21 @@ export default function HomePage() {
                                                             </button>
                                                             {/* Canlı Yayın Gizle/Göster */}
                                                             <button
-                                                                onClick={() => setLiveHidden(p => !p)}
+                                                                onClick={() => {
+                                                                    if (!liveHidden) {
+                                                                        // Gizle: önce blur+lamba (0.8s), sonra collapse
+                                                                        setLiveHidden(true);
+                                                                        setTimeout(() => setLiveCollapsed(true), 900);
+                                                                    } else {
+                                                                        // Göster: önce genişlet, sonra içerik görünsün
+                                                                        setLiveCollapsed(false);
+                                                                        setTimeout(() => setLiveHidden(false), 500);
+                                                                    }
+                                                                }}
                                                                 title={liveHidden ? 'Canlı Yayını Göster' : 'Canlı Yayını Gizle'}
                                                                 style={{
                                                                     background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                                                                    color: liveHidden ? '#475569' : '#94a3b8',
+                                                                    color: (liveHidden || liveCollapsed) ? '#475569' : '#94a3b8',
                                                                     transition: 'all 0.3s', display: 'flex', alignItems: 'center',
                                                                     opacity: 0, animation: 'cardDropDown 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s forwards',
                                                                 }}
@@ -1829,44 +1891,18 @@ export default function HomePage() {
                                                     </div>
                                                 </div>
                                             )}
-                                            <div className="glossy-panel" style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 22px 22px', marginTop: -2, maxHeight: 600 } : {}) }}>
+                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 22px 22px', marginTop: -2, maxHeight: 600, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
                                                 {/* Lavanta geçişli blur efekti */}
                                                 {roomsMode && (<>
                                                     <div style={{ position: 'absolute', top: -20, right: -20, width: 200, height: 200, background: 'radial-gradient(circle, rgba(147, 130, 220, 0.18) 0%, rgba(123, 159, 239, 0.08) 50%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
                                                     <div style={{ position: 'absolute', bottom: -20, left: -20, width: 160, height: 160, background: 'radial-gradient(circle, rgba(123, 159, 239, 0.12) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
                                                 </>)}
-                                                {/* DEMO geçiş yükleniyor ikonu — chat zemini içinde */}
-                                                {roomsMode && blurToOdalar && (
-                                                    <div style={{
-                                                        position: 'absolute', inset: 0, zIndex: 50,
-                                                        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14,
-                                                        backdropFilter: 'blur(12px)',
-                                                        background: 'rgba(0,0,0,0.3)',
-                                                        borderRadius: '0 0 8px 8px',
-                                                        animation: 'odalarToastIn 0.3s ease both',
-                                                    }}>
-                                                        <div style={{
-                                                            width: 56, height: 56, borderRadius: '50%',
-                                                            background: 'radial-gradient(circle at 35% 35%, #a3f7a3, #34d399 40%, #059669 80%, #047857)',
-                                                            boxShadow: '0 0 30px rgba(52,211,153,0.6), 0 0 60px rgba(52,211,153,0.3), inset 0 2px 4px rgba(255,255,255,0.5)',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            border: '3px solid rgba(255,255,255,0.25)',
-                                                            animation: 'odalarSpin 1.2s linear infinite',
-                                                        }}>
-                                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                                                <path d="M21 2v6h-6" /><path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
-                                                                <path d="M3 22v-6h6" /><path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
-                                                            </svg>
-                                                        </div>
-                                                        <div style={{ fontSize: 12, fontWeight: 700, color: '#34d399', textShadow: '0 0 20px rgba(52,211,153,0.5)', letterSpacing: 2, textTransform: 'uppercase' }}>Demo Yükleniyor</div>
-                                                    </div>
-                                                )}
 
                                                 {roomsMode && (
-                                                    <div style={{ opacity: blurToOdalar ? 0 : 1, transition: 'opacity 0.4s ease' }}>
+                                                    <div>
                                                         <DemoChatRoom
                                                             slug={demoSlug}
-                                                            onRoomData={(data) => { demoRoomRef.current = data; if (!demoRoomReady) setDemoRoomReady(true); }}
+                                                            onRoomData={(data) => { demoRoomRef.current = data; setDemoRoomUsers(data.users || []); setDemoCurrentSpeaker(data.currentSpeaker || null); setDemoIsMicOn(data.state?.isMicOn || false); setDemoQueue(data.state?.queue || []); setDemoMicTimeLeft(data.state?.micTimeLeft || 0); if (!demoRoomReady) setDemoRoomReady(true); }}
                                                         />
                                                     </div>
                                                 )}
@@ -1924,7 +1960,7 @@ export default function HomePage() {
 
                                                         {/* SAĞ: 3D CRT Monitör — küçültülmüş */}
                                                         <div style={{ flex: '0 0 320px', height: 340, position: 'relative', overflow: 'visible' }}>
-                                                            <div style={{ transform: 'scale(0.44)', transformOrigin: 'center center', position: 'absolute', top: '50%', left: '50%', marginTop: -300, marginLeft: -310 }}>
+                                                            <div style={{ transform: 'scale(0.44)', transformOrigin: 'center center', position: 'absolute', top: '50%', left: '50%', marginTop: -280, marginLeft: 0 }}>
                                                                 <CRTMonitor isPowerOn={crtPowerOn} onPowerToggle={() => setCrtPowerOn((p: boolean) => !p)}>
                                                                     <div style={{ width: '100%', height: '100%', background: '#0b0d14', color: '#e2e8f0', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
                                                                         <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20 }}>
@@ -2174,8 +2210,8 @@ export default function HomePage() {
 
                                         {/* roomsMode: Gerçek BottomToolbar — ayrı glossy-panel kart */}
                                         {roomsMode && demoRoomReady && demoRoomRef.current && (
-                                            <div className="glossy-panel demo-chatroom-override" style={{
-                                                padding: '12px 16px', marginTop: -2, position: 'relative', zIndex: 6,
+                                            <div className={`glossy-panel demo-chatroom-override ${demoEntrance === 'out' ? 'demo-exit-input' : 'demo-enter-input'}`} style={{
+                                                padding: '16px 20px', marginTop: -2, position: 'relative', zIndex: 6,
                                                 boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
                                             }}>
                                                 <BottomToolbar
@@ -2889,7 +2925,7 @@ export default function HomePage() {
 
 
                             {/* SAĞ ALAN */}
-                            <div key={'right-col'} style={{ width: roomsMode ? 240 : undefined, flex: roomsMode ? '0 0 240px' : '1 1 20%', minWidth: 220, maxWidth: roomsMode ? 260 : undefined, display: 'flex', flexDirection: 'column', gap: 24, order: 1, transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', ...(roomsMode ? { marginLeft: -24 } : {}) }}>
+                            <div key={'right-col'} style={{ width: 240, flex: '0 0 240px', minWidth: 220, maxWidth: 260, display: 'flex', flexDirection: 'column', gap: 24, order: 1, transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)', ...(roomsMode ? { marginLeft: -24 } : {}) }}>
                                 {/* GİRİŞ PANELİ + TABLO LAMBASI */}
                                 <div style={{ position: 'relative' }}>
                                     {/* ===== TABLO LAMBASI (SVG Gallery Lamp) — bağımsız, content-fade dışı ===== */}
@@ -3024,7 +3060,7 @@ export default function HomePage() {
                                     )}
 
                                     <div style={{ position: 'relative', zIndex: 10, animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.0s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both', transformOrigin: 'top center' }}>
-                                        <div className="glossy-panel" style={{ padding: roomsMode ? '12px 14px' : '16px 20px', position: 'relative', zIndex: 10, transition: roomsMode ? 'none' : 'padding 1s ease, min-height 1s ease', display: 'flex', flexDirection: 'column', ...(roomsMode ? { minHeight: 780, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)' } : { minHeight: 0 }), ...(!roomsMode && user ? { border: '1px solid rgba(56,189,248,0.4)', boxShadow: '0 50px 70px -20px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 60px rgba(255,255,255,0.03), 0 0 15px rgba(56,189,248,0.15)' } : {}) }}>
+                                        <div className="glossy-panel" style={{ padding: roomsMode ? '12px 14px' : '12px 14px', position: 'relative', zIndex: 10, transition: roomsMode ? 'none' : 'padding 1s ease, min-height 1s ease', display: 'flex', flexDirection: 'column', ...(roomsMode ? { minHeight: 780, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)' } : { minHeight: 0 }), ...(!roomsMode && user ? { border: '1px solid rgba(56,189,248,0.4)', boxShadow: '0 50px 70px -20px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 60px rgba(255,255,255,0.03), 0 0 15px rgba(56,189,248,0.15)' } : {}) }}>
                                             {/* Üst başlık */}
                                             <h3 style={{ fontSize: roomsMode ? 9 : 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: roomsMode ? 0 : 10, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)', transition: 'font-size 0.8s ease, margin-bottom 0.8s ease, max-height 0.8s ease, opacity 0.6s ease', overflow: 'hidden', maxHeight: roomsMode ? 0 : 30, opacity: roomsMode ? 0 : 1 }}>
                                                 <User style={{ width: 18, height: 18, color: user ? '#fbbf24' : '#38bdf8' }} /> Hesap Paneli
@@ -3332,16 +3368,10 @@ export default function HomePage() {
                                                             )}
                                                             <button onClick={() => {
                                                                 if (roomsMode) return;
-                                                                setBlurToOdalar('out');
                                                                 window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                                setTimeout(() => {
-                                                                    setActiveSection('odalar');
-                                                                    setRoomsMode(true);
-                                                                    setBlurToOdalar('silhouette');
-                                                                }, 400);
-                                                                setTimeout(() => {
-                                                                    setBlurToOdalar(false);
-                                                                }, 900);
+                                                                setActiveSection('odalar');
+                                                                setRoomsMode(true);
+                                                                setDemoEntrance('in');
                                                             }} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
                                                                 Odaya Gir
                                                             </button>
@@ -3353,20 +3383,20 @@ export default function HomePage() {
 
                                                     {/* roomsMode — Çevrimiçi Kullanıcılar sütunu */}
                                                     {roomsMode && (
-                                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: 0, animation: 'contentFadeIn 0.4s ease both', overflow: 'hidden' }}>
+                                                        <div className={demoEntrance === 'out' ? 'demo-exit-left' : 'demo-enter-left'} style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: 0, overflow: 'hidden', transformOrigin: 'top center' }}>
                                                             {/* Başlık — scroll'dan bağımsız */}
                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 6, borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
                                                                 <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 8px rgba(52,211,153,0.5)', animation: 'pulse 2s ease-in-out infinite' }} />
                                                                 <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5 }}>Çevrimiçi</span>
                                                                 <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>
-                                                                    {(demoRoomRef.current?.users || []).length || dbRooms.reduce((sum: number, r: any) => sum + (r.users || 0), 0)} kişi
+                                                                    {demoRoomUsers.length || dbRooms.reduce((sum: number, r: any) => sum + (r.users || 0), 0)} kişi
                                                                 </span>
                                                             </div>
                                                             {/* Kullanıcı listesi — scroll yapan bölüm */}
                                                             <div className="hover-scroll" onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); demoRoomRef.current?.handleEmptyAreaContextMenu?.(e); }} style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, overscrollBehavior: 'contain' }}>
                                                                 {/* Gerçek kullanıcı listesi */}
                                                                 {(() => {
-                                                                    const roomUsers: any[] = demoRoomRef.current?.users || [];
+                                                                    const roomUsers: any[] = demoRoomUsers;
                                                                     const getRoleLevel = (role?: string) => {
                                                                         switch (role?.toLowerCase()) {
                                                                             case 'godmaster': return 10;
@@ -3418,7 +3448,7 @@ export default function HomePage() {
                                                                             default: return 'Misafir';
                                                                         }
                                                                     };
-                                                                    const speaker = demoRoomRef.current?.currentSpeaker;
+                                                                    const speaker = demoCurrentSpeaker;
                                                                     const sorted = [...roomUsers].sort((a, b) => {
                                                                         const isSpeakerA = speaker?.userId === a.userId;
                                                                         const isSpeakerB = speaker?.userId === b.userId;
@@ -3429,11 +3459,7 @@ export default function HomePage() {
                                                                         if (la !== lb) return lb - la;
                                                                         return (a.displayName || a.username || '').localeCompare(b.displayName || b.username || '');
                                                                     });
-                                                                    // Demo bot kullanıcılar
-                                                                    const botNames = ['Yılmaz', 'Ayşe', 'Kemal', 'Fatma', 'Ahmet', 'Elif', 'Mehmet', 'Zeynep', 'Ali', 'Derya', 'Hüseyin', 'Gizem', 'İbrahim', 'Seda', 'Mustafa', 'Ebru', 'Ömer', 'Hülya', 'Emre', 'Büşra', 'Cem', 'Merve', 'Tolga', 'Cansu', 'Volkan', 'Aslı', 'Serkan', 'İrem', 'Kaan', 'Esra', 'Oğuz', 'Dilara', 'Deniz', 'Sibel', 'Burak', 'Pınar', 'Alp', 'Berfin', 'Utku', 'Naz', 'Barış', 'Ceyda', 'Onur', 'Gamze', 'Uğur', 'Tuğba', 'Arda', 'Simge', 'Selim', 'Damla'];
-                                                                    const botRoles = ['member', 'member', 'member', 'guest', 'guest', 'guest', 'guest', 'vip', 'member', 'guest', 'member', 'guest', 'guest', 'member', 'guest', 'vip', 'guest', 'member', 'guest', 'guest', 'guest', 'member', 'guest', 'guest', 'guest', 'member', 'guest', 'guest', 'member', 'guest', 'guest', 'guest', 'member', 'guest', 'guest', 'guest', 'vip', 'member', 'guest', 'guest', 'guest', 'member', 'guest', 'guest', 'guest', 'member', 'guest', 'guest', 'guest', 'member'];
-                                                                    const demoBots = botNames.map((n, i) => ({ userId: `bot-${i}`, displayName: n, username: n.toLowerCase(), role: botRoles[i], avatar: '' }));
-                                                                    sorted.push(...demoBots);
+                                                                    // Gerçek zamanlı kullanıcılar (botlar kaldırıldı)
                                                                     if (sorted.length === 0) {
                                                                         // Mevcut kullanıcıyı göster
                                                                         return (
@@ -3450,8 +3476,17 @@ export default function HomePage() {
                                                                                 </div>
                                                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                                                     <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.displayName || user.username}</div>
-                                                                                    <div style={{ fontSize: 9, fontWeight: 600, color: '#34d399' }}>● Çevrimiçi</div>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                        <span style={{ fontSize: 8, fontWeight: 600, color: '#38bdf8' }}>Siz</span>
+                                                                                    </div>
                                                                                 </div>
+                                                                                {/* Online dot — userStatus state ile senkron */}
+                                                                                <div style={{
+                                                                                    width: 6, height: 6, borderRadius: '50%',
+                                                                                    background: ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[userStatus] || '#34d399',
+                                                                                    boxShadow: `0 0 4px ${({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[userStatus] || 'rgba(52,211,153,0.4)'}`,
+                                                                                    flexShrink: 0,
+                                                                                }} />
                                                                             </div>
                                                                         );
                                                                     }
@@ -3488,20 +3523,28 @@ export default function HomePage() {
                                                                                 }}>
                                                                                     <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                                                                 </div>
-                                                                                {/* İsim + Rol */}
+                                                                                {/* İsim + Rol + Status */}
                                                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                                                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                        <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                                                                                        <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
                                                                                         {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
                                                                                         {isSpeaking && <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 700, animation: 'pulse 2s ease-in-out infinite' }}>🎤</span>}
                                                                                     </div>
-                                                                                    <div style={{ fontSize: 9, fontWeight: 600, color: roleColor }}>{roleLabel}</div>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                        <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
+                                                                                    </div>
                                                                                 </div>
-                                                                                {/* Online dot */}
+                                                                                {/* Online dot — kendi kullanıcı için userStatus, diğerleri için u.status */}
                                                                                 <div style={{
                                                                                     width: 6, height: 6, borderRadius: '50%',
-                                                                                    background: isSpeaking ? '#ef4444' : '#34d399',
-                                                                                    boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : 'rgba(52,211,153,0.4)'}`,
+                                                                                    background: isSpeaking ? '#ef4444' : (() => {
+                                                                                        const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                        return ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[st] || '#34d399';
+                                                                                    })(),
+                                                                                    boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : (() => {
+                                                                                        const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                        return ({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[st] || 'rgba(52,211,153,0.4)';
+                                                                                    })()}`,
                                                                                     flexShrink: 0,
                                                                                 }} />
                                                                             </div>
@@ -3528,12 +3571,12 @@ export default function HomePage() {
                                                                 }}>
                                                                     <div style={{
                                                                         width: 10, height: 10, borderRadius: '50%',
-                                                                        background: `radial-gradient(circle at 35% 35%, ${{ online: '#6ee7b7', busy: '#fca5a5', brb: '#fde68a', away: '#cbd5e1', phone: '#c4b5fd' }[userStatus]}, ${{ online: '#059669', busy: '#dc2626', brb: '#d97706', away: '#64748b', phone: '#7c3aed' }[userStatus]})`,
-                                                                        boxShadow: `0 0 8px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa' }[userStatus]}80, 0 0 16px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa' }[userStatus]}40`,
+                                                                        background: `radial-gradient(circle at 35% 35%, ${{ online: '#6ee7b7', busy: '#fca5a5', brb: '#fde68a', away: '#cbd5e1', phone: '#c4b5fd', invisible: '#94a3b8' }[userStatus]}, ${{ online: '#059669', busy: '#dc2626', brb: '#d97706', away: '#64748b', phone: '#7c3aed', invisible: '#475569' }[userStatus]})`,
+                                                                        boxShadow: `0 0 8px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus]}80, 0 0 16px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus]}40`,
                                                                         animation: userStatus === 'online' ? 'pulse 2s ease-in-out infinite' : 'none',
                                                                     }} />
-                                                                    <span style={{ fontSize: 10, fontWeight: 700, color: { online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa' }[userStatus], letterSpacing: 0.5 }}>
-                                                                        {{ online: 'Çevrimiçi', busy: 'Meşgul', brb: 'Dönecek', away: 'Dışarıda', phone: 'Telefonda' }[userStatus]}
+                                                                    <span style={{ fontSize: 10, fontWeight: 700, color: { online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus], letterSpacing: 0.5 }}>
+                                                                        {{ online: 'Çevrimiçi', busy: 'Meşgul', brb: 'Dönecek', away: 'Dışarıda', phone: 'Telefonda', invisible: 'Görünmez' }[userStatus]}
                                                                     </span>
                                                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: 'auto', transform: statusDropdown ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.3s ease' }}><polyline points="6 9 12 15 18 9" /></svg>
                                                                 </button>
@@ -3552,6 +3595,7 @@ export default function HomePage() {
                                                                             { key: 'brb' as const, label: 'Dönecek', color: '#fbbf24', icon: '⏳' },
                                                                             { key: 'away' as const, label: 'Dışarıda', color: '#94a3b8', icon: '🌙' },
                                                                             { key: 'phone' as const, label: 'Telefonda', color: '#a78bfa', icon: '📞' },
+                                                                            { key: 'invisible' as const, label: 'Görünmez', color: '#64748b', icon: '👻' },
                                                                         ].map(s => (
                                                                             <button key={s.key} onClick={() => { setUserStatus(s.key); setStatusDropdown(false); demoRoomRef.current?.socket?.emit('user:setStatus', { status: s.key }); }}
                                                                                 style={{
@@ -3577,13 +3621,13 @@ export default function HomePage() {
                                                             {/* Mikrofon - Gerçek Room Actions */}
                                                             {(() => {
                                                                 const rd = demoRoomRef.current;
-                                                                const isMicOn = rd?.state?.isMicOn || false;
-                                                                const currentSpeaker = rd?.currentSpeaker || rd?.state?.currentSpeaker;
-                                                                const queue: string[] = rd?.state?.queue || [];
+                                                                const isMicOn = demoIsMicOn;
+                                                                const currentSpeaker = demoCurrentSpeaker;
+                                                                const queue: string[] = demoQueue;
                                                                 const myUserId = rd?.state?.currentUser?.userId || user?.userId || '';
                                                                 const isSomeoneElseSpeaker = currentSpeaker && currentSpeaker.userId !== myUserId;
                                                                 const isInQueue = queue.includes(myUserId);
-                                                                const micTimeLeft = rd?.state?.micTimeLeft || 0;
+                                                                const micTimeLeft = demoMicTimeLeft;
                                                                 const formatTime = (seconds: number) => {
                                                                     const m = Math.floor(seconds / 60);
                                                                     const s = seconds % 60;
@@ -3688,15 +3732,15 @@ export default function HomePage() {
                                 </div> {/* content-fade-3 kapanışı */}
 
                                 {/* ODA SATIN AL */}
-                                <div className="glossy-panel" style={{ padding: '24px 32px', position: 'relative', overflow: 'hidden', borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(251, 191, 36, 0.4)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.2s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both', transformOrigin: 'top center', ...(roomsMode ? { display: 'none' } : {}) }}>
+                                <div className="glossy-panel" style={{ padding: '14px 16px', position: 'relative', overflow: 'hidden', borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(251, 191, 36, 0.4)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.2s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.2s both', transformOrigin: 'top center', ...(roomsMode ? { display: 'none' } : {}) }}>
                                     <div style={{ position: 'absolute', top: 0, right: 0, width: 192, height: 192, background: 'rgba(251, 191, 36, 0.2)', filter: 'blur(60px)', pointerEvents: 'none' }}></div>
 
                                     <div style={{ position: 'relative', zIndex: 10 }}>
-                                        <h3 style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
-                                            <Star style={{ width: 16, height: 16 }} fill="currentColor" /> Premium Paket
+                                        <h3 style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
+                                            <Star style={{ width: 14, height: 14 }} fill="currentColor" /> Premium Paket
                                         </h3>
-                                        <h4 style={{ fontSize: 24, fontWeight: 700, color: '#fff', marginBottom: 12, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Kendi Odanı Kur</h4>
-                                        <p style={{ fontSize: 14, color: '#e2e8f0', fontWeight: 500, marginBottom: 32, lineHeight: 1.7, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
+                                        <h4 style={{ fontSize: 16, fontWeight: 700, color: '#fff', marginBottom: 6, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Kendi Odanı Kur</h4>
+                                        <p style={{ fontSize: 11, color: '#e2e8f0', fontWeight: 500, marginBottom: 16, lineHeight: 1.6, textShadow: '0 1px 1px rgba(0,0,0,0.3)' }}>
                                             Yönetici yetkileri, HD yayın kalitesi ve şifreli koruma ile kendi topluluğunu oluştur.
                                         </p>
                                         <button onClick={() => { if (activeSection === 'home' || activeSection === 'odalar') { setShowPackages(true); } else { setActiveSection('fiyatlar'); window.scrollTo({ top: 0, behavior: 'smooth' }); } }} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 11 }}>
@@ -3706,13 +3750,13 @@ export default function HomePage() {
                                 </div>
 
                                 {/* CANLI DESTEK */}
-                                <div className="glossy-panel" style={{ padding: '24px 32px', textAlign: 'center', borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(52, 211, 153, 0.2)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.4s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both', transformOrigin: 'top center', ...(roomsMode ? { display: 'none' } : {}) }}>
-                                    <div style={{ width: 56, height: 56, borderRadius: 16, background: 'linear-gradient(180deg, #34d399, #059669)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 10px 20px rgba(16,185,129,0.3)' }}>
-                                        <Headset style={{ width: 28, height: 28, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
+                                <div className="glossy-panel" style={{ padding: '14px 16px', textAlign: 'center', borderWidth: 1, borderStyle: 'solid', borderColor: 'rgba(52, 211, 153, 0.2)', animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.4s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.3s both', transformOrigin: 'top center', overflow: 'visible', ...(roomsMode ? { display: 'none' } : {}) }}>
+                                    <div style={{ width: 40, height: 40, borderRadius: 12, background: 'linear-gradient(180deg, #34d399, #059669)', margin: '0 auto 10px', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: 'inset 0 1px 1px rgba(255,255,255,0.6), 0 10px 20px rgba(16,185,129,0.3)' }}>
+                                        <Headset style={{ width: 20, height: 20, color: '#fff', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }} />
                                     </div>
-                                    <h4 style={{ fontSize: 14, fontWeight: 700, color: '#fff', marginBottom: 8, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Müşteri Hizmetleri</h4>
-                                    <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 20, fontWeight: 500 }}>Sorularınız ve önerileriniz için bize ulaşın.</p>
-                                    <button onClick={() => setSupportOpen(!supportOpen)} className="btn-3d btn-3d-green" style={{ width: '100%', padding: '12px 0', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                                    <h4 style={{ fontSize: 12, fontWeight: 700, color: '#fff', marginBottom: 4, textTransform: 'uppercase', letterSpacing: 2, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>Müşteri Hizmetleri</h4>
+                                    <p style={{ fontSize: 10, color: '#94a3b8', marginBottom: 12, fontWeight: 500 }}>Sorularınız ve önerileriniz için bize ulaşın.</p>
+                                    <button onClick={() => setSupportOpen(!supportOpen)} className="btn-3d btn-3d-green" style={{ width: '100%', padding: '8px 0', fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                                         <Headset style={{ width: 15, height: 15 }} /> {supportOpen ? 'Kapat' : 'Bize Ulaşın'}
                                     </button>
 
@@ -3725,10 +3769,10 @@ export default function HomePage() {
                                         marginTop: supportOpen ? 16 : 0,
                                     }}>
                                         {/* Quick Contact */}
-                                        <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 10 }}>
                                             <a href="https://wa.me/905520363674" target="_blank" rel="noopener noreferrer" style={{
-                                                flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-                                                padding: '10px 12px', borderRadius: 10, textDecoration: 'none',
+                                                display: 'flex', alignItems: 'center', gap: 8,
+                                                padding: '8px 10px', borderRadius: 8, textDecoration: 'none',
                                                 background: 'rgba(37,211,102,0.1)', border: '1px solid rgba(37,211,102,0.2)',
                                             }}>
                                                 <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg, #25d366, #128c7e)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -3740,8 +3784,8 @@ export default function HomePage() {
                                                 </div>
                                             </a>
                                             <a href="mailto:destek@sopranochat.com" style={{
-                                                flex: 1, display: 'flex', alignItems: 'center', gap: 8,
-                                                padding: '10px 12px', borderRadius: 10, textDecoration: 'none',
+                                                display: 'flex', alignItems: 'center', gap: 8,
+                                                padding: '8px 10px', borderRadius: 8, textDecoration: 'none',
                                                 background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)',
                                             }}>
                                                 <div style={{ width: 24, height: 24, borderRadius: 6, background: 'linear-gradient(135deg, #38bdf8, #0ea5e9)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -3760,7 +3804,7 @@ export default function HomePage() {
                                             <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.06)' }} />
                                         </div>
                                         {/* Form */}
-                                        <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 6 }}>
                                             <input type="text" value={supName} onChange={e => setSupName(e.target.value)} placeholder="Ad Soyad"
                                                 style={{ flex: 1, padding: '8px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none' }} />
                                             <input type="email" value={supEmail} onChange={e => setSupEmail(e.target.value)} placeholder="mail@ornek.com"
@@ -3779,10 +3823,10 @@ export default function HomePage() {
 
                             {/* ODALAR — SAĞ SÜTÜN */}
                             {roomsMode && (
-                                <div style={{ width: liveHidden ? 0 : 248, flex: liveHidden ? '0 0 0px' : '0 0 248px', maxWidth: liveHidden ? 0 : 268, display: 'flex', flexDirection: 'column', gap: 16, order: 3, marginRight: liveHidden ? 0 : -24, opacity: liveHidden ? 0 : 1, transform: liveHidden ? 'translateY(-60px)' : 'translateY(0)', transition: liveHidden ? 'opacity 0.5s ease, transform 0.5s ease, width 0.5s ease 0.3s, flex 0.5s ease 0.3s, max-width 0.5s ease 0.3s, margin-right 0.5s ease 0.3s' : 'width 0.5s ease, flex 0.5s ease, max-width 0.5s ease, margin-right 0.5s ease, opacity 0.6s ease 0.4s, transform 0.6s ease 0.4s', pointerEvents: liveHidden ? 'none' : 'auto' }}>
+                                <div className={demoEntrance === 'out' ? 'demo-exit-right' : 'demo-enter-right'} style={{ width: 248, flex: '0 0 248px', maxWidth: 268, display: liveCollapsed ? 'none' : 'flex', flexDirection: 'column', gap: 16, order: 3, marginRight: -24, pointerEvents: liveHidden ? 'none' : 'auto' }}>
                                     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         {/* Lamba */}
-                                        <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['rightLive'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 1.1s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['rightLive'] = true; }}>
+                                        <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['rightLive'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 1.1s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'), ...(lampAnimDone.current['rightLive'] ? { transform: liveHidden ? 'translateX(-50%) translateY(-52px)' : 'translateX(-50%) translateY(0)', opacity: liveHidden ? 0 : 1, transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.6s ease' } : {}) }} onAnimationEnd={() => { lampAnimDone.current['rightLive'] = true; }}>
                                             <svg width="300" height="52" viewBox="0 0 300 52" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                 <defs>
                                                     <linearGradient id="glBarMetalR2" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
@@ -3840,7 +3884,7 @@ export default function HomePage() {
                                             }} onAnimationEnd={() => { lampAnimDone.current['rightLiveGlow'] = true; }}></div>
                                         </div>
 
-                                        <div className="glossy-panel" style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', minHeight: 0, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+                                        <div className="glossy-panel" style={{ flex: 1, padding: '16px', display: 'flex', flexDirection: 'column', minHeight: 0, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', filter: liveHidden ? 'blur(14px)' : 'blur(0)', opacity: liveHidden ? 0 : 1, transform: liveHidden ? 'scale(0.92) translateY(-20px)' : 'scale(1) translateY(0)', transition: 'filter 0.8s ease, opacity 0.7s ease, transform 0.8s cubic-bezier(0.4,0,0.2,1)' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
                                                 <div style={{
                                                     display: 'flex', alignItems: 'center', gap: 6,
@@ -3877,8 +3921,18 @@ export default function HomePage() {
                                                         borderRadius: 11,
                                                         boxShadow: 'inset 2px 0 8px rgba(255,255,255,0.04), inset -2px 0 8px rgba(255,255,255,0.04), inset 0 2px 6px rgba(255,255,255,0.03)',
                                                     }} />
-                                                    {/* TV Static */}
-                                                    <div className="absolute inset-0" style={{ background: 'url(https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif) center/cover', opacity: 0.6 }} />
+                                                    {/* TV Static veya Local Camera Preview */}
+                                                    {demoRoomRef.current?.isCameraOn && demoRoomRef.current?.localStream ? (
+                                                        <video
+                                                            autoPlay
+                                                            muted
+                                                            playsInline
+                                                            ref={(el) => { if (el && demoRoomRef.current?.localStream) el.srcObject = demoRoomRef.current.localStream; }}
+                                                            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', borderRadius: 11, zIndex: 1, transform: 'scaleX(-1)' }}
+                                                        />
+                                                    ) : (
+                                                        <div className="absolute inset-0" style={{ background: 'url(https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif) center/cover', opacity: 0.6 }} />
+                                                    )}
                                                     {/* Scanlines */}
                                                     <div className="absolute inset-0 pointer-events-none z-[2]" style={{ background: 'linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(255,0,0,0.06), rgba(0,255,0,0.02), rgba(0,0,255,0.06))', backgroundSize: '100% 2px, 3px 100%' }} />
                                                     {/* Dot matrix */}
@@ -3891,31 +3945,39 @@ export default function HomePage() {
                                                     borderRadius: '0 0 4px 4px',
                                                 }} />
                                             </div>
-                                            <div style={{ textAlign: 'center', fontSize: 9, color: '#475569', fontWeight: 600, marginTop: 8 }}>
-                                                Yayın bekleniyor...
+                                            <div style={{ textAlign: 'center', fontSize: 9, color: demoRoomRef.current?.isCameraOn ? '#34d399' : '#475569', fontWeight: 600, marginTop: 8 }}>
+                                                {demoRoomRef.current?.isCameraOn ? '📹 Kameranız Açık' : 'Yayın bekleniyor...'}
                                             </div>
-                                            {/* Kamera açan bot kullanıcılar */}
+                                            {/* Kamera açan kullanıcılar — sadece kamerası açık olanlar */}
                                             <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
-                                                {/* Başlık — scroll'dan bağımsız */}
+                                                {/* Başlık */}
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
                                                     <span style={{ fontSize: 10, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5 }}>📹 Kameralar</span>
-                                                    <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>50 kişi</span>
+                                                    <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginLeft: 'auto' }}>{demoRoomRef.current?.isCameraOn ? '1' : '0'} kişi</span>
                                                 </div>
-                                                {/* Kamera grid — scroll yapan bölüm */}
+                                                {/* Kamera grid */}
                                                 <div className="hover-scroll" style={{ flex: 1, overflowY: 'auto', maxHeight: 470, paddingTop: 4, paddingLeft: 4, paddingRight: 4, overscrollBehavior: 'contain' }}>
-                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, justifyItems: 'center' }}>
-                                                        {['Sera', 'Ece', 'Mira', 'Lina', 'Çınar', 'Ada', 'Defne', 'Eylül', 'Toprak', 'Nehir', 'Atlas', 'Duru', 'Poyraz', 'Maya', 'Rüzgar', 'Lara', 'Kayra', 'Asya', 'Yağız', 'Nil', 'Bora', 'Ela', 'Tan', 'İdil', 'Alya', 'Ege', 'Sena', 'Arda', 'Melis', 'Batu', 'Yaren', 'Doruk', 'İpek', 'Emir', 'Beril', 'Efe', 'Tuana', 'Koray', 'Ceren', 'Cenk', 'Nazlı', 'Mert', 'Ilgın', 'Aras', 'Deren', 'Umut', 'Hazal', 'Erdem', 'Gökçe', 'Kerem'].map((name, i) => (
-                                                            <div key={`cam-${i}`} style={{ position: 'relative', borderRadius: 6, overflow: 'hidden', aspectRatio: '4/3', background: `linear-gradient(${135 + i * 7}deg, rgba(${30 + i * 4},${40 + i * 3},${60 + i * 2},0.9), rgba(${20 + i * 2},${30 + i * 2},${50 + i},0.95))`, border: '1px solid rgba(255,255,255,0.06)', transition: 'none', transform: 'none' }}>
-                                                                <div style={{ position: 'absolute', top: 2, left: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
+                                                    {!demoRoomRef.current?.isCameraOn ? (
+                                                        <div style={{ textAlign: 'center', padding: '24px 0', color: '#475569', fontSize: 10, fontWeight: 600 }}>
+                                                            Kamera açan yok
+                                                        </div>
+                                                    ) : (
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                                                            <div style={{ position: 'relative', width: '100%', borderRadius: 6, overflow: 'hidden', aspectRatio: '4/3', border: '1px solid rgba(52,211,153,0.3)' }}>
+                                                                {demoRoomRef.current?.localStream && (
+                                                                    <video
+                                                                        autoPlay muted playsInline
+                                                                        ref={(el) => { if (el && demoRoomRef.current?.localStream) el.srcObject = demoRoomRef.current.localStream; }}
+                                                                        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }}
+                                                                    />
+                                                                )}
+                                                                <div style={{ position: 'absolute', bottom: 2, right: 3, display: 'flex', alignItems: 'center', gap: 2, zIndex: 2 }}>
                                                                     <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#34d399', boxShadow: '0 0 4px rgba(52,211,153,0.5)' }} />
-                                                                    <span style={{ fontSize: 7, fontWeight: 700, color: '#e2e8f0', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>{name}</span>
-                                                                </div>
-                                                                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                                                    <span style={{ fontSize: 16, opacity: 0.3 }}>📷</span>
+                                                                    <span style={{ fontSize: 7, fontWeight: 700, color: '#e2e8f0', textShadow: '0 1px 2px rgba(0,0,0,0.8)' }}>Sen</span>
                                                                 </div>
                                                             </div>
-                                                        ))}
-                                                    </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </div>
                                         </div>

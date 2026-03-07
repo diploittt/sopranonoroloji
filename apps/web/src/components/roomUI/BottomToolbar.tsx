@@ -7,8 +7,7 @@ import { EmojiPicker } from './EmojiPicker';
 import { StickerPicker } from './StickerPicker';
 import { GifPicker } from './GifPicker';
 import { useTranslation } from '@/i18n/LanguageProvider';
-import ThemeSwitcher from '@/components/room/ThemeSwitcher';
-import { useCurrentTheme } from '@/hooks/useCurrentTheme';
+
 
 export interface BottomToolbarProps {
     onSendMessage: (text: string) => void;
@@ -100,8 +99,7 @@ export function BottomToolbar({
     const [text, setText] = useState('');
     const isChatDisabled = isChatLocked || isCurrentUserGagged;
     const { t } = useTranslation();
-    const currentTheme = useCurrentTheme();
-    const isHasbihal = currentTheme === 'hasbihal-islamic';
+
 
     // ─── Animation (Sticker/GIF) restriction based on rolePermissions ───
     const isAnimationBlocked = (() => {
@@ -570,7 +568,7 @@ export function BottomToolbar({
                 </div>
 
                 <div className="flex gap-3">
-                    <ThemeSwitcher />
+
                     <button
                         ref={settingsBtnRef}
                         onClick={onToggleSettings}
@@ -600,7 +598,7 @@ export function BottomToolbar({
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         disabled={isChatDisabled}
-                        placeholder={isCurrentUserGagged ? t.gagWarning : isChatLocked ? t.chatLocked : (isHasbihal ? 'Kelamınızı buraya yazınız...' : t.typeMessage)}
+                        placeholder={isCurrentUserGagged ? t.gagWarning : isChatLocked ? t.chatLocked : t.typeMessage}
                         className={`message-input w-full h-full bg-white/[0.03] text-gray-200 text-sm rounded-xl pl-6 focus:outline-none border ${isChatDisabled ? 'border-red-500/20 cursor-not-allowed text-gray-500' : 'border-white/10 focus:border-white/25'} relative z-10 placeholder:text-gray-600`}
                         style={{ transition: 'border-color 0.3s ease, box-shadow 0.3s ease' }}
                         onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(148,163,184,0.15), 0 0 16px rgba(148,163,184,0.08)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.3)'; }}
@@ -624,7 +622,7 @@ export function BottomToolbar({
                     }}
                 >
                     <div className="relative z-10 flex items-center justify-center gap-2 w-full h-full">
-                        <span className="font-extrabold tracking-[0.15em] uppercase" style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", color: '#022c22', fontSize: 11 } : { color: '#cbd5e1', fontSize: 11 }}>{isHasbihal ? 'GÖNDER' : t.send}</span>
+                        <span className="font-extrabold tracking-[0.15em] uppercase" style={{ color: '#cbd5e1', fontSize: 11 }}>{t.send}</span>
                         <SendHorizontal className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#94a3b8' }} />
                     </div>
                 </button>

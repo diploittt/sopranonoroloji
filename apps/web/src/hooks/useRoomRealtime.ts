@@ -181,6 +181,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio:', err);
+                    setIsMicOn(false);
+                    // Server'a mic bırakma bildir — UI bug'da kalmasın
+                    socket.emit('mic:release', { roomId: slug });
                     setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon yakılanamıyor.' });
                 }
             }
@@ -488,6 +491,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         const onUserStatusChanged = (data: { userId: string; status: string; isInvisible: boolean }) => {
             console.log('[Status Change]', data);
 
+            // Update in participants list so sidebar reflects immediately
+            updateParticipantLocally(data.userId, { status: data.status, isStealth: data.isInvisible } as any);
+
             // Update Local User State if it is me
             if (currentUser && data.userId === currentUser.userId) {
                 setCurrentUser((prev: any) => ({
@@ -549,6 +555,16 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
         socket.on('dm:receive', onDmReceive);
 
+        // Socket disconnect — mic state temizle
+        const onDisconnect = () => {
+            setIsMicOn(false);
+            setCurrentSpeaker(null);
+            setDuelSpeakers([]);
+            stopCountdown();
+            cleanupMicStream();
+        };
+        socket.on('disconnect', onDisconnect);
+
         return () => {
             socket.off('mic:acquired', onMicAcquired);
             socket.off('mic:released', onMicReleased);
@@ -568,11 +584,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             socket.off('room:chat-cleared', onChatCleared);
             socket.off('room:moveToMeeting', onMoveToMeeting);
             socket.off('auth:session-update', onSessionUpdate);
-            // socket.off('user-status-changed', onUserStatusChanged);
             socket.off('dm:receive', onDmReceive);
             socket.off('room:ban-lifted', onBanLifted);
             socket.off('room:user-banned', onUserBanned);
             socket.off('room:user-unbanned', onUserUnbanned);
+            socket.off('disconnect', onDisconnect);
         };
     }, [socket, startCountdown, stopCountdown]); // Removed isCameraOn/isMicOn — now accessed via refs
 
