@@ -251,11 +251,13 @@ export function GodMasterProfileModal({
             <div ref={modalRef} className="relative w-full max-w-lg animate-pure-fade" onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, rgba(20,12,35,0.97) 0%, rgba(12,8,22,0.98) 100%)',
-                    border: '1px solid rgba(168,85,247,0.12)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
                     borderRadius: '16px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.03)',
-                    backdropFilter: 'blur(40px) saturate(150%)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 1px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(24px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
                 }}>
                 <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(168,85,247,0.35) 40%, rgba(217,70,239,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
@@ -360,12 +362,12 @@ export function GodMasterProfileModal({
                                 <div>
                                     <label style={{ fontSize: '10px', color: '#64748b', marginBottom: '3px', display: 'block' }}>Ana Metin</label>
                                     <input value={customMainText} onChange={(e) => setCustomMainText(e.target.value)} maxLength={16} placeholder="SopranoChat"
-                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: '#10121b', outline: 'none' }} />
+                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', outline: 'none' }} />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '10px', color: '#64748b', marginBottom: '3px', display: 'block' }}>Alt Metin</label>
                                     <input value={customSubText} onChange={(e) => setCustomSubText(e.target.value)} maxLength={12} placeholder="Owner"
-                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: '#10121b', outline: 'none' }} />
+                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', outline: 'none' }} />
                                 </div>
                             </div>
 
@@ -472,10 +474,10 @@ export function GodMasterProfileModal({
                     {activeTab === 'avatar' && (
                         <div className="space-y-3">
                             <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden" style={{ background: '#10121b', fontSize: 24, fontWeight: 900, color: 'rgba(233,121,249,0.6)', textTransform: 'uppercase' }}>{currentUser?.avatar ? <img src={currentUser.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (currentUser?.username || '?').charAt(0)}</div>
+                                <div className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,23,42,0.6)', fontSize: 24, fontWeight: 900, color: 'rgba(233,121,249,0.6)', textTransform: 'uppercase' }}>{currentUser?.avatar ? <img src={currentUser.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (currentUser?.username || '?').charAt(0)}</div>
                                 <div className="flex-1">
                                     <label className="text-[10px] text-gray-500 mb-1 block">Seed</label>
-                                    <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: '#10121b' }} />
+                                    <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-1.5">
@@ -492,7 +494,7 @@ export function GodMasterProfileModal({
                     {activeTab === 'name' && (
                         <div className="space-y-3">
                             <div className="text-xs text-fuchsia-300 bg-fuchsia-500/5 rounded-lg px-3 py-2 border border-fuchsia-500/10">Mevcut: {currentUser?.username || '—'}</div>
-                            <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isim..." className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: '#10121b' }} />
+                            <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isim..." className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
                             <button onClick={() => { if (!newName.trim() || newName.trim().length < 2) { setError('En az 2 karakter'); return; } onChangeName(newName.trim()); setSuccess('İsim değiştirildi!'); setTimeout(() => { setSuccess(''); onClose(); }, 800); }} className="w-full py-2.5 text-sm font-bold text-white rounded-xl" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)' }}>İsmi Değiştir</button>
                         </div>
                     )}

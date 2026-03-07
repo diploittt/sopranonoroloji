@@ -156,12 +156,13 @@ export function ProfileModal({
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, rgba(20,28,48,0.97) 0%, rgba(12,18,32,0.98) 100%)',
-                    backdropFilter: 'blur(40px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(40px) saturate(150%)',
-                    border: '1px solid rgba(56,189,248,0.1)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    backdropFilter: 'blur(24px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
                     borderRadius: '16px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 1px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.03)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 1px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
                 }}
             >
                 {/* Accent */}
@@ -402,11 +403,11 @@ export function ProfileModal({
                             </div>
                             <div>
                                 <label className="text-xs text-gray-400 mb-2 block">Yeni Şifre</label>
-                                <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: '#10121b' }} />
+                                <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
                             </div>
                             <div>
                                 <label className="text-xs text-gray-400 mb-2 block">Şifre Tekrar</label>
-                                <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: '#10121b' }} />
+                                <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
                             </div>
                             {error && <span className="text-xs text-red-400">{error}</span>}
                             <button onClick={() => {

@@ -34,10 +34,13 @@ export function UserInfoModal({ user, onClose }: UserInfoModalProps) {
             <div
                 style={{
                     width: '380px', maxHeight: '90vh',
-                    background: 'linear-gradient(135deg, #13151c 0%, #1a1d2e 100%)',
-                    border: '1px solid rgba(99, 102, 241, 0.2)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
                     borderRadius: '20px',
-                    boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
                     overflow: 'hidden',
                 }}
                 onClick={e => e.stopPropagation()}

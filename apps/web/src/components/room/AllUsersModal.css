@@ -25,15 +25,21 @@
     width: 90vw;
     max-width: 720px;
     max-height: 85vh;
-    background: linear-gradient(145deg, rgba(15, 17, 26, 0.97), rgba(10, 12, 20, 0.99));
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+        linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-top: 1px solid rgba(255, 255, 255, 0.30);
     border-radius: 24px;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     box-shadow:
-        0 25px 50px -12px rgba(0, 0, 0, 0.8),
-        0 0 80px rgba(99, 102, 241, 0.08);
+        0 25px 60px rgba(0, 0, 0, 0.5),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
     animation: auModalIn 0.3s ease-out;
 }
 
