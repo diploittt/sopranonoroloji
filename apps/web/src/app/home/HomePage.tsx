@@ -1205,6 +1205,23 @@ export default function HomePage() {
                     0% { transform: scaleY(0) translateY(-40px); opacity: 0; }
                     100% { transform: scaleY(1) translateY(0); opacity: 1; }
                 }
+                /* Mikrofon ses dalgası animasyonu */
+                @keyframes micSoundWave {
+                    0% { transform: scale(0.7); opacity: 0.7; }
+                    100% { transform: scale(1.8); opacity: 0; }
+                }
+                @keyframes micSoundWave2 {
+                    0% { transform: scale(0.7); opacity: 0.5; }
+                    100% { transform: scale(2.2); opacity: 0; }
+                }
+                @keyframes micSoundWave3 {
+                    0% { transform: scale(0.7); opacity: 0.35; }
+                    100% { transform: scale(2.6); opacity: 0; }
+                }
+                @keyframes micGlow {
+                    0%, 100% { filter: drop-shadow(0 0 3px rgba(251,191,36,0.4)); }
+                    50% { filter: drop-shadow(0 0 8px rgba(251,191,36,0.7)) drop-shadow(0 0 14px rgba(251,191,36,0.3)); }
+                }
                 /* Giriş class'ları */
                 .demo-enter-left   { animation: demoGrowDown 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) 0.1s both; will-change: transform, opacity; transform-origin: top center; }
                 .demo-enter-right  { animation: demoSlideDown 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) 0.15s both; will-change: transform, opacity; }
@@ -3557,7 +3574,42 @@ export default function HomePage() {
                                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                                                                 <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
                                                                                                 {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
-                                                                                                {isSpeaking && <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 700, animation: 'pulse 2s ease-in-out infinite' }}>🎤</span>}
+                                                                                                {isSpeaking && (
+                                                                                                    <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0, animation: 'micGlow 2s ease-in-out infinite' }}>
+                                                                                                        {/* Sound wave rings */}
+                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1.5px solid rgba(251,191,36,0.5)', animation: 'micSoundWave 1.5s ease-out infinite', pointerEvents: 'none' }} />
+                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1px solid rgba(251,191,36,0.35)', animation: 'micSoundWave2 1.5s ease-out 0.3s infinite', pointerEvents: 'none' }} />
+                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1px solid rgba(251,191,36,0.2)', animation: 'micSoundWave3 1.5s ease-out 0.6s infinite', pointerEvents: 'none' }} />
+                                                                                                        {/* Vintage golden microphone SVG */}
+                                                                                                        <svg viewBox="0 0 32 32" width="22" height="22" style={{ position: 'relative', zIndex: 2 }}>
+                                                                                                            <defs>
+                                                                                                                <linearGradient id="micGold" x1="0" y1="0" x2="1" y2="1">
+                                                                                                                    <stop offset="0%" stopColor="#fde68a" />
+                                                                                                                    <stop offset="30%" stopColor="#fbbf24" />
+                                                                                                                    <stop offset="60%" stopColor="#d97706" />
+                                                                                                                    <stop offset="100%" stopColor="#b45309" />
+                                                                                                                </linearGradient>
+                                                                                                                <linearGradient id="micGrill" x1="0" y1="0" x2="0" y2="1">
+                                                                                                                    <stop offset="0%" stopColor="#7dd3fc" />
+                                                                                                                    <stop offset="100%" stopColor="#38bdf8" />
+                                                                                                                </linearGradient>
+                                                                                                            </defs>
+                                                                                                            {/* Base/Stand */}
+                                                                                                            <ellipse cx="16" cy="29" rx="5" ry="1.5" fill="url(#micGold)" opacity="0.8" />
+                                                                                                            {/* Stem */}
+                                                                                                            <rect x="14.5" y="19" width="3" height="10" rx="1" fill="url(#micGold)" />
+                                                                                                            <rect x="15" y="19" width="1" height="10" fill="rgba(255,255,255,0.15)" />
+                                                                                                            {/* Mic head outer */}
+                                                                                                            <ellipse cx="16" cy="12" rx="7" ry="9" fill="url(#micGold)" />
+                                                                                                            {/* Highlight */}
+                                                                                                            <ellipse cx="14" cy="9" rx="3.5" ry="5" fill="rgba(255,255,255,0.15)" />
+                                                                                                            {/* Grill lines */}
+                                                                                                            {[4, 6.5, 9, 11.5, 14, 16.5, 19].map((y, i) => (
+                                                                                                                <rect key={i} x="11" y={y} width="10" height="1" rx="0.5" fill="url(#micGrill)" opacity="0.5" />
+                                                                                                            ))}
+                                                                                                        </svg>
+                                                                                                    </div>
+                                                                                                )}
                                                                                             </div>
                                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                                                                 <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
