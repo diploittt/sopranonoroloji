@@ -20,7 +20,7 @@ function getChatTextSettings() {
         const raw = localStorage.getItem('soprano_chat_text_settings');
         if (raw) return JSON.parse(raw);
     } catch { }
-    return { fontSize: 13, fontWeight: '400', textColor: 'rgba(255,255,255,0.9)' };
+    return { fontSize: 13, fontWeight: '400', textColor: '#1e293b' };
 }
 
 interface ChatMessagesProps {
@@ -525,8 +525,8 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                 px-3.5 py-2 leading-relaxed select-text
                                                 transition-all duration-200 break-all
                                                 ${isMe
-                                                        ? 'message-mine bg-[#1a1f2e]/80 rounded-2xl rounded-tr-sm shadow-md border border-white/[0.08]'
-                                                        : 'bg-[#1a1f2e]/60 rounded-2xl rounded-tl-sm hover:bg-[#1a1f2e]/70 border border-white/[0.06]'
+                                                        ? 'message-mine rounded-2xl rounded-tr-sm'
+                                                        : 'rounded-2xl rounded-tl-sm'
                                                     }
                                             `}
                                                     style={{
@@ -535,6 +535,11 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                         fontSize: chatTextSettings.fontSize,
                                                         fontWeight: Number(chatTextSettings.fontWeight),
                                                         color: chatTextSettings.textColor,
+                                                        background: isMe
+                                                            ? 'linear-gradient(160deg, rgba(235,238,255,0.95) 0%, rgba(225,228,248,0.93) 50%, rgba(215,220,245,0.91) 100%)'
+                                                            : 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(240,243,250,0.94) 50%, rgba(228,233,245,0.92) 100%)',
+                                                        border: '1px solid rgba(255,255,255,0.6)',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04), inset 0 1px 2px rgba(255,255,255,0.8)',
                                                     }}>
                                                     {msg.message}
                                                 </div>
