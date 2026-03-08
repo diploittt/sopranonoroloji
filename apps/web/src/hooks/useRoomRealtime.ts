@@ -57,6 +57,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         setAnnouncement,
         duplicateBlocked,
         userPermissions,
+        lastBonus,
     } = useSocket({ roomId: slug, token });
 
     // Mediasoup — camera/video + audio streaming
@@ -690,6 +691,13 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         const user = ensureAuthUser();
         if (user) setCurrentUser(user);
     }, []);
+
+    // ─── Bonus toast (oda giriş, günlük, VIP haftalık) ───
+    useEffect(() => {
+        if (lastBonus) {
+            setToastMessage({ type: 'success', title: '🎁 Bonus', message: lastBonus.message });
+        }
+    }, [lastBonus]);
 
     // Merge static auth user with live socket participant data (for isStealth, isMuted, etc.)
     const mergedCurrentUser = useMemo(() => {

@@ -188,6 +188,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Duel reaction cooldowns: "duelId:userId" -> timestamp */
   private _duelReactionCooldowns = new Map<string, number>();
 
+  /** Room entry bonus cooldowns: userId -> last bonus timestamp (15-min cooldown) */
+  private roomEntryBonusCooldowns = new Map<string, number>();
+
   /** Helper: get or create moderation entry */
   private getModerationFlags(roomId: string, userId: string) {
     if (!this.roomModerations.has(roomId)) {
@@ -1607,6 +1610,46 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         type: 'SYSTEM',
         createdAt: new Date().toISOString(),
       });
+    }
+
+    // ─── ODA GİRİŞ PUANI (Room Entry Points) ──────────────────
+    // Her odaya girişte +5 puan, 15 dakika cooldown ile
+    if (user.sub && !user.sub.startsWith('guest_')) {
+      try {
+        const now = Date.now();
+        const COOLDOWN_MS = 15 * 60 * 1000; // 15 dakika
+        const ENTRY_POINTS = 5;
+        const lastBonus = this.roomEntryBonusCooldowns.get(user.sub) || 0;
+
+        if (now - lastBonus >= COOLDOWN_MS) {
+          this.roomEntryBonusCooldowns.set(user.sub, now);
+
+          await this.prisma.user.update({
+            where: { id: user.sub },
+            data: { points: { increment: ENTRY_POINTS } },
+          });
+
+          const updatedUserPts = await this.prisma.user.findUnique({
+            where: { id: user.sub },
+            select: { balance: true, points: true },
+          });
+
+          client.emit('gift:balance', {
+            balance: Number(updatedUserPts?.balance || 0),
+            points: updatedUserPts?.points || 0,
+          });
+
+          client.emit('dailyBonus:received', {
+            amount: ENTRY_POINTS,
+            type: 'roomEntry',
+            message: `🎁 Odaya giriş bonusu: +${ENTRY_POINTS} puan kazandınız!`,
+          });
+
+          this.logger.log(`[ROOM ENTRY BONUS] ${participant.displayName}: +${ENTRY_POINTS} puan`);
+        }
+      } catch (e) {
+        this.logger.warn(`[ROOM ENTRY BONUS] Error for ${user.sub}: ${e.message}`);
+      }
     }
 
     // ★ DUEL SYNC — Aktif düello varsa yeni katılana gönder (pending hariç)

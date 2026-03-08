@@ -69,6 +69,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const [announcement, setAnnouncement] = useState<{ id: string; message: string; createdAt: string } | null>(null);
     const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
     const [duplicateBlocked, setDuplicateBlocked] = useState<{ message: string; countdown: number } | null>(null);
+    const [lastBonus, setLastBonus] = useState<{ amount: number; type: string; message: string } | null>(null);
 
     // ─── Helper: build room:join payload ─────────────────────────────
     const buildJoinPayload = useCallback((targetRoomId: string) => {
@@ -357,6 +358,14 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             setHasNewAnnouncement(true);
         });
 
+        // Bonus bildirimi (günlük, VIP haftalık, oda giriş puanı)
+        socket.on('dailyBonus:received', (data: { amount: number; type: string; message: string }) => {
+            console.log('[dailyBonus:received]', data);
+            setLastBonus(data);
+            // 5sn sonra temizle
+            setTimeout(() => setLastBonus(null), 5000);
+        });
+
         // ═══ Profil senkronizasyonu (cross-tab + aynı tab) ═══
         const emitProfileUpdate = () => {
             if (!socket.connected) return;
@@ -506,5 +515,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         setAnnouncement,
         duplicateBlocked,
         userPermissions,
+        lastBonus,
     };
 };
