@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { RoomModule } from './room/room.module';
 import { ChatModule } from './chat/chat.module';
-// import { MediaModule } from './media/media.module'; // Disabled: mediasoup worker crash on Windows
+import { MediaModule } from './media/media.module';
 import { SessionModule } from './session/session.module';
 import { AdminModule } from './admin/admin.module';
 import { HealthModule } from './health/health.module';
@@ -26,7 +26,7 @@ import { LivekitModule } from './livekit/livekit.module';
     UserModule,
     RoomModule,
     ChatModule,
-    // MediaModule, // Disabled: mediasoup worker crash on Windows
+    MediaModule,
     SessionModule,
     AdminModule,
     HealthModule,

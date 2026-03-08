@@ -289,8 +289,8 @@ export function RightLivePanel({
             </div>
 
 
-            {/* --- TV Controls (Admin+) --- */}
-            {userLevel >= 5 && (
+            {/* --- TV Controls (Operator+) --- */}
+            {userLevel >= 3 && (
                 <div className="px-3 mt-2 shrink-0">
                     {tvVideoUrl && !speakerStream ? (
                         <div className="flex flex-col gap-1">
@@ -312,8 +312,8 @@ export function RightLivePanel({
                             >
                                 {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
                             </button>
-                            {/* Durdur butonu — sadece yayın seviyesi eşit veya düşük olanlar görebilir */}
-                            {userLevel >= tvBroadcastLevel && (
+                            {/* Durdur butonu — sadece yayını açandan üst rütbe durdurabilir */}
+                            {userLevel > tvBroadcastLevel && (
                                 <button
                                     onClick={() => onSetTvVideo?.(null)}
                                     className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"

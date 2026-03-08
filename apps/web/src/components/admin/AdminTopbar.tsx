@@ -81,7 +81,7 @@ export default function AdminTopbar() {
                         <input
                             type="text"
                             placeholder="Panelde ara (Ctrl+K)"
-                            className="w-full bg-black/20 border border-white/5 rounded-full pl-10 pr-4 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-amber-600/50 focus:bg-black/40 transition-all"
+                            className="w-full bg-black/20 border border-white/5 rounded-full pl-10 pr-4 py-1.5 text-sm text-gray-300 focus:outline-none focus:border-rose-500/50 focus:bg-black/40 transition-all"
                         />
                     </div>
                 </div>
@@ -109,7 +109,7 @@ export default function AdminTopbar() {
 
                     <button
                         onClick={() => setIsAddModalOpen(true)}
-                        className="h-9 px-4 bg-amber-700 hover:bg-amber-600 text-white rounded-full flex items-center gap-2 text-xs font-bold transition shadow-lg shadow-amber-600/20"
+                        className="h-9 px-4 text-white rounded-full flex items-center gap-2 text-xs font-bold transition shadow-lg" style={{ background: 'linear-gradient(135deg, #e11d48, #be185d)', boxShadow: '0 4px 15px rgba(225, 29, 72, 0.3)' }}
                     >
                         <Plus className="w-4 h-4" />
                         MÜŞTERİ EKLE
@@ -122,7 +122,7 @@ export default function AdminTopbar() {
                         <span className="absolute top-2 right-2.5 w-1.5 h-1.5 bg-red-500 rounded-full"></span>
                     </button>
 
-                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-amber-600 to-amber-700 p-[1px]">
+                    <div className="w-9 h-9 rounded-full p-[1px]" style={{ background: 'linear-gradient(135deg, #f43f5e, #a855f7)' }}>
                         <div className="w-full h-full rounded-full bg-[#0f111a] flex items-center justify-center text-xs font-bold text-white">
                             YA
                         </div>
@@ -136,7 +136,7 @@ export default function AdminTopbar() {
                     <div className="grid grid-cols-2 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-400 mb-1">Müşteri Adı Soyadı</label>
-                            <input required type="text" className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-600 focus:outline-none"
+                            <input required type="text" className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
                                 value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} />
                         </div>
                         <div>
@@ -155,14 +155,14 @@ export default function AdminTopbar() {
                         <div>
                             <label className="block text-xs font-bold text-gray-400 mb-1">Hosting Tipi</label>
                             <div className="flex p-1 rounded-lg border border-white/10" style={{ background: 'rgba(0,0,0,0.3)' }}>
-                                <button type="button" onClick={() => setFormData({ ...formData, hostingType: 'sopranochat', domain: '' })} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${formData.hostingType === 'sopranochat' ? 'bg-amber-700 text-white shadow-[0_0_10px_rgba(99,102,241,0.3)]' : 'text-gray-500 hover:text-white'}`}>SopranoChat</button>
-                                <button type="button" onClick={() => setFormData({ ...formData, hostingType: 'own_domain' })} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${formData.hostingType === 'own_domain' ? 'bg-amber-800 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'text-gray-500 hover:text-white'}`}>Kendi Domain</button>
+                                <button type="button" onClick={() => setFormData({ ...formData, hostingType: 'sopranochat', domain: '' })} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${formData.hostingType === 'sopranochat' ? 'bg-rose-600 text-white shadow-[0_0_10px_rgba(99,102,241,0.3)]' : 'text-gray-500 hover:text-white'}`}>SopranoChat</button>
+                                <button type="button" onClick={() => setFormData({ ...formData, hostingType: 'own_domain' })} className={`flex-1 py-1.5 text-xs font-bold rounded-md transition ${formData.hostingType === 'own_domain' ? 'bg-rose-700 text-white shadow-[0_0_10px_rgba(168,85,247,0.3)]' : 'text-gray-500 hover:text-white'}`}>Kendi Domain</button>
                             </div>
                         </div>
                         {formData.hostingType === 'own_domain' && (
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 mb-1">Domain</label>
-                                <input required type="text" placeholder="ornek.com" className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-700 focus:outline-none"
+                                <input required type="text" placeholder="ornek.com" className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
                                     value={formData.domain} onChange={e => setFormData({ ...formData, domain: e.target.value })} />
                             </div>
                         )}
@@ -171,7 +171,7 @@ export default function AdminTopbar() {
                     <div className="grid grid-cols-3 gap-4">
                         <div>
                             <label className="block text-xs font-bold text-gray-400 mb-1">Plan</label>
-                            <select className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-amber-600 focus:outline-none"
+                            <select className="w-full bg-black/30 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:border-rose-500 focus:outline-none"
                                 value={formData.plan} onChange={e => setFormData({ ...formData, plan: e.target.value as any })}>
                                 <option value="FREE">Free</option>
                                 <option value="PRO">Pro</option>
@@ -181,7 +181,7 @@ export default function AdminTopbar() {
                     </div>
                     <button
                         type="submit"
-                        className="w-full bg-amber-700 hover:bg-amber-600 text-white font-bold py-2.5 rounded-xl transition"
+                        className="w-full text-white font-bold py-2.5 rounded-xl transition" style={{ background: 'linear-gradient(135deg, #e11d48, #be185d)' }}
                     >
                         Oluştur
                     </button>

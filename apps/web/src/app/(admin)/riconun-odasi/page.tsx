@@ -110,28 +110,23 @@ export default function AdminLoginPage() {
 
             const data = await response.json();
 
-            // Validate token exists in response
             if (!data.access_token) {
                 throw new Error('Giriş başarısız: Token alınamadı.');
             }
 
-            // Validate admin-level role
             const allowedRoles = ['admin', 'superadmin', 'owner', 'godmaster'];
             const userRole = data.user?.role?.toLowerCase();
             if (!allowedRoles.includes(userRole)) {
                 throw new Error('Bu panele erişim yetkiniz bulunmuyor. Yalnızca Admin ve üzeri roller giriş yapabilir.');
             }
 
-            // Store tokens and user
             localStorage.setItem('soprano_admin_token', data.access_token);
             localStorage.setItem('soprano_auth_token', data.access_token);
             localStorage.setItem('soprano_admin_user', JSON.stringify(data.user));
             setAuthUser(data.user);
 
-            // Başarı toast'ı göster
             setToast({ message: `Hoş geldiniz, ${data.user?.displayName || data.user?.email || ''}!`, type: 'success' });
 
-            // Kısa gecikme sonra yönlendir
             setTimeout(() => {
                 router.push('/riconun-mekani');
             }, 600);
@@ -151,18 +146,19 @@ export default function AdminLoginPage() {
                 onClose={() => setToast(null)}
             />
 
-            {/* Animated Background blobs */}
+            {/* Animated Background blobs — HomePage ile aynı rose/mor tonlar */}
             <div className="absolute top-0 -left-20 w-96 h-96 bg-rose-600/10 rounded-full blur-[120px] animate-pulse"></div>
-            <div className="absolute bottom-0 -right-20 w-96 h-96 bg-indigo-600/10 rounded-full blur-[120px] animate-pulse delay-1000"></div>
+            <div className="absolute bottom-0 -right-20 w-96 h-96 bg-purple-600/10 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '1s' }}></div>
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[200px]" style={{ background: 'rgba(244, 63, 94, 0.04)' }}></div>
 
             <div className="w-full max-w-md relative z-10">
                 {/* Logo Area */}
                 <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 shadow-2xl shadow-rose-500/20 mb-4 border border-white/10">
+                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl shadow-2xl mb-4 border border-white/10" style={{ background: 'linear-gradient(135deg, #f43f5e, #a855f7)', boxShadow: '0 8px 32px rgba(244, 63, 94, 0.25)' }}>
                         <ShieldCheck className="w-8 h-8 text-white" />
                     </div>
                     <h1 className="text-3xl font-extrabold text-white tracking-tight">
-                        Soprano<span className="text-rose-500">Chat</span>
+                        Soprano<span style={{ background: 'linear-gradient(135deg, #f43f5e 0%, #ec4899 50%, #a855f7 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Chat</span>
                     </h1>
                     <p className="text-gray-500 text-sm mt-2 font-medium">
                         Yönetim Paneline Giriş Yapın
@@ -170,7 +166,7 @@ export default function AdminLoginPage() {
                 </div>
 
                 {/* ═══════════ LOGIN CARD ═══════════ */}
-                <div className="glass-panel p-8 rounded-3xl border border-white/10 bg-[#0f111a]/80 backdrop-blur-2xl shadow-2xl animate-in fade-in zoom-in-95 duration-500">
+                <div className="p-8 rounded-3xl border backdrop-blur-xl shadow-2xl animate-in fade-in zoom-in-95 duration-500" style={{ background: 'rgba(15, 17, 26, 0.8)', borderColor: 'rgba(255, 255, 255, 0.08)', boxShadow: '0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5)' }}>
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <div className="space-y-2">
                             <label className="text-[11px] font-bold text-gray-500 uppercase tracking-widest ml-1">E-posta Adresi</label>
@@ -184,7 +180,7 @@ export default function AdminLoginPage() {
                                     value={formData.email}
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     className="block w-full pl-11 pr-4 py-3.5 bg-black/40 border border-white/5 rounded-2xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500/50 transition-all placeholder:text-gray-700"
-                                    placeholder=""
+                                    placeholder="admin@soprano.chat"
                                 />
                             </div>
                         </div>
@@ -211,7 +207,7 @@ export default function AdminLoginPage() {
                             disabled={isLoading}
                             className="w-full relative group overflow-hidden rounded-2xl"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-r from-rose-600 to-pink-600 transition-all group-hover:scale-105 duration-300"></div>
+                            <div className="absolute inset-0 transition-all group-hover:scale-105 duration-300" style={{ background: 'linear-gradient(135deg, #e11d48 0%, #be185d 100%)' }}></div>
                             <div className="relative flex items-center justify-center gap-2 py-4 text-sm font-bold text-white tracking-wide">
                                 {isLoading ? (
                                     <>
@@ -238,9 +234,6 @@ export default function AdminLoginPage() {
             </div>
 
             <style jsx global>{`
-                .glass-panel {
-                    box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.5);
-                }
                 @keyframes shrink {
                     from { width: 100%; }
                     to { width: 0%; }

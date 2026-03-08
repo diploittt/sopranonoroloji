@@ -135,7 +135,7 @@ const DEMO_CHAT_AREA_ITEMS: DemoContextMenuItem[] = [
 ];
 
 // ─── DEMO CHAT ROOM — backend bağlantılı, tüm mekanikler entegre ───
-function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: { users: any[]; messages: any[]; currentSpeaker: any; actions: any; socket: any; state: any; demoAddToast: any; setIsSettingsOpen: any; setSettingsAnchor: any; localStream: MediaStream | null; isCameraOn: boolean }) => void }) {
+function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: { users: any[]; messages: any[]; currentSpeaker: any; actions: any; socket: any; state: any; demoAddToast: any; setIsSettingsOpen: any; setSettingsAnchor: any; handleUserContextMenu: any; handleEmptyAreaContextMenu: any; localStream: MediaStream | null; isCameraOn: boolean; openAudioTest: any }) => void }) {
     const room = useRoomRealtime({ slug });
     const { toasts: demoToasts, addToast: demoAddToast, removeToast: demoRemoveToast } = useToast();
 
@@ -606,7 +606,7 @@ function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: 
                 onClose={() => setIsRoomMonitorOpen(false)}
                 socket={room.socket}
                 currentRoomSlug={slug}
-                onNavigateToRoom={(slug: string) => { setDemoSlug(slug); demoAddToast('info', 'Oda Değiştirildi', `Odaya geçildi: ${slug}`); }}
+                onNavigateToRoom={(roomSlug: string) => { demoAddToast('info', 'Oda Değiştirildi', `Odaya geçildi: ${roomSlug}`); }}
                 onUserAction={(item, targetUser) => handleMenuItemClick(item)}
                 userLevel={userLevel}
                 currentUserId={room.state.currentUser?.userId}
@@ -738,7 +738,7 @@ export default function HomePage() {
     const [statusDropdown, setStatusDropdown] = useState(false);
     const [crtPowerOn, setCrtPowerOn] = useState(true);
     const [demoPhase, setDemoPhase] = useState<'idle' | 'cards-out' | 'bar-up' | 'bar-down' | 'lamp-center' | 'active' | 'exit-lamp' | 'exit-bar-up' | 'exit-bar-down' | 'exit-cards-in'>('idle');
-    const demoMode = demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
+    const demoMode = roomsMode || demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
     const [showCustomConfig, setShowCustomConfig] = useState(false);
     const [lampsOff, setLampsOff] = useState(false);
     const [liveHidden, setLiveHidden] = useState(false);
@@ -981,7 +981,7 @@ export default function HomePage() {
                     margin: 0 auto;
                     position: relative;
                     background-color: #7a7e9e;
-                    min-height: 100vh;
+                    padding-bottom: 32px;
                     border-left: 14px solid transparent;
                     border-right: 14px solid transparent;
                     border-image: linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 30%, rgba(255,255,255,0.3) 70%, rgba(255,255,255,0.05) 100%) 1;
@@ -994,6 +994,19 @@ export default function HomePage() {
                     display: flex;
                     flex-direction: column;
                     align-items: center;
+                }
+                .main-content::after {
+                    content: '';
+                    display: block;
+                    position: absolute;
+                    bottom: 0;
+                    left: -14px;
+                    right: -14px;
+                    height: 14px;
+                    background: rgba(255,255,255,0.55);
+                    border-radius: 0 0 4px 4px;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
+                    pointer-events: none;
                 }
 
                 .retro-logo-text {
@@ -1650,23 +1663,111 @@ export default function HomePage() {
                     <nav className="header-nav">
                         {demoMode ? (
                             <>
-                                {['Lobby', 'Room1', 'Room2', 'Room3'].map((room, i, arr) => (
-                                    <React.Fragment key={room}>
-                                        <button className="nav-link" style={{
-                                            color: i === 0 ? '#fbbf24' : '#94a3b8',
-                                            textShadow: i === 0 ? '0 0 10px rgba(251,191,36,0.4)' : undefined,
-                                            animation: `contentFadeIn 0.4s ease ${0.1 * i}s both`,
-                                        }}>{room}</button>
-                                        {i < arr.length - 1 && <span className="nav-dot" />}
-                                    </React.Fragment>
-                                ))}
-                                <span className="nav-dot" />
+                                {/* Sol: Ana Sayfa butonu */}
                                 <button
                                     className="nav-link"
                                     onClick={exitDemoTransition}
-                                    style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, animation: 'contentFadeIn 0.4s ease 0.4s both' }}
+                                    style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, animation: 'contentFadeIn 0.4s ease 0.1s both' }}
                                 >
                                     🏠 Ana Sayfa
+                                </button>
+                                <span className="nav-dot" />
+                                {/* Asılı Oda Tab'ları */}
+                                <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 0, alignSelf: 'stretch' }}>
+                                    {(demoRoomRef.current?.state?.rooms && demoRoomRef.current.state.rooms.length > 0
+                                        ? demoRoomRef.current.state.rooms.map((r: any) => ({ name: r.name, slug: r.slug }))
+                                        : cachedRooms.length > 0 ? cachedRooms : [{ name: 'Lobby', slug: 'genel-sohbet' }]
+                                    ).map((tab: { name: string; slug: string }, i: number) => {
+                                        const isActive = tab.slug === demoSlug;
+                                        return (
+                                            <div key={tab.slug} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', animation: `contentFadeIn 0.4s ease ${0.15 + i * 0.1}s both` }}>
+                                                {/* Çivi/Askı Noktası */}
+                                                <div style={{
+                                                    width: 6, height: 6, borderRadius: '50%',
+                                                    background: isActive ? 'radial-gradient(circle at 30% 30%, #fbbf24, #b45309)' : 'radial-gradient(circle at 30% 30%, #94a3b8, #475569)',
+                                                    boxShadow: isActive ? '0 0 6px rgba(251,191,36,0.5), 0 1px 2px rgba(0,0,0,0.4)' : '0 1px 2px rgba(0,0,0,0.4)',
+                                                    position: 'relative', zIndex: 3, flexShrink: 0,
+                                                }} />
+                                                {/* Askı Çizgisi */}
+                                                <div style={{
+                                                    width: 1, height: 10,
+                                                    background: isActive ? 'linear-gradient(to bottom, #fbbf24, rgba(251,191,36,0.3))' : 'linear-gradient(to bottom, #64748b, rgba(100,116,139,0.2))',
+                                                    flexShrink: 0,
+                                                }} />
+                                                {/* Tab Kartı */}
+                                                <button
+                                                    onClick={() => setDemoSlug(tab.slug)}
+                                                    style={{
+                                                        padding: '6px 16px',
+                                                        fontSize: 10, fontWeight: isActive ? 800 : 600,
+                                                        textTransform: 'uppercase' as const,
+                                                        letterSpacing: '0.12em',
+                                                        color: isActive ? '#fbbf24' : '#94a3b8',
+                                                        background: isActive
+                                                            ? 'linear-gradient(180deg, rgba(251,191,36,0.12) 0%, rgba(251,191,36,0.04) 100%)'
+                                                            : 'linear-gradient(180deg, rgba(148,163,184,0.08) 0%, rgba(148,163,184,0.02) 100%)',
+                                                        border: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
+                                                        borderRadius: '0 0 8px 8px',
+                                                        borderTop: 'none',
+                                                        cursor: 'pointer',
+                                                        transition: 'all 0.3s ease',
+                                                        textShadow: isActive ? '0 0 8px rgba(251,191,36,0.4)' : 'none',
+                                                        boxShadow: isActive
+                                                            ? '0 4px 12px rgba(251,191,36,0.15), inset 0 -1px 0 rgba(251,191,36,0.1)'
+                                                            : '0 2px 6px rgba(0,0,0,0.15)',
+                                                        whiteSpace: 'nowrap' as const,
+                                                    }}
+                                                >
+                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                                                        <span style={{
+                                                            width: 4, height: 4, borderRadius: '50%',
+                                                            background: isActive ? '#fbbf24' : '#475569',
+                                                            boxShadow: isActive ? '0 0 4px rgba(251,191,36,0.5)' : 'none',
+                                                        }} />
+                                                        {tab.name}
+                                                    </span>
+                                                </button>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                                <span className="nav-dot" />
+                                {/* Kontrol Butonları */}
+                                <button
+                                    onClick={() => setLampsOff(p => !p)}
+                                    title={lampsOff ? 'Lambaları Aç' : 'Lambaları Kapat'}
+                                    className="nav-link"
+                                    style={{
+                                        color: lampsOff ? '#475569' : '#fbbf24',
+                                        transition: 'all 0.3s', display: 'flex', alignItems: 'center', padding: 4,
+                                        animation: 'contentFadeIn 0.4s ease 0.5s both',
+                                    }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M9 18h6" /><path d="M10 22h4" />
+                                        <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
+                                    </svg>
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        if (!liveHidden) { setLiveHidden(true); setTimeout(() => setLiveCollapsed(true), 900); }
+                                        else { setLiveCollapsed(false); setTimeout(() => setLiveHidden(false), 500); }
+                                    }}
+                                    title={liveHidden ? 'Canlı Yayını Göster' : 'Canlı Yayını Gizle'}
+                                    className="nav-link"
+                                    style={{
+                                        color: (liveHidden || liveCollapsed) ? '#475569' : '#94a3b8',
+                                        transition: 'all 0.3s', display: 'flex', alignItems: 'center', padding: 4,
+                                        animation: 'contentFadeIn 0.4s ease 0.6s both',
+                                    }}
+                                >
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        {liveHidden ? (
+                                            <><rect x="2" y="7" width="20" height="15" rx="2" /><polyline points="17 2 12 7 7 2" /></>
+                                        ) : (
+                                            <><rect x="2" y="7" width="20" height="15" rx="2" /><polyline points="7 22 12 17 17 22" /></>
+                                        )}
+                                    </svg>
                                 </button>
                             </>
                         ) : (
@@ -1836,104 +1937,8 @@ export default function HomePage() {
                                                 <div className="gallery-lamp-glow" style={{ width: 450, opacity: lampAnimDone.current['homeGlow'] ? 1 : 0, animation: lampAnimDone.current['homeGlow'] ? 'none' : 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 2.0s forwards' }} onAnimationEnd={() => { lampAnimDone.current['homeGlow'] = true; }}></div>
                                             </div>
 
-                                            {roomsMode && (
-                                                <div className="glossy-panel" style={{ padding: '10px 12px 0 0', borderRadius: '12px 12px 0 0', marginBottom: -1, marginTop: -16, position: 'relative', zIndex: 5, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                                    <div style={{ display: 'flex', gap: 2, position: 'relative', zIndex: 10 }}>
-                                                        {(demoRoomRef.current?.state?.rooms && demoRoomRef.current.state.rooms.length > 0
-                                                            ? demoRoomRef.current.state.rooms.map((r: any) => ({ name: r.name, slug: r.slug }))
-                                                            : cachedRooms.length > 0 ? cachedRooms : [{ name: 'Lobby', slug: 'genel-sohbet' }]
-                                                        ).map((tab: { name: string; slug: string }, i: number) => {
-                                                            const isActive = tab.slug === demoSlug;
-                                                            return (
-                                                                <div key={tab.slug} onClick={() => setDemoSlug(tab.slug)} style={{
-                                                                    padding: '14px 26px',
-                                                                    fontSize: 12,
-                                                                    fontWeight: isActive ? 700 : 500,
-                                                                    fontFamily: '"Inter", system-ui, -apple-system, sans-serif',
-                                                                    textTransform: 'uppercase' as const,
-                                                                    letterSpacing: '0.14em',
-                                                                    color: isActive ? '#2d3348' : '#7a8a9d',
-                                                                    background: isActive
-                                                                        ? 'linear-gradient(180deg, rgba(140,146,170,0.95) 0%, rgba(155,160,185,0.92) 40%, rgba(168,172,196,0.90) 70%, rgba(180,184,206,0.88) 100%)'
-                                                                        : 'transparent',
-                                                                    borderTop: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
-                                                                    borderLeft: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
-                                                                    borderRight: isActive ? '1px solid rgba(180,184,206,0.5)' : '1px solid transparent',
-                                                                    borderBottom: 'none',
-                                                                    borderRadius: '14px 14px 0 0',
-                                                                    cursor: 'pointer',
-                                                                    transition: 'color 0.3s ease, background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease',
-                                                                    boxShadow: isActive
-                                                                        ? '0 -2px 6px rgba(0,0,0,0.08), inset 0 1px 0 rgba(255,255,255,0.2)'
-                                                                        : 'none',
-                                                                    position: 'relative',
-                                                                    zIndex: isActive ? 15 : 1,
-                                                                    opacity: 0,
-                                                                    animation: `cardDropDown 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) ${0.15 + i * 0.1}s forwards`,
-                                                                }}>
-                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7 }}>
-                                                                        <span style={{
-                                                                            width: 5, height: 5, borderRadius: '50%',
-                                                                            background: isActive ? '#5b6180' : '#475569',
-                                                                            transition: 'background 0.3s ease',
-                                                                        }} />
-                                                                        {tab.name}
-                                                                    </span>
-                                                                </div>
-                                                            );
-                                                        })}
-                                                        {/* Sağ taraf — kontrol düğmeleri */}
-                                                        <div style={{ flex: 1, borderBottom: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4, paddingRight: 8 }}>
-                                                            {/* Lamba Düğmesi */}
-                                                            <button
-                                                                onClick={() => setLampsOff(p => !p)}
-                                                                title={lampsOff ? 'Lambaları Aç' : 'Lambaları Kapat'}
-                                                                style={{
-                                                                    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                                                                    color: lampsOff ? '#475569' : '#fbbf24',
-                                                                    transition: 'all 0.3s', display: 'flex', alignItems: 'center',
-                                                                    opacity: 0, animation: 'cardDropDown 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.5s forwards',
-                                                                }}
-                                                            >
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    <path d="M9 18h6" /><path d="M10 22h4" />
-                                                                    <path d="M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2z" />
-                                                                </svg>
-                                                            </button>
-                                                            {/* Canlı Yayın Gizle/Göster */}
-                                                            <button
-                                                                onClick={() => {
-                                                                    if (!liveHidden) {
-                                                                        // Gizle: önce blur+lamba (0.8s), sonra collapse
-                                                                        setLiveHidden(true);
-                                                                        setTimeout(() => setLiveCollapsed(true), 900);
-                                                                    } else {
-                                                                        // Göster: önce genişlet, sonra içerik görünsün
-                                                                        setLiveCollapsed(false);
-                                                                        setTimeout(() => setLiveHidden(false), 500);
-                                                                    }
-                                                                }}
-                                                                title={liveHidden ? 'Canlı Yayını Göster' : 'Canlı Yayını Gizle'}
-                                                                style={{
-                                                                    background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-                                                                    color: (liveHidden || liveCollapsed) ? '#475569' : '#94a3b8',
-                                                                    transition: 'all 0.3s', display: 'flex', alignItems: 'center',
-                                                                    opacity: 0, animation: 'cardDropDown 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s forwards',
-                                                                }}
-                                                            >
-                                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                                    {liveHidden ? (
-                                                                        <><rect x="2" y="7" width="20" height="15" rx="2" /><polyline points="17 2 12 7 7 2" /></>
-                                                                    ) : (
-                                                                        <><rect x="2" y="7" width="20" height="15" rx="2" /><polyline points="7 22 12 17 17 22" /></>
-                                                                    )}
-                                                                </svg>
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            )}
-                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, borderRadius: '0 0 22px 22px', marginTop: -2, maxHeight: 600, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
+
+                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, maxHeight: 600, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
                                                 {/* Lavanta geçişli blur efekti */}
                                                 {roomsMode && (<>
                                                     <div style={{ position: 'absolute', top: -20, right: -20, width: 200, height: 200, background: 'radial-gradient(circle, rgba(147, 130, 220, 0.18) 0%, rgba(123, 159, 239, 0.08) 50%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
@@ -3510,7 +3515,7 @@ export default function HomePage() {
                                                                                 // Mevcut kullanıcıyı göster
                                                                                 return (
                                                                                     <div
-                                                                                        onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, { userId: user.odaKullanicisi || user.odaWsId || user.odaId || '', displayName: user.displayName || user.username, role: user.role, avatar: user.avatar }); }}
+                                                                                        onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, { userId: (user as any).userId || '', displayName: (user as any).displayName || (user as any).username, role: (user as any).role, avatar: (user as any).avatar }); }}
                                                                                         style={{
                                                                                             display: 'flex', alignItems: 'center', gap: 10,
                                                                                             padding: '4px 6px', borderRadius: 10,
@@ -4004,8 +4009,8 @@ export default function HomePage() {
                                                         borderRadius: 11,
                                                         boxShadow: 'inset 2px 0 8px rgba(255,255,255,0.04), inset -2px 0 8px rgba(255,255,255,0.04), inset 0 2px 6px rgba(255,255,255,0.03)',
                                                     }} />
-                                                    {/* TV Content: Kamera > YouTube > Static GIF */}
-                                                    {demoRoomRef.current?.isCameraOn && demoRoomRef.current?.localStream ? (
+                                                    {/* TV Content: Mikrofon alan+Kamera > YouTube > Static GIF */}
+                                                    {demoRoomRef.current?.isCameraOn && demoIsMicOn && demoRoomRef.current?.localStream ? (
                                                         <video
                                                             autoPlay
                                                             muted
@@ -4036,7 +4041,7 @@ export default function HomePage() {
                                                         <div className="absolute inset-0" style={{ background: 'url(https://media.giphy.com/media/oEI9uBYSzLpBK/giphy.gif) center/cover', opacity: 0.6 }} />
                                                     )}
                                                     {/* YouTube Badge */}
-                                                    {tvVideoUrl && !demoRoomRef.current?.isCameraOn && (
+                                                    {tvVideoUrl && !(demoRoomRef.current?.isCameraOn && demoIsMicOn) && (
                                                         <div style={{ position: 'absolute', top: 6, left: 6, zIndex: 40, display: 'flex', alignItems: 'center', gap: 4, padding: '2px 8px', borderRadius: 12, background: 'rgba(239,68,68,0.85)', border: '1px solid rgba(239,68,68,0.5)' }}>
                                                             <span style={{ fontSize: 7 }}>▶</span>
                                                             <span style={{ fontSize: 7, fontWeight: 800, color: '#fff', letterSpacing: '0.05em' }}>{extractYoutubeId(tvVideoUrl) ? 'YouTube' : 'Video'}</span>
@@ -4055,19 +4060,19 @@ export default function HomePage() {
                                                 }} />
                                             </div>
                                             {/* Status text */}
-                                            <div style={{ textAlign: 'center', fontSize: 9, color: demoRoomRef.current?.isCameraOn ? '#34d399' : tvVideoUrl ? '#f87171' : '#475569', fontWeight: 600, marginTop: 8 }}>
-                                                {demoRoomRef.current?.isCameraOn ? '📹 Kameranız Açık' : tvVideoUrl ? (extractYoutubeId(tvVideoUrl) ? '▶ YouTube yayını devam ediyor' : '▶ Video yayını devam ediyor') : 'Yayın bekleniyor...'}
+                                            <div style={{ textAlign: 'center', fontSize: 9, color: (demoRoomRef.current?.isCameraOn && demoIsMicOn) ? '#34d399' : tvVideoUrl ? '#f87171' : '#475569', fontWeight: 600, marginTop: 8 }}>
+                                                {(demoRoomRef.current?.isCameraOn && demoIsMicOn) ? '📹 Kameranız Açık' : tvVideoUrl ? (extractYoutubeId(tvVideoUrl) ? '▶ YouTube yayını devam ediyor' : '▶ Video yayını devam ediyor') : 'Yayın bekleniyor...'}
                                             </div>
                                             {/* YouTube URL Input + Controls */}
                                             <div style={{ marginTop: 6, padding: '0 4px' }}>
-                                                {tvVideoUrl && !demoRoomRef.current?.isCameraOn ? (
+                                                {tvVideoUrl && !(demoRoomRef.current?.isCameraOn && demoIsMicOn) ? (
                                                     <div style={{ display: 'flex', gap: 4 }}>
                                                         <button
                                                             onClick={() => setTvVideoUrl(null)}
                                                             style={{ flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: 600, background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', transition: 'all 0.2s' }}
                                                         >■ Yayını Durdur</button>
                                                     </div>
-                                                ) : !demoRoomRef.current?.isCameraOn ? (
+                                                ) : !(demoRoomRef.current?.isCameraOn && demoIsMicOn) && getRoleLevel(demoRoomRef.current?.state?.currentUser?.role) >= 3 ? (
                                                     tvYtInputOpen ? (
                                                         <div style={{ display: 'flex', gap: 4 }}>
                                                             <input
