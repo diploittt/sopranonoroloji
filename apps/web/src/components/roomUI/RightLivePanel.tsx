@@ -436,7 +436,9 @@ export function RightLivePanel({
 function VideoPlayer({ stream }: { stream: MediaStream }) {
     const ref = useRef<HTMLVideoElement>(null);
     useEffect(() => {
-        if (ref.current && stream) ref.current.srcObject = stream;
+        if (ref.current && stream && ref.current.srcObject !== stream) {
+            ref.current.srcObject = stream;
+        }
     }, [stream]);
     return <video ref={ref} autoPlay playsInline muted className="w-full h-full object-cover" />;
 }

@@ -982,31 +982,17 @@ export default function HomePage() {
                     position: relative;
                     background-color: #7a7e9e;
                     padding-bottom: 32px;
-                    border-left: 14px solid transparent;
-                    border-right: 14px solid transparent;
-                    border-image: linear-gradient(to bottom, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.7) 30%, rgba(255,255,255,0.3) 70%, rgba(255,255,255,0.05) 100%) 1;
+                    border-left: 14px solid rgba(255,255,255,0.85);
+                    border-right: 14px solid rgba(255,255,255,0.85);
+                    border-bottom: 14px solid rgba(255,255,255,0.85);
                     box-shadow:
-                        0 0 40px rgba(0,0,0,0.5),
-                        0 0 80px rgba(0,0,0,0.3),
-                        inset 0 0 30px rgba(0,0,0,0.15),
-                        -8px 0 20px rgba(0,0,0,0.4),
-                        8px 0 20px rgba(0,0,0,0.4);
+                        0 0 30px rgba(0,0,0,0.25),
+                        0 0 60px rgba(0,0,0,0.12),
+                        -4px 0 15px rgba(0,0,0,0.18),
+                        4px 0 15px rgba(0,0,0,0.18);
                     display: flex;
                     flex-direction: column;
                     align-items: center;
-                }
-                .main-content::after {
-                    content: '';
-                    display: block;
-                    position: absolute;
-                    bottom: 0;
-                    left: -14px;
-                    right: -14px;
-                    height: 14px;
-                    background: rgba(255,255,255,0.55);
-                    border-radius: 0 0 4px 4px;
-                    box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2);
-                    pointer-events: none;
                 }
 
                 .retro-logo-text {
@@ -1045,6 +1031,8 @@ export default function HomePage() {
                     align-items: center;
                     justify-content: center;
                     padding: 0 36px;
+                    width: 99%;
+                    margin: 0 auto;
                     /* Bombeli metalik gradient — barrel efekti */
                     background: linear-gradient(180deg,
                         #5a6070 0%,
@@ -1259,10 +1247,9 @@ export default function HomePage() {
                     border-top: 1px solid rgba(255,255,255,0.35);
                     border-left: 1px solid rgba(255,255,255,0.2);
                     box-shadow:
-                        0 50px 70px -20px rgba(0, 0, 0, 0.8),
-                        0 20px 30px -10px rgba(0, 0, 0, 0.6),
-                        inset 0 1px 0 rgba(255,255,255,0.1),
-                        inset 0 0 60px rgba(255,255,255,0.03);
+                        0 8px 32px rgba(0,0,0,0.4),
+                        0 2px 8px rgba(0,0,0,0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
                     border-radius: 22px;
                     overflow: hidden;
                 }
@@ -1641,6 +1628,14 @@ export default function HomePage() {
                     0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
                     100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
                 }
+                @keyframes hpBarBounce {
+                    0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+                    50% { transform: scaleY(1); opacity: 0.9; }
+                }
+                @keyframes hpHandPulse {
+                    0%, 100% { transform: scale(1); opacity: 0.8; }
+                    50% { transform: scale(1.15); opacity: 1; }
+                }
             `}</style>
 
             <ToastContainer />
@@ -1655,7 +1650,7 @@ export default function HomePage() {
                     transition: 'transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1)',
                     transform: (demoPhase === 'bar-up' || demoPhase === 'exit-bar-up') ? 'translateY(-100%)' : 'translateY(0)',
                 }}>
-                    <div className="header-logo">
+                    <div className="header-logo" style={demoMode ? { transform: 'scale(0.65)', transformOrigin: 'left center' } : {}}>
                         <h1 className="retro-logo-text">SopranoChat</h1>
                         <span className="tagline">hear my voice</span>
                     </div>
@@ -1663,37 +1658,34 @@ export default function HomePage() {
                     <nav className="header-nav">
                         {demoMode ? (
                             <>
-                                {/* Sol: Ana Sayfa butonu */}
+                                {/* Sol: Home butonu — demo'dan çıkış */}
                                 <button
                                     className="nav-link"
-                                    onClick={exitDemoTransition}
-                                    style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, animation: 'contentFadeIn 0.4s ease 0.1s both' }}
+                                    onClick={() => {
+                                        // Önce roomsMode çıkış animasyonu, sonra geri dön
+                                        setDemoEntrance('out');
+                                        setTimeout(() => {
+                                            setRoomsMode(false);
+                                            setDemoEntrance('idle');
+                                            setActiveSection('home');
+                                            window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+                                        }, 500);
+                                    }}
+                                    style={{ color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 6, animation: 'contentFadeIn 0.4s ease 0.1s both', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, fontSize: 11 }}
                                 >
-                                    🏠 Ana Sayfa
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                    HOME
                                 </button>
                                 <span className="nav-dot" />
                                 {/* Asılı Oda Tab'ları */}
-                                <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 0, alignSelf: 'stretch' }}>
+                                <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 0, alignSelf: 'stretch', justifyContent: 'center', flex: 1, marginRight: 200 }}>
                                     {(demoRoomRef.current?.state?.rooms && demoRoomRef.current.state.rooms.length > 0
                                         ? demoRoomRef.current.state.rooms.map((r: any) => ({ name: r.name, slug: r.slug }))
                                         : cachedRooms.length > 0 ? cachedRooms : [{ name: 'Lobby', slug: 'genel-sohbet' }]
                                     ).map((tab: { name: string; slug: string }, i: number) => {
                                         const isActive = tab.slug === demoSlug;
                                         return (
-                                            <div key={tab.slug} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', animation: `contentFadeIn 0.4s ease ${0.15 + i * 0.1}s both` }}>
-                                                {/* Çivi/Askı Noktası */}
-                                                <div style={{
-                                                    width: 6, height: 6, borderRadius: '50%',
-                                                    background: isActive ? 'radial-gradient(circle at 30% 30%, #fbbf24, #b45309)' : 'radial-gradient(circle at 30% 30%, #94a3b8, #475569)',
-                                                    boxShadow: isActive ? '0 0 6px rgba(251,191,36,0.5), 0 1px 2px rgba(0,0,0,0.4)' : '0 1px 2px rgba(0,0,0,0.4)',
-                                                    position: 'relative', zIndex: 3, flexShrink: 0,
-                                                }} />
-                                                {/* Askı Çizgisi */}
-                                                <div style={{
-                                                    width: 1, height: 10,
-                                                    background: isActive ? 'linear-gradient(to bottom, #fbbf24, rgba(251,191,36,0.3))' : 'linear-gradient(to bottom, #64748b, rgba(100,116,139,0.2))',
-                                                    flexShrink: 0,
-                                                }} />
+                                            <div key={tab.slug} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', animation: `contentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`, marginTop: 8 }}>
                                                 {/* Tab Kartı */}
                                                 <button
                                                     onClick={() => setDemoSlug(tab.slug)}
@@ -1706,9 +1698,11 @@ export default function HomePage() {
                                                         background: isActive
                                                             ? 'linear-gradient(180deg, rgba(251,191,36,0.12) 0%, rgba(251,191,36,0.04) 100%)'
                                                             : 'linear-gradient(180deg, rgba(148,163,184,0.08) 0%, rgba(148,163,184,0.02) 100%)',
-                                                        border: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
+                                                        border: 'none',
+                                                        borderLeft: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
+                                                        borderRight: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
+                                                        borderBottom: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
                                                         borderRadius: '0 0 8px 8px',
-                                                        borderTop: 'none',
                                                         cursor: 'pointer',
                                                         transition: 'all 0.3s ease',
                                                         textShadow: isActive ? '0 0 8px rgba(251,191,36,0.4)' : 'none',
@@ -1938,7 +1932,83 @@ export default function HomePage() {
                                             </div>
 
 
-                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, maxHeight: 600, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
+                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: roomsMode ? 'visible' : 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
+                                                {/* ── Raptiyeler (sadece roomsMode) ── */}
+                                                {roomsMode && (<>
+                                                    {/* ─── Sol Raptiye ─── */}
+                                                    <div style={{ position: 'absolute', top: -10, left: 30, zIndex: 20, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.4))' }}>
+                                                        <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            {/* İğne gövdesi */}
+                                                            <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftL)" strokeWidth="1.8" strokeLinecap="round" />
+                                                            {/* Raptiye başı — yuvarlak */}
+                                                            <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadL)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                            {/* 3D derinlik halkası */}
+                                                            <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                            {/* Parlak yansıma */}
+                                                            <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                            {/* Küçük parlama noktası */}
+                                                            <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                            <defs>
+                                                                <radialGradient id="pinHeadL" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#d45b5b" />
+                                                                    <stop offset="50%" stopColor="#bf3a3a" />
+                                                                    <stop offset="100%" stopColor="#9a2a2a" />
+                                                                </radialGradient>
+                                                                <linearGradient id="pinShaftL" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#b0b8c0" />
+                                                                    <stop offset="50%" stopColor="#8a9298" />
+                                                                    <stop offset="100%" stopColor="#606870" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                        </svg>
+                                                    </div>
+
+                                                    {/* ─── Orta Raptiye ─── */}
+                                                    <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', zIndex: 20, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.4))' }}>
+                                                        <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftC)" strokeWidth="1.8" strokeLinecap="round" />
+                                                            <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadC)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                            <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                            <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                            <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                            <defs>
+                                                                <radialGradient id="pinHeadC" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#d45b5b" />
+                                                                    <stop offset="50%" stopColor="#bf3a3a" />
+                                                                    <stop offset="100%" stopColor="#9a2a2a" />
+                                                                </radialGradient>
+                                                                <linearGradient id="pinShaftC" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#b0b8c0" />
+                                                                    <stop offset="50%" stopColor="#8a9298" />
+                                                                    <stop offset="100%" stopColor="#606870" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                        </svg>
+                                                    </div>
+
+                                                    {/* ─── Sağ Raptiye ─── */}
+                                                    <div style={{ position: 'absolute', top: -10, right: 30, zIndex: 20, filter: 'drop-shadow(0 2px 3px rgba(0,0,0,0.4))' }}>
+                                                        <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                            <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftR)" strokeWidth="1.8" strokeLinecap="round" />
+                                                            <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadR)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                            <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                            <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                            <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                            <defs>
+                                                                <radialGradient id="pinHeadR" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#d45b5b" />
+                                                                    <stop offset="50%" stopColor="#bf3a3a" />
+                                                                    <stop offset="100%" stopColor="#9a2a2a" />
+                                                                </radialGradient>
+                                                                <linearGradient id="pinShaftR" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#b0b8c0" />
+                                                                    <stop offset="50%" stopColor="#8a9298" />
+                                                                    <stop offset="100%" stopColor="#606870" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                        </svg>
+                                                    </div>
+                                                </>)}
                                                 {/* Lavanta geçişli blur efekti */}
                                                 {roomsMode && (<>
                                                     <div style={{ position: 'absolute', top: -20, right: -20, width: 200, height: 200, background: 'radial-gradient(circle, rgba(147, 130, 220, 0.18) 0%, rgba(123, 159, 239, 0.08) 50%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
@@ -1946,13 +2016,14 @@ export default function HomePage() {
                                                 </>)}
 
                                                 {roomsMode && (
-                                                    <div>
+                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                                         <DemoChatRoom
                                                             slug={demoSlug}
                                                             onRoomData={(data) => { demoRoomRef.current = data; setDemoRoomUsers(data.users || []); setDemoCurrentSpeaker(data.currentSpeaker || null); setDemoIsMicOn(data.state?.isMicOn || false); setDemoQueue(data.state?.queue || []); setDemoMicTimeLeft(data.state?.micTimeLeft || 0); if (!demoRoomReady) setDemoRoomReady(true); }}
                                                         />
                                                     </div>
                                                 )}
+
                                                 <div style={{ position: 'relative', zIndex: 10, ...(roomsMode ? { display: 'none' } : {}) }}>
                                                     {/* Orijinal içerik — Sol metin + Sağ CRT Monitör */}
                                                     <div style={{
@@ -2005,19 +2076,6 @@ export default function HomePage() {
                                                             </div>
                                                         </div>
 
-                                                        {/* SAĞ: 3D CRT Monitör — küçültülmüş */}
-                                                        <div style={{ flex: '0 0 320px', height: 340, position: 'relative', overflow: 'visible' }}>
-                                                            <div style={{ transform: 'scale(0.44)', transformOrigin: 'center center', position: 'absolute', top: '50%', left: '50%', marginTop: -280, marginLeft: 0 }}>
-                                                                <CRTMonitor isPowerOn={crtPowerOn} onPowerToggle={() => setCrtPowerOn((p: boolean) => !p)}>
-                                                                    <div style={{ width: '100%', height: '100%', background: '#0b0d14', color: '#e2e8f0', fontFamily: 'Inter, system-ui, sans-serif', display: 'flex', flexDirection: 'column' }}>
-                                                                        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 20 }}>
-                                                                            <div style={{ fontSize: 48, fontWeight: 900, background: 'linear-gradient(135deg, #fff, #94a3b8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>SopranoChat</div>
-                                                                            <div style={{ fontSize: 16, color: '#64748b', fontWeight: 600, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Demo Oda Önizleme</div>
-                                                                        </div>
-                                                                    </div>
-                                                                </CRTMonitor>
-                                                            </div>
-                                                        </div>
                                                     </div>
 
                                                     {/* Paket Kartları — showPackages açıkken görünür */}
@@ -2329,7 +2387,15 @@ export default function HomePage() {
                                                                 <Settings style={{ width: 14, height: 14 }} />
                                                             </button>
                                                             {/* Çıkış */}
-                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Çıkış">
+                                                            <button className="feature-toast" onClick={() => {
+                                                                setDemoEntrance('out');
+                                                                setTimeout(() => {
+                                                                    setRoomsMode(false);
+                                                                    setDemoEntrance('idle');
+                                                                    setActiveSection('home');
+                                                                    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+                                                                }, 500);
+                                                            }} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Çıkış">
                                                                 <Power style={{ width: 14, height: 14 }} />
                                                             </button>
                                                         </div>
@@ -2340,7 +2406,7 @@ export default function HomePage() {
                                                             <input type="text" placeholder="Mesajınızı buraya yazın..." style={{ width: '100%', height: '100%', padding: '0 14px', borderRadius: 10, fontSize: 12, fontWeight: 500, color: '#cbd5e1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', boxSizing: 'border-box', backdropFilter: 'blur(8px)' }} />
                                                         </div>
                                                         <button style={{ height: '100%', padding: '0 18px', borderRadius: 10, fontSize: 10, fontWeight: 800, color: '#e2e8f0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, letterSpacing: 1.5, transition: 'all 0.3s' }}>
-                                                            GÖNDER <SendHorizontal style={{ width: 13, height: 13, color: '#64748b' }} />
+                                                            GÖNDER <SendHorizontal style={{ width: 13, height: 13, color: '#64748b', marginLeft: 2 }} />
                                                         </button>
                                                     </div>
                                                 </div>
@@ -3500,11 +3566,18 @@ export default function HomePage() {
                                                                                 }
                                                                             };
                                                                             const speaker = demoCurrentSpeaker;
+                                                                            const demoQueue = demoRoomRef.current?.state?.queue || [];
                                                                             const sorted = [...roomUsers].sort((a, b) => {
                                                                                 const isSpeakerA = speaker?.userId === a.userId;
                                                                                 const isSpeakerB = speaker?.userId === b.userId;
                                                                                 if (isSpeakerA && !isSpeakerB) return -1;
                                                                                 if (!isSpeakerA && isSpeakerB) return 1;
+                                                                                // Queue position
+                                                                                const qiA = demoQueue.indexOf(a.userId || '');
+                                                                                const qiB = demoQueue.indexOf(b.userId || '');
+                                                                                if (qiA !== -1 && qiB === -1) return -1;
+                                                                                if (qiA === -1 && qiB !== -1) return 1;
+                                                                                if (qiA !== -1 && qiB !== -1) return qiA - qiB;
                                                                                 const la = getRoleLevel(a.role);
                                                                                 const lb = getRoleLevel(b.role);
                                                                                 if (la !== lb) return lb - la;
@@ -3580,41 +3653,29 @@ export default function HomePage() {
                                                                                                 <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
                                                                                                 {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
                                                                                                 {isSpeaking && (
-                                                                                                    <div style={{ position: 'relative', width: 22, height: 22, flexShrink: 0, animation: 'micGlow 2s ease-in-out infinite' }}>
-                                                                                                        {/* Sound wave rings */}
-                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1.5px solid rgba(251,191,36,0.5)', animation: 'micSoundWave 1.5s ease-out infinite', pointerEvents: 'none' }} />
-                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1px solid rgba(251,191,36,0.35)', animation: 'micSoundWave2 1.5s ease-out 0.3s infinite', pointerEvents: 'none' }} />
-                                                                                                        <div style={{ position: 'absolute', top: '50%', left: '50%', width: 20, height: 20, marginTop: -10, marginLeft: -10, borderRadius: '50%', border: '1px solid rgba(251,191,36,0.2)', animation: 'micSoundWave3 1.5s ease-out 0.6s infinite', pointerEvents: 'none' }} />
-                                                                                                        {/* Vintage golden microphone SVG */}
-                                                                                                        <svg viewBox="0 0 32 32" width="22" height="22" style={{ position: 'relative', zIndex: 2 }}>
-                                                                                                            <defs>
-                                                                                                                <linearGradient id="micGold" x1="0" y1="0" x2="1" y2="1">
-                                                                                                                    <stop offset="0%" stopColor="#fde68a" />
-                                                                                                                    <stop offset="30%" stopColor="#fbbf24" />
-                                                                                                                    <stop offset="60%" stopColor="#d97706" />
-                                                                                                                    <stop offset="100%" stopColor="#b45309" />
-                                                                                                                </linearGradient>
-                                                                                                                <linearGradient id="micGrill" x1="0" y1="0" x2="0" y2="1">
-                                                                                                                    <stop offset="0%" stopColor="#7dd3fc" />
-                                                                                                                    <stop offset="100%" stopColor="#38bdf8" />
-                                                                                                                </linearGradient>
-                                                                                                            </defs>
-                                                                                                            {/* Base/Stand */}
-                                                                                                            <ellipse cx="16" cy="29" rx="5" ry="1.5" fill="url(#micGold)" opacity="0.8" />
-                                                                                                            {/* Stem */}
-                                                                                                            <rect x="14.5" y="19" width="3" height="10" rx="1" fill="url(#micGold)" />
-                                                                                                            <rect x="15" y="19" width="1" height="10" fill="rgba(255,255,255,0.15)" />
-                                                                                                            {/* Mic head outer */}
-                                                                                                            <ellipse cx="16" cy="12" rx="7" ry="9" fill="url(#micGold)" />
-                                                                                                            {/* Highlight */}
-                                                                                                            <ellipse cx="14" cy="9" rx="3.5" ry="5" fill="rgba(255,255,255,0.15)" />
-                                                                                                            {/* Grill lines */}
-                                                                                                            {[4, 6.5, 9, 11.5, 14, 16.5, 19].map((y, i) => (
-                                                                                                                <rect key={i} x="11" y={y} width="10" height="1" rx="0.5" fill="url(#micGrill)" opacity="0.5" />
-                                                                                                            ))}
-                                                                                                        </svg>
+                                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 1, height: 18, flexShrink: 0 }}>
+                                                                                                        {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
+                                                                                                            <div key={i} style={{
+                                                                                                                width: 2.5,
+                                                                                                                height: [6, 10, 14, 10, 6][i],
+                                                                                                                borderRadius: 2,
+                                                                                                                background: 'linear-gradient(180deg, #34d399, #059669)',
+                                                                                                                animation: `hpBarBounce 1.2s ease-in-out ${delay}s infinite`,
+                                                                                                            }} />
+                                                                                                        ))}
                                                                                                     </div>
                                                                                                 )}
+                                                                                                {/* Queue hand indicator */}
+                                                                                                {(() => {
+                                                                                                    const qi = (demoRoomRef.current?.state?.queue || []).indexOf(u.userId || '');
+                                                                                                    if (qi === -1 || isSpeaking) return null;
+                                                                                                    return (
+                                                                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, animation: 'hpHandPulse 1.5s ease-in-out infinite' }}>
+                                                                                                            <span style={{ fontSize: 12, filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.6))' }}>✋</span>
+                                                                                                            <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', background: 'rgba(245,158,11,0.2)', padding: '0 3px', borderRadius: 4 }}>{qi + 1}</span>
+                                                                                                        </span>
+                                                                                                    );
+                                                                                                })()}
                                                                                             </div>
                                                                                             <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                                                                 <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
@@ -3753,10 +3814,15 @@ export default function HomePage() {
                                                                         borderBottom: '1px solid rgba(0,0,0,0.3)',
                                                                         position: 'relative', overflow: 'hidden',
                                                                     }}>
-                                                                        <Mic style={{
+                                                                        <svg style={{
                                                                             width: 15, height: 15,
                                                                             color: isMicOn ? '#fca5a5' : isInQueue ? '#fde68a' : '#94a3b8',
-                                                                        }} />
+                                                                        }} viewBox="0 0 24 24" fill="none">
+                                                                            <rect x="8" y="2" width="8" height="13" rx="4" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="1.5" />
+                                                                            <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                            <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                            <line x1="9" y1="22" x2="15" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                                                        </svg>
                                                                         <span style={{
                                                                             fontSize: 11, fontWeight: 800, letterSpacing: 1.5, textTransform: 'uppercase',
                                                                             color: isMicOn ? '#fca5a5' : isInQueue ? '#fde68a' : '#cbd5e1',

@@ -22,7 +22,7 @@ export const useAdminPanelStore = create<AdminPanelState>((set) => ({
     selectedUserId: null,
     selectedRoomId: null,
 
-    openPanel: () => set({ isOpen: true }),
+    openPanel: () => set((state) => ({ isOpen: !state.isOpen })),
     closePanel: () => set({ isOpen: false }),
     setActiveTab: (tab) => set({ activeTab: tab }),
     setSelectedUserId: (id) => set({ selectedUserId: id }),

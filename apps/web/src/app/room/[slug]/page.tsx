@@ -2381,14 +2381,19 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         speakerUsername={videoState.tvStreamEntry?.username}
                                         otherStreams={(() => {
                                             const others: { id: string; stream: MediaStream; username?: string }[] = [];
+                                            const currentUserId = room.state.currentUser?.userId;
+                                            const currentUsername = room.state.currentUser?.username;
+                                            const tvUsername = videoState.tvStreamEntry?.username;
+                                            const isSelfOnTv = tvUsername === currentUsername;
+                                            const isSelfSpeaker = room.state.currentSpeaker?.userId === currentUserId;
 
-                                            // Add self if not on TV and camera ON
-                                            if (room.state.isCameraOn && room.state.localStream && videoState.tvStreamEntry?.username !== room.state.currentUser?.username) {
+                                            // Add self if camera ON, NOT on TV, and NOT speaker (mic+cam = only TV)
+                                            if (room.state.isCameraOn && room.state.localStream && !isSelfOnTv && !isSelfSpeaker) {
                                                 others.push({ id: 'me', stream: room.state.localStream, username: 'Ben' });
                                             }
 
-                                            // Add remote camera streams (from mediasoup) — exclude TV speaker
-                                            const tvPeerId = videoState.tvStreamEntry ? room.state.users.find(u => u.username === videoState.tvStreamEntry?.username)?.userId : null;
+                                            // Add remote camera streams — exclude TV speaker
+                                            const tvPeerId = videoState.tvStreamEntry ? room.state.users.find(u => u.username === tvUsername)?.userId : null;
                                             room.state.remoteStreams
                                                 .filter(rs => rs.stream.getVideoTracks().length > 0 && rs.peerId !== tvPeerId)
                                                 .forEach(rs => {

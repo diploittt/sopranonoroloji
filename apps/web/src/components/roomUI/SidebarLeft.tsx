@@ -729,7 +729,9 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                         ? 'bg-gradient-to-r from-[#7b9fef]/10 via-[#7b9fef]/5 to-transparent border-[#7b9fef]/20 shadow-[0_0_10px_rgba(123,159,239,0.1)]'
                                                         : isSpeaker
                                                             ? 'bg-[#7b9fef]/8 border-[#7b9fef]/25 shadow-[0_0_8px_rgba(123,159,239,0.1)]'
-                                                            : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.07] hover:border-white/10'}}
+                                                            : queueIndex !== -1
+                                                                ? 'bg-amber-500/[0.06] border-amber-400/25 shadow-[0_0_8px_rgba(251,191,36,0.12)]'
+                                                                : 'bg-white/[0.03] border-white/[0.06] hover:bg-white/[0.07] hover:border-white/10'}}
                                     ${isInvisible ? 'opacity-50 grayscale border-dashed !border-gray-600/40' : ''}
                                     ${!isGodMasterSpecialMode && user.isMuted ? '!border-red-500/30 !bg-red-500/[0.04]' : ''}
                                     ${!isGodMasterSpecialMode && user.isGagged ? '!border-orange-500/30 !bg-orange-500/[0.04]' : ''}
@@ -931,7 +933,10 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                         {user.role?.toLowerCase() === 'godmaster' ? (user.godmasterIcon || '🔱') : getRoleIcon(user.role || 'guest')}
                                                         {/* Blinking Hand Icon for Queue */}
                                                         {!isMeetingRoom && queueIndex !== -1 && !isSpeaker && (
-                                                            <Hand className="w-4 h-4 text-[#f59e0b] animate-pulse ml-1 inline-block" strokeWidth={2.5} />
+                                                            <span className="inline-flex items-center gap-0.5 ml-1" title={`Mikrofon sırası: ${queueIndex + 1}`}>
+                                                                <Hand className="w-4 h-4 text-[#f59e0b] animate-pulse inline-block" strokeWidth={2.5} />
+                                                                <span className="text-[9px] font-bold text-amber-400 bg-amber-500/20 px-1 rounded">{queueIndex + 1}</span>
+                                                            </span>
                                                         )}
                                                         {/* Meeting Room: Mic icon for speaking users */}
                                                         {isMeetingRoom && speakingUsers && speakingUsers[user.userId || ''] && (
@@ -992,30 +997,48 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             </>
                                         )}
 
-                                        {/* ═══ SPEAKER MIC ICON — kartın sağında yayılma efektli ═══ */}
+                                        {/* ═══ SPEAKER MIC ICON — kartın sağında ses dalgası efektli ═══ */}
                                         {isSpeaker && !isGodMasterSpecialMode && (
                                             <div className="flex-shrink-0 ml-auto pl-2 relative flex items-center justify-center" style={{ width: 36, height: 36 }}>
-                                                {/* Yayılan dalga halkaları */}
-                                                <div className="absolute inset-0 rounded-full" style={{
-                                                    border: '1.5px solid rgba(52,211,153,0.25)',
-                                                    animation: 'speakerRipple 2s ease-out infinite',
-                                                }} />
-                                                <div className="absolute inset-0 rounded-full" style={{
-                                                    border: '1.5px solid rgba(52,211,153,0.20)',
-                                                    animation: 'speakerRipple 2s ease-out 0.5s infinite',
-                                                }} />
-                                                <div className="absolute inset-0 rounded-full" style={{
-                                                    border: '1.5px solid rgba(52,211,153,0.15)',
-                                                    animation: 'speakerRipple 2s ease-out 1s infinite',
-                                                }} />
-                                                {/* Merkez mikrofon ikonu */}
-                                                <div className="relative z-10 w-6 h-6 rounded-full flex items-center justify-center" style={{
-                                                    background: 'linear-gradient(135deg, #34d399, #10b981, #059669)',
-                                                    boxShadow: '0 0 10px rgba(52,211,153,0.50), 0 0 20px rgba(16,185,129,0.20)',
-                                                    animation: 'speakerMicGlow 1.5s ease-in-out infinite',
-                                                }}>
-                                                    <Mic className="w-3 h-3 text-white drop-shadow-[0_0_3px_rgba(255,255,255,0.6)]" />
+                                                {/* Ses dalgası çubukları */}
+                                                <div className="absolute inset-0 flex items-center justify-center gap-[2px]">
+                                                    {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
+                                                        <div key={i} style={{
+                                                            width: 2.5,
+                                                            height: [8, 14, 18, 14, 8][i],
+                                                            borderRadius: 2,
+                                                            background: 'linear-gradient(180deg, #34d399, #059669)',
+                                                            opacity: 0.5,
+                                                            animation: `speakerBarBounce 1.2s ease-in-out ${delay}s infinite`,
+                                                        }} />
+                                                    ))}
                                                 </div>
+                                                <style>{`
+                                                    @keyframes speakerBarBounce {
+                                                        0%, 100% { transform: scaleY(0.4); opacity: 0.4; }
+                                                        50% { transform: scaleY(1); opacity: 0.9; }
+                                                    }
+                                                `}</style>
+                                            </div>
+                                        )}
+
+                                        {/* ═══ QUEUE HAND ICON — kartın sağında yanıp sönen el ═══ */}
+                                        {queueIndex !== -1 && !isSpeaker && !isGodMasterSpecialMode && (
+                                            <div className="flex-shrink-0 ml-auto pl-2 relative flex items-center justify-center" style={{ width: 36, height: 36 }}>
+                                                <div className="relative flex items-center justify-center" style={{
+                                                    animation: 'queueHandPulse 1.5s ease-in-out infinite',
+                                                }}>
+                                                    <span style={{ fontSize: 18, filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.6))' }}>✋</span>
+                                                    <span className="absolute -bottom-1 -right-1 text-[8px] font-black text-amber-300 bg-amber-600/60 rounded-full w-3.5 h-3.5 flex items-center justify-center" style={{
+                                                        boxShadow: '0 0 4px rgba(251,191,36,0.5)',
+                                                    }}>{queueIndex + 1}</span>
+                                                </div>
+                                                <style>{`
+                                                    @keyframes queueHandPulse {
+                                                        0%, 100% { transform: scale(1); opacity: 0.8; }
+                                                        50% { transform: scale(1.15); opacity: 1; }
+                                                    }
+                                                `}</style>
                                             </div>
                                         )}
 
@@ -1412,7 +1435,12 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             ) : isInQueue ? (
                                 <Hand className="w-5 h-5 relative z-20 animate-pulse" style={{ color: '#fbbf24' }} />
                             ) : (
-                                <Mic className="w-5 h-5 relative z-20" style={{ color: '#7b9fef' }} />
+                                <svg className="w-5 h-5 relative z-20" viewBox="0 0 24 24" fill="none" style={{ color: '#7b9fef' }}>
+                                    <rect x="8" y="2" width="8" height="13" rx="4" fill="currentColor" opacity="0.2" stroke="currentColor" strokeWidth="1.5" />
+                                    <path d="M5 11a7 7 0 0 0 14 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                    <line x1="9" y1="22" x2="15" y2="22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
                             )}
                         </div>
                         <div className="flex-1 flex flex-col items-start ml-3">
