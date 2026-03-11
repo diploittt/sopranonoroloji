@@ -276,7 +276,7 @@ export function SettingsModal({
                     </button>
                 </div>
 
-                <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: 420 }}>
+                <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: 520 }}>
 
                     {activeTab === 'devices' && (
                         <>

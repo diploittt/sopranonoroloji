@@ -1232,6 +1232,17 @@ body {
     }
 }
 
+/* ── isSelf Avatar Dönen Halka ── */
+@keyframes selfRingRotate {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .hand-icon {
     color: #f59e0b;
     animation: pulse-custom 1s ease-in-out infinite;
@@ -3103,324 +3114,290 @@ body {
 }
 
 /* ═══════════════════════════════════════════════════════════ */
-/*  3D IBM CRT MONITOR — KATI KÜTLE MODELLEMESİ              */
+/*  3D LAPTOP SİMÜLASYONU — GERÇEKÇİ MACBOOK                */
 /* ═══════════════════════════════════════════════════════════ */
 
-.crt-face {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    box-sizing: border-box;
-    border-radius: 2px;
-    border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-/* --- 1. KUTU: ÖN ÇERÇEVE (700×540×100) --- */
-.crt-b-front {
-    width: 700px;
-    height: 540px;
-    transform: translate(-50%, -50%) translateZ(0px);
-    background: linear-gradient(135deg, #e6e4d8, #d6d4c6);
+/* ─── Wrapper ─── */
+.laptop-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
     display: flex;
     flex-direction: column;
-    padding: 35px 35px 25px 35px;
-    box-shadow: inset 3px 3px 8px rgba(255, 255, 255, 0.7), inset -4px -4px 10px rgba(0, 0, 0, 0.1);
+    align-items: center;
 }
 
-.crt-b-back {
-    width: 700px;
-    height: 540px;
-    transform: translate(-50%, -50%) translateZ(-100px) rotateY(180deg);
-    background: #d6d4c6;
-}
-
-.crt-b-left {
-    width: 100px;
-    height: 540px;
-    transform: translate(-50%, -50%) translateX(-350px) translateZ(-50px) rotateY(-90deg);
-    background: #c2c0b2;
-}
-
-.crt-b-right {
-    width: 100px;
-    height: 540px;
-    transform: translate(-50%, -50%) translateX(350px) translateZ(-50px) rotateY(90deg);
-    background: #b0ae9f;
-}
-
-.crt-b-top {
-    width: 700px;
-    height: 100px;
-    transform: translate(-50%, -50%) translateY(-270px) translateZ(-50px) rotateX(90deg);
-    background: #e6e4d8;
-}
-
-.crt-b-bottom {
-    width: 700px;
-    height: 100px;
-    transform: translate(-50%, -50%) translateY(270px) translateZ(-50px) rotateX(-90deg);
-    background: #9e9c8d;
-    box-shadow: 0 40px 50px rgba(0, 0, 0, 0.6);
-}
-
-/* --- 2. KUTU: ORTA GÖVDE (660×500×200) --- */
-.crt-m-back {
-    width: 660px;
-    height: 500px;
-    transform: translate(-50%, -50%) translateZ(-300px) rotateY(180deg);
-    background: #c2c0b2;
-}
-
-.crt-m-left {
-    width: 200px;
-    height: 500px;
-    transform: translate(-50%, -50%) translateX(-330px) translateZ(-200px) rotateY(-90deg);
-    background: #b0ae9f;
-}
-
-.crt-m-right {
-    width: 200px;
-    height: 500px;
-    transform: translate(-50%, -50%) translateX(330px) translateZ(-200px) rotateY(90deg);
-    background: #9e9c8d;
-}
-
-.crt-m-top {
-    width: 660px;
-    height: 200px;
-    transform: translate(-50%, -50%) translateY(-250px) translateZ(-200px) rotateX(90deg);
-    background: #d6d4c6;
-}
-
-.crt-m-bottom {
-    width: 660px;
-    height: 200px;
-    transform: translate(-50%, -50%) translateY(250px) translateZ(-200px) rotateX(-90deg);
-    background: #8f8d7f;
-}
-
-/* --- 3. KUTU: ARKA TÜP (400×360×150) --- */
-.crt-t-back {
-    width: 400px;
-    height: 360px;
-    transform: translate(-50%, -50%) translateZ(-450px) rotateY(180deg);
-    background: #b0ae9f;
-    box-shadow: 0 80px 150px 80px rgba(0, 0, 0, 0.8);
-}
-
-.crt-t-left {
-    width: 150px;
-    height: 360px;
-    transform: translate(-50%, -50%) translateX(-200px) translateZ(-375px) rotateY(-90deg);
-    background: #9e9c8d;
-}
-
-.crt-t-right {
-    width: 150px;
-    height: 360px;
-    transform: translate(-50%, -50%) translateX(200px) translateZ(-375px) rotateY(90deg);
-    background: #8f8d7f;
-}
-
-.crt-t-top {
-    width: 400px;
-    height: 150px;
-    transform: translate(-50%, -50%) translateY(-180px) translateZ(-375px) rotateX(90deg);
-    background: #c2c0b2;
-}
-
-.crt-t-bottom {
-    width: 400px;
-    height: 150px;
-    transform: translate(-50%, -50%) translateY(180px) translateZ(-375px) rotateX(-90deg);
-    background: #7a786c;
-}
-
-/* --- Havalandırma Izgaraları --- */
-.crt-m-left::after,
-.crt-m-right::after {
-    content: '';
+/* ─── Zemin Gölgeleri ─── */
+.laptop-ground-shadow {
     position: absolute;
-    top: 80px;
-    left: 30px;
-    right: 30px;
-    height: 120px;
-    background: repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(0, 0, 0, 0.2) 8px, rgba(0, 0, 0, 0.2) 12px);
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    height: 16px;
+    background: rgba(0, 0, 0, 0.1);
+    filter: blur(24px);
+    border-radius: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.crt-m-left::before,
-.crt-m-right::before {
-    content: '';
+.laptop-ground-shadow-inner {
     position: absolute;
-    bottom: 80px;
-    left: 30px;
-    right: 30px;
-    height: 120px;
-    background: repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(0, 0, 0, 0.2) 8px, rgba(0, 0, 0, 0.2) 12px);
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 96%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.15);
+    filter: blur(16px);
+    border-radius: 100%;
+    pointer-events: none;
+    z-index: 0;
 }
 
-.crt-m-top::after {
-    content: '';
-    position: absolute;
-    top: 40px;
-    bottom: 40px;
-    left: 80px;
-    right: 80px;
-    background: repeating-linear-gradient(to right, transparent, transparent 10px, rgba(0, 0, 0, 0.15) 10px, rgba(0, 0, 0, 0.15) 14px);
-}
-
-.crt-t-back::before {
-    content: '';
-    position: absolute;
-    top: 180px;
-    left: 30px;
-    width: 140px;
-    height: 100px;
-    background: #e2e2e2;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    background-image: repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(0, 0, 0, 0.1) 8px, rgba(0, 0, 0, 0.1) 9px);
-    background-size: 100% 40px;
-    background-repeat: no-repeat;
-    background-position: 0 20px;
-}
-
-.crt-t-back::after {
-    content: '';
-    position: absolute;
-    bottom: 50px;
-    left: 200px;
-    right: 30px;
-    height: 80px;
-    background: repeating-linear-gradient(to bottom, transparent, transparent 8px, rgba(0, 0, 0, 0.2) 8px, rgba(0, 0, 0, 0.2) 12px);
-}
-
-/* --- EKRAN: Bezel ve Cam --- */
-.crt-bezel {
-    flex: 1;
-    background: #1a1b1e;
-    border-radius: 20px 20px 30px 30px;
-    padding: 20px;
-    box-shadow: inset 8px 8px 20px rgba(0, 0, 0, 1), inset -2px -2px 10px rgba(255, 255, 255, 0.1), 0 2px 2px rgba(255, 255, 255, 0.5);
-    position: relative;
-}
-
-.crt-glass {
+/* ─── Perspektif ─── */
+.laptop-perspective {
     width: 100%;
-    height: 100%;
-    background: #0b0d14;
-    border-radius: 50% / 5%;
+    position: relative;
+    z-index: 10;
+    perspective: 3000px;
+}
+
+/* ═══ EKRAN KAPAĞI (LID SHELL) ═══ */
+.laptop-lid-shell {
+    position: relative;
+    background: #000;
+    padding: 14px 16px 36px 16px;
+    border-radius: 20px 20px 8px 8px;
+    box-shadow:
+        0 -20px 50px rgba(0, 0, 0, 0.5),
+        0 20px 40px rgba(0, 0, 0, 0.3);
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    transition: all 1.8s cubic-bezier(0.25, 1, 0.5, 1);
+    transform-origin: bottom center;
+}
+
+/* ─── Kamera ─── */
+.laptop-camera {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #111;
+    border: 1px solid #222;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+}
+
+.laptop-camera-dot {
+    width: 2px;
+    height: 2px;
+    border-radius: 50%;
+    background: rgba(30, 58, 138, 0.5);
+    transition: all 1s ease;
+}
+
+.laptop-camera-dot.active {
+    background: #22c55e;
+    box-shadow: 0 0 4px #22c55e;
+}
+
+/* ─── İç Ekran ─── */
+.laptop-inner-screen {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: #111;
+    border-radius: 4px;
     overflow: hidden;
     position: relative;
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 1);
-    transform-origin: center center;
-    transition: opacity 0.5s, transform 0.5s, filter 0.5s;
+    z-index: 10;
+    border: 1px solid #1a1a1a;
 }
 
-.crt-glass.crt-on {
-    opacity: 1;
-    transform: scale(1, 1);
-    filter: brightness(1);
-    animation: crt-turn-on 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+/* ─── Cam Yansıması ─── */
+.laptop-glare {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 150%;
+    height: 150%;
+    background: linear-gradient(to bottom left, rgba(255, 255, 255, 0.05), transparent, transparent);
+    transform: rotate(-30deg);
+    transform-origin: top right;
+    pointer-events: none;
+    z-index: 50;
 }
 
-.crt-glass.crt-off {
-    opacity: 0;
-    transform: scale(1, 0.005);
-    filter: brightness(0);
-}
-
-/* CRT Efektleri */
-.crt-effects {
+/* ─── State Katmanları ─── */
+.laptop-state-layer {
     position: absolute;
     inset: 0;
-    z-index: 50;
+    transition: opacity 1s ease;
+    opacity: 0;
     pointer-events: none;
-    background:
-        linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
-        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-    background-size: 100% 2px, 3px 100%;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.5);
 }
 
-.crt-glare {
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+.laptop-state-layer.visible {
+    opacity: 1;
+}
+
+/* Siyah ekran */
+.laptop-screen-black {
+    background: #000;
+    z-index: 40;
+}
+
+/* Splash ekranı */
+.laptop-splash {
+    background: linear-gradient(to bottom, #1a1b26, #0f1015);
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.laptop-splash-title {
+    font-size: 36px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-style: italic;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.laptop-splash-sub {
+    color: #9ca3af;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-top: 6px;
+    opacity: 0.8;
+    animation: laptopPulse 2s ease-in-out infinite;
+}
+
+.laptop-splash-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid rgba(34, 197, 94, 0.15);
+    border-top-color: #22c55e;
     border-radius: 50%;
+    margin-top: 24px;
+    animation: laptopSpin 0.8s linear infinite;
+}
+
+/* Ana UI */
+.laptop-app-ui {
+    z-index: 20;
+    background: #505268;
+}
+
+.laptop-app-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1400px;
+    height: 875px;
+    transform-origin: top left;
+    transform: scale(0.333);
     pointer-events: none;
-    z-index: 51;
-    transform: skewX(-20deg);
 }
 
-/* Fiziksel buton */
-.crt-btn-physical {
-    box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.7), inset -1px -1px 2px rgba(0, 0, 0, 0.4);
-    cursor: pointer;
-    transition: all 0.1s ease;
+/* ─── Bezel Logo ─── */
+.laptop-bezel-logo {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
 }
 
-.crt-btn-physical:active {
-    transform: translateY(1px) scale(0.95);
-    box-shadow: inset 2px 2px 5px rgba(0, 0, 0, 0.6), inset -1px -1px 2px rgba(255, 255, 255, 0.2);
+/* ═══ LAPTOP BASE (Gümüş Alt Kasa) ═══ */
+.laptop-base-lip {
+    position: relative;
+    width: 101.5%;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 18px;
+    background: linear-gradient(to bottom, #e8e8e8, #cfcfcf 50%, #999);
+    border-radius: 0 0 16px 16px;
+    margin-top: -1px;
+    z-index: 20;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border-top: 1px solid rgba(255, 255, 255, 0.6);
+    overflow: hidden;
 }
 
-/* CRT açılış animasyonu */
-@keyframes crt-turn-on {
-    0% {
-        transform: scale(1, 0.005);
-        opacity: 0;
-        filter: brightness(0);
-    }
+.laptop-base-highlight {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.8);
+}
 
-    40% {
-        transform: scale(1, 0.005);
-        opacity: 1;
-        filter: brightness(10);
-    }
+.laptop-base-edge-left {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 32px;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.2), transparent);
+}
 
+.laptop-base-edge-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 32px;
+    height: 100%;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.2), transparent);
+}
+
+.laptop-trackpad-notch {
+    width: 80px;
+    height: 5px;
+    background: linear-gradient(to bottom, #b3b3b3, #888);
+    border-radius: 0 0 6px 6px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+    border-top: 1px solid #999;
+}
+
+/* ═══ ANİMASYONLAR ═══ */
+
+@keyframes laptopPulse {
+
+    0%,
     100% {
-        transform: scale(1, 1);
-        opacity: 1;
-        filter: brightness(1);
-    }
-}
-
-/* CRT giriş slide */
-@keyframes crt-slide-in {
-    0% {
-        transform: translateX(100vw);
-        opacity: 0;
-    }
-
-    100% {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-.crt-slide-in {
-    animation: crt-slide-in 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Flicker efekti */
-.crt-screen-content {
-    animation: crt-flicker 0.15s infinite;
-}
-
-@keyframes crt-flicker {
-    0% {
-        opacity: 0.97;
+        opacity: 0.6;
     }
 
     50% {
         opacity: 1;
-        filter: brightness(1.02);
+    }
+}
+
+@keyframes laptopSpin {
+    0% {
+        transform: rotate(0deg);
     }
 
     100% {
-        opacity: 0.98;
+        transform: rotate(360deg);
     }
 }

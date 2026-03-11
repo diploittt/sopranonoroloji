@@ -107,6 +107,9 @@ export function AnchorPopover({
     // Click Outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
+            // Don't close when interacting with native <select> dropdowns
+            const el = e.target as HTMLElement;
+            if (el.tagName === 'OPTION' || el.tagName === 'SELECT') return;
             if (
                 popoverRef.current &&
                 !popoverRef.current.contains(e.target as Node) &&
@@ -223,7 +226,7 @@ export function AnchorPopover({
                         <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(56,189,248,0.04)' }} />
                         <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(125,211,252,0.03)' }} />
 
-                        <div className="relative z-10 flex flex-col max-h-[400px]">
+                        <div className="relative z-10 flex flex-col max-h-[600px]">
                             {/* Header */}
                             {title && (
                                 <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/[0.05]">

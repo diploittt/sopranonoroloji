@@ -293,7 +293,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                 const ss = (room as any).state?.systemSettings;
                                 const welcomeMsg = ss?.welcomeMessage;
                                 if (welcomeMsg && welcomeMsg.trim()) return welcomeMsg;
-                                return roomName ? `${roomName} odasına hoş geldiniz` : t.chatStart;
+                                return roomName ? `${roomName} — ${t.welcomeToRoom}` : t.chatStart;
                             })()}
                         </span>
                         {/* Tarih + saat */}

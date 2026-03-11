@@ -408,504 +408,345 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
     }
 
     // ═══════════════════════════════════════════════════════════════════
-    // ANA GİRİŞ SAYFASI — Premium Dark Theme
+    // ANA GİRİŞ SAYFASI — Homepage Hesap Paneli Login Ekranı Klonu
     // ═══════════════════════════════════════════════════════════════════
     return (
-        <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'linear-gradient(135deg, #0a0f1a 0%, #0c1929 25%, #0e1f33 50%, #0c1929 75%, #0a0f1a 100%)' }}>
-            {/* Arka plan glow efektleri */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute top-1/4 left-1/3 w-[600px] h-[600px] rounded-full blur-[200px]" style={{ background: 'rgba(6,182,212,0.04)' }} />
-                <div className="absolute bottom-1/4 right-1/3 w-[500px] h-[500px] rounded-full blur-[180px]" style={{ background: 'rgba(99,102,241,0.05)' }} />
-            </div>
+        <>
+            <style>{`
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+                body { margin: 0; padding: 0; }
+                .login-wall {
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(180deg, #9ca3cc 0%, #adb5d8 30%, #c5cce8 60%, #dde3f3 100%);
 
-            <div className="w-full max-w-[420px] relative z-10">
-                {/* ─── Logo & Başlık ─────────────────────────────────── */}
-                <div className="text-center mb-8">
-                    {/* Tenant logo veya varsayılan SopranoChat logosu */}
-                    {tenantInfo?.logoUrl ? (
-                        <div className="mx-auto mb-4 flex items-center justify-center">
-                            <img
-                                src={tenantInfo.logoUrl}
-                                alt={tenantInfo.displayName || tenantInfo.name}
-                                className="max-h-20 max-w-[200px] object-contain"
-                                style={{ filter: 'drop-shadow(0 4px 12px rgba(184, 164, 124, 0.3))' }}
-                            />
+                    font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+                    padding: 40px 20px;
+                }
+                .login-frame {
+                    background-color: #7a7e9e;
+                    border: 16px solid rgba(255,255,255,0.88);
+                    box-shadow:
+                        0 0 30px rgba(0,0,0,0.2),
+                        0 0 60px rgba(0,0,0,0.08),
+                        -4px 0 15px rgba(0,0,0,0.12),
+                        4px 0 15px rgba(0,0,0,0.12);
+                    width: 100%;
+                    max-width: 520px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    position: relative;
+                    padding: 0 20px 36px;
+                    overflow: hidden;
+                }
+                .glossy-panel {
+                    background:
+                        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                        linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                    backdrop-filter: blur(24px);
+                    -webkit-backdrop-filter: blur(24px);
+                    border: 1px solid rgba(255,255,255,0.15);
+                    border-top: 1px solid rgba(255,255,255,0.35);
+                    border-left: 1px solid rgba(255,255,255,0.2);
+                    box-shadow:
+                        0 8px 32px rgba(0,0,0,0.4),
+                        0 2px 8px rgba(0,0,0,0.3),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
+                    border-radius: 22px;
+                    overflow: hidden;
+                }
+                .gallery-lamp-glow {
+                    position: relative;
+                    width: 300px;
+                    height: 90px;
+                    background: radial-gradient(ellipse at top center, rgba(255,210,120,0.22) 0%, rgba(255,180,80,0.08) 40%, transparent 70%);
+                    pointer-events: none;
+                    border-radius: 0 0 50% 50%;
+                    filter: blur(8px);
+                    z-index: 1;
+                    margin-top: -10px;
+                }
+                .input-inset { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(0,0,0,0.4); box-shadow: inset 0 3px 6px rgba(0,0,0,0.3); border-radius: 10px; color: #fff; transition: all 0.2s ease; font-family: inherit; }
+                .input-inset:focus { outline: none; background: rgba(0,0,0,0.3); border-color: #38bdf8; box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56, 189, 248, 0.2); }
+                .input-inset::placeholder { color: rgba(255,255,255,0.3); }
+                .btn-3d {
+                    position: relative;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    outline: none;
+                    cursor: pointer;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    transition: all 0.3s ease;
+                    overflow: hidden;
+                    font-family: inherit;
+                }
+                .btn-3d-blue { background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%); color: #bae6fd; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .btn-3d-blue:hover { background: linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(2,132,199,0.45) 100%); box-shadow: 0 6px 24px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.2); transform: translateY(-1px); }
+                .btn-3d-blue:active { transform: translateY(1px); }
+                .btn-3d-blue:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+                .btn-3d-red { background: linear-gradient(180deg, rgba(220,38,38,0.3) 0%, rgba(153,27,27,0.45) 100%); color: #fca5a5; box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px rgba(220,38,38,0.15), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.04); }
+                .btn-3d-red:hover { background: linear-gradient(180deg, rgba(220,38,38,0.4) 0%, rgba(153,27,27,0.55) 100%); box-shadow: 0 6px 24px rgba(220,38,38,0.25), 0 0 18px rgba(220,38,38,0.2); transform: translateY(-1px); }
+                .btn-3d-red:active { transform: translateY(1px); }
+                .btn-3d-red:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+                .btn-3d-green { background: linear-gradient(180deg, rgba(52,211,153,0.25) 0%, rgba(5,150,105,0.35) 100%); color: #a7f3d0; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .btn-3d-green:hover { background: linear-gradient(180deg, rgba(52,211,153,0.35) 0%, rgba(5,150,105,0.45) 100%); transform: translateY(-1px); }
+                .btn-3d-green:active { transform: translateY(1px); }
+                .btn-3d-green:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+                .retro-logo-text {
+                    font-family: 'Cooper Black', 'Arial Rounded MT Bold', serif;
+                    font-weight: 900;
+                    letter-spacing: 0.5px;
+                    transform: scaleY(1.05);
+                    display: inline-flex;
+                    gap: 0px;
+                    position: relative;
+                    font-size: 44px;
+                    line-height: 1;
+                }
+                .retro-logo-soprano {
+                    font-size: 44px;
+                    background: linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+                }
+                .retro-logo-chat {
+                    font-size: 44px;
+                    background: linear-gradient(180deg, #b8f0f0 0%, #5ec8c8 30%, #3a9e9e 65%, #4db0a8 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(20,80,70,0.5));
+                    animation: logoGlow 3s ease-in-out infinite;
+                }
+                @keyframes logoGlow {
+                    0%, 100% { filter: drop-shadow(0 0 2px rgba(120,200,200,0)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                    50% { filter: drop-shadow(0 0 8px rgba(120,200,200,0.3)) drop-shadow(0 0 20px rgba(120,200,200,0.1)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                }
+                @keyframes lampSlideDown {
+                    0% { opacity: 0; transform: translateY(-100%); }
+                    40% { opacity: 1; }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                @keyframes glowLightUp {
+                    0% { opacity: 0; transform: scale(0.7); }
+                    100% { opacity: 1; transform: scale(1); }
+                }
+            `}</style>
+
+            <div className="login-wall">
+                <div className="login-frame">
+
+                    {/* ═══ Galeri Lambası — Çerçeve üst border'unun altından sarkan ═══ */}
+                    <div style={{ position: 'relative', width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: -14, marginBottom: 0, zIndex: 3, animation: 'lampSlideDown 1.2s cubic-bezier(0.22, 0.61, 0.36, 1) 0.3s both' }}>
+                        <svg width="300" height="52" viewBox="0 0 300 52" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))' }}>
+                            <defs>
+                                <linearGradient id="glBarMetal" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                </linearGradient>
+                                <linearGradient id="glMountPlate" x1="150" y1="0" x2="150" y2="14" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                </linearGradient>
+                                <linearGradient id="glArmMetal" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                </linearGradient>
+                                <linearGradient id="glLightSpread" x1="150" y1="44" x2="150" y2="52" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                </linearGradient>
+                                <linearGradient id="glLedStrip" x1="50" y1="43" x2="250" y2="43" gradientUnits="userSpaceOnUse">
+                                    <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                </linearGradient>
+                            </defs>
+                            <path d="M58 44 L35 52 L265 52 L242 44 Z" fill="url(#glLightSpread)" opacity="0.5" />
+                            <rect x="135" y="0" width="30" height="10" rx="2" fill="url(#glMountPlate)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                            <rect x="138" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                            <line x1="142" y1="10" x2="115" y2="30" stroke="url(#glArmMetal)" strokeWidth="3" strokeLinecap="round" />
+                            <line x1="142.5" y1="10.5" x2="115.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                            <line x1="158" y1="10" x2="185" y2="30" stroke="url(#glArmMetal)" strokeWidth="3" strokeLinecap="round" />
+                            <line x1="157.5" y1="10.5" x2="184.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                            <rect x="48" y="30" width="204" height="14" rx="7" fill="url(#glBarMetal)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                            <rect x="58" y="32" width="184" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                            <rect x="58" y="42" width="184" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                            <rect x="55" y="43.5" width="190" height="1.5" rx="0.75" fill="url(#glLedStrip)" />
+                            <circle cx="115" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="115" cy="34" r="1" fill="#555" />
+                            <circle cx="185" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="185" cy="34" r="1" fill="#555" />
+                        </svg>
+                        <div style={{ width: 280, height: 110, margin: '-8px auto 0', opacity: 0, animation: 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 1.5s forwards', background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%)', pointerEvents: 'none', borderRadius: '0 0 50% 50%', filter: 'blur(8px)', zIndex: 1 }} />
+                    </div>
+
+                    {/* ═══ Logo — Homepage sol üst ile birebir aynı ═══ */}
+                    <div style={{ textAlign: 'center', marginBottom: 16, position: 'relative', zIndex: 2 }}>
+                        {tenantInfo?.logoUrl ? (
+                            <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 56, maxWidth: 200, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
+                        ) : (
+                            <h1 className="retro-logo-text" style={{ margin: 0 }}>
+                                <span className="retro-logo-soprano">Soprano</span>
+                                <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                    <span className="retro-logo-chat">Chat</span>
+                                    <span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span>
+                                </span>
+                            </h1>
+                        )}
+                        {tenantInfo?.displayName && (
+                            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#334155', marginTop: 4, marginBottom: 0, letterSpacing: 0.5 }}>{tenantInfo.displayName}</h2>
+                        )}
+                    </div>
+
+                    {/* ═══ Glossy Login Panel — Homepage ile birebir aynı ═══ */}
+                    <div className="glossy-panel" style={{ width: 'calc(100% - 40px)', padding: '12px 14px', position: 'relative', zIndex: 2 }}>
+                        {/* Üst Başlık */}
+                        <h3 style={{ fontSize: 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)', marginTop: 0 }}>
+                            <User style={{ width: 18, height: 18, color: '#38bdf8' }} /> Hesap Paneli
+                        </h3>
+
+                        {/* Sekmeler — Homepage ile birebir aynı */}
+                        <div style={{ display: 'flex', marginBottom: 12, borderRadius: 10, overflow: 'hidden', gap: 8 }}>
+                            <button
+                                onClick={() => setLoginMode('guest')}
+                                style={{
+                                    flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                                    textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                    borderRadius: 8,
+                                    background: loginMode === 'guest' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'rgba(0,0,0,0.25)',
+                                    color: loginMode === 'guest' ? '#7dd3fc' : 'rgba(255,255,255,0.35)',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: loginMode === 'guest' ? '0 0 16px rgba(56,189,248,0.3), 0 0 4px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                                    fontFamily: 'inherit',
+                                }}
+                            >👤 Misafir</button>
+                            <button
+                                onClick={() => setLoginMode('member')}
+                                style={{
+                                    flex: 1, padding: '8px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1.5,
+                                    textTransform: 'uppercase', border: 'none', cursor: 'pointer',
+                                    borderRadius: 8,
+                                    background: loginMode === 'member' ? 'linear-gradient(180deg, rgba(239,68,68,0.3), rgba(185,28,28,0.4))' : 'rgba(0,0,0,0.25)',
+                                    color: loginMode === 'member' ? '#fca5a5' : 'rgba(255,255,255,0.35)',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: loginMode === 'member' ? '0 0 16px rgba(239,68,68,0.3), 0 0 4px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'inset 0 1px 0 rgba(255,255,255,0.05)',
+                                    fontFamily: 'inherit',
+                                }}
+                            >⭐ Üye Giriş</button>
                         </div>
-                    ) : (
-                        <div className="mx-auto mb-4 flex items-center justify-center">
-                            {/* ── Default CINEMATIC WORDMARK LOGO (aynı chat odasındaki) ── */}
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '8px 0 0 0', overflow: 'visible', transform: 'scale(1.15)' }}>
-                                <style>{`
-                                @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&display=swap');
-                                @keyframes wmFlowLight { 0% { background-position: 150% 0; } 100% { background-position: -150% 0; } }
-                                @keyframes wmNeonFlicker { 0%, 100% { opacity: 0.8; } 50% { opacity: 1; transform: scale(1.02); } }
-                                @keyframes wmRecPulse { 0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(0.9); } 50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); } }
-                                @keyframes wmLensSweep { 0% { transform: translate(-10%, -10%) rotate(0deg); } 100% { transform: translate(10%, 10%) rotate(20deg); } }
-                                @keyframes wmWaveRipple { 0% { transform: scaleY(0.3); opacity: 0; } 20% { opacity: 0.8; transform: scaleY(1.3); } 100% { transform: scaleY(0.4); opacity: 0; } }
-                                @keyframes wmShimmer { 0% { background-position: 150% 0, 0 0; } 100% { background-position: -150% 0, 0 0; } }
-                                `}</style>
-                                {/* Grunge doku filtresi */}
-                                <svg style={{ position: 'absolute', width: 0, height: 0 }}>
-                                    <filter id="grungeFilterLogin">
-                                        <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" result="noise" />
-                                        <feDisplacementMap in="SourceGraphic" in2="noise" scale="1.5" xChannelSelector="R" yChannelSelector="G" />
-                                        <feComposite in="SourceGraphic" in2="noise" operator="out" />
-                                    </filter>
-                                </svg>
-                                <div style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '100%',
-                                    gap: 3,
-                                }}>
-                                    {/* Sol Ses Dalgaları */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexDirection: 'row-reverse', flexShrink: 0 }}>
-                                        {[10, 18, 28, 20, 12].map((h, i) => (
-                                            <div key={`wl${i}`} style={{
-                                                width: 3, height: h, borderRadius: 10,
-                                                background: 'linear-gradient(to top, #ff3344, #ff6655)',
-                                                boxShadow: '0 0 8px rgba(255, 51, 68, 0.4)',
-                                                opacity: 0, animation: `wmWaveRipple 3s ${i * 0.15}s infinite ease-in-out`,
-                                            }} />
-                                        ))}
-                                    </div>
 
-                                    {/* Wordmark Grubu */}
-                                    <div style={{
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))',
-                                        flexShrink: 0,
-                                    }}>
-                                        {/* S */}
-                                        <span style={{
-                                            fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 52, lineHeight: 1,
-                                            letterSpacing: '0.02em',
-                                            background: 'linear-gradient(180deg, #ffffff 0%, #ff3344 50%, #cc2222 100%)',
-                                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                                            backgroundClip: 'text', marginRight: -2,
-                                            filter: 'url(#grungeFilterLogin) drop-shadow(0 0 8px rgba(255,51,68,0.3))',
-                                        }}>S</span>
-
-                                        {/* opran */}
-                                        <span style={{
-                                            fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 34, lineHeight: 1,
-                                            letterSpacing: '0.02em',
-                                            background: 'linear-gradient(180deg, #ffffff 0%, #ff3344 50%, #cc2222 100%)',
-                                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                                            backgroundClip: 'text',
-                                            filter: 'url(#grungeFilterLogin) drop-shadow(0 0 6px rgba(255,51,68,0.25))',
-                                        }}>opran</span>
-
-                                        {/* O = Kamera Lensi */}
-                                        <svg viewBox="0 0 34 34" width="34" height="34" style={{ margin: '0 -1px', flexShrink: 0, filter: 'drop-shadow(0 0 6px rgba(255,51,68,0.25))', transform: 'translateY(1px)' }}>
-                                            <defs>
-                                                <linearGradient id="lensRingGradLogin" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="rgba(255,255,255,0.8)" />
-                                                    <stop offset="50%" stopColor="rgba(255,51,68,0.75)" />
-                                                    <stop offset="100%" stopColor="rgba(204,34,34,0.55)" />
-                                                </linearGradient>
-                                                <linearGradient id="lensInnerGradLogin" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="0%" stopColor="rgba(255,255,255,0.45)" />
-                                                    <stop offset="50%" stopColor="rgba(255,51,68,0.55)" />
-                                                    <stop offset="100%" stopColor="rgba(170,17,17,0.45)" />
-                                                </linearGradient>
-                                                <radialGradient id="lensGlassLogin" cx="40%" cy="30%" r="60%">
-                                                    <stop offset="0%" stopColor="rgba(255,255,255,0.2)" />
-                                                    <stop offset="100%" stopColor="rgba(255,255,255,0)" />
-                                                </radialGradient>
-                                            </defs>
-                                            <circle cx="17" cy="17" r="15.5" fill="none" stroke="url(#lensRingGradLogin)" strokeWidth="2.5" />
-                                            <circle cx="17" cy="17" r="13" fill="#120808" stroke="url(#lensInnerGradLogin)" strokeWidth="1.2" />
-                                            <circle cx="17" cy="17" r="9.5" fill="#0e0505" stroke="url(#lensRingGradLogin)" strokeWidth="1.4" opacity="0.85" />
-                                            <circle cx="17" cy="17" r="6" fill="#0a0303" stroke="url(#lensInnerGradLogin)" strokeWidth="1" opacity="0.75" />
-                                            <circle cx="17" cy="17" r="3" fill="#1f0808" />
-                                            <circle cx="13" cy="13" r="2.2" fill="rgba(255,220,220,0.22)" />
-                                            <circle cx="14" cy="14" r="0.8" fill="rgba(255,255,255,0.45)" />
-                                            <circle cx="17" cy="17" r="1.5" fill="#7b9fef">
-                                                <animate attributeName="opacity" values="0.5;1;0.5" dur="2s" repeatCount="indefinite" />
-                                                <animate attributeName="r" values="1.5;2.5;1.5" dur="2s" repeatCount="indefinite" />
-                                            </circle>
-                                            <ellipse cx="14" cy="12" rx="8" ry="5" fill="url(#lensGlassLogin)" />
-                                            <path d="M 10 12 Q 17 8, 24 12" fill="none" stroke="rgba(255,200,200,0.08)" strokeWidth="0.6" />
-                                        </svg>
-
-                                        {/* Boşluk */}
-                                        <span style={{ width: 2, flexShrink: 0 }} />
-
-                                        {/* C */}
-                                        <span style={{
-                                            fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 52, lineHeight: 1,
-                                            letterSpacing: '0.01em',
-                                            background: 'linear-gradient(180deg, #ffffff 0%, #7b9fef 50%, #4a6bc9 100%)',
-                                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                                            backgroundClip: 'text', marginRight: -2,
-                                            filter: 'url(#grungeFilterLogin) drop-shadow(0 0 8px rgba(99,133,209,0.35))',
-                                        }}>C</span>
-                                        {/* ha */}
-                                        <span style={{
-                                            fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 34, lineHeight: 1,
-                                            letterSpacing: '0.01em',
-                                            background: 'linear-gradient(180deg, #ffffff 0%, #7b9fef 50%, #4a6bc9 100%)',
-                                            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                                            backgroundClip: 'text',
-                                            filter: 'url(#grungeFilterLogin) drop-shadow(0 0 6px rgba(99,133,209,0.3))',
-                                        }}>ha</span>
-
-                                        {/* T = Mikrofon */}
-                                        <div style={{
-                                            display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-                                            marginLeft: 0, transform: 'translateY(-1px)', flexShrink: 0,
-                                        }}>
-                                            <div style={{
-                                                width: 18, height: 26,
-                                                background: 'linear-gradient(180deg, #555 0%, #222 50%, #111 100%)',
-                                                border: '1.8px solid #7b9fef', borderRadius: 9,
-                                                boxShadow: '0 0 10px rgba(99,133,209,0.45), inset 0 1px 0 rgba(255,255,255,0.1)',
-                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                overflow: 'hidden',
-                                            }}>
-                                                <div style={{
-                                                    width: '100%', height: '100%',
-                                                    backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px)',
-                                                    backgroundSize: '3px 3px',
-                                                }} />
-                                            </div>
-                                            <div style={{
-                                                width: 22, height: 3, marginTop: -1,
-                                                background: 'linear-gradient(to bottom, #7b9fef, #2a3d6b)',
-                                                borderRadius: 2,
-                                            }} />
-                                            <div style={{
-                                                width: 3, height: 18,
-                                                background: 'linear-gradient(to bottom, #444, #222, #111)',
-                                                borderRadius: 2,
-                                                border: '0.5px solid rgba(123,159,239,0.5)',
-                                                boxShadow: '0 0 5px rgba(123,159,239,0.35)',
-                                            }} />
-                                        </div>
-                                    </div>
-
-                                    {/* Sağ Ses Dalgaları */}
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 }}>
-                                        {[8, 16, 28, 22, 14].map((h, i) => (
-                                            <div key={`wr${i}`} style={{
-                                                width: 3, height: h, borderRadius: 10,
-                                                background: 'linear-gradient(to top, #7b9fef, #a3bfff)',
-                                                boxShadow: '0 0 8px rgba(123,159,239,0.5)',
-                                                opacity: 0, animation: `wmWaveRipple 3s ${i * 0.15}s infinite ease-in-out`,
-                                            }} />
+                        {/* ═══ MİSAFİR GİRİŞİ ═══ */}
+                        {loginMode === 'guest' && (
+                            <form onSubmit={handleGuestLogin} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                <div>
+                                    <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
+                                    <input
+                                        type="text"
+                                        value={formData.guestName}
+                                        onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
+                                        className="input-inset"
+                                        style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }}
+                                        placeholder="Nickname girin..."
+                                        autoComplete="off"
+                                    />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                    <div style={{ display: 'flex', gap: 6 }}>
+                                        {(['Male', 'Female'] as const).map(g => (
+                                            <button key={g} type="button" onClick={() => setFormData({ ...formData, gender: g })} style={{
+                                                flex: 1, padding: '7px 0', fontSize: 10, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease', fontFamily: 'inherit',
+                                                background: formData.gender === g ? (g === 'Male' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))') : 'rgba(0,0,0,0.2)',
+                                                color: formData.gender === g ? (g === 'Male' ? '#7dd3fc' : '#f9a8d4') : 'rgba(255,255,255,0.35)',
+                                                boxShadow: formData.gender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                            }}>{g === 'Male' ? '♂ Erkek' : '♀ Kadın'}</button>
                                         ))}
                                     </div>
                                 </div>
-
-                                {/* Slogan */}
-                                <span style={{
-                                    fontFamily: "'Outfit', sans-serif", fontWeight: 800, fontSize: 10, lineHeight: 1,
-                                    letterSpacing: '0.3em', textTransform: 'uppercase' as const,
-                                    background: 'linear-gradient(180deg, #e0e0e0 0%, #7b9fef 50%, #4a6bc9 100%)',
-                                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text', marginTop: 4,
-                                    filter: 'drop-shadow(0 0 6px rgba(123,159,239,0.5))',
-                                }}>
-                                    Senin Sesin
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                    {tenantInfo?.displayName && (
-                        <h1 className="text-2xl font-extrabold text-white tracking-tight mb-1" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                            <span style={{ color: '#cc2222' }}>{tenantInfo.displayName}</span>
-                        </h1>
-                    )}
-                    <h2 className="text-lg font-bold text-white mb-1">Sisteme Giriş Yap</h2>
-                    <p className="text-sm text-gray-500">Premium sohbete katılmak için devam et</p>
-                </div>
-
-                {/* ─── Ana Kart ───────────────────────────────────────── */}
-                <div className="rounded-2xl border shadow-2xl backdrop-blur-sm" style={{ background: 'linear-gradient(180deg, rgba(15,25,41,0.95) 0%, rgba(10,15,26,0.98) 100%)', borderColor: 'rgba(6,182,212,0.15)', boxShadow: '0 25px 60px -12px rgba(6,182,212,0.15), 0 0 0 1px rgba(6,182,212,0.05)' }}>
-
-                    {/* Sekme Başlıkları */}
-                    <div className="flex border-b" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-                        <button
-                            onClick={() => setLoginMode('member')}
-                            className={`flex-1 py-4 text-xs font-bold tracking-widest uppercase transition-all duration-200 relative ${loginMode === 'member' || loginMode === 'register'
-                                ? 'text-[#06b6d4]'
-                                : 'text-gray-600 hover:text-gray-400'
-                                }`}
-                        >
-                            ÜYE GİRİŞİ
-                            {(loginMode === 'member' || loginMode === 'register') && (
-                                <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full" style={{ background: 'linear-gradient(90deg, transparent, #06b6d4, transparent)' }} />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setLoginMode('guest')}
-                            className={`flex-1 py-4 text-xs font-bold tracking-widest uppercase transition-all duration-200 relative ${loginMode === 'guest'
-                                ? 'text-[#06b6d4]'
-                                : 'text-gray-600 hover:text-gray-400'
-                                }`}
-                        >
-                            MİSAFİR KATILIMI
-                            {loginMode === 'guest' && (
-                                <div className="absolute bottom-0 left-1/4 right-1/4 h-[2px] rounded-full" style={{ background: 'linear-gradient(90deg, transparent, #06b6d4, transparent)' }} />
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Form İçeriği */}
-                    <div className="p-6 pt-5">
-
-                        {/* Hata Mesajı */}
-                        {error && (
-                            <div className="mb-4 p-3 rounded-xl text-red-400 text-sm text-center" style={{ background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.15)' }}>
-                                {error}
-                            </div>
+                                <TermsCheckbox />
+                                {error && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: 0 }}>{error}</p>}
+                                <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={isSubmitting || !formData.guestName.trim() || !formData.gender || !termsAccepted}>
+                                    <LogIn style={{ width: 14, height: 14 }} /> {isSubmitting ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
+                                </button>
+                            </form>
                         )}
 
                         {/* ═══ ÜYE GİRİŞİ ═══ */}
                         {loginMode === 'member' && (
-                            <form onSubmit={handleMemberLogin} className="space-y-4">
-                                <div>
-                                    <label className="text-[11px] text-[#06b6d4] mb-2 block font-semibold tracking-wider uppercase">Kullanıcı Adı veya E-Posta</label>
-                                    <div className="relative">
-                                        <User className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type="text"
-                                            value={formData.email}
-                                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                            placeholder="kullanıcı adı veya e-posta"
-                                            className="w-full rounded-xl pl-11 pr-4 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#151b27', border: '1px solid #2a3344' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(6, 182, 212, 0.45)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a3344'}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <label className="text-[11px] text-[#06b6d4] font-semibold tracking-wider uppercase">Şifre</label>
-                                        <button type="button" className="text-[11px] text-[#06b6d4] hover:text-[#67e8f9] font-semibold transition-colors">Şifremi Unuttum?</button>
-                                    </div>
-                                    <div className="relative">
-                                        <Lock className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={formData.password}
-                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder="••••••••"
-                                            className="w-full rounded-xl pl-11 pr-12 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#151b27', border: '1px solid #2a3344' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(6, 182, 212, 0.45)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a3344'}
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-3.5 text-gray-600 hover:text-gray-400 transition"
-                                        >
-                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                            <div style={{ position: 'relative', overflow: 'hidden' }}>
+                                {/* Login / Register geçiş container */}
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                                        <div>
+                                            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı veya E-posta</label>
+                                            <input type="text" value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="one-time-code" />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
+                                            <input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="one-time-code" />
+                                        </div>
+                                        {error && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, margin: 0 }}>{error}</p>}
+                                        <button onClick={handleMemberLogin} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={isSubmitting}>
+                                            <LogIn style={{ width: 14, height: 14 }} /> {isSubmitting ? 'Giriş yapılıyor...' : 'Üye Girişi'}
+                                        </button>
+                                        <button type="button" onClick={() => setLoginMode('register')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '4px 0', transition: 'color 0.2s', fontFamily: 'inherit' }}>
+                                            Hesabın yok mu? <span style={{ color: '#fca5a5', fontWeight: 700 }}>Üye Ol</span>
                                         </button>
                                     </div>
                                 </div>
-
-                                {/* Beni Hatırla */}
-                                <label className="flex items-center gap-2.5 cursor-pointer group select-none">
-                                    <div className="relative flex-shrink-0">
-                                        <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="sr-only" />
-                                        <div className={`w-[16px] h-[16px] rounded border-2 transition-all duration-200 flex items-center justify-center ${rememberMe
-                                            ? 'bg-[#06b6d4] border-[#06b6d4]'
-                                            : 'bg-transparent border-[#2a3344] group-hover:border-[#3a4555]'
-                                            }`}>
-                                            {rememberMe && (
-                                                <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6L5 9L10 3" stroke="#0f1419" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <span className="text-xs text-gray-500 group-hover:text-gray-400 transition-colors">Beni Hatırla</span>
-                                </label>
-
-
-
-                                {/* Giriş Butonu */}
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting}
-                                    className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                                    style={{ background: 'linear-gradient(135deg, #06b6d4, #0891b2)', color: '#fff', boxShadow: '0 8px 24px rgba(6, 182, 212, 0.3)' }}
-                                >
-                                    {isSubmitting ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <>GİRİŞ YAP <LogIn className="w-4 h-4" /></>
-                                    )}
-                                </button>
-
-
-
-                                {/* Alt Linkler */}
-                                <div className="text-center pt-1">
-                                    <span className="text-xs text-gray-600">Hesabınız yok mu? </span>
-                                    <button type="button" onClick={() => setLoginMode('register')} className="text-xs font-bold text-[#06b6d4] hover:text-[#67e8f9] transition-colors">
-                                        Yeni Hesap Oluştur
-                                    </button>
-                                </div>
-                            </form>
-                        )}
-
-                        {/* ═══ MİSAFİR GİRİŞİ ═══ */}
-                        {loginMode === 'guest' && (
-                            <form onSubmit={handleGuestLogin} className="space-y-4">
-                                <div>
-                                    <label className="text-[11px] text-[#06b6d4] mb-2 block font-semibold tracking-wider uppercase">Takma Adınız</label>
-                                    <div className="relative">
-                                        <User className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type="text"
-                                            value={formData.guestName}
-                                            onChange={(e) => setFormData({ ...formData, guestName: e.target.value })}
-                                            placeholder="Bir isim girin"
-                                            className="w-full rounded-xl pl-11 pr-4 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#0a0a1a', border: '1px solid #2a2a3a' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(184, 164, 124, 0.4)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a2a3a'}
-                                            maxLength={24}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <GenderSelector value={formData.gender} onChange={(g) => setFormData({ ...formData, gender: g })} />
-                                <TermsCheckbox />
-
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting || formData.guestName.trim().length < 2 || !formData.gender || !termsAccepted}
-                                    className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                                    style={{ background: 'linear-gradient(135deg, #cc2222, #991111)', color: '#fff', boxShadow: '0 8px 24px rgba(204, 34, 34, 0.3)' }}
-                                >
-                                    {isSubmitting ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <>MİSAFİR OLARAK GİR <ArrowRight className="w-4 h-4" /></>
-                                    )}
-                                </button>
-                            </form>
+                            </div>
                         )}
 
                         {/* ═══ KAYIT FORMU ═══ */}
                         {loginMode === 'register' && (
-                            <form onSubmit={handleRegister} className="space-y-4">
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                <h4 style={{ fontSize: 12, fontWeight: 800, color: '#fca5a5', textTransform: 'uppercase', letterSpacing: 2, textAlign: 'center', marginBottom: 4, marginTop: 0 }}>✨ Yeni Üyelik</h4>
                                 <div>
-                                    <label className="text-[11px] text-[#06b6d4] mb-2 block font-semibold tracking-wider uppercase">Kullanıcı Adı</label>
-                                    <div className="relative">
-                                        <User className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type="text"
-                                            value={formData.regUsername}
-                                            onChange={(e) => setFormData({ ...formData, regUsername: e.target.value })}
-                                            placeholder="Kullanıcı adınız"
-                                            className="w-full rounded-xl pl-11 pr-4 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#0a0a1a', border: '1px solid #2a2a3a' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(184, 164, 124, 0.4)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a2a3a'}
-                                            maxLength={24}
-                                            required
-                                        />
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Kullanıcı Adı</label>
+                                    <input type="text" value={formData.regUsername} onChange={(e) => setFormData({ ...formData, regUsername: e.target.value })} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Kullanıcı adınız" autoComplete="off" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>E-posta</label>
+                                    <input type="email" value={formData.regEmail} onChange={(e) => setFormData({ ...formData, regEmail: e.target.value })} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="one-time-code" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre</label>
+                                    <input type="password" value={formData.regPassword} onChange={(e) => setFormData({ ...formData, regPassword: e.target.value })} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 4 karakter" autoComplete="one-time-code" />
+                                </div>
+                                <div>
+                                    <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
+                                    <div style={{ display: 'flex', gap: 6 }}>
+                                        {(['Male', 'Female'] as const).map(g => (
+                                            <button key={g} type="button" onClick={() => setFormData({ ...formData, regGender: g })} style={{
+                                                flex: 1, padding: '7px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1, border: 'none', borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase', transition: 'all 0.25s ease', fontFamily: 'inherit',
+                                                background: formData.regGender === g ? (g === 'Male' ? 'linear-gradient(180deg, rgba(56,189,248,0.3), rgba(2,132,199,0.4))' : 'linear-gradient(180deg, rgba(244,114,182,0.3), rgba(219,39,119,0.4))') : 'rgba(0,0,0,0.2)',
+                                                color: formData.regGender === g ? (g === 'Male' ? '#7dd3fc' : '#f9a8d4') : 'rgba(255,255,255,0.35)',
+                                                boxShadow: formData.regGender === g ? 'inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05)' : 'none',
+                                            }}>{g === 'Male' ? '♂ Erkek' : '♀ Kadın'}</button>
+                                        ))}
                                     </div>
                                 </div>
-
-                                <div>
-                                    <label className="text-[11px] text-[#06b6d4] mb-2 block font-semibold tracking-wider uppercase">E-Posta Adresi</label>
-                                    <div className="relative">
-                                        <Mail className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type="email"
-                                            value={formData.regEmail}
-                                            onChange={(e) => setFormData({ ...formData, regEmail: e.target.value })}
-                                            placeholder="mail@ornek.com"
-                                            className="w-full rounded-xl pl-11 pr-4 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#0a0a1a', border: '1px solid #2a2a3a' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(184, 164, 124, 0.4)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a2a3a'}
-                                            required
-                                        />
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-[11px] text-[#06b6d4] mb-2 block font-semibold tracking-wider uppercase">Şifre</label>
-                                    <div className="relative">
-                                        <Lock className="w-4 h-4 text-gray-600 absolute left-4 top-3.5" />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            value={formData.regPassword}
-                                            onChange={(e) => setFormData({ ...formData, regPassword: e.target.value })}
-                                            placeholder="En az 4 karakter"
-                                            className="w-full rounded-xl pl-11 pr-12 py-3.5 text-white text-sm outline-none transition-colors placeholder:text-gray-600"
-                                            style={{ background: '#0a0a1a', border: '1px solid #2a2a3a' }}
-                                            onFocus={(e) => e.target.style.borderColor = 'rgba(184, 164, 124, 0.4)'}
-                                            onBlur={(e) => e.target.style.borderColor = '#2a2a3a'}
-                                            minLength={4}
-                                            required
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-4 top-3.5 text-gray-600 hover:text-gray-400 transition"
-                                        >
-                                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <GenderSelector value={formData.regGender} onChange={(g) => setFormData({ ...formData, regGender: g })} />
                                 <TermsCheckbox />
-
-                                <button
-                                    type="submit"
-                                    disabled={isSubmitting || formData.regUsername.trim().length < 2 || !formData.regGender || !termsAccepted}
-                                    className="w-full py-3.5 rounded-xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
-                                    style={{ background: 'linear-gradient(135deg, #cc2222, #991111)', color: '#fff', boxShadow: '0 8px 24px rgba(204, 34, 34, 0.3)' }}
-                                >
-                                    {isSubmitting ? (
-                                        <Loader2 className="w-4 h-4 animate-spin" />
-                                    ) : (
-                                        <>ÜYE OL VE GİRİŞ YAP <UserPlus className="w-4 h-4" /></>
-                                    )}
+                                {error && <p style={{ fontSize: 11, color: '#ef4444', fontWeight: 600, margin: 0 }}>{error}</p>}
+                                <button onClick={handleRegister} className="btn-3d btn-3d-red" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={isSubmitting || !formData.regUsername.trim() || !formData.regPassword || !formData.regGender || !termsAccepted}>
+                                    <UserPlus style={{ width: 14, height: 14 }} /> {isSubmitting ? 'Kayıt yapılıyor...' : 'Üye Ol'}
                                 </button>
-
-                                <div className="text-center pt-1">
-                                    <span className="text-xs text-gray-600">Zaten üye misin? </span>
-                                    <button type="button" onClick={() => setLoginMode('member')} className="text-xs font-bold text-[#06b6d4] hover:text-[#67e8f9] transition-colors">
-                                        Giriş Yap
-                                    </button>
-                                </div>
-                            </form>
+                                <button type="button" onClick={() => setLoginMode('member')} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#94a3b8', fontWeight: 600, padding: '2px 0', transition: 'color 0.2s', fontFamily: 'inherit' }}>
+                                    ← Giriş ekranına dön
+                                </button>
+                            </div>
                         )}
                     </div>
-                </div>
 
-                {/* Ana Sayfaya Dön */}
-                <div className="text-center mt-5">
-                    <button
-                        onClick={() => router.push('/')}
-                        className="text-xs text-gray-600 hover:text-gray-400 transition-colors flex items-center justify-center gap-1 mx-auto"
-                    >
-                        <ChevronLeft className="w-3.5 h-3.5" />
-                        Ana Sayfaya Dön
-                    </button>
+                    {/* Alt bilgi */}
+                    <p style={{ marginTop: 20, fontSize: 11, color: '#1e293b', textAlign: 'center', fontWeight: 500, letterSpacing: 0.5 }}>
+                        Powered by <span style={{ color: '#0f172a', fontWeight: 700 }}>SopranoChat</span>
+                    </p>
                 </div>
-
-                {/* Footer */}
-                <p className="text-center text-[11px] text-gray-700 mt-4">
-                    Powered by <span className="font-medium" style={{ color: '#06b6d4' }}>SopranoChat</span>
-                </p>
             </div>
-        </div>
+        </>
     );
 }

@@ -227,30 +227,35 @@ export function RoomMonitorModal({
         ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
     const content = (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose} style={centered ? {} : { display: 'block' }}>
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+        <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4" onClick={onClose} style={centered ? { paddingTop: '10vh' } : { display: 'block' }}>
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)' }} />
 
             <div
                 ref={modalRef}
-                className="glossy-panel relative w-full max-w-2xl max-h-[70vh] animate-pure-fade flex flex-col"
+                className="relative w-full max-w-2xl max-h-[70vh] animate-pure-fade flex flex-col"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
                     borderRadius: 16,
                     padding: 0,
                     overflow: 'hidden',
+                    background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
+                    backdropFilter: 'blur(28px) saturate(130%)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                    border: '1px solid rgba(255,255,255,0.65)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
                 }}
             >
                 {/* Header — kompakt */}
                 <div
                     className="flex items-center justify-between px-4 py-2.5"
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(255,255,255,0.08)' }}
+                    style={{ cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(148,163,184,0.15)', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
                 >
                     <div className="flex items-center gap-2.5">
                         <span style={{ fontSize: 16 }}>📡</span>
                         <div>
-                            <h2 style={{ fontSize: 13, fontWeight: 800, color: '#fff', margin: 0 }}>Oda Monitör</h2>
+                            <h2 style={{ fontSize: 13, fontWeight: 800, color: '#fff', margin: 0, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>Oda Monitör</h2>
                             <div style={{ display: 'flex', gap: 6, marginTop: 1 }}>
                                 <span style={{ fontSize: 9, fontWeight: 700, color: '#34d399' }}>
                                     ● {activeRooms} aktif
@@ -269,20 +274,20 @@ export function RoomMonitorModal({
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder="🔍 Ara..."
                             style={{
-                                width: 130, fontSize: 10, color: '#e2e8f0', fontWeight: 500,
+                                width: 130, fontSize: 10, color: '#1e293b', fontWeight: 500,
                                 borderRadius: 8, padding: '4px 10px',
-                                border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.15)',
+                                border: '1px solid rgba(148,163,184,0.25)', background: 'rgba(255,255,255,0.7)',
                                 outline: 'none', transition: 'all 0.2s',
                             }}
-                            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)'; e.currentTarget.style.width = '180px'; }}
-                            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; if (!e.currentTarget.value) e.currentTarget.style.width = '130px'; }}
+                            onFocus={(e) => { e.currentTarget.style.borderColor = 'rgba(37,99,235,0.5)'; e.currentTarget.style.width = '180px'; }}
+                            onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(148,163,184,0.25)'; if (!e.currentTarget.value) e.currentTarget.style.width = '130px'; }}
                         />
                         <button
                             onClick={(e) => { e.stopPropagation(); fetchMonitorData(); }}
                             style={{
                                 padding: '4px 8px', borderRadius: 6, fontSize: 10,
-                                color: '#94a3b8', background: 'rgba(255,255,255,0.05)',
-                                border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer',
+                                color: 'rgba(255,255,255,0.8)', background: 'rgba(255,255,255,0.12)',
+                                border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer',
                                 transition: 'all 0.15s',
                             }}
                             onMouseOver={(e) => { e.currentTarget.style.color = '#c4b5fd'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.3)'; }}
@@ -295,8 +300,8 @@ export function RoomMonitorModal({
                             onClick={onClose}
                             style={{
                                 width: 24, height: 24, borderRadius: 6,
-                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
-                                color: '#64748b', cursor: 'pointer',
+                                background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(148,163,184,0.2)',
+                                color: '#94a3b8', cursor: 'pointer',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 fontSize: 11, transition: 'all 0.15s',
                             }}
@@ -307,7 +312,7 @@ export function RoomMonitorModal({
                 </div>
 
                 {/* Room Grid */}
-                <div className="flex-1 overflow-y-auto" style={{ padding: '10px 14px 14px', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.08) transparent' }}>
+                <div className="flex-1 overflow-y-auto" style={{ padding: '10px 14px 14px', scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
                     {loading ? (
                         <div className="flex items-center justify-center py-12">
                             <div className="w-6 h-6 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
@@ -331,12 +336,12 @@ export function RoomMonitorModal({
                                         key={room.id}
                                         style={{
                                             padding: '10px 12px', borderRadius: 12,
-                                            background: isCurrent ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.03)',
-                                            border: `1px solid ${isCurrent ? 'rgba(167,139,250,0.25)' : 'rgba(255,255,255,0.08)'}`,
+                                            background: isCurrent ? 'rgba(37,99,235,0.08)' : 'rgba(255,255,255,0.5)',
+                                            border: `1px solid ${isCurrent ? 'rgba(37,99,235,0.25)' : 'rgba(148,163,184,0.2)'}`,
                                             transition: 'all 0.2s', display: 'flex', flexDirection: 'column',
                                         }}
-                                        onMouseOver={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(167,139,250,0.06)'; e.currentTarget.style.borderColor = 'rgba(167,139,250,0.2)'; } }}
-                                        onMouseOut={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; } }}
+                                        onMouseOver={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(37,99,235,0.06)'; e.currentTarget.style.borderColor = 'rgba(37,99,235,0.2)'; } }}
+                                        onMouseOut={(e) => { if (!isCurrent) { e.currentTarget.style.background = 'rgba(255,255,255,0.5)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.2)'; } }}
                                     >
                                         {/* Room name row */}
                                         <div
@@ -348,8 +353,8 @@ export function RoomMonitorModal({
                                                 <span style={{ fontSize: 12 }}>
                                                     {room.isVipRoom ? '👑' : room.isLocked ? '🔒' : hasUsers ? '🎙️' : '💤'}
                                                 </span>
-                                                <span className="text-[11px] font-bold text-white truncate">{room.name}</span>
-                                                {isCurrent && <span style={{ fontSize: 7, color: '#a78bfa', fontWeight: 700 }}>● SEN</span>}
+                                                <span className="text-[11px] font-bold text-gray-800 truncate">{room.name}</span>
+                                                {isCurrent && <span style={{ fontSize: 7, color: '#2563eb', fontWeight: 700 }}>● SEN</span>}
                                             </div>
                                             <span style={{
                                                 fontSize: 9, fontWeight: 700,
@@ -360,7 +365,7 @@ export function RoomMonitorModal({
                                         </div>
 
                                         {/* Thin capacity bar */}
-                                        <div style={{ height: 2, borderRadius: 1, marginBottom: 6, background: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                                        <div style={{ height: 2, borderRadius: 1, marginBottom: 6, background: 'rgba(148,163,184,0.15)', overflow: 'hidden' }}>
                                             <div style={{
                                                 height: '100%', borderRadius: 1, width: `${pct}%`,
                                                 background: pct > 80 ? '#ef4444' : pct > 50 ? '#fbbf24' : '#a78bfa',
@@ -382,7 +387,7 @@ export function RoomMonitorModal({
                                                                 key={user.userId}
                                                                 style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '2px 4px', borderRadius: 6, cursor: 'context-menu', transition: 'background 0.1s' }}
                                                                 onContextMenu={(e) => handleUserContextMenu(e, user)}
-                                                                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.06)'}
+                                                                onMouseOver={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.04)'}
                                                                 onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                                                             >
                                                                 <div style={{
@@ -418,13 +423,13 @@ export function RoomMonitorModal({
 
                                         {/* Quick actions */}
                                         {!isCurrent && (
-                                            <div style={{ display: 'flex', gap: 4, marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                                            <div style={{ display: 'flex', gap: 4, marginTop: 6, paddingTop: 6, borderTop: '1px solid rgba(148,163,184,0.15)' }}>
                                                 <button
                                                     onClick={() => { onNavigateToRoom(room.slug); onClose(); }}
                                                     style={{
                                                         flex: 1, padding: '4px 0', borderRadius: 6, fontSize: 9, fontWeight: 700,
-                                                        background: 'rgba(167,139,250,0.08)', color: '#c4b5fd',
-                                                        border: '1px solid rgba(167,139,250,0.15)', cursor: 'pointer', transition: 'all 0.15s',
+                                                        background: 'rgba(37,99,235,0.08)', color: '#2563eb',
+                                                        border: '1px solid rgba(37,99,235,0.2)', cursor: 'pointer', transition: 'all 0.15s',
                                                     }}
                                                     onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(167,139,250,0.18)'; }}
                                                     onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(167,139,250,0.08)'; }}
@@ -454,7 +459,7 @@ export function RoomMonitorModal({
                 </div>
 
                 {/* Tiny footer */}
-                <div style={{ padding: '4px 14px 6px', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.06)', fontSize: 8, color: '#64748b' }}>
+                <div style={{ padding: '4px 14px 6px', textAlign: 'center', borderTop: '1px solid rgba(148,163,184,0.15)', fontSize: 8, color: '#94a3b8' }}>
                     💡 Sağ tık → moderasyon · {lastUpdate.toLocaleTimeString('tr-TR')}
                 </div>
             </div>

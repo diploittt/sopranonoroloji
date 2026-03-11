@@ -2,6 +2,7 @@
 // UNIFIED PERMISSION SYSTEM — Single source of truth
 // Add a role → add to ROLE_HIERARCHY. Change a permission → edit ALL_PERMISSIONS.
 // ═══════════════════════════════════════════════════════════════════════
+import React from 'react';
 
 // ─── ROLE HIERARCHY ─────────────────────────────────────────────────
 export const ROLE_HIERARCHY: Record<string, number> = {
@@ -74,7 +75,8 @@ export const ALL_PERMISSIONS: Record<string, PermissionDef> = {
     'nudge': { minLevel: 1, hiddenOnSelf: true },
     'duel': { minLevel: 1, hiddenOnSelf: true },
     'revoke-role': { minLevel: 5, requiresTarget: true },
-    'user-info': { minLevel: 0, hiddenOnSelf: false },
+    'user-info': { minLevel: 0, hiddenOnSelf: true },
+    'user-info-quick': { minLevel: 0, hiddenOnSelf: true },
     'user-list': { minLevel: 3 },
     'log-history': { minLevel: 4, requiresTarget: true },
     'private-chat': { minLevel: 0, hiddenOnSelf: true },
@@ -82,6 +84,9 @@ export const ALL_PERMISSIONS: Record<string, PermissionDef> = {
     'ignore': { minLevel: 0, hiddenOnSelf: true },
     'unignore': { minLevel: 0, hiddenOnSelf: true },
     'send-gift': { minLevel: 0, hiddenOnSelf: true },
+    'add-friend': { minLevel: 0, hiddenOnSelf: true },
+    'add-friend-quick': { minLevel: 0, hiddenOnSelf: true },
+    'friends-panel': { minLevel: 0 },
     'talk-test': { minLevel: 0 },
     'my-profile': { minLevel: 0 },
 
@@ -112,7 +117,7 @@ export const ALL_PERMISSIONS: Record<string, PermissionDef> = {
 export interface RoomMenuItem {
     id: string;
     label: string;
-    icon?: string;
+    icon?: string | React.ReactNode;
     action?: string;
     type?: 'item' | 'submenu' | 'divider';
     submenu?: RoomMenuItem[];
@@ -122,6 +127,14 @@ export interface RoomMenuItem {
     badge?: string;
     duration?: number | string;
     scope?: string;
+    /** Kategori: 'mod' | 'social' | 'info' — tab filtreleme için */
+    category?: 'mod' | 'social' | 'info';
+    /** Hızlı işlem grid'de gösterilsin mi */
+    quickAction?: boolean;
+    /** Hover rengi */
+    hoverColor?: string;
+    /** Tehlikeli işlem (kırmızı stil) */
+    danger?: boolean;
 }
 
 // ─── UNIVERSAL MENU FILTER ──────────────────────────────────────────

@@ -22,15 +22,27 @@ const ALL_TABS = [
     { id: 'password', label: 'Şifre', icon: '🔒' },
 ];
 
-// VIP+ level hierarchy
 const ROLE_LEVELS: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, super_admin: 6, owner: 7 };
-
 
 const NAME_COLORS = [
     '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4',
     '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e',
     '#ffffff', '#94a3b8', '#64748b', '#fbbf24', '#34d399', '#60a5fa',
 ];
+
+// ── Admin panel renk sistemi ──
+const MODAL_BG = 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)';
+const MODAL_BORDER = '1px solid rgba(255,255,255,0.65)';
+const MODAL_SHADOW = '0 20px 50px rgba(0,0,0,0.18), 0 6px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)';
+const TEXT_PRIMARY = '#1e293b';
+const TEXT_SECONDARY = '#475569';
+const TEXT_MUTED = '#94a3b8';
+const INPUT_BG = 'rgba(255,255,255,0.6)';
+const INPUT_BORDER = '1px solid rgba(100,116,139,0.2)';
+const TAB_ACTIVE_BG = 'rgba(30,58,95,0.1)';
+const TAB_ACTIVE_COLOR = '#0f172a';
+const TAB_ACTIVE_BORDER = '1px solid rgba(15,23,42,0.2)';
+const BTN_BG = 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)';
 
 export function ProfileModal({
     isOpen, onClose, currentUser, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword
@@ -43,35 +55,39 @@ export function ProfileModal({
     const [newPass, setNewPass] = useState('');
     const [confirmPass, setConfirmPass] = useState('');
     const [error, setError] = useState('');
+    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ERKEK', 'KADIN']));
 
-    // Detect if user has a VALID animated nick assigned
     const currentAvatar = currentUser?.avatar || '';
     const hasAnimatedNick = (() => {
         if (currentAvatar.startsWith('animated:')) return true;
         if (currentAvatar.startsWith('gifnick::')) {
-            // gifnick::URL::showAvatar — URL boşsa geçerli değil
             const parts = currentAvatar.split('::');
             return !!(parts[1] && parts[1].length > 0);
         }
         return false;
     })();
-    // Check localStorage for saved animated nick (in case user switched to normal)
     const savedAnimatedNick = typeof window !== 'undefined' ? localStorage.getItem('soprano_animated_nick') : null;
-    // Görünüm tab sadece GERÇEKTEN hareketli nick varsa gösterilmeli
-    // localStorage'daki eski değer, avatar artık animated değilse temizlenmeli
     const showLookTab = hasAnimatedNick;
-
     const [useAnimatedNick, setUseAnimatedNick] = useState(hasAnimatedNick);
 
-    // Filter tabs: Renk only for VIP+, Görünüm only if animated nick exists
     const userLevel = ROLE_LEVELS[currentUser?.role || 'guest'] || 0;
     const TABS = useMemo(() =>
         ALL_TABS.filter(tab =>
             (tab.id !== 'color' || userLevel >= 2) &&
             (tab.id !== 'look' || showLookTab)
-        ),
-        [userLevel, showLookTab]
+        ), [userLevel, showLookTab]
     );
+
+    // ── Cinsiyet bazlı avatar filtreleme ──
+    const userGender = (currentUser?.gender || '').toLowerCase();
+    const avatarCategories = useMemo(() => {
+        const male = { label: '👨 Erkek', avatars: ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] };
+        const female = { label: '👩 Kadın', avatars: ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] };
+        const neutral = { label: '🌟 Nötr', avatars: ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] };
+        if (userGender === 'erkek' || userGender === 'male') return [male, neutral];
+        if (userGender === 'kadın' || userGender === 'kadin' || userGender === 'female') return [female, neutral];
+        return [male, female, neutral];
+    }, [userGender]);
 
     // Draggable
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -86,19 +102,13 @@ export function ProfileModal({
             const isAnimated = av.startsWith('animated:') || av.startsWith('gifnick::');
             setActiveTab(showLookTab ? 'look' : 'avatar');
             setUseAnimatedNick(isAnimated);
-            // Save animated nick to localStorage if user has one
-            if (isAnimated) {
-                try { localStorage.setItem('soprano_animated_nick', av); } catch (e) { }
-            } else {
-                // Avatar artık animated değil — localStorage'daki eski değeri temizle
-                try { localStorage.removeItem('soprano_animated_nick'); } catch (e) { }
-            }
+            if (isAnimated) { try { localStorage.setItem('soprano_animated_nick', av); } catch (e) { } }
+            else { try { localStorage.removeItem('soprano_animated_nick'); } catch (e) { } }
             setNewName(currentUser?.username || '');
             setSelectedColor(currentUser?.nameColor || '#ffffff');
             setSelectedAvatarUrl('');
             setOldPass(''); setNewPass(''); setConfirmPass('');
-            setError('');
-            setCentered(true);
+            setError(''); setCentered(true);
         }
     }, [isOpen, currentUser, showLookTab]);
 
@@ -112,21 +122,16 @@ export function ProfileModal({
         } else {
             dragOffset.current = { x: e.clientX - position.x, y: e.clientY - position.y };
         }
-        dragging.current = true;
-        e.preventDefault();
+        dragging.current = true; e.preventDefault();
     }, [centered, position]);
 
     useEffect(() => {
         const move = (e: MouseEvent) => {
             if (!dragging.current) return;
-            setPosition({
-                x: Math.max(0, Math.min(window.innerWidth - 100, e.clientX - dragOffset.current.x)),
-                y: Math.max(0, Math.min(window.innerHeight - 50, e.clientY - dragOffset.current.y)),
-            });
+            setPosition({ x: Math.max(0, Math.min(window.innerWidth - 100, e.clientX - dragOffset.current.x)), y: Math.max(0, Math.min(window.innerHeight - 50, e.clientY - dragOffset.current.y)) });
         };
         const up = () => { dragging.current = false; };
-        window.addEventListener('mousemove', move);
-        window.addEventListener('mouseup', up);
+        window.addEventListener('mousemove', move); window.addEventListener('mouseup', up);
         return () => { window.removeEventListener('mousemove', move); window.removeEventListener('mouseup', up); };
     }, []);
 
@@ -140,289 +145,252 @@ export function ProfileModal({
     if (!isOpen) return null;
 
     const avatarUrl = generateGenderAvatar(currentUser?.username || 'user');
+    const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
-    const modalStyle: React.CSSProperties = centered
-        ? {}
-        : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
+    const inputStyle: React.CSSProperties = {
+        width: '100%', fontSize: 12, color: TEXT_PRIMARY, borderRadius: 10,
+        padding: '8px 12px', border: INPUT_BORDER, background: INPUT_BG, outline: 'none',
+    };
+    const btnStyle: React.CSSProperties = {
+        width: '100%', padding: '8px 0', fontSize: 12, fontWeight: 700, color: '#fff',
+        borderRadius: 10, border: 'none', cursor: 'pointer', background: BTN_BG,
+        boxShadow: '0 2px 12px rgba(30,58,95,0.2)',
+    };
 
     const content = (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose} style={centered ? {} : { display: 'block' }}>
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/40" />
-
+        <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4" onClick={onClose} style={centered ? { paddingTop: '15vh' } : { display: 'block' }}>
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)' }} />
             <div
                 ref={modalRef}
-                className="relative w-full max-w-lg animate-pure-fade"
+                className="relative w-full max-w-sm animate-pure-fade"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
-                    backdropFilter: 'blur(24px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderTop: '1px solid rgba(255,255,255,0.30)',
-                    borderRadius: '16px',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 1px rgba(56,189,248,0.15), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    background: MODAL_BG,
+                    backdropFilter: 'blur(28px) saturate(130%)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                    border: MODAL_BORDER, borderRadius: 14, boxShadow: MODAL_SHADOW, overflow: 'hidden',
                 }}
             >
-                {/* Accent */}
-                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(56,189,248,0.35) 40%, rgba(200,150,46,0.2) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
-
-                {/* Header - Draggable */}
-                <div
-                    className="flex items-center justify-between px-5 py-3"
+                {/* Header — koyu tema */}
+                <div className="flex items-center justify-between px-4 py-2"
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none' }}
+                    style={{ cursor: 'move', userSelect: 'none', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
                 >
-                    <h2 style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-                        <span style={{ fontSize: 14 }}>👤</span> Profil Ayarları
+                    <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 6, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                        <span style={{ fontSize: 13 }}>👤</span> Profil Ayarları
                     </h2>
-                    <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
                     >✕</button>
                 </div>
 
                 {/* Tabs */}
-                <div style={{ display: 'flex', gap: 3, padding: '6px 20px 4px' }}>
+                <div style={{ display: 'flex', gap: 2, padding: '6px 14px 4px' }}>
                     {TABS.map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => { setActiveTab(tab.id); setError(''); }}
+                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }}
                             style={{
-                                flex: 1, padding: '5px 0', fontSize: 10, fontWeight: 600, borderRadius: 7, transition: 'all 0.2s', cursor: 'pointer',
-                                background: activeTab === tab.id ? 'rgba(56,189,248,0.1)' : 'transparent',
-                                color: activeTab === tab.id ? '#7dd3fc' : '#64748b',
-                                border: activeTab === tab.id ? '1px solid rgba(56,189,248,0.18)' : '1px solid transparent',
+                                flex: 1, padding: '4px 0', fontSize: 9, fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', cursor: 'pointer',
+                                background: activeTab === tab.id ? TAB_ACTIVE_BG : 'transparent',
+                                color: activeTab === tab.id ? TAB_ACTIVE_COLOR : TEXT_MUTED,
+                                border: activeTab === tab.id ? TAB_ACTIVE_BORDER : '1px solid transparent',
                             }}
-                        >
-                            {tab.icon} {tab.label}
-                        </button>
+                        >{tab.icon} {tab.label}</button>
                     ))}
                 </div>
 
                 {/* Content */}
-                <div style={{ padding: '4px 20px 16px', minHeight: 240 }}>
+                <div style={{ padding: '8px 14px 12px', minHeight: 180 }}>
                     {activeTab === 'look' && (
-                        <div className="space-y-5">
-                            <div className="text-center">
-                                <p className="text-xs text-gray-400 mb-3">Yönetici tarafından size hareketli bir nick atanmış. Dilediğiniz zaman normal görünümünüze geçebilirsiniz.</p>
-                            </div>
-
-                            {/* Animated Nick Preview */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <p style={{ fontSize: 10, color: TEXT_SECONDARY, textAlign: 'center', margin: 0 }}>Yönetici tarafından size hareketli bir nick atanmış.</p>
                             {(() => {
                                 const animNick = (hasAnimatedNick ? currentAvatar : savedAnimatedNick) || '';
                                 const isAnimType = animNick.startsWith('animated:');
                                 const isGifType = animNick.startsWith('gifnick::');
                                 if (isAnimType) {
-                                    const parts = animNick.split(':');
-                                    const cls = parts[1] || 'shimmer-gold';
-                                    const fontSize = parseInt(parts[2]) || 13;
+                                    const parts = animNick.split(':'); const cls = parts[1] || 'shimmer-gold'; const fontSize = parseInt(parts[2]) || 13;
                                     const text = parts.slice(4).join(':') || currentUser?.username || 'Kullanıcı';
-                                    return (
-                                        <div className="flex items-center justify-center py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                            <span className={`animated-nick ${cls}`} style={{ fontSize }}>{text}</span>
-                                        </div>
-                                    );
+                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0', borderRadius: 10, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(100,116,139,0.1)' }}><span className={`animated-nick ${cls}`} style={{ fontSize }}>{text}</span></div>);
                                 } else if (isGifType) {
-                                    const parts = animNick.split('::');
-                                    const gifUrl = parts[1] || '';
+                                    const parts = animNick.split('::'); const gifUrl = parts[1] || '';
                                     if (!gifUrl) return null;
-                                    return (
-                                        <div className="flex items-center justify-center py-3 rounded-xl" style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                            <img src={gifUrl} alt="GIF Nick" className="max-h-12 object-contain" style={{ filter: 'drop-shadow(0 0 4px rgba(99,102,241,0.3))' }} />
-                                        </div>
-                                    );
+                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0', borderRadius: 10, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(100,116,139,0.1)' }}><img src={gifUrl} alt="GIF Nick" style={{ maxHeight: 36, objectFit: 'contain' }} /></div>);
                                 }
                                 return null;
                             })()}
-
-                            {/* Toggle Buttons */}
-                            <div className="grid grid-cols-2 gap-3">
-                                <button
-                                    onClick={() => setUseAnimatedNick(true)}
-                                    className="py-4 rounded-xl text-sm font-bold transition-all"
-                                    style={{
-                                        background: useAnimatedNick ? 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.08))' : 'rgba(255,255,255,0.03)',
-                                        border: useAnimatedNick ? '2px solid rgba(56,189,248,0.4)' : '2px solid rgba(255,255,255,0.08)',
-                                        color: useAnimatedNick ? '#7dd3fc' : '#94a3b8',
-                                        boxShadow: useAnimatedNick ? '0 0 20px rgba(56,189,248,0.1)' : 'none',
-                                    }}
-                                >
-                                    ✨ Hareketli Nick
-                                </button>
-                                <button
-                                    onClick={() => setUseAnimatedNick(false)}
-                                    className="py-4 rounded-xl text-sm font-bold transition-all"
-                                    style={{
-                                        background: !useAnimatedNick ? 'linear-gradient(135deg, rgba(56,189,248,0.15), rgba(56,189,248,0.08))' : 'rgba(255,255,255,0.03)',
-                                        border: !useAnimatedNick ? '2px solid rgba(56,189,248,0.4)' : '2px solid rgba(255,255,255,0.08)',
-                                        color: !useAnimatedNick ? '#7dd3fc' : '#94a3b8',
-                                        boxShadow: !useAnimatedNick ? '0 0 20px rgba(56,189,248,0.1)' : 'none',
-                                    }}
-                                >
-                                    👤 Normal İsim
-                                </button>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                {[{ on: true, label: '✨ Hareketli Nick' }, { on: false, label: '👤 Normal İsim' }].map(opt => (
+                                    <button key={opt.label} onClick={() => setUseAnimatedNick(opt.on)}
+                                        style={{
+                                            padding: '10px 0', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                                            background: useAnimatedNick === opt.on ? TAB_ACTIVE_BG : 'rgba(255,255,255,0.4)',
+                                            border: useAnimatedNick === opt.on ? '1.5px solid rgba(30,58,95,0.3)' : '1.5px solid rgba(100,116,139,0.15)',
+                                            color: useAnimatedNick === opt.on ? TAB_ACTIVE_COLOR : TEXT_MUTED,
+                                        }}
+                                    >{opt.label}</button>
+                                ))}
                             </div>
-
-                            <button
-                                onClick={() => {
-                                    const animNick = currentAvatar?.startsWith('animated:') || currentAvatar?.startsWith('gifnick::')
-                                        ? currentAvatar
-                                        : (savedAnimatedNick || '');
-                                    if (useAnimatedNick && animNick) {
-                                        // Switch to animated nick
-                                        onChangeAvatar(animNick);
-                                        try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { }
-                                    } else {
-                                        // Switch to normal avatar — save animated nick for future use before switching
-                                        if (animNick) {
-                                            try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { }
-                                        }
-                                        const defaultAvatar = generateGenderAvatar(currentUser?.username || 'user');
-                                        onChangeAvatar(defaultAvatar);
-                                    }
-                                    onClose();
-                                }}
-                                className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 transition-all shadow-lg shadow-sky-600/20"
-                            >
-                                Görünümü Kaydet
-                            </button>
+                            <button onClick={() => {
+                                const animNick = currentAvatar?.startsWith('animated:') || currentAvatar?.startsWith('gifnick::') ? currentAvatar : (savedAnimatedNick || '');
+                                if (useAnimatedNick && animNick) { onChangeAvatar(animNick); try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { } }
+                                else { if (animNick) { try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { } } onChangeAvatar(generateGenderAvatar(currentUser?.username || 'user')); }
+                                onClose();
+                            }} style={btnStyle}>Görünümü Kaydet</button>
                         </div>
                     )}
 
                     {activeTab === 'avatar' && (
-                        <div className="space-y-4">
-                            {/* Current avatar preview */}
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12 rounded-full border-2 border-sky-500/20 flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}>
-                                    <img src={selectedAvatarUrl || currentUser?.avatar || avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            {/* Seçili avatar önizleme */}
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 10,
+                                padding: '8px 10px', borderRadius: 10,
+                                background: 'linear-gradient(135deg, rgba(15,23,42,0.06) 0%, rgba(30,41,59,0.04) 100%)',
+                                border: '1px solid rgba(15,23,42,0.08)',
+                            }}>
+                                <div style={{
+                                    width: 42, height: 42, borderRadius: 12, flexShrink: 0,
+                                    background: 'linear-gradient(135deg, #0f172a, #1e293b)',
+                                    padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                                }}>
+                                    <img src={selectedAvatarUrl || currentUser?.avatar || avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover' }} />
                                 </div>
-                                <div className="flex-1">
-                                    <p className="text-xs font-medium text-white">Avatar Seç</p>
-                                    <p className="text-[10px] text-gray-400 mt-0.5">Aşağıdaki avatarlardan birini seçin</p>
+                                <div>
+                                    <p style={{ fontSize: 13, fontWeight: 800, color: TEXT_PRIMARY, margin: 0, letterSpacing: '0.01em' }}>Avatar Seç</p>
+                                    <p style={{ fontSize: 10, color: TEXT_MUTED, margin: '2px 0 0', fontWeight: 500 }}>Cinsiyetinize uygun avatarlar</p>
                                 </div>
                             </div>
-
-                            {/* Avatar categories */}
-                            {[
-                                { label: '👨 Erkek', avatars: ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] },
-                                { label: '👩 Kadın', avatars: ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] },
-                                { label: '🌟 Nötr', avatars: ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] },
-                            ].map(cat => (
-                                <div key={cat.label}>
-                                    <label className="text-[10px] text-gray-400 mb-2 block font-semibold uppercase tracking-wider">{cat.label}</label>
-                                    <div className="grid grid-cols-6 gap-1.5">
-                                        {cat.avatars.map(av => {
-                                            const isSelected = (selectedAvatarUrl || currentUser?.avatar) === av;
-                                            return (
-                                                <button
-                                                    key={av}
-                                                    onClick={() => setSelectedAvatarUrl(av)}
-                                                    className="rounded-full overflow-hidden transition-all duration-200 hover:scale-110"
-                                                    style={{
-                                                        border: isSelected ? '2px solid #38bdf8' : '2px solid rgba(255,255,255,0.08)',
-                                                        boxShadow: isSelected ? '0 0 12px rgba(56,189,248,0.25)' : 'none',
-                                                        background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                                                        padding: 2,
-                                                        width: 48,
-                                                        height: 48,
-                                                    }}
-                                                >
-                                                    <img src={av} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-                                                </button>
-                                            );
-                                        })}
+                            {avatarCategories.map(cat => {
+                                const isExpanded = expandedCategories.has(cat.label);
+                                return (
+                                    <div key={cat.label}>
+                                        <button
+                                            onClick={() => setExpandedCategories(prev => {
+                                                const next = new Set(prev);
+                                                if (next.has(cat.label)) next.delete(cat.label);
+                                                else next.add(cat.label);
+                                                return next;
+                                            })}
+                                            style={{
+                                                fontSize: 11, color: TEXT_SECONDARY, fontWeight: 700, textTransform: 'uppercase',
+                                                letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 5,
+                                                marginBottom: isExpanded ? 5 : 0, cursor: 'pointer',
+                                                background: 'none', border: 'none', padding: '4px 0', width: '100%', textAlign: 'left',
+                                            }}
+                                        >
+                                            <span style={{
+                                                fontSize: 9, transition: 'transform 0.2s',
+                                                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
+                                                display: 'inline-block',
+                                            }}>▶</span>
+                                            {cat.label}
+                                            <span style={{ fontSize: 9, color: TEXT_MUTED, fontWeight: 500, marginLeft: 2 }}>({cat.avatars.length})</span>
+                                        </button>
+                                        {isExpanded && (
+                                            <div style={{
+                                                display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6,
+                                                padding: '6px', borderRadius: 10,
+                                                background: 'rgba(255,255,255,0.4)',
+                                                border: '1px solid rgba(100,116,139,0.1)',
+                                            }}>
+                                                {cat.avatars.map(av => {
+                                                    const isSelected = (selectedAvatarUrl || currentUser?.avatar) === av;
+                                                    return (
+                                                        <button key={av} onClick={() => setSelectedAvatarUrl(av)}
+                                                            style={{
+                                                                border: isSelected ? '2.5px solid #0f172a' : '2px solid rgba(100,116,139,0.12)',
+                                                                boxShadow: isSelected ? '0 0 0 2px rgba(15,23,42,0.15), 0 2px 8px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
+                                                                background: 'rgba(255,255,255,0.7)', padding: 2, width: 48, height: 48,
+                                                                borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s',
+                                                                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
+                                                            }}
+                                                            onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.transform = 'scale(1.05)'; }}
+                                                            onMouseOut={(e) => { if (!isSelected) e.currentTarget.style.transform = 'scale(1)'; }}
+                                                        ><img src={av} alt="" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover' }} /></button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                </div>
-                            ))}
-
+                                );
+                            })}
                             <button onClick={() => {
                                 const currentAv = currentUser?.avatar || '';
                                 const isCurrentlyAnimated = currentAv.startsWith('animated:') || currentAv.startsWith('gifnick::');
                                 const newAvatar = selectedAvatarUrl || avatarUrl;
-                                if (isCurrentlyAnimated) {
-                                    try { localStorage.setItem('soprano_custom_avatar', newAvatar); } catch (e) { }
-                                    onClose();
-                                } else {
-                                    onChangeAvatar(newAvatar);
-                                    onClose();
-                                }
-                            }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 transition-all shadow-lg shadow-sky-600/20">
-                                Avatarı Kaydet
-                            </button>
+                                if (isCurrentlyAnimated) { try { localStorage.setItem('soprano_custom_avatar', newAvatar); } catch (e) { } onClose(); }
+                                else { onChangeAvatar(newAvatar); onClose(); }
+                            }} style={btnStyle}>Avatarı Kaydet</button>
                         </div>
                     )}
 
                     {activeTab === 'name' && (
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Mevcut İsim</label>
-                                <div className="text-sm text-gray-300 bg-white/5 rounded-xl px-4 py-3 border border-white/5">{currentUser?.username || '—'}</div>
+                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Mevcut İsim</label>
+                                <div style={{ fontSize: 12, color: TEXT_SECONDARY, background: 'rgba(255,255,255,0.4)', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(100,116,139,0.1)' }}>{currentUser?.username || '—'}</div>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Yeni İsim</label>
-                                <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isminizi yazın..." className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-sky-400/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
-                                {error && <span className="text-xs text-red-400 mt-1 block">{error}</span>}
+                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Yeni İsim</label>
+                                <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isminizi yazın..." style={inputStyle} />
+                                {error && <span style={{ fontSize: 10, color: '#ef4444', display: 'block', marginTop: 2 }}>{error}</span>}
                             </div>
                             <button onClick={() => {
                                 if (!newName.trim() || newName.trim().length < 2) { setError('En az 2 karakter'); return; }
                                 onChangeName(newName.trim()); onClose();
-                            }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 transition-all shadow-lg shadow-sky-600/20">
-                                İsmi Değiştir
-                            </button>
+                            }} style={btnStyle}>İsmi Değiştir</button>
                         </div>
                     )}
 
                     {activeTab === 'color' && (
-                        <div className="space-y-4">
-                            <div className="text-center">
-                                <span className="text-lg font-bold" style={{ color: selectedColor }}>{currentUser?.username || 'Kullanıcı'}</span>
-                                <p className="text-xs text-gray-500 mt-1">Önizleme</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                            <div style={{ textAlign: 'center' }}>
+                                <span style={{ fontSize: 14, fontWeight: 700, color: selectedColor, textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>{currentUser?.username || 'Kullanıcı'}</span>
+                                <p style={{ fontSize: 9, color: TEXT_MUTED, margin: '2px 0 0' }}>Önizleme</p>
                             </div>
-                            <div className="grid grid-cols-6 gap-2">
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, justifyItems: 'center' }}>
                                 {NAME_COLORS.map(c => (
-                                    <button key={c} onClick={() => setSelectedColor(c)} className="w-10 h-10 rounded-xl transition-all hover:scale-110 mx-auto" style={{
-                                        background: c,
-                                        border: selectedColor === c ? '2px solid white' : '2px solid rgba(255,255,255,0.1)',
-                                        boxShadow: selectedColor === c ? `0 0 12px ${c}50` : 'none',
+                                    <button key={c} onClick={() => setSelectedColor(c)} style={{
+                                        width: 28, height: 28, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s',
+                                        background: c, border: selectedColor === c ? '2px solid #1e293b' : '2px solid rgba(100,116,139,0.15)',
+                                        boxShadow: selectedColor === c ? `0 0 10px ${c}40` : 'none',
+                                        transform: selectedColor === c ? 'scale(1.15)' : 'scale(1)',
                                     }} />
                                 ))}
                             </div>
-                            <button onClick={() => { onChangeNameColor(selectedColor); onClose(); }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 transition-all shadow-lg shadow-sky-600/20">
-                                Rengi Kaydet
-                            </button>
+                            <button onClick={() => { onChangeNameColor(selectedColor); onClose(); }} style={btnStyle}>Rengi Kaydet</button>
                         </div>
                     )}
 
                     {activeTab === 'password' && (
-                        <div className="space-y-4">
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Mevcut Şifre</label>
-                                <input type="password" value={oldPass} onChange={(e) => setOldPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-sky-400/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
+                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Mevcut Şifre</label>
+                                <input type="password" value={oldPass} onChange={(e) => setOldPass(e.target.value)} autoComplete="one-time-code" name="otp1" style={inputStyle} />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Yeni Şifre</label>
-                                <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
+                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Yeni Şifre</label>
+                                <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} autoComplete="one-time-code" name="otp2" style={inputStyle} />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Şifre Tekrar</label>
-                                <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
+                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Şifre Tekrar</label>
+                                <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} autoComplete="one-time-code" name="otp3" style={inputStyle} />
                             </div>
-                            {error && <span className="text-xs text-red-400">{error}</span>}
+                            {error && <span style={{ fontSize: 10, color: '#ef4444' }}>{error}</span>}
                             <button onClick={() => {
                                 if (!oldPass || !newPass) { setError('Tüm alanları doldurun'); return; }
                                 if (newPass.length < 4) { setError('Şifre en az 4 karakter'); return; }
                                 if (newPass !== confirmPass) { setError('Şifreler eşleşmiyor'); return; }
                                 onChangePassword(oldPass, newPass); onClose();
-                            }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 transition-all shadow-lg shadow-sky-600/20">
-                                Şifreyi Değiştir
-                            </button>
+                            }} style={btnStyle}>Şifreyi Değiştir</button>
                         </div>
                     )}
                 </div>
             </div>
-        </div >
+        </div>
     );
 
     return createPortal(content, document.body);

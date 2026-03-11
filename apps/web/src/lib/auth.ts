@@ -14,8 +14,8 @@ export interface AuthUser {
 const SYSTEM_USER_KEY = 'soprano_auth_user';
 const TENANT_USER_KEY = 'soprano_tenant_user';
 const SESSION_TIMESTAMP_KEY = 'soprano_session_ts';
-/** Session timeout: 2 hours in milliseconds */
-const SESSION_TIMEOUT_MS = 2 * 60 * 60 * 1000;
+/** Session timeout: 24 hours in milliseconds */
+const SESSION_TIMEOUT_MS = 24 * 60 * 60 * 1000;
 
 /** URL-aware key selection: tenant pages use soprano_tenant_user, system pages use soprano_auth_user */
 function getAuthKey(): string {
@@ -93,10 +93,8 @@ export const getAuthUser = (): AuthUser | null => {
             return null;
         }
     } else {
-        // Eski oturum — timestamp yok demek eski sürümden kalmış, temizle
-        console.warn('[Auth] Legacy session without timestamp detected. Clearing.');
-        clearAllSopranoAuth();
-        return null;
+        // Eski oturum — timestamp yoksa yeni timestamp oluştur (oturumu koru)
+        localStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
     }
 
     try {

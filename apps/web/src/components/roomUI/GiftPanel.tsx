@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { X } from 'lucide-react';
 
 interface GiftItem {
     id: string;
@@ -72,181 +73,194 @@ export function GiftPanel({ isOpen, onClose, onSendGift, socket, targetUserName,
     };
 
     return createPortal(
-        <div className="fixed inset-0 z-[60] flex items-center justify-center" onClick={onClose}>
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-
-            {/* Modal */}
-            <div
-                className="relative w-[360px] max-h-[480px] rounded-2xl overflow-hidden flex flex-col"
-                style={{
-                    background: 'linear-gradient(180deg, #1a1025 0%, #0f0a18 100%)',
-                    border: '1px solid rgba(168, 85, 247, 0.2)',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.6), 0 0 40px rgba(168, 85, 247, 0.1)',
-                    animation: 'giftPanelIn 0.25s ease-out',
-                }}
-                onClick={e => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="px-4 pt-4 pb-3" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                            <span style={{ fontSize: 22 }}>🎁</span>
-                            <div>
-                                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#fff', margin: 0, lineHeight: 1.2 }}>Hediye Gönder</h3>
-                                {targetUserName && (
-                                    <p style={{ fontSize: 11, color: '#a78bfa', margin: 0, marginTop: 2 }}>
-                                        → {targetUserName}
-                                    </p>
-                                )}
+        <div
+            style={{
+                position: 'fixed',
+                bottom: 80,
+                right: 20,
+                width: 300,
+                maxHeight: 360,
+                borderRadius: 16,
+                overflow: 'hidden',
+                display: 'flex',
+                flexDirection: 'column',
+                background: 'linear-gradient(165deg, rgba(226,232,240,0.97) 0%, rgba(218,225,235,0.96) 50%, rgba(210,218,230,0.95) 100%)',
+                backdropFilter: 'blur(28px) saturate(130%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                border: '1px solid rgba(255,255,255,0.65)',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.20), 0 8px 20px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+                zIndex: 9990,
+                animation: 'giftPopIn 0.2s ease-out',
+            }}
+            onClick={e => e.stopPropagation()}
+        >
+            {/* Compact Header */}
+            <div style={{
+                padding: '8px 14px',
+                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 16 }}>🎁</span>
+                    <div>
+                        <div style={{ fontSize: 12, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Hediye Gönder</div>
+                        {targetUserName && (
+                            <div style={{ fontSize: 9, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>
+                                → {targetUserName}
                             </div>
-                        </div>
-                        <button
-                            onClick={onClose}
-                            style={{
-                                background: 'rgba(255,255,255,0.05)',
-                                border: 'none',
-                                borderRadius: 8,
-                                width: 30,
-                                height: 30,
-                                color: '#94a3b8',
-                                fontSize: 16,
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                            }}
-                        >✕</button>
-                    </div>
-
-                    {/* Balance bar */}
-                    <div className="flex items-center gap-3" style={{ background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 12px' }}>
-                        <div className="flex items-center gap-1.5">
-                            <span style={{ fontSize: 14 }}>🪙</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: '#fbbf24' }}>{balance.toLocaleString()}</span>
-                            <span style={{ fontSize: 10, color: '#94a3b8' }}>jeton</span>
-                        </div>
-                        <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.1)' }} />
-                        <div className="flex items-center gap-1.5">
-                            <span style={{ fontSize: 14 }}>⭐</span>
-                            <span style={{ fontSize: 14, fontWeight: 700, color: '#a855f7' }}>{points.toLocaleString()}</span>
-                            <span style={{ fontSize: 10, color: '#94a3b8' }}>puan</span>
-                        </div>
-                    </div>
-                    {onOpenShop && (
-                        <button onClick={() => { onClose(); onOpenShop(); }} style={{
-                            marginTop: 8, width: '100%', padding: '8px 0', borderRadius: 10,
-                            background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(168,85,247,0.1))',
-                            border: '1px solid rgba(99,102,241,0.2)', color: '#818cf8',
-                            fontSize: 12, fontWeight: 700, cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                        }}>
-                            🏪 Jeton Mağazası
-                        </button>
-                    )}
-
-                    {/* Yetersiz bakiye uyarısı */}
-                    {balance <= 0 && (
-                        <div style={{
-                            marginTop: 8,
-                            padding: '8px 12px',
-                            borderRadius: 10,
-                            background: 'rgba(245, 158, 11, 0.1)',
-                            border: '1px solid rgba(245, 158, 11, 0.2)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 8,
-                        }}>
-                            <span style={{ fontSize: 14 }}>⚠️</span>
-                            <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 600 }}>
-                                Jeton bakiyeniz yetersiz. Hediye göndermek için jeton gereklidir.
-                            </span>
-                        </div>
-                    )}
-
-                    {/* Category Tabs */}
-                    <div className="flex gap-1.5 mt-3">
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setActiveCategory(cat)}
-                                style={{
-                                    padding: '4px 10px',
-                                    borderRadius: 8,
-                                    border: 'none',
-                                    fontSize: 10,
-                                    fontWeight: 600,
-                                    cursor: 'pointer',
-                                    background: activeCategory === cat ? 'rgba(168,85,247,0.25)' : 'rgba(255,255,255,0.04)',
-                                    color: activeCategory === cat ? '#c084fc' : '#64748b',
-                                    transition: 'all 0.15s',
-                                }}
-                            >
-                                {cat === 'all' ? 'Tümü' : CATEGORY_LABELS[cat]?.label || cat}
-                            </button>
-                        ))}
+                        )}
                     </div>
                 </div>
+                <button
+                    onClick={onClose}
+                    style={{
+                        background: 'rgba(255,255,255,0.12)', border: 'none',
+                        borderRadius: 6, width: 22, height: 22,
+                        color: 'rgba(255,255,255,0.7)', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                >
+                    <X size={11} />
+                </button>
+            </div>
 
-                {/* Gift Grid */}
-                <div className="flex-1 overflow-y-auto p-3" style={{ scrollbarWidth: 'thin' }}>
-                    <div className="grid grid-cols-3 gap-2">
-                        {filteredGifts.map(gift => {
-                            const canAfford = balance >= gift.price;
-                            const isSending = sending === gift.id;
-                            const catColor = CATEGORY_LABELS[gift.category]?.color || '#6b7280';
-
-                            return (
-                                <button
-                                    key={gift.id}
-                                    onClick={() => canAfford && handleSend(gift.id, gift.price)}
-                                    disabled={!canAfford || !!sending}
-                                    style={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                        alignItems: 'center',
-                                        gap: 4,
-                                        padding: '12px 6px 10px',
-                                        borderRadius: 14,
-                                        border: `1px solid ${canAfford ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.02)'}`,
-                                        background: isSending
-                                            ? 'rgba(168,85,247,0.2)'
-                                            : canAfford
-                                                ? 'rgba(255,255,255,0.03)'
-                                                : 'rgba(255,255,255,0.01)',
-                                        cursor: canAfford ? 'pointer' : 'not-allowed',
-                                        opacity: canAfford ? 1 : 0.4,
-                                        transition: 'all 0.15s',
-                                        transform: isSending ? 'scale(0.9)' : 'scale(1)',
-                                    }}
-                                    onMouseEnter={e => {
-                                        if (canAfford) (e.currentTarget.style.background = 'rgba(168,85,247,0.12)');
-                                    }}
-                                    onMouseLeave={e => {
-                                        if (canAfford) (e.currentTarget.style.background = 'rgba(255,255,255,0.03)');
-                                    }}
-                                >
-                                    <span style={{ fontSize: 30, lineHeight: 1 }}>{gift.emoji}</span>
-                                    <span style={{ fontSize: 10, fontWeight: 600, color: '#e2e8f0' }}>{gift.name}</span>
-                                    <div className="flex items-center gap-1" style={{
-                                        background: `${catColor}15`,
-                                        padding: '2px 8px',
-                                        borderRadius: 6,
-                                    }}>
-                                        <span style={{ fontSize: 9 }}>🪙</span>
-                                        <span style={{ fontSize: 10, fontWeight: 700, color: catColor }}>{gift.price}</span>
-                                    </div>
-                                </button>
-                            );
-                        })}
+            {/* Balance + Categories */}
+            <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(148,163,184,0.12)' }}>
+                {/* Balance */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10,
+                    padding: '6px 10px', borderRadius: 8,
+                    background: 'rgba(37,99,235,0.06)', border: '1px solid rgba(37,99,235,0.1)',
+                    marginBottom: 6,
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 11 }}>🪙</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#2563eb' }}>{balance.toLocaleString()}</span>
                     </div>
+                    <div style={{ width: 1, height: 12, background: 'rgba(148,163,184,0.15)' }} />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontSize: 11 }}>⭐</span>
+                        <span style={{ fontSize: 12, fontWeight: 700, color: '#7c3aed' }}>{points.toLocaleString()}</span>
+                    </div>
+                    {onOpenShop && (
+                        <>
+                            <div style={{ flex: 1 }} />
+                            <button
+                                onClick={() => { onClose(); onOpenShop(); }}
+                                style={{
+                                    padding: '3px 8px', borderRadius: 6, fontSize: 9, fontWeight: 700,
+                                    background: 'rgba(37,99,235,0.1)', border: '1px solid rgba(37,99,235,0.15)',
+                                    color: '#2563eb', cursor: 'pointer',
+                                }}
+                            >
+                                🏪 Mağaza
+                            </button>
+                        </>
+                    )}
+                </div>
+
+                {/* Category Tabs */}
+                <div style={{ display: 'flex', gap: 4 }}>
+                    {categories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => setActiveCategory(cat)}
+                            style={{
+                                padding: '3px 8px',
+                                borderRadius: 6,
+                                border: 'none',
+                                fontSize: 9,
+                                fontWeight: 700,
+                                cursor: 'pointer',
+                                background: activeCategory === cat ? 'rgba(37,99,235,0.12)' : 'rgba(148,163,184,0.08)',
+                                color: activeCategory === cat ? '#2563eb' : '#64748b',
+                                transition: 'all 0.15s',
+                            }}
+                        >
+                            {cat === 'all' ? 'Tümü' : CATEGORY_LABELS[cat]?.label || cat}
+                        </button>
+                    ))}
                 </div>
             </div>
 
-            <style jsx global>{`
-                @keyframes giftPanelIn {
-                    from { opacity: 0; transform: scale(0.92) translateY(10px); }
-                    to { opacity: 1; transform: scale(1) translateY(0); }
+            {/* Gift Grid — compact */}
+            <div style={{ flex: 1, overflowY: 'auto', padding: 8, scrollbarWidth: 'thin' }}>
+                <div style={{
+                    display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6,
+                }}>
+                    {filteredGifts.map(gift => {
+                        const canAfford = balance >= gift.price;
+                        const isSending = sending === gift.id;
+                        const catColor = CATEGORY_LABELS[gift.category]?.color || '#6b7280';
+
+                        return (
+                            <button
+                                key={gift.id}
+                                onClick={() => canAfford && handleSend(gift.id, gift.price)}
+                                disabled={!canAfford || !!sending}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: 2,
+                                    padding: '8px 4px 6px',
+                                    borderRadius: 10,
+                                    border: `1px solid ${canAfford ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.06)'}`,
+                                    background: isSending
+                                        ? 'rgba(37,99,235,0.12)'
+                                        : canAfford
+                                            ? 'rgba(255,255,255,0.5)'
+                                            : 'rgba(148,163,184,0.04)',
+                                    cursor: canAfford ? 'pointer' : 'not-allowed',
+                                    opacity: canAfford ? 1 : 0.4,
+                                    transition: 'all 0.15s',
+                                    transform: isSending ? 'scale(0.92)' : 'scale(1)',
+                                }}
+                                onMouseEnter={e => {
+                                    if (canAfford) (e.currentTarget.style.background = 'rgba(37,99,235,0.08)');
+                                }}
+                                onMouseLeave={e => {
+                                    if (canAfford) (e.currentTarget.style.background = 'rgba(255,255,255,0.5)');
+                                }}
+                            >
+                                <span style={{ fontSize: 22, lineHeight: 1 }}>{gift.emoji}</span>
+                                <span style={{ fontSize: 8, fontWeight: 700, color: '#334155', textAlign: 'center', lineHeight: 1.2 }}>{gift.name}</span>
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 2,
+                                    padding: '1px 5px', borderRadius: 4,
+                                    background: 'rgba(37,99,235,0.06)',
+                                }}>
+                                    <span style={{ fontSize: 7 }}>🪙</span>
+                                    <span style={{ fontSize: 9, fontWeight: 700, color: catColor }}>{gift.price}</span>
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+
+                {/* Yetersiz bakiye uyarısı */}
+                {balance <= 0 && (
+                    <div style={{
+                        marginTop: 8, padding: '6px 10px', borderRadius: 8,
+                        background: 'rgba(245, 158, 11, 0.08)',
+                        border: '1px solid rgba(245, 158, 11, 0.15)',
+                        display: 'flex', alignItems: 'center', gap: 6,
+                    }}>
+                        <span style={{ fontSize: 12 }}>⚠️</span>
+                        <span style={{ fontSize: 9, color: '#92400e', fontWeight: 600 }}>
+                            Jeton bakiyeniz yetersiz.
+                        </span>
+                    </div>
+                )}
+            </div>
+
+            <style>{`
+                @keyframes giftPopIn {
+                    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+                    to { opacity: 1; transform: translateY(0) scale(1); }
                 }
             `}</style>
         </div>,

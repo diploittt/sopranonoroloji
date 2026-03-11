@@ -205,7 +205,7 @@ export function BottomToolbar({
                 <div className="w-64 space-y-4 p-2">
                     {/* Header with Visualizer */}
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">🎤 Konuşmacı Sesi</span>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">🎤 {t.speakerVolume}</span>
                     </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -293,7 +293,7 @@ export function BottomToolbar({
                         <>
                             <div className="w-full h-px bg-white/10 my-3" />
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">📺 TV Sesi</span>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">📺 {t.tvVolume}</span>
                                 <span className="text-[10px] text-gray-500 font-mono">%{localTvVolume}</span>
                             </div>
 
@@ -418,7 +418,7 @@ export function BottomToolbar({
                                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                                         : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
                             `}
-                            title={isCurrentUserMuted ? 'Susturuldunuz' : isMicOn ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
+                            title={isCurrentUserMuted ? t.youAreMuted : isMicOn ? t.turnOffMic : t.turnOnMic}
                         >
                             {isCurrentUserMuted ? (
                                 <MicOff className="w-4 h-4" />

@@ -4,6 +4,7 @@ import { Lock, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { RoomInfo } from '@/hooks/useSocket';
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/i18n/LanguageProvider';
 
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -64,6 +65,7 @@ export function HeaderRooms({
 }: HeaderRoomsProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const { t } = useTranslation();
     const showNames = systemSettings?.showRoomName !== false;
     const [hoveredRoom, setHoveredRoom] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -71,7 +73,7 @@ export function HeaderRooms({
     const [canScrollRight, setCanScrollRight] = useState(false);
 
     const displayRooms = (rooms.length > 0 ? rooms : [
-        { id: 'genel', name: 'GENEL SOHBET', slug: 'genel-sohbet', status: 'ACTIVE', isLocked: false, isVipRoom: false, isMeetingRoom: false, participantCount: totalUsers },
+        { id: 'genel', name: t.generalChat, slug: 'genel-sohbet', status: 'ACTIVE', isLocked: false, isVipRoom: false, isMeetingRoom: false, participantCount: totalUsers },
     ]).filter(r => !r.isMeetingRoom);
 
     const count = displayRooms.length;
@@ -319,7 +321,7 @@ export function HeaderRooms({
                                         </span>
                                         <span className="text-[10px] flex items-center gap-1 font-medium" style={{ color: isActive ? 'rgba(190,185,230,0.9)' : '#6b6890', transition: 'color 0.3s' }}>
                                             {room.isLocked && <Lock className="w-2.5 h-2.5" />}
-                                            {room.isVipRoom ? 'VIP' : `${visibleCount} Kişi`}
+                                            {room.isVipRoom ? t.vip : `${visibleCount} ${t.people}`}
                                         </span>
                                     </div>
                                     {isActive && (

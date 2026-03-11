@@ -65,6 +65,13 @@ enum DuelResult {
   DRAW
 }
 
+enum FriendshipStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  BLOCKED
+}
+
 // ─────────────────────────────────────────────
 // TENANT (Müşteri)
 // ─────────────────────────────────────────────
@@ -194,6 +201,10 @@ model User {
   likesGiven         UserLike[]     @relation("LikesGiven")
   likesReceived      UserLike[]     @relation("LikesReceived")
   notifications      Notification[]
+  friendshipsSent    Friendship[]   @relation("FriendshipsSent")
+  friendshipsReceived Friendship[]  @relation("FriendshipsReceived")
+  dmsSent            DirectMessage[] @relation("DMsSent")
+  dmsReceived        DirectMessage[] @relation("DMsReceived")
 
   @@unique([tenantId, externalId])             // Tenant başına benzersiz external ID
   @@unique([tenantId, email])
@@ -773,4 +784,44 @@ model Notification {
 
   @@index([userId, isRead])
   @@index([userId, createdAt])
+}
+
+// ─────────────────────────────────────────────
+// FRIENDSHIP (Arkadaşlık İlişkileri)
+// ─────────────────────────────────────────────
+
+model Friendship {
+  id          String           @id @default(cuid())
+  tenantId    String
+  senderId    String
+  sender      User             @relation("FriendshipsSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User             @relation("FriendshipsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  status      FriendshipStatus @default(PENDING)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@unique([senderId, receiverId])
+  @@index([receiverId, status])
+  @@index([tenantId])
+}
+
+// ─────────────────────────────────────────────
+// DIRECT MESSAGE (Arkadaşlar Arası Mesajlar)
+// ─────────────────────────────────────────────
+
+model DirectMessage {
+  id          String   @id @default(cuid())
+  tenantId    String
+  senderId    String
+  sender      User     @relation("DMsSent", fields: [senderId], references: [id], onDelete: Cascade)
+  receiverId  String
+  receiver    User     @relation("DMsReceived", fields: [receiverId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, isRead])
+  @@index([tenantId])
 }

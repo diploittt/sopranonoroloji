@@ -8,6 +8,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from '../admin/admin.module';
+import { FriendModule } from '../friend/friend.module';
+import { FriendService } from '../friend/friend.service';
 
 @Module({
   imports: [
@@ -16,6 +18,7 @@ import { AdminModule } from '../admin/admin.module';
     SessionModule,
     PrismaModule,
     forwardRef(() => AdminModule),
+    FriendModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -25,7 +28,7 @@ import { AdminModule } from '../admin/admin.module';
       inject: [ConfigService],
     }),
   ],
-  providers: [ChatGateway, ChatService],
+  providers: [ChatGateway, ChatService, FriendService],
   exports: [ChatGateway, ChatService],
 })
 export class ChatModule { }

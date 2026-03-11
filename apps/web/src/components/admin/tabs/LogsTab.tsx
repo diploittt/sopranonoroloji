@@ -56,15 +56,16 @@ function maskDisplayName(name?: string): string {
     return name;
 }
 
-// Metadata'yı okunabilir key-value çiftlerine dönüştür
+// Metadata'yı okunabilir key-value çiftlerine dönüştür (max 1 derinlik)
 function formatMetadataValue(value: any): string {
     if (value === null || value === undefined) return '—';
     if (typeof value === 'boolean') return value ? 'Evet' : 'Hayır';
     if (typeof value === 'object') {
-        if (Array.isArray(value)) return value.join(', ');
-        return Object.entries(value)
-            .map(([k, v]) => `${k}: ${formatMetadataValue(v)}`)
-            .join(', ');
+        if (Array.isArray(value)) return value.length > 5 ? `${value.length} öğe` : value.join(', ');
+        // Derin objeleri gösterme — sadece basit key: value çiftlerini listele
+        const simple = Object.entries(value).filter(([, v]) => typeof v !== 'object' || v === null);
+        if (simple.length === 0) return '(detay)';
+        return simple.map(([k, v]) => `${METADATA_LABELS[k] || k}: ${v === true ? 'Evet' : v === false ? 'Hayır' : v ?? '—'}`).join(', ');
     }
     return String(value);
 }
@@ -76,21 +77,87 @@ const METADATA_LABELS: Record<string, string> = {
     reason: 'Sebep',
     duration: 'Süre',
     roomName: 'Oda Adı',
-    roomSlug: 'Oda Slug',
+    roomSlug: 'Oda Kodu',
     oldName: 'Eski İsim',
     newName: 'Yeni İsim',
+    name: 'İsim',
     role: 'Rol',
     oldRole: 'Eski Rol',
     newRole: 'Yeni Rol',
     displayName: 'Kullanıcı Adı',
     email: 'E-posta',
     action: 'İşlem',
-    targetUserId: 'Hedef ID',
+    targetUserId: 'Hedef Kullanıcı',
     targetDisplayName: 'Hedef Kullanıcı',
+    slug: 'Oda Kodu',
+    themeId: 'Tema',
+    theme: 'Tema',
+    isLocked: 'Kilitli',
+    isPublic: 'Herkese Açık',
+    isVipRoom: 'VIP Oda',
+    isMeetingRoom: 'Toplantı Odası',
+    isCameraAllowed: 'Kamera İzni',
+    buttonColor: 'Düğme Rengi',
+    micLimit: 'Mikrofon Limiti',
+    cameraLimit: 'Kamera Limiti',
+    maxParticipants: 'Maks. Katılımcı',
+    announcement: 'Duyuru',
+    description: 'Açıklama',
+    category: 'Kategori',
+    roomType: 'Oda Tipi',
+    status: 'Durum',
+    banType: 'Ban Türü',
+    banDuration: 'Ban Süresi',
+    connectionInfo: 'Bağlantı Bilgisi',
+    welcomeMessage: 'Hoşgeldiniz Mesajı',
+    antiFlood: 'Anti-Flood',
+    antiFloodLimit: 'Anti-Flood Limit',
+    banBlockEntry: 'Ban Girişi Engelle',
+    blockHtmlColors: 'HTML Renkleri Engelle',
+    showRoomName: 'Oda İsmi Göster',
+    adminAutoHdLock: 'Admin Kilit',
+    blockVirtualMachine: 'VM Engelle',
+    multiLoginBlock: 'Çoklu Giriş Engelle',
+    forceOperatorIcon: 'Operatör İkonu Zorunlu',
+    defaultLanguage: 'Dil',
+    micDuration: 'Mikrofon Süresi',
+    micDurationGuest: 'Misafir Mic Süresi',
+    micDurationMember: 'Üye Mic Süresi',
+    micDurationVip: 'VIP Mic Süresi',
+    micDurationAdmin: 'Admin Mic Süresi',
+    duelEnabled: 'Düello',
+    nudgeEnabled: 'Titreme',
+    allowYoutube: 'YouTube İzni',
+    logoUrl: 'Logo',
+    logoName: 'Logo İsmi',
+    logoPosition: 'Logo Pozisyonu',
+    logoImageSize: 'Logo Boyutu',
+    logoOffsetX: 'Logo X',
+    logoOffsetY: 'Logo Y',
+    primaryColor: 'Ana Renk',
+    accentColor: 'Vurgu Rengi',
+    guestProfile: 'Misafir Profil',
+    guestCamera: 'Misafir Kamera',
+    guestAnimation: 'Misafir Animasyon',
+    guestWebcam1v1: 'Misafir 1:1 Kamera',
+    guestPrivateMessage: 'Misafir Özel Mesaj',
+    guestPrivateRoomInvite: 'Misafir Özel Oda',
+    initialBalance: 'Başlangıç Jeton',
+    dailyBonusMember: 'Üye Günlük Bonus',
+    dailyBonusVip: 'VIP Günlük Bonus',
+    vipWeeklyBonus: 'VIP Haftalık Bonus',
 };
 
-// Gizlenmesi gereken metadata anahtarları
-const HIDDEN_KEYS = ['password', 'token', 'secret', 'hash', 'salt', 'refreshToken', 'accessToken'];
+// Gizlenmesi gereken metadata anahtarları (teknik/hassas/büyük objeler)
+const HIDDEN_KEYS = [
+    'password', 'token', 'secret', 'hash', 'salt', 'refreshToken', 'accessToken',
+    'id', 'tenantId', 'createdAt', 'updatedAt',
+    // Büyük iç içe config objeleri — detay göstermeye gerek yok
+    'rolePermissions', 'metadata', 'accessRestrictions', 'siteConfig',
+    'permissions', 'roomConfig', 'design', 'layout', 'toolbar', 'media',
+    'logoEffect', 'textEffect', 'logoTextSize', 'logoTextColor', 'logoTextColor2',
+    'textOffsetX', 'textOffsetY', 'backgroundImage', 'allowedDomains', 'customCss',
+];
 
 function ToastPortal({ msg }: { msg: { type: 'success' | 'error'; text: string } | null }) {
     if (!msg) return null;
@@ -148,13 +215,49 @@ export function LogsTab({ socket }: LogsTabProps) {
     // Metadata'yı filtrelenmiş key-value çiftlerine dönüştür
     const getMetadataEntries = (metadata?: Record<string, any>): Array<{ key: string; label: string; value: string }> => {
         if (!metadata) return [];
-        return Object.entries(metadata)
-            .filter(([key]) => !HIDDEN_KEYS.includes(key))
-            .map(([key, value]) => ({
+        const entries: Array<{ key: string; label: string; value: string }> = [];
+
+        for (const [key, value] of Object.entries(metadata)) {
+            if (HIDDEN_KEYS.includes(key)) continue;
+
+            // `changes` objesini düzleştir — içindeki basit alanları ayrı satırlar olarak göster
+            if (key === 'changes' && typeof value === 'object' && value !== null && !Array.isArray(value)) {
+                for (const [ck, cv] of Object.entries(value)) {
+                    if (HIDDEN_KEYS.includes(ck)) continue;
+                    // Sadece basit değerleri göster (string, number, boolean) — iç içe objeler atla
+                    if (typeof cv === 'object' && cv !== null) continue;
+                    // cuid benzeri ID'leri gizle
+                    if (typeof cv === 'string' && /^c[a-z0-9]{20,}$/i.test(cv)) continue;
+                    // Boş string'leri atla
+                    if (typeof cv === 'string' && cv.trim() === '') continue;
+                    entries.push({
+                        key: ck,
+                        label: METADATA_LABELS[ck] || ck,
+                        value: formatMetadataValue(cv),
+                    });
+                }
+                continue;
+            }
+
+            // cuid benzeri ID'leri gizle
+            if (typeof value === 'string' && /^c[a-z0-9]{20,}$/i.test(value)) continue;
+            // Çok uzun string'leri gizle
+            if (typeof value === 'string' && value.length > 200) continue;
+            // Boş objeleri gizle
+            if (typeof value === 'object' && value !== null && Object.keys(value).length === 0) continue;
+            // Boş string'leri atla
+            if (typeof value === 'string' && value.trim() === '') continue;
+            // İç içe büyük objeleri atla (5+ key)
+            if (typeof value === 'object' && value !== null && !Array.isArray(value) && Object.keys(value).length > 5) continue;
+
+            entries.push({
                 key,
                 label: METADATA_LABELS[key] || key,
                 value: formatMetadataValue(value),
-            }));
+            });
+        }
+
+        return entries;
     };
 
     return (
@@ -164,14 +267,14 @@ export function LogsTab({ socket }: LogsTabProps) {
             <div className="admin-split-left">
                 <div className="admin-toolbar">
                     <FileText style={{ width: 13, height: 13, color: '#8b5cf6' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Audit Log</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>Audit Log</span>
                     <div style={{ flex: 1 }} />
                     <input
                         type="text"
                         placeholder="Filtre (event)..."
                         value={eventFilter}
                         onChange={e => { setEventFilter(e.target.value); setPage(1); }}
-                        style={{ width: 120, fontSize: 10, padding: '4px 8px' }}
+                        style={{ width: 120, fontSize: 12, padding: '4px 8px' }}
                     />
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadLogs} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12, ...(loading ? { animation: 'adminSpin 0.6s linear infinite' } : {}) }} />
@@ -185,7 +288,7 @@ export function LogsTab({ socket }: LogsTabProps) {
                         <table className="admin-table">
                             <thead>
                                 <tr>
-                                    <th>Event</th>
+                                    <th>İşlem</th>
                                     <th>Kullanıcı</th>
                                     <th>Admin</th>
                                     <th>Tarih</th>
@@ -197,21 +300,21 @@ export function LogsTab({ socket }: LogsTabProps) {
                                         <td>
                                             <span style={{
                                                 display: 'inline-block', padding: '2px 6px', borderRadius: 4,
-                                                fontSize: 9, fontWeight: 700, fontFamily: 'monospace',
+                                                fontSize: 11, fontWeight: 700, fontFamily: 'monospace',
                                                 background: `${EVENT_COLORS[log.event] || '#6b7280'}15`,
                                                 color: EVENT_COLORS[log.event] || '#9ca3af',
                                                 border: `1px solid ${EVENT_COLORS[log.event] || '#6b7280'}25`,
                                             }}>
-                                                {log.event}
+                                                {EVENT_LABELS[log.event] || log.event}
                                             </span>
                                         </td>
-                                        <td style={{ color: '#d1d5db', fontSize: 11 }}>{maskDisplayName(log.user?.displayName) || log.userId?.slice(0, 8) || '—'}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 11 }}>{maskDisplayName(log.admin?.displayName) || log.adminId?.slice(0, 8) || '—'}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{fmtDate(log.createdAt)}</td>
+                                        <td style={{ color: '#334155', fontSize: 11 }}>{maskDisplayName(log.user?.displayName) || log.userId?.slice(0, 8) || '—'}</td>
+                                        <td style={{ color: '#334155', fontSize: 11 }}>{maskDisplayName(log.admin?.displayName) || log.adminId?.slice(0, 8) || '—'}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{fmtDate(log.createdAt)}</td>
                                     </tr>
                                 ))}
                                 {logs.length === 0 && (
-                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>Log kaydı yok</td></tr>
+                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>Log kaydı yok</td></tr>
                                 )}
                             </tbody>
                         </table>
@@ -220,9 +323,9 @@ export function LogsTab({ socket }: LogsTabProps) {
 
                 {/* Pagination */}
                 <div style={{
-                    padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.04)',
+                    padding: '8px 14px', borderTop: '1px solid rgba(148,163,184,0.12)',
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                    fontSize: 10, color: '#4b5563', flexShrink: 0,
+                    fontSize: 12, color: '#1e293b', flexShrink: 0,
                 }}>
                     <span>Toplam: {total} kayıt</span>
                     <div style={{ display: 'flex', gap: 4, alignItems: 'center' }}>
@@ -254,7 +357,7 @@ export function LogsTab({ socket }: LogsTabProps) {
                         <div className="admin-info-card">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Event</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>İşlem</div>
                                     <div style={{ fontSize: 13, fontWeight: 600 }}>
                                         <span style={{
                                             display: 'inline-block', padding: '3px 8px', borderRadius: 6,
@@ -268,16 +371,16 @@ export function LogsTab({ socket }: LogsTabProps) {
                                     </div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{fmtDate(selectedLog.createdAt)}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{fmtDate(selectedLog.createdAt)}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Kullanıcı</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{maskDisplayName(selectedLog.user?.displayName) || selectedLog.userId || '—'}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Kullanıcı</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{maskDisplayName(selectedLog.user?.displayName) || selectedLog.userId || '—'}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Admin</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{maskDisplayName(selectedLog.admin?.displayName) || selectedLog.adminId || '—'}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Admin</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{maskDisplayName(selectedLog.admin?.displayName) || selectedLog.adminId || '—'}</div>
                                 </div>
                             </div>
                         </div>
@@ -285,23 +388,23 @@ export function LogsTab({ socket }: LogsTabProps) {
                         {/* Metadata — okunabilir key-value format */}
                         {selectedLog.metadata && Object.keys(selectedLog.metadata).length > 0 && (
                             <div className="admin-info-card">
-                                <h4 style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                                <h4 style={{ fontSize: 11, fontWeight: 700, color: '#475569', marginBottom: 10, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                                     Detay Bilgileri
                                 </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 160, overflowY: 'auto' }}>
                                     {getMetadataEntries(selectedLog.metadata).map(entry => (
                                         <div key={entry.key} style={{
                                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                             padding: '6px 0',
-                                            borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                            borderBottom: '1px solid rgba(100,116,139,0.1)',
                                         }}>
                                             <span style={{
-                                                fontSize: 11, color: '#6b7280', fontWeight: 600,
+                                                fontSize: 11, color: '#334155', fontWeight: 600,
                                             }}>{entry.label}</span>
                                             <span style={{
-                                                fontSize: 11, color: '#d1d5db', fontWeight: 500,
-                                                maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                textAlign: 'right',
+                                                fontSize: 11, color: '#334155', fontWeight: 500,
+                                                maxWidth: '65%', wordBreak: 'break-word',
+                                                textAlign: 'right', lineHeight: 1.5,
                                             }}>{entry.value}</span>
                                         </div>
                                     ))}

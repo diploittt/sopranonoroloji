@@ -58,6 +58,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         duplicateBlocked,
         userPermissions,
         lastBonus,
+        actionIndicators,
+        setActionIndicators,
     } = useSocket({ roomId: slug, token });
 
     // Mediasoup — camera/video + audio streaming
@@ -970,7 +972,15 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             console.log(`[toggleStealth] ${currentlyStealthed ? 'visible' : 'stealth'} → emit status:change(${newStatus})`);
         },
         changeStatus: (newStatus: string) => {
-            if (!socket) return;
+            console.log(`[changeStatus] called with status=${newStatus}, socket=${!!socket}, connected=${socket?.connected}`);
+            if (!socket) {
+                console.warn('[changeStatus] SOCKET IS NULL — cannot emit status:change');
+                return;
+            }
+            if (!socket.connected) {
+                console.warn('[changeStatus] SOCKET IS DISCONNECTED — cannot emit status:change');
+                return;
+            }
             const isStealth = newStatus === 'stealth';
             // ★ localStorage'a yazma — VIP+ kullanıcılar için backend yönetiyor
             // Optimistic local update
@@ -981,7 +991,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 });
             }
             socket.emit('status:change', { status: newStatus });
-            console.log(`[changeStatus] → emit status:change(${newStatus})`);
+            console.log(`[changeStatus] ✅ emitted status:change(${newStatus})`);
         },
         setGodmasterVisibility: (mode: 'hidden' | 'visible' | 'disguised', disguiseName?: string) => {
             console.log(`[setGodmasterVisibility] CALLED! mode=${mode}, socket=${!!socket}, disguiseName=${disguiseName}`);
@@ -1177,6 +1187,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             duplicateBlocked,
             userPermissions,
             speakingUsers,
+            actionIndicators,
         },
         actions: {
             ...actions,
@@ -1187,6 +1198,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             dismissAnnouncement: () => { setAnnouncement(null); setHasNewAnnouncement(false); },
             markAnnouncementSeen: () => setHasNewAnnouncement(false),
             setDmIgnoredUserIds: (ids: Set<string>) => { dmIgnoredUserIdsRef.current = ids; },
+            setActionIndicators,
         },
         socket,
         passwordRequired,

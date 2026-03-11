@@ -546,7 +546,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                 {/* Toolbar */}
                 <div className="admin-toolbar">
                     <div style={{ position: 'relative', flex: 1, display: 'flex', alignItems: 'center' }}>
-                        <Search style={{ position: 'absolute', left: 12, width: 13, height: 13, color: 'rgba(123,159,239,0.35)', pointerEvents: 'none' }} />
+                        <Search style={{ position: 'absolute', left: 12, width: 13, height: 13, color: 'rgba(37,99,235,0.35)', pointerEvents: 'none' }} />
                         <input
                             type="text"
                             placeholder="Kullanıcı ara..."
@@ -567,11 +567,11 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                 {showAddForm && (
                     <div style={{
                         padding: 14,
-                        borderBottom: '1px solid rgba(123,159,239,0.06)',
-                        background: 'linear-gradient(180deg, rgba(123,159,239,0.03) 0%, transparent 100%)',
+                        borderBottom: '1px solid rgba(148,163,184,0.12)',
+                        background: 'rgba(226,232,240,0.5)',
                     }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-                            <span style={{ fontSize: 11, fontWeight: 800, color: '#a3bfff', display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <span style={{ fontSize: 11, fontWeight: 800, color: '#1e3a5f', display: 'flex', alignItems: 'center', gap: 6 }}>
                                 <UserPlus style={{ width: 12, height: 12 }} /> Yeni Üye Ekle
                             </span>
                             <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setShowAddForm(false)}>
@@ -634,12 +634,12 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                     >
                                         <td style={{ textAlign: 'center', padding: '7px 6px' }}>
                                             {isSpecialUser(user.role) ? (
-                                                <Star style={{ width: 12, height: 12, fill: '#a3bfff', color: '#a3bfff' }} className="star-icon" />
+                                                <Star style={{ width: 12, height: 12, fill: '#2563eb', color: '#2563eb' }} className="star-icon" />
                                             ) : (
-                                                <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(123,159,239,0.06)', border: '1px solid rgba(123,159,239,0.08)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'rgba(123,159,239,0.35)', textTransform: 'uppercase', overflow: 'hidden' }}>{user.avatarUrl && !user.avatarUrl.startsWith('animated:') && !user.avatarUrl.startsWith('gifnick:') ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}</div>
+                                                <div style={{ width: 26, height: 26, borderRadius: 8, background: 'rgba(37,99,235,0.08)', border: '1px solid rgba(37,99,235,0.1)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 800, color: 'rgba(37,99,235,0.4)', textTransform: 'uppercase', overflow: 'hidden' }}>{user.avatarUrl && !user.avatarUrl.startsWith('animated:') && !user.avatarUrl.startsWith('gifnick:') ? <img src={user.avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}</div>
                                             )}
                                         </td>
-                                        <td style={{ fontWeight: 600, color: selectedId === user.id ? '#fff' : '#d1d5db' }}>
+                                        <td style={{ fontWeight: 600, color: selectedId === user.id ? '#1e293b' : '#334155' }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                                                 <span className={`status-dot ${user.isOnline ? 'online' : 'offline'}`} />
                                                 {user.displayName}
@@ -650,17 +650,17 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                 {getRoleLabel(user.role)}
                                             </span>
                                         </td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>
                                             {fmtDate(user.lastLoginAt)}
                                         </td>
-                                        <td style={{ textAlign: 'center', color: '#6b7280', fontSize: 10 }}>
+                                        <td style={{ textAlign: 'center', color: '#334155', fontSize: 10 }}>
                                             {user.loginCount || 0}
                                         </td>
                                     </tr>
                                 ))}
                                 {filteredUsers.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>
+                                        <td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>
                                             {search ? 'Sonuç bulunamadı' : 'Henüz kullanıcı yok'}
                                         </td>
                                     </tr>
@@ -673,14 +673,14 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                 {/* Footer stats */}
                 <div style={{
                     padding: '10px 16px',
-                    borderTop: '1px solid rgba(123,159,239,0.06)',
+                    borderTop: '1px solid rgba(148,163,184,0.12)',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    fontSize: 10,
-                    color: '#4b5563',
+                    fontSize: 12,
+                    color: '#64748b',
                     flexShrink: 0,
-                    background: 'rgba(123,159,239,0.01)',
+                    background: 'rgba(226,232,240,0.5)',
                 }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                         Toplam: <span className="admin-count">{dbUsers.length}</span>
@@ -737,11 +737,11 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                     width: 3,
                     height: 40,
                     borderRadius: 3,
-                    background: 'rgba(255,255,255,0.08)',
+                    background: 'rgba(148,163,184,0.12)',
                     transition: 'background 0.2s, height 0.2s',
                 }}
-                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(56,189,248,0.3)'; e.currentTarget.style.height = '60px'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.height = '40px'; }}
+                    onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(37,99,235,0.2)'; e.currentTarget.style.height = '60px'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(148,163,184,0.12)'; e.currentTarget.style.height = '40px'; }}
                 />
             </div>
 
@@ -761,8 +761,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                 onClick={() => setShowAvatarPicker(!showAvatarPicker)}
                                 style={{
                                     width: 56, height: 56, borderRadius: 14,
-                                    background: 'linear-gradient(135deg, rgba(123,159,239,0.15), rgba(90,127,212,0.08))',
-                                    border: '2px solid rgba(123,159,239,0.2)',
+                                    background: 'rgba(37,99,235,0.08)',
+                                    border: '2px solid rgba(37,99,235,0.15)',
                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     overflow: 'hidden', cursor: 'pointer', flexShrink: 0,
                                     boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
@@ -775,12 +775,12 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                 ) : editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') ? (
                                     <img src={editAvatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 ) : (
-                                    <span style={{ fontSize: 22, fontWeight: 900, color: 'rgba(123,159,239,0.5)', textTransform: 'uppercase' }}>{(selectedUser.displayName || '?').charAt(0)}</span>
+                                    <span style={{ fontSize: 22, fontWeight: 900, color: 'rgba(37,99,235,0.5)', textTransform: 'uppercase' }}>{(selectedUser.displayName || '?').charAt(0)}</span>
                                 )}
                             </div>
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: 'white' }}>{selectedUser.displayName}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#6b7280' }}>
+                                <h3 style={{ margin: '0 0 4px', fontSize: 16, fontWeight: 800, color: '#1e293b' }}>{selectedUser.displayName}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#64748b' }}>
                                     <span className={getRoleBadgeClass(selectedUser.role)} style={{ fontSize: 8 }}>
                                         {getRoleLabel(selectedUser.role)}
                                     </span>
@@ -807,8 +807,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                 alignItems: 'center',
                                 gap: 8,
                                 ...(toastMsg.type === 'success'
-                                    ? { background: 'rgba(34,197,94,0.1)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.2)' }
-                                    : { background: 'rgba(239,68,68,0.1)', color: '#f87171', border: '1px solid rgba(239,68,68,0.2)' }),
+                                    ? { background: 'rgba(22,163,74,0.08)', color: '#16a34a', border: '1px solid rgba(22,163,74,0.15)' }
+                                    : { background: 'rgba(220,38,38,0.08)', color: '#dc2626', border: '1px solid rgba(220,38,38,0.15)' }),
                             }}>
                                 <span>{toastMsg.type === 'success' ? '✅' : '⚠️'}</span>
                                 {toastMsg.text}
@@ -926,10 +926,10 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                 onClick={() => setShowPerms(prev => !prev)}
                             >
                                 <div className="perms-icon">
-                                    <Shield style={{ width: 11, height: 11, color: '#a3bfff' }} />
+                                    <Shield style={{ width: 11, height: 11, color: '#2563eb' }} />
                                 </div>
                                 İzinler
-                                <span style={{ marginLeft: 'auto', fontSize: 10, color: '#6b7280', fontWeight: 400 }}>
+                                <span style={{ marginLeft: 'auto', fontSize: 12, color: '#334155', fontWeight: 400 }}>
                                     {showPerms ? '▼ Gizle' : '▶ Göster'}
                                 </span>
                             </div>
@@ -945,12 +945,12 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                             <div className="perms-icon">
                                                 {isRoleTooLow
                                                     ? <AlertTriangle style={{ width: 11, height: 11, color: '#f59e0b' }} />
-                                                    : <Shield style={{ width: 11, height: 11, color: '#a3bfff' }} />
+                                                    : <Shield style={{ width: 11, height: 11, color: '#2563eb' }} />
                                                 }
                                             </div>
                                             {group.title}
                                             {isRoleTooLow && (
-                                                <span style={{ marginLeft: 'auto', fontSize: 9, color: '#f59e0b', fontWeight: 400 }}>
+                                                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#f59e0b', fontWeight: 400 }}>
                                                     En az {minRoleName}
                                                 </span>
                                             )}
@@ -962,7 +962,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                 borderRadius: 8,
                                                 background: 'rgba(245, 158, 11, 0.08)',
                                                 border: '1px solid rgba(245, 158, 11, 0.2)',
-                                                fontSize: 10,
+                                                fontSize: 12,
                                                 color: '#f59e0b',
                                                 lineHeight: 1.5,
                                                 display: 'flex',
@@ -999,12 +999,12 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                     <div className="admin-perms-title" style={{ gap: 6 }}>
                                         <Sparkles style={{ width: 13, height: 13, color: '#fbbf24' }} />
                                         Hareketli Nickname
-                                        <span style={{ fontSize: 9, color: '#6b7280', fontWeight: 400, marginLeft: 'auto' }}>Sadece GodMaster</span>
+                                        <span style={{ fontSize: 11, color: '#334155', fontWeight: 400, marginLeft: 'auto' }}>Sadece GodMaster</span>
                                     </div>
 
                                     {/* Toggle */}
                                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0' }}>
-                                        <label style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                        <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                                             <input
                                                 type="checkbox"
                                                 checked={animatedNickEnabled}
@@ -1024,8 +1024,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                     onClick={() => setAnimatedNickType('animated')}
                                                     style={{
                                                         flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 11, fontWeight: 700,
-                                                        border: animatedNickType === 'animated' ? '2px solid #a78bfa' : '1px solid rgba(255,255,255,0.08)',
-                                                        background: animatedNickType === 'animated' ? 'rgba(167,139,250,0.1)' : 'rgba(255,255,255,0.02)',
+                                                        border: animatedNickType === 'animated' ? '2px solid #a78bfa' : '1px solid rgba(148,163,184,0.12)',
+                                                        background: animatedNickType === 'animated' ? 'rgba(167,139,250,0.1)' : 'rgba(226,232,240,0.4)',
                                                         color: animatedNickType === 'animated' ? '#c4b5fd' : '#6b7280',
                                                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                                                     }}
@@ -1036,8 +1036,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                     onClick={() => setAnimatedNickType('gif')}
                                                     style={{
                                                         flex: 1, padding: '7px 0', borderRadius: 8, fontSize: 11, fontWeight: 700,
-                                                        border: animatedNickType === 'gif' ? '2px solid #f472b6' : '1px solid rgba(255,255,255,0.08)',
-                                                        background: animatedNickType === 'gif' ? 'rgba(244,114,182,0.1)' : 'rgba(255,255,255,0.02)',
+                                                        border: animatedNickType === 'gif' ? '2px solid #f472b6' : '1px solid rgba(148,163,184,0.12)',
+                                                        background: animatedNickType === 'gif' ? 'rgba(244,114,182,0.1)' : 'rgba(226,232,240,0.4)',
                                                         color: animatedNickType === 'gif' ? '#f9a8d4' : '#6b7280',
                                                         cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
                                                     }}
@@ -1065,8 +1065,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                                 style={{
                                                                     padding: '8px 6px',
                                                                     borderRadius: 8,
-                                                                    border: animatedNickClass === opt.cls ? '2px solid #fbbf24' : '1px solid rgba(255,255,255,0.08)',
-                                                                    background: animatedNickClass === opt.cls ? 'rgba(251,191,36,0.08)' : 'rgba(255,255,255,0.02)',
+                                                                    border: animatedNickClass === opt.cls ? '2px solid #fbbf24' : '1px solid rgba(148,163,184,0.12)',
+                                                                    background: animatedNickClass === opt.cls ? 'rgba(251,191,36,0.08)' : 'rgba(226,232,240,0.4)',
                                                                     cursor: 'pointer',
                                                                     textAlign: 'center',
                                                                     transition: 'all 0.2s',
@@ -1075,7 +1075,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                                 <span className={`animated-nick-preview ${opt.cls}`} style={{ fontSize: animatedNickFontSize }}>
                                                                     {editName || selectedUser.displayName}
                                                                 </span>
-                                                                <div style={{ fontSize: 9, color: '#6b7280', marginTop: 4 }}>{opt.label}</div>
+                                                                <div style={{ fontSize: 11, color: '#334155', marginTop: 4 }}>{opt.label}</div>
                                                             </button>
                                                         ))}
                                                     </div>
@@ -1083,15 +1083,15 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                     {/* Font Size Slider */}
                                                     <div style={{ padding: '4px 0' }}>
                                                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                                                            <span style={{ fontSize: 10, fontWeight: 600, color: '#9ca3af' }}>Yazı Boyutu</span>
-                                                            <span style={{ fontSize: 10, fontWeight: 700, color: '#fbbf24' }}>{animatedNickFontSize}px</span>
+                                                            <span style={{ fontSize: 12, fontWeight: 600, color: '#475569' }}>Yazı Boyutu</span>
+                                                            <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>{animatedNickFontSize}px</span>
                                                         </div>
                                                         <input
                                                             type="range" min={11} max={22} value={animatedNickFontSize}
                                                             onChange={e => setAnimatedNickFontSize(Number(e.target.value))}
                                                             style={{ width: '100%', accentColor: '#fbbf24' }}
                                                         />
-                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 9, color: '#4b5563' }}>
+                                                        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#1e293b' }}>
                                                             <span>Küçük</span>
                                                             <span>Büyük</span>
                                                         </div>
@@ -1134,7 +1134,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                         </label>
                                                     </div>
                                                     {animatedNickGifUrl && (
-                                                        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: 8, background: 'rgba(30,41,59,0.5)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.08)' }}>
+                                                        <div style={{ position: 'relative', display: 'flex', justifyContent: 'center', padding: 8, background: 'rgba(226,232,240,0.5)', borderRadius: 8, border: '1px solid rgba(148,163,184,0.12)' }}>
                                                             <img
                                                                 src={animatedNickGifUrl}
                                                                 alt="GIF Önizleme"
@@ -1146,7 +1146,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                                     position: 'absolute', top: 4, right: 4,
                                                                     width: 18, height: 18, borderRadius: '50%',
                                                                     background: 'rgba(239,68,68,0.8)', border: 'none',
-                                                                    color: 'white', fontSize: 10, cursor: 'pointer',
+                                                                    color: 'white', fontSize: 12, cursor: 'pointer',
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                                 }}
                                                                 title="GIF'i Kaldır"
@@ -1159,8 +1159,8 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                             )}
 
                                             {/* ── Avatar Visibility Toggle ── */}
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: '1px solid rgba(255,255,255,0.04)' }}>
-                                                <label style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 0', borderTop: '1px solid rgba(148,163,184,0.12)' }}>
+                                                <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 8 }}>
                                                     <input
                                                         type="checkbox"
                                                         checked={animatedNickShowAvatar}
@@ -1173,7 +1173,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                                         </span>
                                                     ) : (
                                                         <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                            <EyeOff style={{ width: 12, height: 12, color: '#6b7280' }} /> Avatar Gizli
+                                                            <EyeOff style={{ width: 12, height: 12, color: '#334155' }} /> Avatar Gizli
                                                         </span>
                                                     )}
                                                 </label>
@@ -1188,19 +1188,20 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
 
                         {/* ─── Jeton Yükleme ─── */}
                         <div style={{
-                            padding: '12px 14px', borderRadius: 12,
-                            background: 'linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02))',
-                            border: '1px solid rgba(251,191,36,0.12)',
+                            padding: '14px 16px', borderRadius: 12,
+                            background: 'linear-gradient(135deg, rgba(37,99,235,0.08), rgba(99,102,241,0.06))',
+                            border: '1px solid rgba(37,99,235,0.18)',
                         }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
                                 <span style={{ fontSize: 16 }}>🪙</span>
-                                <span style={{ fontSize: 12, fontWeight: 700, color: '#fbbf24' }}>Jeton Yönetimi</span>
+                                <span style={{ fontSize: 12, fontWeight: 700, color: '#1e3a5f' }}>Jeton Yönetimi</span>
                                 <span style={{
-                                    marginLeft: 'auto', fontSize: 11, fontWeight: 600,
-                                    color: '#fbbf24', background: 'rgba(251,191,36,0.1)',
-                                    padding: '2px 8px', borderRadius: 6,
+                                    marginLeft: 'auto', fontSize: 11, fontWeight: 700,
+                                    color: '#1e3a5f', background: 'rgba(37,99,235,0.1)',
+                                    padding: '3px 10px', borderRadius: 6,
+                                    border: '1px solid rgba(37,99,235,0.15)',
                                 }}>
-                                    Bakiye: {selectedUser?.balance ?? 0} | Puan: {selectedUser?.points ?? 0}
+                                    Bakiye: <span style={{ color: '#2563eb' }}>{selectedUser?.balance ?? 0}</span> | Puan: <span style={{ color: '#7c3aed' }}>{selectedUser?.points ?? 0}</span>
                                 </span>
                             </div>
                             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
@@ -1211,13 +1212,13 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
                                     placeholder="Miktar"
                                     min="1"
                                     style={{
-                                        flex: 1, padding: '7px 10px', borderRadius: 8, fontSize: 12,
-                                        background: 'rgba(30,41,59,0.5)', border: '1px solid rgba(255,255,255,0.08)',
-                                        color: '#fff', outline: 'none',
+                                        flex: 1, padding: '8px 12px', borderRadius: 8, fontSize: 12,
+                                        background: 'rgba(255,255,255,0.85)', border: '1px solid rgba(37,99,235,0.15)',
+                                        color: '#1e293b', outline: 'none',
                                     }}
                                 />
                                 <button
-                                    className="admin-btn admin-btn-success admin-btn-sm"
+                                    className="admin-btn admin-btn-primary admin-btn-sm"
                                     onClick={handleAddBalance}
                                     disabled={tokenLoading || !tokenAmount || parseInt(tokenAmount) <= 0}
                                     style={{ whiteSpace: 'nowrap' }}

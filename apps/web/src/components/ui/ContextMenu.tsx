@@ -17,6 +17,8 @@ const IconMap: Record<string, any> = LucideIcons;
 interface ContextMenuProps {
     items: MenuItem[];
     anchorPoint: { x: number; y: number } | null;
+    x: number;
+    y: number;
     onClose: () => void;
     onAction: (itemId: string) => void;
 }
@@ -30,7 +32,6 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
     const [prevAnchor, setPrevAnchor] = useState<{ x: number; y: number } | null>(null);
 
     // If anchorPoint changes (new open or move), reset visibility to false immediately
-    // This happens during render, before paint, avoiding the flash of old position
     if (anchorPoint !== prevAnchor) {
         setPrevAnchor(anchorPoint);
         setIsVisible(false);
@@ -45,15 +46,10 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
             let x = anchorPoint.x;
             let y = anchorPoint.y;
 
-            // Padding from edge
             const padding = 8;
-
-            // Check right edge
             if (x + offsetWidth + padding > innerWidth) {
                 x = Math.max(0, innerWidth - offsetWidth - padding);
             }
-
-            // Check bottom edge
             if (y + offsetHeight + padding > innerHeight) {
                 y = Math.max(0, innerHeight - offsetHeight - padding);
             }
@@ -70,7 +66,6 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
                 onClose();
             }
         };
-        // Use mousedown capture to handle it before others
         document.addEventListener('mousedown', handleClick, true);
         return () => document.removeEventListener('mousedown', handleClick, true);
     }, [onClose]);
@@ -93,8 +88,8 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
         if (item.divider) {
             const prev = arr[i - 1];
             const next = arr[i + 1];
-            if (!prev || prev.divider) return false; // No ref to previous, or prev is also divider
-            if (!next) return false; // Last item can't be divider
+            if (!prev || prev.divider) return false;
+            if (!next) return false;
         }
         return true;
     });
@@ -102,19 +97,33 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
     return createPortal(
         <div
             ref={menuRef}
-            className="fixed z-[9999] min-w-[220px] bg-[#0a0f1c]/95 backdrop-blur-xl border rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.5),0_0_30px_rgba(123,159,239,0.04)] py-1.5 origin-top-left"
             style={{
+                position: 'fixed',
+                zIndex: 9999,
+                minWidth: 220,
                 top: position.y,
                 left: position.x,
                 opacity: isVisible ? 1 : 0,
                 visibility: isVisible ? 'visible' : 'hidden',
-                borderColor: 'rgba(123, 159, 239, 0.15)',
+                background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
+                backdropFilter: 'blur(28px) saturate(130%)',
+                WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                border: '1px solid rgba(255,255,255,0.65)',
+                borderRadius: 14,
+                boxShadow: '0 16px 48px -8px rgba(0,0,0,0.22), 0 6px 18px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+                padding: '5px',
+                overflow: 'hidden',
+                animation: isVisible ? 'ctxUiMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
             }}
             onContextMenu={(e) => e.preventDefault()}
         >
             {displayItems.map((item, idx) => {
                 if (item.divider) {
-                    return <div key={`sep-${idx}`} className="my-1.5 h-px mx-2" style={{ background: 'linear-gradient(90deg, transparent, rgba(123, 159, 239, 0.15), transparent)' }} />;
+                    return <div key={`sep-${idx}`} style={{
+                        height: 1,
+                        margin: '4px 10px',
+                        background: 'linear-gradient(90deg, transparent 5%, rgba(148,163,184,0.25) 50%, transparent 95%)',
+                    }} />;
                 }
 
                 const Icon = item.icon ? IconMap[item.icon] : null;
@@ -129,19 +138,53 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
                             }
                         }}
                         disabled={item.disabled}
-                        className={`w-full text-left px-3 py-2.5 flex items-center gap-3 transition-colors text-sm font-medium
-                            ${item.danger
-                                ? 'text-red-400 hover:bg-red-500/10 hover:text-red-300'
-                                : 'text-gray-300 hover:bg-[#7b9fef]/8 hover:text-[#a3bfff]'}
-                            ${item.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                        `}
+                        style={{
+                            width: '100%',
+                            textAlign: 'left',
+                            padding: '8px 12px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 10,
+                            border: 'none',
+                            borderRadius: 8,
+                            background: 'transparent',
+                            fontSize: 12.5,
+                            fontWeight: 600,
+                            color: item.danger ? '#dc2626' : '#1e293b',
+                            cursor: item.disabled ? 'not-allowed' : 'pointer',
+                            opacity: item.disabled ? 0.45 : 1,
+                            transition: 'background 0.12s ease',
+                            lineHeight: 1.4,
+                        }}
+                        onMouseOver={(e) => {
+                            if (!item.disabled) {
+                                (e.currentTarget as HTMLElement).style.background = item.danger
+                                    ? 'rgba(220,38,38,0.08)'
+                                    : 'rgba(37,99,235,0.08)';
+                            }
+                        }}
+                        onMouseOut={(e) => {
+                            (e.currentTarget as HTMLElement).style.background = 'transparent';
+                        }}
                     >
-                        {Icon && <Icon className={`w-4 h-4 ${item.danger ? 'text-red-400' : 'text-gray-500'}`} />}
-                        <span className="flex-1">{item.label}</span>
+                        {Icon && <Icon style={{
+                            width: 16,
+                            height: 16,
+                            color: item.danger ? '#dc2626' : '#475569',
+                            flexShrink: 0,
+                        }} />}
+                        <span style={{ flex: 1 }}>{item.label}</span>
                     </button>
                 );
             })}
+
+            <style>{`
+                @keyframes ctxUiMenuIn {
+                    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
+                }
+            `}</style>
         </div>,
-        document.body // Portal to body to avoid z-index/overflow issues within containers
+        document.body
     );
 }

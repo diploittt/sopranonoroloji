@@ -170,7 +170,7 @@ export function RightLivePanel({
                     <span className="relative flex h-2 w-2">
                         <span className={`relative inline-flex rounded-full h-2 w-2 ${isHasbihal ? 'bg-[#7b9fef]' : 'bg-red-500'} animate-pulse`}></span>
                     </span>
-                    <span className={`live-text text-[10px] font-bold tracking-[0.2em] ${isHasbihal ? 'text-[#a3bfff]' : 'text-red-400'}`} style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", letterSpacing: '0.15em', paddingTop: '0.25rem' } : undefined}>{isHasbihal ? 'CANLI SOHBETİ' : t.liveStream}</span>
+                    <span className={`live-text text-[10px] font-bold tracking-[0.2em] ${isHasbihal ? 'text-[#a3bfff]' : 'text-red-400'}`} style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", letterSpacing: '0.15em', paddingTop: '0.25rem' } : undefined}>{isHasbihal ? t.liveChat : t.liveStream}</span>
                 </div>
                 <div style={{ flex: 1 }} />
                 <button
@@ -238,7 +238,7 @@ export function RightLivePanel({
                         {/* LIVE VIDEO (OVERLAY) — Tıkla büyüt */}
                         <div
                             className="absolute inset-0 z-10 cursor-pointer"
-                            onClick={() => { if (speakerStream) { setExpandedStream(speakerStream); setExpandedUsername(speakerUsername || 'Konuşmacı'); } }}
+                            onClick={() => { if (speakerStream) { setExpandedStream(speakerStream); setExpandedUsername(speakerUsername || t.speaker); } }}
                             title="Tıkla büyüt"
                         />
                         <video

@@ -14,6 +14,7 @@ import { AiModule } from './ai/ai.module';
 import { OrderModule } from './order/order.module';
 import { BillingModule } from './billing/billing.module';
 import { LivekitModule } from './livekit/livekit.module';
+import { FriendModule } from './friend/friend.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { LivekitModule } from './livekit/livekit.module';
     OrderModule,
     BillingModule,
     LivekitModule,
+    FriendModule,
   ],
 })
 export class AppModule { }

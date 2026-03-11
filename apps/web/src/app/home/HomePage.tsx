@@ -14,7 +14,7 @@ import {
 import { API_URL } from '@/lib/api';
 import { adminApi } from '@/lib/admin/api';
 import ToastContainer from '@/components/ui/ToastContainer';
-import CRTMonitor from '@/components/home/CRTMonitor';
+import LaptopSimulation from '@/components/home/LaptopSimulation';
 import { useAdminStore } from '@/lib/admin/store';
 import { RadioPlayer } from '@/components/roomUI/RadioPlayer';
 import { ChatMessages } from '@/components/roomUI/ChatMessages';
@@ -40,6 +40,8 @@ import { ToastContainer as RoomToastContainer, useToast } from '@/components/ui/
 import { useAdminPanelStore } from '@/stores/useAdminPanelStore';
 import { AdminPanelWindow } from '@/components/admin/AdminPanelWindow';
 
+import { DemoChatRoom } from '@/components/room/DemoChatRoom';
+
 type DemoContextMenuItem = RoomMenuItem;
 
 // YouTube video ID extract — RightLivePanel'deki aynı fonksiyon
@@ -56,614 +58,8 @@ function extractYoutubeId(url: string): string | null {
 
 const AUTH_TOKEN_KEY = 'soprano_auth_token';
 
-// ─── DEMO MENU ITEMS (same as room page) ─────────────────────────────
-const DEMO_EMPTY_AREA_ITEMS: DemoContextMenuItem[] = [
-    { id: 'change-name', label: 'İsim Değiştir', icon: '✏️', action: 'openChangeNameModal', description: 'Kullanıcı adını değiştir' },
-    { id: 'admin-panel', label: 'Admin Paneli', icon: '⚙️', action: 'openAdminPanel', description: 'Admin paneline git' },
-    { id: 'clear-chat', label: 'Yazıları Sil', icon: '🗑️', action: 'clearChatRealtime', description: 'Chat ekranını temizle (herkes için)', confirm: true, confirmMessage: 'Tüm chat geçmişi silinecek. Emin misiniz?' },
-    { id: 'check-history', label: 'Geçmişi Kontrol Et', icon: '📜', action: 'openHistoryModal', description: 'Chat ve oda geçmişini görüntüle' },
-    { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'openUsersModal', description: 'Tüm odalardaki kullanıcıları göster' },
-    { id: 'room-monitor', label: 'Odaları Gözetle', icon: '🏠', action: 'openRoomMonitor', description: 'Tüm odaları izle ve yönet' },
-    { id: 'mic-free', label: 'Mikrofonu Serbest Bırak', icon: '🎤', action: 'freeMicrophone', description: 'Mikrofonu serbest bırak' },
-    { id: 'mic-take', label: 'Mikrofonu Al', icon: '🎙️', action: 'takeMicrophone', description: 'Mikrofonu al' },
-    { id: 'talk-test', label: 'Mikrofon Testi', icon: '🎙️', action: 'testUserAudio', description: 'Mikrofonun çalışıp çalışmadığını test et' },
-    { id: 'my-profile', label: 'Profilim', icon: '👤', action: 'openMyProfile', description: 'Kendi profilim' },
-];
 
-function getDemoUserMenuItems(targetUser?: any): DemoContextMenuItem[] {
-    const isMuted = targetUser?.isMuted;
-    const isGagged = targetUser?.isGagged;
-    const isBanned = targetUser?.isBanned;
-    const isCamBlocked = targetUser?.isCamBlocked;
-    return [
-        isMuted
-            ? { id: 'unmute', label: 'Sesi Aç', icon: '🔊', action: 'unmuteUser' }
-            : { id: 'mute', label: 'Sustur', icon: '🔇', action: 'muteUser' },
-        { id: 'kick', label: 'At', icon: '👢', action: 'kickUser', confirm: true, confirmMessage: 'Kullanıcı odadan atılacak. Emin misiniz?' },
-        isGagged
-            ? { id: 'ungag', label: 'Yazı Yasağını Kaldır', icon: '💬', action: 'ungagUser' }
-            : { id: 'gag', label: 'Yazı Yasağı', icon: '🤐', action: 'gagUser' },
-        ...(isBanned
-            ? [{ id: 'unban', label: 'Yasağı Kaldır', icon: '✅', action: 'unbanUser', confirm: true, confirmMessage: 'Yasak kaldırılacak. Emin misiniz?' }]
-            : [
-                { id: 'ban-1day', label: '1 Gün Yasakla', icon: '🚫', action: 'banUser', duration: '1d' as any, confirm: true, confirmMessage: '1 gün yasaklanacak. Emin misiniz?' },
-                {
-                    id: 'ban-more', label: 'Daha Fazla Yasakla', icon: '⛔', type: 'submenu' as const,
-                    submenu: [
-                        { id: 'ban-1week', label: '1 Hafta', duration: '1w' as any, action: 'banUser', confirm: true, confirmMessage: '1 hafta yasaklanacak.' },
-                        { id: 'ban-1month', label: '1 Ay', duration: '1m' as any, action: 'banUser', confirm: true, confirmMessage: '1 ay yasaklanacak.' },
-                        { id: 'ban-permanent', label: 'Kalıcı', duration: 'permanent' as any, action: 'banUser', confirm: true, confirmMessage: 'Kalıcı yasaklanacak!' },
-                    ]
-                }
-            ]
-        ),
-        isCamBlocked
-            ? { id: 'cam-unblock', label: 'Kamera İznini Aç', icon: '📷', action: 'unblockCamera' }
-            : { id: 'cam-block', label: 'Kamera Engelle', icon: '📷🚫', action: 'blockCamera' },
-        { id: 'user-info', label: 'Kullanıcı Bilgisi', icon: 'ℹ️', action: 'openUserInfo' },
-        { id: 'log-history', label: 'Geçmiş', icon: '📜', action: 'openUserLogs' },
-        { id: 'nudge', label: 'Titret 📳', icon: '📳', action: 'nudgeUser' },
-        { id: 'duel', label: '⚔️ Düello Et', icon: '⚔️', action: 'challengeDuel' },
-        { id: 'send-gift', label: 'Hediye Gönder', icon: '🎁', action: 'sendGift' },
-        { id: 'private-chat', label: 'Özel Mesaj', icon: '💬', action: 'openPrivateChat' },
-        { id: 'ignore', label: 'Yoksay', icon: '🙈', action: 'ignoreUser' },
-        { id: 'unignore', label: 'Yoksayı Kaldır', icon: '👁️', action: 'unignoreUser' },
-        { id: 'my-profile', label: 'Profilim', icon: '👤', action: 'openMyProfile' },
-    ];
-}
 
-const DEMO_CHAT_AREA_ITEMS: DemoContextMenuItem[] = [
-    { id: 'admin-panel', label: 'Admin Paneli', icon: '⚙️', action: 'openAdminPanel' },
-    { id: 'copy', label: 'Kopyala', icon: '📋', action: 'copy' },
-    { id: 'select-all', label: 'Tümünü Seç', icon: '✅', action: 'selectAll' },
-    { id: 'paste', label: 'Yapıştır', icon: '📌', action: 'paste' },
-    { id: 'stop-text', label: 'Yazıları Durdur', icon: '⏸️', action: 'stopMessagesGlobal', scope: 'global', confirm: true, confirmMessage: 'Tüm yazılar durdurulacak. Emin misiniz?' },
-    { id: 'stop-text-local', label: 'Yazıları Durdur (Yerel)', icon: '⏸️', action: 'stopMessagesLocal', scope: 'local' },
-    { id: 'clear-text-global', label: 'Yazıları Temizle', icon: '🗑️', action: 'clearMessagesGlobal', scope: 'global', confirm: true, confirmMessage: 'Tüm yazılar temizlenecek. Emin misiniz?' },
-    { id: 'clear-text-local', label: 'Yazıları Temizle (Yerel)', icon: '🗑️', action: 'clearMessagesLocal', scope: 'local' },
-    {
-        id: 'my-profile', label: 'Profilim', icon: '👤', type: 'submenu' as const,
-        submenu: [
-            { id: 'change-avatar', label: 'Avatar Değiştir', action: 'changeAvatar' },
-            { id: 'change-name-profile', label: 'İsim Değiştir', action: 'changeName' },
-            { id: 'change-password', label: 'Şifre Değiştir', action: 'changePassword' },
-            { id: 'name-color', label: 'İsme Renk Ver', action: 'changeNameColor' },
-        ]
-    },
-    { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'showAllUsers' },
-    { id: 'room-monitor', label: 'Odaları Gözetle', icon: '🏠', action: 'openRoomMonitor' },
-];
-
-// ─── DEMO CHAT ROOM — backend bağlantılı, tüm mekanikler entegre ───
-function DemoChatRoom({ slug, onRoomData }: { slug: string; onRoomData?: (data: { users: any[]; messages: any[]; currentSpeaker: any; actions: any; socket: any; state: any; demoAddToast: any; setIsSettingsOpen: any; setSettingsAnchor: any; handleUserContextMenu: any; handleEmptyAreaContextMenu: any; localStream: MediaStream | null; isCameraOn: boolean; openAudioTest: any }) => void }) {
-    const room = useRoomRealtime({ slug });
-    const { toasts: demoToasts, addToast: demoAddToast, removeToast: demoRemoveToast } = useToast();
-
-    // Expose room data to parent via callback
-    useEffect(() => {
-        onRoomData?.({
-            users: room.state.users,
-            messages: room.state.messages,
-            currentSpeaker: room.state.currentSpeaker,
-            actions: room.actions,
-            socket: room.socket,
-            state: room.state,
-            demoAddToast,
-            setIsSettingsOpen,
-            setSettingsAnchor,
-            handleUserContextMenu,
-            handleEmptyAreaContextMenu,
-            localStream: room.state.localStream,
-            isCameraOn: room.state.isCameraOn,
-            openAudioTest: () => { /* will be handled by parent */ },
-        });
-    }, [room.state.users, room.state.messages, room.state.currentSpeaker, room.state.isCameraOn, room.state.localStream, room.state.isMicOn, room.state.queue, room.state.micTimeLeft, room.state.isChatLocked, room.state.isCurrentUserMuted, room.state.isCurrentUserGagged]);
-
-    // ─── Modal States ─────────────────────────────────────────────────
-    const [isChangeNameOpen, setIsChangeNameOpen] = useState(false);
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
-    const [isGodMasterProfileOpen, setIsGodMasterProfileOpen] = useState(false);
-    const [isAllUsersOpen, setIsAllUsersOpen] = useState(false);
-    const [isRoomMonitorOpen, setIsRoomMonitorOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [settingsAnchor, setSettingsAnchor] = useState<React.RefObject<HTMLElement | null>>({ current: null });
-    const [userInfoTarget, setUserInfoTarget] = useState<any>(null);
-    const [userHistoryTarget, setUserHistoryTarget] = useState<{ userId: string; displayName: string } | null>(null);
-    const [ignoredUsers, setIgnoredUsers] = useState<Set<string>>(new Set());
-
-    // Gift system
-    const [giftPanelOpen, setGiftPanelOpen] = useState(false);
-    const [giftTargetUser, setGiftTargetUser] = useState<{ id: string; name: string } | null>(null);
-    const [giftAnimation, setGiftAnimation] = useState<any>(null);
-    const [tokenShopOpen, setTokenShopOpen] = useState(false);
-
-    // Nudge
-    const [nudgeActive, setNudgeActive] = useState(false);
-
-    // ─── Context Menu ─────────────────────────────────────────────────
-    const [contextMenu, setContextMenu] = useState<{
-        type: 'user' | 'empty' | 'chat';
-        x: number; y: number;
-        targetUser?: any;
-    } | null>(null);
-    const [confirmModal, setConfirmModal] = useState<{
-        isOpen: boolean; title?: string; message: string; variant?: string;
-        onConfirm: () => void;
-    }>({ isOpen: false, message: '', onConfirm: () => { } });
-    const savedSelectionRef = useRef<string>('');
-
-    const userLevel = ROLE_HIERARCHY[room.state.currentUser?.role || 'guest'] || 0;
-
-    const handleEmptyAreaContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        setContextMenu({ type: 'empty', x: e.clientX, y: e.clientY });
-    };
-    const handleUserContextMenu = (e: React.MouseEvent, user: any) => {
-        e.preventDefault();
-        setContextMenu({ type: 'user', x: e.clientX, y: e.clientY, targetUser: user });
-    };
-    const handleChatContextMenu = (e: React.MouseEvent) => {
-        e.preventDefault();
-        const sel = window.getSelection();
-        savedSelectionRef.current = sel?.toString() || '';
-        setContextMenu({ type: 'chat', x: e.clientX, y: e.clientY });
-    };
-
-    const getMenuItems = React.useCallback(() => {
-        if (!contextMenu) return [];
-        let items: DemoContextMenuItem[];
-        if (contextMenu.type === 'empty') items = DEMO_EMPTY_AREA_ITEMS;
-        else if (contextMenu.type === 'chat') items = DEMO_CHAT_AREA_ITEMS;
-        else items = getDemoUserMenuItems(contextMenu.targetUser);
-
-        // Filter by user level
-        items = getMenuForUser(items, userLevel, contextMenu.type, getRoleLevel(contextMenu.targetUser?.role),
-            contextMenu.type === 'user' && contextMenu.targetUser?.userId === room.state.currentUser?.userId);
-
-        // Toggle ignore/unignore
-        const targetId = contextMenu.targetUser?.userId || contextMenu.targetUser?.id;
-        const isIgnored = targetId && ignoredUsers.has(targetId);
-        items = items.filter(item => {
-            if (isIgnored && item.id === 'ignore') return false;
-            if (!isIgnored && item.id === 'unignore') return false;
-            return true;
-        });
-        return items;
-    }, [contextMenu, userLevel, room.state.currentUser, ignoredUsers]);
-
-    // ─── Action handler ───────────────────────────────────────────────
-    const handleMenuItemClick = React.useCallback((item: any) => {
-        const targetId = contextMenu?.targetUser?.userId || contextMenu?.targetUser?.id;
-        const targetName = contextMenu?.targetUser?.username || contextMenu?.targetUser?.displayName || 'Kullanıcı';
-        const duration = item.duration;
-
-        if (item.confirm && !item._confirmed) {
-            setConfirmModal({
-                isOpen: true, title: 'Onay', message: item.confirmMessage || 'Emin misiniz?',
-                onConfirm: () => {
-                    handleMenuItemClick({ ...item, _confirmed: true });
-                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                },
-            });
-            setContextMenu(null);
-            return;
-        }
-        setContextMenu(null);
-
-        switch (item.action) {
-            case 'muteUser':
-                room.socket?.emit('admin:userAction', { action: 'mute', targetUserId: targetId });
-                demoAddToast('success', 'Susturuldu', `${targetName} susturuldu.`);
-                break;
-            case 'unmuteUser':
-                room.socket?.emit('admin:userAction', { action: 'mute', targetUserId: targetId, value: false });
-                demoAddToast('success', 'Ses Açıldı', `${targetName} sesi açıldı.`);
-                break;
-            case 'kickUser':
-                room.socket?.emit('admin:userAction', { action: 'kick', targetUserId: targetId });
-                demoAddToast('success', 'Atıldı', `${targetName} odadan atıldı.`);
-                break;
-            case 'gagUser':
-                room.socket?.emit('admin:userAction', { action: 'gag', targetUserId: targetId });
-                demoAddToast('success', 'Yazı Yasağı', `${targetName} yazı yasağı verildi.`);
-                break;
-            case 'ungagUser':
-                room.socket?.emit('admin:userAction', { action: 'gag', targetUserId: targetId, value: false });
-                demoAddToast('success', 'Yazı Yasağı Kaldırıldı', `${targetName} yazı yasağı kaldırıldı.`);
-                break;
-            case 'banUser':
-                room.socket?.emit('admin:userAction', { action: 'ban', targetUserId: targetId, duration });
-                demoAddToast('success', 'Yasaklandı', `${targetName} yasaklandı.`);
-                break;
-            case 'unbanUser':
-                room.socket?.emit('admin:userAction', { action: 'unban', targetUserId: targetId });
-                demoAddToast('success', 'Yasak Kaldırıldı', `${targetName} yasağı kaldırıldı.`);
-                break;
-            case 'blockCamera':
-                room.socket?.emit('admin:userAction', { action: 'cam_block', targetUserId: targetId });
-                demoAddToast('success', 'Kamera Engellendi', `${targetName} kamerası engellendi.`);
-                break;
-            case 'unblockCamera':
-                room.socket?.emit('admin:userAction', { action: 'cam_block', targetUserId: targetId, value: false });
-                demoAddToast('success', 'Kamera Açıldı', `${targetName} kamera izni verildi.`);
-                break;
-            case 'openAdminPanel': {
-                const { openPanel: adminOpen } = useAdminPanelStore.getState();
-                adminOpen();
-                break;
-            }
-            case 'openUsersModal':
-            case 'showAllUsers':
-            case 'openUserList':
-                setIsAllUsersOpen(true);
-                break;
-            case 'openUserInfo':
-                setUserInfoTarget(contextMenu?.targetUser || { userId: targetId, displayName: targetName });
-                break;
-            case 'openUserLogs':
-                setUserHistoryTarget({ userId: targetId || '', displayName: targetName });
-                break;
-            case 'clearChatRealtime':
-            case 'clearMessagesGlobal':
-                room.socket?.emit('admin:userAction', { action: 'clear_chat_global' });
-                demoAddToast('success', 'Yazılar Temizlendi', 'Tüm yazılar temizlendi.');
-                break;
-            case 'clearMessagesLocal':
-                room.actions.clearLocalChat();
-                demoAddToast('success', 'Yazılar Temizlendi', 'Yerel yazılar temizlendi.');
-                break;
-            case 'stopMessagesGlobal':
-                room.socket?.emit('admin:userAction', { action: 'stop_messages_global' });
-                demoAddToast('success', 'Yazılar Durduruldu', 'Tüm yazılar durduruldu.');
-                break;
-            case 'stopMessagesLocal':
-                room.actions.toggleLocalChatStop();
-                demoAddToast('info', 'Yazılar Durduruldu', 'Yerel yazılar durduruldu/açıldı.');
-                break;
-            case 'freeMicrophone':
-            case 'freeMicForUser':
-                if (targetId) {
-                    room.socket?.emit('admin:userAction', { action: 'release_mic', targetUserId: targetId });
-                } else {
-                    room.actions.releaseMic();
-                }
-                demoAddToast('success', 'Mikrofon Serbest', 'Mikrofon serbest bırakıldı.');
-                break;
-            case 'takeMicrophone':
-            case 'takeMicFromUser':
-                if (targetId) {
-                    room.socket?.emit('admin:userAction', { action: 'take_mic', targetUserId: targetId });
-                } else {
-                    room.actions.forceTakeMic();
-                }
-                demoAddToast('success', 'Mikrofon Alındı', 'Mikrofon alındı.');
-                break;
-            case 'nudgeUser':
-                room.socket?.emit('admin:userAction', { action: 'nudge', targetUserId: targetId });
-                demoAddToast('info', 'Titretildi', `${targetName} titretildi.`);
-                try { const a = new Audio('/sounds/msn-nudge.mp3'); a.volume = 0.5; a.play().catch(() => { }); } catch { }
-                break;
-            case 'challengeDuel':
-                if (targetId) room.socket?.emit('duel:challenge', { targetUserId: targetId });
-                break;
-            case 'sendGift':
-                if (targetId) { setGiftTargetUser({ id: targetId, name: targetName }); setGiftPanelOpen(true); }
-                break;
-            case 'openPrivateChat':
-                if (targetName) room.actions.openDM(targetName);
-                break;
-            case 'ignoreUser':
-                setIgnoredUsers(prev => new Set(prev).add(targetId || ''));
-                demoAddToast('info', 'Yoksayıldı', `${targetName} yoksayıldı.`);
-                break;
-            case 'unignoreUser':
-                setIgnoredUsers(prev => { const n = new Set(prev); n.delete(targetId || ''); return n; });
-                demoAddToast('info', 'Yoksay Kaldırıldı', `${targetName} artık yoksayılmıyor.`);
-                break;
-            case 'openMyProfile': {
-                const role = room.state.currentUser?.role || '';
-                if (role.toLowerCase() === 'godmaster') setIsGodMasterProfileOpen(true);
-                else setIsProfileOpen(true);
-                break;
-            }
-            case 'openChangeNameModal':
-            case 'changeName':
-                setIsChangeNameOpen(true);
-                break;
-            case 'openHistoryModal':
-                setUserHistoryTarget({ userId: '', displayName: 'Tüm Kullanıcılar' });
-                break;
-            case 'openRoomMonitor':
-                setIsRoomMonitorOpen(true);
-                break;
-            case 'changeAvatar':
-            case 'changePassword':
-            case 'changeNameColor':
-                setIsProfileOpen(true);
-                break;
-            case 'testUserAudio':
-                // AudioTestPanel açma — parent (HomePage) scope'undaki state'i kontrol eder
-                (window as any).__sopranoOpenAudioTest?.();
-                break;
-            case 'copy': {
-                const txt = savedSelectionRef.current;
-                if (txt) { navigator.clipboard.writeText(txt).then(() => demoAddToast('success', 'Kopyalandı', 'Metin kopyalandı.')).catch(() => demoAddToast('error', 'Hata', 'Kopyalama başarısız.')); }
-                else demoAddToast('info', 'Seçim Yok', 'Kopyalanacak metin seçilmemiş.');
-                break;
-            }
-            case 'selectAll': {
-                const c = document.querySelector('[data-chat-messages]');
-                if (c) { const r = document.createRange(); r.selectNodeContents(c); const s = window.getSelection(); s?.removeAllRanges(); s?.addRange(r); demoAddToast('info', 'Tümü Seçildi', 'Tüm mesajlar seçildi.'); }
-                break;
-            }
-            case 'paste': {
-                navigator.clipboard.readText().then((t) => {
-                    if (t) {
-                        const inp = document.querySelector('.message-input') as HTMLInputElement;
-                        if (inp) {
-                            const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value')?.set;
-                            if (setter) { setter.call(inp, inp.value + t); inp.dispatchEvent(new Event('input', { bubbles: true })); inp.focus(); }
-                        }
-                        demoAddToast('success', 'Yapıştırıldı', 'Metin yapıştırıldı.');
-                    }
-                }).catch(() => demoAddToast('error', 'İzin Gerekli', 'Pano erişimi reddedildi.'));
-                break;
-            }
-        }
-    }, [contextMenu, room.socket, room.actions, room.state.currentUser, demoAddToast]);
-
-    // Socket event listeners
-    useEffect(() => {
-        if (!room.socket) return;
-        const onGift = (data: any) => setGiftAnimation(data);
-        const onNudge = (data: { from: string }) => {
-            demoAddToast('info', '📳 Titretme', `${data.from} seni titretti!`);
-            setNudgeActive(true);
-            setTimeout(() => setNudgeActive(false), 1500);
-            try { const a = new Audio('/sounds/msn-nudge.mp3'); a.volume = 0.7; a.play().catch(() => { }); } catch { }
-        };
-        room.socket.on('gift:received', onGift);
-        room.socket.on('room:nudge', onNudge);
-        return () => { room.socket?.off('gift:received', onGift); room.socket?.off('room:nudge', onNudge); };
-    }, [room.socket]);
-
-    // Sync ignoredUsers → hook
-    useEffect(() => { room.actions.setDmIgnoredUserIds?.(ignoredUsers); }, [ignoredUsers]);
-
-    return (
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}
-            className={`demo-chatroom-override ${nudgeActive ? 'nudge-shake' : ''}`}
-        >
-            {/* CSS overrides — gerçek bileşenlerin arka planlarını demo glassmorphism temasına uyumlu yap */}
-            <style>{`
-                .demo-chatroom-override .chat-area,
-                .demo-chatroom-override [data-chat-messages] {
-                    background: transparent !important;
-                }
-                .demo-chatroom-override .chat-messages-container {
-                    background: transparent !important;
-                    max-height: 540px !important;
-                    padding-bottom: 20px !important;
-                    flex: none !important;
-                }
-                .demo-chatroom-override .chat-messages-container .animate-in {
-                    animation: none !important;
-                    opacity: 1 !important;
-                    transform: none !important;
-                }
-                /* ── Bottom Toolbar ana kart: tamamen saydam, gölgesiz ── */
-                .demo-chatroom-override .bottom-toolbar {
-                    background: transparent !important;
-                    border-top: none !important;
-                    backdrop-filter: none !important;
-                    box-shadow: none !important;
-                }
-                /* Tüm iç div'ler: bg, border, shadow tamamen sıfır */
-                .demo-chatroom-override .bottom-toolbar > div,
-                .demo-chatroom-override .bottom-toolbar > div > div,
-                .demo-chatroom-override .bottom-toolbar > div > div > div {
-                    background: transparent !important;
-                    box-shadow: none !important;
-                    border-color: transparent !important;
-                }
-                /* İkon satırı kartı — ince çerçeve, saydam bg */
-                .demo-chatroom-override .bottom-toolbar .bg-\[\#070B14\]\/80 {
-                    background: rgba(255,255,255,0.025) !important;
-                    border: 1px solid rgba(255,255,255,0.06) !important;
-                    box-shadow: none !important;
-                    border-radius: 16px !important;
-                    overflow: hidden !important;
-                }
-                /* İkon butonları — hafif çerçeve */
-                .demo-chatroom-override .bottom-toolbar button:not(.send-button) {
-                    background: rgba(255,255,255,0.04) !important;
-                    border-color: rgba(255,255,255,0.06) !important;
-                    box-shadow: none !important;
-                }
-                /* GÖNDER butonu */
-                .demo-chatroom-override .bottom-toolbar .send-button {
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06) !important;
-                }
-                /* Input alanı — chat kartıyla aynı tonda */
-                .demo-chatroom-override .bottom-toolbar input,
-                .demo-chatroom-override .bottom-toolbar textarea {
-                    background: rgba(255,255,255,0.03) !important;
-                    border: 1px solid rgba(255,255,255,0.08) !important;
-                    backdrop-filter: none !important;
-                    border-radius: 12px !important;
-                    box-shadow: none !important;
-                }
-                /* Mesaj balonları — yarı saydam */
-                .demo-chatroom-override .message-bubble,
-                .demo-chatroom-override .message-mine {
-                    background: rgba(255,255,255,0.04) !important;
-                    border-color: rgba(255,255,255,0.08) !important;
-                }
-                /* Oda sekme butonları — HeaderRooms.tsx'teki lavanta renkler kullanılsın */
-
-            `}</style>
-
-            {/* Düello Arenası */}
-            <DuelArena socket={room.socket} currentUserId={room.state.currentUser?.id || ''} roomSlug={slug} />
-
-            {/* Gerçek ChatMessages bileşeni */}
-            <div className="chat-area" style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', background: 'transparent' }}
-                onContextMenu={handleChatContextMenu}
-            >
-                <ChatMessages
-                    room={room}
-                    messages={room.state.messages}
-                    currentUser={room.state.currentUser}
-                    onContextMenu={handleChatContextMenu}
-                />
-            </div>
-
-            {/* BottomToolbar artık parent glossy-panel kartında render ediliyor */}
-
-            {/* ═══ Admin Panel Window ═══ */}
-            {userLevel >= ROLE_HIERARCHY.admin && (
-                <AdminPanelWindow
-                    socket={room.socket}
-                    users={room.state.users}
-                    currentUser={room.state.currentUser}
-                    roomState={room.state}
-                    systemSettings={room.state.systemSettings}
-                />
-            )}
-
-            {/* ═══ Context Menu ═══ */}
-            {contextMenu && (
-                <ContextMenu
-                    items={getMenuItems()}
-                    x={contextMenu.x}
-                    y={contextMenu.y}
-                    onClose={() => setContextMenu(null)}
-                    onItemClick={handleMenuItemClick}
-                />
-            )}
-
-            {/* ═══ Confirm Modal ═══ */}
-            <ConfirmModal
-                isOpen={confirmModal.isOpen}
-                title={confirmModal.title || 'Onay'}
-                message={confirmModal.message}
-                variant={(confirmModal.variant as 'info' | 'danger' | 'warning') || undefined}
-                onConfirm={confirmModal.onConfirm}
-                onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
-            />
-
-            {/* ═══ Modals ═══ */}
-            <AllUsersModal
-                isOpen={isAllUsersOpen}
-                onClose={() => setIsAllUsersOpen(false)}
-                socket={room.socket}
-                currentUser={room.state.currentUser}
-                onOpenDM={(username) => { room.actions.openDM(username); demoAddToast('info', 'Özel Mesaj', `${username} ile mesajlaşma başlatıldı.`); }}
-            />
-            <ChangeNameModal
-                isOpen={isChangeNameOpen}
-                currentName={room.state.currentUser?.username || ''}
-                onClose={() => setIsChangeNameOpen(false)}
-                onSubmit={(newName) => {
-                    if (room.socket) { room.socket.emit('status:change-name', { newName }); demoAddToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`); }
-                }}
-            />
-            <SettingsModal
-                anchorRef={settingsAnchor}
-                isOpen={isSettingsOpen}
-                onClose={() => setIsSettingsOpen(false)}
-                availableDevices={room.state.availableDevices}
-                selectedVideoDeviceId={room.state.selectedVideoDeviceId}
-                selectedAudioDeviceId={room.state.selectedAudioDeviceId}
-                onRefreshDevices={room.actions.refreshDevices}
-                onSelectVideoDevice={room.actions.setSelectedVideoDeviceId}
-                onSelectAudioDevice={room.actions.setSelectedAudioDeviceId}
-                cameraStream={room.state.localStream}
-                currentLanguage={room.state.systemSettings?.defaultLanguage || 'tr'}
-                onLanguageChange={(lang) => { if (room.socket) room.socket.emit('admin:saveSetting', { key: 'defaultLanguage', value: lang }); }}
-            />
-            <ProfileModal
-                isOpen={isProfileOpen}
-                onClose={() => setIsProfileOpen(false)}
-                currentUser={room.state.currentUser}
-                onChangeName={(n) => { if (room.socket) { room.socket.emit('status:change-name', { newName: n }); demoAddToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${n}`); } }}
-                onChangeAvatar={(a) => { if (room.socket) { room.socket.emit('status:change-avatar', { avatar: a }); demoAddToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.'); } }}
-                onChangeNameColor={(c) => { if (room.socket) { room.socket.emit('status:change-name-color', { color: c }); demoAddToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.'); } }}
-                onChangePassword={(o, n) => { if (room.socket) { room.socket.emit('status:change-password', { oldPassword: o, newPassword: n }); demoAddToast('success', 'Şifre Değiştirildi', 'Şifreniz güncellendi.'); } }}
-            />
-            <GodMasterProfileModal
-                isOpen={isGodMasterProfileOpen}
-                onClose={() => setIsGodMasterProfileOpen(false)}
-                currentUser={room.state.currentUser}
-                onChangeName={(n) => { if (room.socket) room.socket.emit('status:change-name', { newName: n }); }}
-                onChangeAvatar={(a) => { if (room.socket) room.socket.emit('status:change-avatar', { avatar: a }); }}
-                onChangeNameColor={(c) => { if (room.socket) room.socket.emit('status:change-name-color', { color: c }); }}
-                onChangeIcon={(i) => { if (room.socket) room.socket.emit('status:change-godmaster-icon', { icon: i }); }}
-            />
-            {userInfoTarget && <UserInfoModal user={userInfoTarget} onClose={() => setUserInfoTarget(null)} />}
-            <RoomMonitorModal
-                isOpen={isRoomMonitorOpen}
-                onClose={() => setIsRoomMonitorOpen(false)}
-                socket={room.socket}
-                currentRoomSlug={slug}
-                onNavigateToRoom={(roomSlug: string) => { demoAddToast('info', 'Oda Değiştirildi', `Odaya geçildi: ${roomSlug}`); }}
-                onUserAction={(item, targetUser) => handleMenuItemClick(item)}
-                userLevel={userLevel}
-                currentUserId={room.state.currentUser?.userId}
-                currentUserRole={room.state.currentUser?.role}
-            />
-            <UserHistoryModal
-                isOpen={!!userHistoryTarget}
-                onClose={() => setUserHistoryTarget(null)}
-                userId={userHistoryTarget?.userId || ''}
-                displayName={userHistoryTarget?.displayName || ''}
-            />
-
-            {/* Gift System */}
-            <GiftAnimation animationData={giftAnimation} onComplete={() => setGiftAnimation(null)} />
-            <GiftPanel
-                isOpen={giftPanelOpen}
-                onClose={() => { setGiftPanelOpen(false); setGiftTargetUser(null); }}
-                onSendGift={(giftId) => {
-                    if (room.socket && giftTargetUser) {
-                        room.socket.emit('gift:send', { receiverId: giftTargetUser.id, giftId }, (response: any) => {
-                            if (response?.error) demoAddToast('error', '❌ Hediye Hatası', response.error);
-                        });
-                    }
-                }}
-                socket={room.socket}
-                targetUserName={giftTargetUser?.name}
-                onOpenShop={() => setTokenShopOpen(true)}
-            />
-            <TokenShop isOpen={tokenShopOpen} onClose={() => setTokenShopOpen(false)} socket={room.socket} />
-
-            {/* DM Windows */}
-            {room.state.openDMs && room.state.openDMs.map((dmUser, idx) => {
-                const dmParticipant = room.state.users?.find((p: any) => p.displayName === dmUser || p.username === dmUser);
-                const dmUserId = dmParticipant?.userId;
-                const isDmIgnored = dmUserId ? ignoredUsers.has(dmUserId) : false;
-                return (
-                    <DMWindow
-                        key={dmUser}
-                        targetUsername={dmUser}
-                        messages={room.state.dmMessages[dmUser] || []}
-                        onClose={() => room.actions.closeDM(dmUser)}
-                        onMinimize={() => { }}
-                        onSendMessage={(text) => room.actions.sendDM(dmUser, text)}
-                        onIgnore={dmUserId ? () => {
-                            setIgnoredUsers(prev => { const n = new Set(prev); if (n.has(dmUserId)) n.delete(dmUserId); else n.add(dmUserId); return n; });
-                        } : undefined}
-                        isIgnored={isDmIgnored}
-                        initialPosition={{ x: 200 + (idx * 30), y: 150 + (idx * 30) }}
-                    />
-                );
-            })}
-
-            {/* Toasts */}
-            <RoomToastContainer toasts={demoToasts} removeToast={demoRemoveToast} />
-        </div>
-    );
-}
 
 
 // --- SAHTE VERİLER ---
@@ -675,7 +71,9 @@ const ACTIVE_ROOMS = [
     { id: 5, name: "VIP Sohbet", owner: "Admin", users: 12, max: 30, type: "Özel Oda", isVip: true },
 ];
 
-export default function HomePage() {
+export default function HomePage({ initialRoomsMode, initialSlug, initialTenant }: { initialRoomsMode?: boolean; initialSlug?: string; initialTenant?: string } = {}) {
+    // initialRoomsMode aktifken çıkış yapılırsa yönlendirilecek URL
+    const roomExitUrl = initialRoomsMode ? (initialTenant && initialTenant !== 'system' ? `/t/${initialTenant}` : '/') : null;
     const router = useRouter();
 
     // Section geçiş animasyonu
@@ -718,14 +116,17 @@ export default function HomePage() {
     const [showPackages, setShowPackages] = useState(false);
     const [showDemoToast, setShowDemoToast] = useState(false);
     const [showLoginToast, setShowLoginToast] = useState(false);
-    const [roomsMode, setRoomsMode] = useState(false);
+    const [roomsMode, setRoomsMode] = useState(initialRoomsMode || false);
     useEffect(() => { document.body.style.overflow = roomsMode ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [roomsMode]);
     const [blurToOdalar, setBlurToOdalar] = useState<false | 'out' | 'silhouette'>(false);
-    const [demoEntrance, setDemoEntrance] = useState<'idle' | 'in' | 'out'>('idle');
+    const [demoEntrance, setDemoEntrance] = useState<'idle' | 'in' | 'out'>(initialRoomsMode ? 'in' : 'idle');
     const [userStatus, setUserStatus] = useState<'online' | 'busy' | 'brb' | 'away' | 'phone' | 'invisible'>('online');
     const [micActive, setMicActive] = useState(false);
-    const [demoSlug, setDemoSlug] = useState('genel-sohbet');
-    const [demoMsgText, setDemoMsgText] = useState('');
+    const [demoSlug, setDemoSlug] = useState(initialSlug || 'genel-sohbet');
+    const handleRoomSwitch = (slug: string) => {
+        if (slug === demoSlug) return;
+        setDemoSlug(slug);
+    };
     const demoRoomRef = useRef<any>(null);
     const [demoRoomReady, setDemoRoomReady] = useState(false);
     const [demoRoomUsers, setDemoRoomUsers] = useState<any[]>([]);
@@ -733,10 +134,12 @@ export default function HomePage() {
     const [demoIsMicOn, setDemoIsMicOn] = useState(false);
     const [demoQueue, setDemoQueue] = useState<string[]>([]);
     const [demoMicTimeLeft, setDemoMicTimeLeft] = useState(0);
-    const [cachedRooms, setCachedRooms] = useState<{ name: string; slug: string }[]>([]);
-    useEffect(() => { adminApi.getRooms().then((rooms: any[]) => { if (rooms?.length) setCachedRooms(rooms.map(r => ({ name: r.name, slug: r.slug }))); }).catch(() => { }); }, []);
+    const [cachedRooms, setCachedRooms] = useState<{ name: string; slug: string }[]>(() => {
+        if (typeof window === 'undefined') return [];
+        try { const saved = localStorage.getItem('soprano_cached_rooms'); return saved ? JSON.parse(saved) : []; } catch { return []; }
+    });
+    useEffect(() => { if (dbRooms.length > 0) { const mapped = dbRooms.map(r => ({ name: r.name, slug: r.slug })); setCachedRooms(mapped); try { localStorage.setItem('soprano_cached_rooms', JSON.stringify(mapped)); } catch { } } }, [dbRooms]);
     const [statusDropdown, setStatusDropdown] = useState(false);
-    const [crtPowerOn, setCrtPowerOn] = useState(true);
     const [demoPhase, setDemoPhase] = useState<'idle' | 'cards-out' | 'bar-up' | 'bar-down' | 'lamp-center' | 'active' | 'exit-lamp' | 'exit-bar-up' | 'exit-bar-down' | 'exit-cards-in'>('idle');
     const demoMode = roomsMode || demoPhase === 'active' || demoPhase === 'lamp-center' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up';
     const [showCustomConfig, setShowCustomConfig] = useState(false);
@@ -778,7 +181,7 @@ export default function HomePage() {
     const [supMessage, setSupMessage] = useState('');
 
     // Navigation sections
-    const [activeSection, setActiveSection] = useState('home');
+    const [activeSection, setActiveSection] = useState(initialRoomsMode ? 'odalar' : 'home');
     const [guideOpen, setGuideOpen] = useState<string | null>(null);
 
     const openCheckout = (name: string, price: number, period: string) => {
@@ -841,12 +244,7 @@ export default function HomePage() {
 
     useEffect(() => {
         const initialUser = getAuthUser();
-        if (initialUser && !initialUser.isMember) {
-            clearAllSopranoAuth();
-            setUser(null);
-        } else {
-            setUser(initialUser);
-        }
+        setUser(initialUser);
         const onAuthChange = () => setUser(getAuthUser());
         window.addEventListener('auth-change', onAuthChange);
         return () => window.removeEventListener('auth-change', onAuthChange);
@@ -918,6 +316,8 @@ export default function HomePage() {
                     const u = { ...user, ...result.user };
                     setUser(u); setAuthUser(u);
                     if (field === 'avatar') setSelectedAvatar(value);
+                    // ★ Tüm bileşenlere profil değişikliğini bildir (DemoChatRoom dahil)
+                    window.dispatchEvent(new Event('auth-change'));
                 }
                 setProfileMsg('✅ Güncellendi!');
                 setTimeout(() => setProfileMsg(''), 2000);
@@ -962,6 +362,7 @@ export default function HomePage() {
         <>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
+                @import url('https://fonts.cdnfonts.com/css/cooper-black');
 
                 body {
                     margin: 0;
@@ -996,15 +397,30 @@ export default function HomePage() {
                 }
 
                 .retro-logo-text {
-                    font-family: Georgia, 'Palatino Linotype', 'Book Antiqua', Palatino, serif;
-                    font-weight: 700;
-                    font-style: italic;
-                    background: linear-gradient(180deg, #c8cfe0 0%, #a0aab8 40%, #8a94a8 70%, #9aa4b8 100%);
-                    -webkit-background-clip: text;
-                    -webkit-text-fill-color: transparent;
-                    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.5)) drop-shadow(1px 1px 0 rgba(0,0,0,0.3));
+                    font-family: 'Cooper Black', 'Arial Rounded MT Bold', serif;
+                    font-weight: 900;
                     letter-spacing: 0.5px;
                     transform: scaleY(1.05);
+                    display: inline-flex;
+                    gap: 0px;
+                    position: relative;
+                }
+                @keyframes logoGlow {
+                    0%, 100% { filter: drop-shadow(0 0 2px rgba(120,200,200,0)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                    50% { filter: drop-shadow(0 0 8px rgba(120,200,200,0.3)) drop-shadow(0 0 20px rgba(120,200,200,0.1)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                }
+                .retro-logo-soprano {
+                    background: linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+                }
+                .retro-logo-chat {
+                    background: linear-gradient(180deg, #b8f0f0 0%, #5ec8c8 30%, #3a9e9e 65%, #4db0a8 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(20,80,70,0.5));
+                    animation: logoGlow 3s ease-in-out infinite;
                 }
 
                 .retro-subtitle {
@@ -1636,6 +1052,10 @@ export default function HomePage() {
                     0%, 100% { transform: scale(1); opacity: 0.8; }
                     50% { transform: scale(1.15); opacity: 1; }
                 }
+                @keyframes hpSpeakerGlow {
+                    0%, 100% { opacity: 0.6; transform: scale(1); }
+                    50% { opacity: 1; transform: scale(1.08); }
+                }
             `}</style>
 
             <ToastContainer />
@@ -1651,8 +1071,7 @@ export default function HomePage() {
                     transform: (demoPhase === 'bar-up' || demoPhase === 'exit-bar-up') ? 'translateY(-100%)' : 'translateY(0)',
                 }}>
                     <div className="header-logo" style={demoMode ? { transform: 'scale(0.65)', transformOrigin: 'left center' } : {}}>
-                        <h1 className="retro-logo-text">SopranoChat</h1>
-                        <span className="tagline">hear my voice</span>
+                        <h1 className="retro-logo-text"><span className="retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
                     </div>
 
                     <nav className="header-nav">
@@ -1662,6 +1081,11 @@ export default function HomePage() {
                                 <button
                                     className="nav-link"
                                     onClick={() => {
+                                        if (roomExitUrl) {
+                                            // Room page — URL'ye yönlendir
+                                            window.location.href = roomExitUrl;
+                                            return;
+                                        }
                                         // Önce roomsMode çıkış animasyonu, sonra geri dön
                                         setDemoEntrance('out');
                                         setTimeout(() => {
@@ -1680,18 +1104,25 @@ export default function HomePage() {
                                 {/* Asılı Oda Tab'ları */}
                                 <div style={{ position: 'relative', display: 'flex', alignItems: 'flex-end', gap: 0, alignSelf: 'stretch', justifyContent: 'center', flex: 1, marginRight: 200 }}>
                                     {(demoRoomRef.current?.state?.rooms && demoRoomRef.current.state.rooms.length > 0
-                                        ? demoRoomRef.current.state.rooms.map((r: any) => ({ name: r.name, slug: r.slug }))
-                                        : cachedRooms.length > 0 ? cachedRooms : [{ name: 'Lobby', slug: 'genel-sohbet' }]
+                                        ? demoRoomRef.current.state.rooms.filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti')).map((r: any) => ({ name: r.name, slug: r.slug }))
+                                        : cachedRooms.length > 0 ? cachedRooms.filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti')) : []
                                     ).map((tab: { name: string; slug: string }, i: number) => {
                                         const isActive = tab.slug === demoSlug;
                                         return (
-                                            <div key={tab.slug} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', animation: `contentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`, marginTop: 8 }}>
+                                            <div key={tab.slug} style={{
+                                                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                position: 'relative',
+                                                animation: `contentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`,
+                                                marginTop: 8,
+                                                transform: isActive ? 'translateY(4px) translateZ(0)' : 'translateY(0) translateZ(0)',
+                                                transition: 'transform 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                                            }}>
                                                 {/* Tab Kartı */}
                                                 <button
-                                                    onClick={() => setDemoSlug(tab.slug)}
+                                                    onClick={() => handleRoomSwitch(tab.slug)}
                                                     style={{
                                                         padding: '6px 16px',
-                                                        fontSize: 10, fontWeight: isActive ? 800 : 600,
+                                                        fontSize: 10, fontWeight: 700,
                                                         textTransform: 'uppercase' as const,
                                                         letterSpacing: '0.12em',
                                                         color: isActive ? '#fbbf24' : '#94a3b8',
@@ -1704,7 +1135,7 @@ export default function HomePage() {
                                                         borderBottom: isActive ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(148,163,184,0.12)',
                                                         borderRadius: '0 0 8px 8px',
                                                         cursor: 'pointer',
-                                                        transition: 'all 0.3s ease',
+                                                        transition: 'color 0.3s, background 0.3s, border-color 0.3s, box-shadow 0.3s',
                                                         textShadow: isActive ? '0 0 8px rgba(251,191,36,0.4)' : 'none',
                                                         boxShadow: isActive
                                                             ? '0 4px 12px rgba(251,191,36,0.15), inset 0 -1px 0 rgba(251,191,36,0.1)'
@@ -1717,6 +1148,7 @@ export default function HomePage() {
                                                             width: 4, height: 4, borderRadius: '50%',
                                                             background: isActive ? '#fbbf24' : '#475569',
                                                             boxShadow: isActive ? '0 0 4px rgba(251,191,36,0.5)' : 'none',
+                                                            transition: 'background 0.3s, box-shadow 0.3s',
                                                         }} />
                                                         {tab.name}
                                                     </span>
@@ -1783,16 +1215,16 @@ export default function HomePage() {
                                                 return;
                                             }
                                             if (item.section === 'odalar' && user) {
-                                                if (roomsMode) return; // Zaten DEMO modundayız
-                                                window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
-                                                setActiveSection('odalar');
-                                                requestAnimationFrame(() => {
-                                                    setRoomsMode(true);
-                                                    setDemoEntrance('in');
-                                                });
+                                                if (roomsMode) return;
+                                                // System room page'e yönlendir
+                                                window.location.href = '/room/genel-sohbet';
                                                 return;
                                             }
                                             if (roomsMode) {
+                                                if (roomExitUrl) {
+                                                    window.location.href = roomExitUrl;
+                                                    return;
+                                                }
                                                 // Çıkış animasyonu
                                                 setDemoEntrance('out');
                                                 setTimeout(() => {
@@ -1932,7 +1364,7 @@ export default function HomePage() {
                                             </div>
 
 
-                                            <div className={`glossy-panel ${roomsMode ? (demoEntrance === 'out' ? 'demo-exit-chat' : 'demo-enter-chat') : ''}`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: roomsMode ? 'visible' : 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
+                                            <div className={`glossy-panel`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: roomsMode ? 'visible' : 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
                                                 {/* ── Raptiyeler (sadece roomsMode) ── */}
                                                 {roomsMode && (<>
                                                     {/* ─── Sol Raptiye ─── */}
@@ -2019,7 +1451,7 @@ export default function HomePage() {
                                                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
                                                         <DemoChatRoom
                                                             slug={demoSlug}
-                                                            onRoomData={(data) => { demoRoomRef.current = data; setDemoRoomUsers(data.users || []); setDemoCurrentSpeaker(data.currentSpeaker || null); setDemoIsMicOn(data.state?.isMicOn || false); setDemoQueue(data.state?.queue || []); setDemoMicTimeLeft(data.state?.micTimeLeft || 0); if (!demoRoomReady) setDemoRoomReady(true); }}
+                                                            onRoomData={(data) => { demoRoomRef.current = data; if (data.users && data.users.length > 0) setDemoRoomUsers(data.users); setDemoCurrentSpeaker(data.currentSpeaker || null); setDemoIsMicOn(data.state?.isMicOn || false); setDemoQueue(data.state?.queue || []); setDemoMicTimeLeft(data.state?.micTimeLeft || 0); if (!demoRoomReady) setDemoRoomReady(true); }}
                                                         />
                                                     </div>
                                                 )}
@@ -2074,6 +1506,11 @@ export default function HomePage() {
                                                                     </div>
                                                                 ))}
                                                             </div>
+                                                        </div>
+
+                                                        {/* SAĞ: 3D Laptop Simülasyonu */}
+                                                        <div style={{ flex: 1, minWidth: 260, display: 'flex', justifyContent: 'center' }}>
+                                                            <LaptopSimulation />
                                                         </div>
 
                                                     </div>
@@ -2315,7 +1752,7 @@ export default function HomePage() {
 
                                         {/* roomsMode: Gerçek BottomToolbar — ayrı glossy-panel kart */}
                                         {roomsMode && demoRoomReady && demoRoomRef.current && (
-                                            <div className={`glossy-panel demo-chatroom-override ${demoEntrance === 'out' ? 'demo-exit-input' : 'demo-enter-input'}`} style={{
+                                            <div className={`glossy-panel demo-chatroom-override`} style={{
                                                 padding: '16px 20px', marginTop: -2, position: 'relative', zIndex: 6,
                                                 boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
                                             }}>
@@ -2326,7 +1763,12 @@ export default function HomePage() {
                                                     onJoinQueue={demoRoomRef.current.actions.joinQueue}
                                                     onLeaveQueue={demoRoomRef.current.actions.leaveQueue}
                                                     onToggleCamera={demoRoomRef.current.actions.toggleCamera}
-                                                    onLeaveRoom={demoRoomRef.current.actions.leaveRoom}
+                                                    onLeaveRoom={() => {
+                                                        demoRoomRef.current?.actions?.leaveRoom?.();
+                                                        if (roomExitUrl) {
+                                                            window.location.href = roomExitUrl;
+                                                        }
+                                                    }}
                                                     onToggleSettings={() => demoRoomRef.current?.setIsSettingsOpen?.((prev: boolean) => !prev)}
                                                     onRegisterSettingsRef={(ref: any) => demoRoomRef.current?.setSettingsAnchor?.(ref)}
                                                     isCameraOn={demoRoomRef.current.state.isCameraOn}
@@ -2352,7 +1794,7 @@ export default function HomePage() {
                                         )}
 
                                         {/* Müşteri Platformları / Chat Toolbar */}
-                                        <div className="glossy-panel content-fade content-fade-2" style={{ padding: roomsMode ? '16px 20px' : '24px 32px', ...(roomsMode ? { display: 'none' } : {}) }}>
+                                        <div className="glossy-panel content-fade content-fade-2" style={{ padding: roomsMode ? '16px 20px' : '24px 32px', minHeight: roomsMode ? undefined : 180, ...(roomsMode ? { display: 'none' } : {}) }}>
                                             {roomsMode ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                     {/* Toolbar Üst Satır */}
@@ -2388,6 +1830,10 @@ export default function HomePage() {
                                                             </button>
                                                             {/* Çıkış */}
                                                             <button className="feature-toast" onClick={() => {
+                                                                if (roomExitUrl) {
+                                                                    window.location.href = roomExitUrl;
+                                                                    return;
+                                                                }
                                                                 setDemoEntrance('out');
                                                                 setTimeout(() => {
                                                                     setRoomsMode(false);
@@ -3172,7 +2618,7 @@ export default function HomePage() {
                                         </div>
                                     )}
 
-                                    <div style={{ position: 'relative', zIndex: 10, animation: isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.0s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both', transformOrigin: 'top center' }}>
+                                    <div style={{ position: 'relative', zIndex: 10, animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 1.0s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) 0.1s both'), transformOrigin: 'top center' }}>
                                         <div className="glossy-panel" style={{ padding: roomsMode ? '12px 14px' : '12px 14px', position: 'relative', zIndex: 10, transition: roomsMode ? 'none' : 'padding 1s ease, min-height 1s ease', display: 'flex', flexDirection: 'column', ...(roomsMode ? { minHeight: 780, border: '1px solid rgba(255,255,255,0.08)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)' } : { minHeight: 0 }), ...(!roomsMode && user ? { border: '1px solid rgba(56,189,248,0.4)', boxShadow: '0 50px 70px -20px rgba(0,0,0,0.8), 0 20px 30px -10px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 0 60px rgba(255,255,255,0.03), 0 0 15px rgba(56,189,248,0.15)' } : {}) }}>
                                             {/* Üst başlık */}
                                             <h3 style={{ fontSize: roomsMode ? 9 : 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: roomsMode ? 0 : 10, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)', transition: 'font-size 0.8s ease, margin-bottom 0.8s ease, max-height 0.8s ease, opacity 0.6s ease', overflow: 'hidden', maxHeight: roomsMode ? 0 : 30, opacity: roomsMode ? 0 : 1 }}>
@@ -3210,7 +2656,7 @@ export default function HomePage() {
                                                     </div>
 
                                                     {loginTab === 'guest' ? (
-                                                        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 10, minHeight: 320 }}>
                                                             <div>
                                                                 <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Takma Adınız</label>
                                                                 <input
@@ -3268,17 +2714,17 @@ export default function HomePage() {
                                                             </button>
                                                         </form>
                                                     ) : (
-                                                        <div style={{ position: 'relative', overflow: 'hidden' }}>
+                                                        <div style={{ position: 'relative', overflow: 'hidden', minHeight: 320 }}>
                                                             {/* Login / Register geçiş container */}
                                                             <div style={{ transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', transform: showRegister ? 'translateX(-100%)' : 'translateX(0)', opacity: showRegister ? 0 : 1, maxHeight: showRegister ? 0 : 600, overflow: 'hidden' }}>
                                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
                                                                     <div>
                                                                         <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Kullanıcı Adı veya E-posta</label>
-                                                                        <input type="text" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="off" />
+                                                                        <input type="text" name="search" value={memberUsername} onChange={(e) => setMemberUsername(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="Üye adınız veya e-posta" autoComplete="one-time-code" />
                                                                     </div>
                                                                     <div>
                                                                         <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>Şifre</label>
-                                                                        <input type="password" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="new-password" />
+                                                                        <input type="password" name="one-time-code" value={memberPassword} onChange={(e) => setMemberPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="one-time-code" />
                                                                     </div>
                                                                     {/* Üye giriş: Avatar Seçimi — toggle ile açılır/kapanır */}
                                                                     <button type="button" onClick={() => setShowMemberAvatars(!showMemberAvatars)} style={{
@@ -3333,15 +2779,15 @@ export default function HomePage() {
                                                                     </div>
                                                                     <div>
                                                                         <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>E-posta</label>
-                                                                        <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="off" />
+                                                                        <input type="email" value={regEmail} onChange={(e) => setRegEmail(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="ornek@mail.com" autoComplete="one-time-code" />
                                                                     </div>
                                                                     <div>
                                                                         <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre</label>
-                                                                        <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 6 karakter" autoComplete="new-password" />
+                                                                        <input type="password" value={regPassword} onChange={(e) => setRegPassword(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="En az 6 karakter" autoComplete="one-time-code" name="reg-otp1" />
                                                                     </div>
                                                                     <div>
                                                                         <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5, marginLeft: 2 }}>Şifre Tekrar</label>
-                                                                        <input type="password" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Şifrenizi tekrarlayın" autoComplete="new-password" />
+                                                                        <input type="password" value={regPasswordConfirm} onChange={(e) => setRegPasswordConfirm(e.target.value)} className="input-inset" style={{ width: '100%', padding: '10px 14px', fontSize: 12, boxSizing: 'border-box' }} placeholder="Şifrenizi tekrarlayın" autoComplete="one-time-code" name="reg-otp2" />
                                                                     </div>
                                                                     <div>
                                                                         <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 8, marginLeft: 2 }}>Cinsiyet</label>
@@ -3480,11 +2926,8 @@ export default function HomePage() {
                                                                 </div>
                                                             )}
                                                             <button onClick={() => {
-                                                                if (roomsMode) return;
-                                                                window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                                setActiveSection('odalar');
-                                                                setRoomsMode(true);
-                                                                setDemoEntrance('in');
+                                                                // System room page'e yönlendir
+                                                                window.location.href = '/room/genel-sohbet';
                                                             }} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
                                                                 Odaya Gir
                                                             </button>
@@ -3496,7 +2939,7 @@ export default function HomePage() {
 
                                                     {/* roomsMode — Çevrimiçi Kullanıcılar sütunu veya AudioTest */}
                                                     {roomsMode && (
-                                                        <div className={demoEntrance === 'out' ? 'demo-exit-left' : 'demo-enter-left'} style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: 0, overflow: 'hidden', transformOrigin: 'top center' }}>
+                                                        <div style={{ display: 'flex', flexDirection: 'column', flex: 1, marginTop: 0, overflow: 'hidden' }}>
                                                             {audioTestOpen ? (
                                                                 <AudioTestPanel onClose={() => setAudioTestOpen(false)} />
                                                             ) : (
@@ -3614,89 +3057,166 @@ export default function HomePage() {
                                                                                     </div>
                                                                                 );
                                                                             }
-                                                                            return sorted.map((u: any, idx: number) => {
-                                                                                const name = u.displayName || u.username || 'Kullanıcı';
-                                                                                const role = u.role?.toLowerCase() || 'guest';
-                                                                                const roleIcon = getRoleIcon(role);
-                                                                                const roleColor = getRoleColor(role);
-                                                                                const roleLabel = getRoleLabel(role);
-                                                                                const isSpeaking = speaker?.userId === u.userId;
-                                                                                const isCurrentUser = u.userId === user.userId;
-                                                                                const avatarSrc = u.avatar || generateGenderAvatar(name);
-                                                                                const borderColor = role === 'godmaster' ? 'rgba(217,70,239,0.5)'
-                                                                                    : role === 'owner' ? 'rgba(251,191,36,0.5)'
-                                                                                        : isSpeaking ? 'rgba(239,68,68,0.5)'
-                                                                                            : isCurrentUser ? 'rgba(56,189,248,0.3)'
-                                                                                                : 'rgba(255,255,255,0.1)';
-                                                                                return (
-                                                                                    <div key={u.odaUserId || u.odaRollId || u.odaSoketId || u.odaJoinedAt || u.userId || idx}
-                                                                                        onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, u); }}
-                                                                                        style={{
-                                                                                            display: 'flex', alignItems: 'center', gap: 10,
-                                                                                            padding: '4px 6px', borderRadius: 10,
-                                                                                            background: isSpeaking ? 'rgba(239,68,68,0.06)' : 'transparent',
-                                                                                            border: 'none',
-                                                                                            cursor: 'pointer',
-                                                                                            transition: 'all 0.2s ease',
-                                                                                        }}>
-                                                                                        {/* Avatar */}
-                                                                                        <div style={{
-                                                                                            width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
-                                                                                            border: `2px solid ${borderColor}`,
-                                                                                            boxShadow: isSpeaking ? '0 0 10px rgba(239,68,68,0.3)' : 'none',
-                                                                                        }}>
-                                                                                            <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                            return (
+                                                                                <>
+                                                                                    {/* ★ Konuşmacı başlığı — speaker varsa görünür */}
+                                                                                    {speaker && sorted.some((u: any) => speaker.userId === u.userId) && (
+                                                                                        <div style={{ fontSize: 9, fontWeight: 800, color: '#ef4444', letterSpacing: 1.5, textTransform: 'uppercase', paddingBottom: 2, display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                                                            <span style={{ fontSize: 11 }}>🎤</span> Konuşmacı
                                                                                         </div>
-                                                                                        {/* İsim + Rol + Status */}
-                                                                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                                <span style={{ fontSize: 12, fontWeight: 700, color: u.nameColor || '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
-                                                                                                {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
-                                                                                                {isSpeaking && (
-                                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 1, height: 18, flexShrink: 0 }}>
-                                                                                                        {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
-                                                                                                            <div key={i} style={{
-                                                                                                                width: 2.5,
-                                                                                                                height: [6, 10, 14, 10, 6][i],
-                                                                                                                borderRadius: 2,
-                                                                                                                background: 'linear-gradient(180deg, #34d399, #059669)',
-                                                                                                                animation: `hpBarBounce 1.2s ease-in-out ${delay}s infinite`,
-                                                                                                            }} />
-                                                                                                        ))}
+                                                                                    )}
+                                                                                    {sorted.map((u: any, idx: number) => {
+                                                                                        const name = u.displayName || u.username || 'Kullanıcı';
+                                                                                        const role = u.role?.toLowerCase() || 'guest';
+                                                                                        const roleIcon = getRoleIcon(role);
+                                                                                        const roleColor = getRoleColor(role);
+                                                                                        const roleLabel = getRoleLabel(role);
+                                                                                        const isSpeaking = speaker?.userId === u.userId;
+                                                                                        const isCurrentUser = u.userId === user.userId;
+                                                                                        const avatarSrc = u.avatar || generateGenderAvatar(name);
+                                                                                        const borderColor = role === 'godmaster' ? 'rgba(217,70,239,0.5)'
+                                                                                            : role === 'owner' ? 'rgba(251,191,36,0.5)'
+                                                                                                : isSpeaking ? 'rgba(239,68,68,0.5)'
+                                                                                                    : isCurrentUser ? 'rgba(34,211,238,0.4)'
+                                                                                                        : 'rgba(255,255,255,0.1)';
+                                                                                        // Hiyerarşi bazlı kart stilleri
+                                                                                        const cardBg = isCurrentUser ? 'linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(56,189,248,0.03) 50%, transparent 100%)'
+                                                                                            : isSpeaking ? 'rgba(239,68,68,0.06)'
+                                                                                                : role === 'godmaster' ? 'linear-gradient(135deg, rgba(217,70,239,0.08), transparent)'
+                                                                                                    : role === 'owner' ? 'linear-gradient(135deg, rgba(251,191,36,0.06), transparent)'
+                                                                                                        : role === 'superadmin' ? 'linear-gradient(135deg, rgba(123,159,239,0.06), transparent)'
+                                                                                                            : role === 'admin' ? 'linear-gradient(135deg, rgba(96,165,250,0.06), transparent)'
+                                                                                                                : role === 'moderator' ? 'linear-gradient(135deg, rgba(52,211,153,0.05), transparent)'
+                                                                                                                    : role === 'operator' ? 'linear-gradient(135deg, rgba(34,211,238,0.05), transparent)'
+                                                                                                                        : role === 'vip' ? 'linear-gradient(135deg, rgba(253,224,71,0.04), transparent)'
+                                                                                                                            : 'transparent';
+                                                                                        const cardBorder = isCurrentUser ? 'none'
+                                                                                            : role === 'godmaster' ? '1px solid rgba(217,70,239,0.25)'
+                                                                                                : role === 'owner' ? '1px solid rgba(251,191,36,0.2)'
+                                                                                                    : role === 'admin' ? '1px solid rgba(96,165,250,0.15)'
+                                                                                                        : role === 'moderator' ? '1px solid rgba(52,211,153,0.12)'
+                                                                                                            : role === 'operator' ? '1px solid rgba(34,211,238,0.12)'
+                                                                                                                : role === 'vip' ? '1px solid rgba(253,224,71,0.1)'
+                                                                                                                    : 'none';
+                                                                                        const cardShadow = isCurrentUser ? 'none'
+                                                                                            : role === 'owner' ? '0 0 8px rgba(251,191,36,0.08)'
+                                                                                                : 'none';
+                                                                                        // ★ İlk non-speaker kullanıcı öncesi "Çevrimiçi" ayırıcı
+                                                                                        const showOnlineDivider = !isSpeaking && speaker && idx > 0 && sorted[idx - 1] && speaker.userId === sorted[idx - 1]?.userId;
+                                                                                        return (
+                                                                                            <React.Fragment key={u.odaUserId || u.odaRollId || u.odaSoketId || u.odaJoinedAt || u.userId || idx}>
+                                                                                                {showOnlineDivider && (
+                                                                                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#34d399', letterSpacing: 1.5, textTransform: 'uppercase', paddingTop: 6, paddingBottom: 2, display: 'flex', alignItems: 'center', gap: 5, borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}>
+                                                                                                        <span style={{ fontSize: 11 }}>🟢</span> Çevrimiçi
                                                                                                     </div>
                                                                                                 )}
-                                                                                                {/* Queue hand indicator */}
-                                                                                                {(() => {
-                                                                                                    const qi = (demoRoomRef.current?.state?.queue || []).indexOf(u.userId || '');
-                                                                                                    if (qi === -1 || isSpeaking) return null;
-                                                                                                    return (
-                                                                                                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, animation: 'hpHandPulse 1.5s ease-in-out infinite' }}>
-                                                                                                            <span style={{ fontSize: 12, filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.6))' }}>✋</span>
-                                                                                                            <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', background: 'rgba(245,158,11,0.2)', padding: '0 3px', borderRadius: 4 }}>{qi + 1}</span>
-                                                                                                        </span>
-                                                                                                    );
-                                                                                                })()}
-                                                                                            </div>
-                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                                                                <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
-                                                                                            </div>
-                                                                                        </div>
-                                                                                        {/* Online dot — kendi kullanıcı için userStatus, diğerleri için u.status */}
-                                                                                        <div style={{
-                                                                                            width: 6, height: 6, borderRadius: '50%',
-                                                                                            background: isSpeaking ? '#ef4444' : (() => {
-                                                                                                const st = isCurrentUser ? userStatus : (u.status || 'online');
-                                                                                                return ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[st] || '#34d399';
-                                                                                            })(),
-                                                                                            boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : (() => {
-                                                                                                const st = isCurrentUser ? userStatus : (u.status || 'online');
-                                                                                                return ({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[st] || 'rgba(52,211,153,0.4)';
-                                                                                            })()}`,
-                                                                                            flexShrink: 0,
-                                                                                        }} />
-                                                                                    </div>
-                                                                                );
-                                                                            });
+                                                                                                <div
+                                                                                                    onContextMenu={(e: React.MouseEvent) => { e.preventDefault(); e.stopPropagation(); demoRoomRef.current?.handleUserContextMenu?.(e, u); }}
+                                                                                                    style={{
+                                                                                                        display: 'flex', alignItems: 'center', gap: 10,
+                                                                                                        padding: '4px 6px', borderRadius: 10,
+                                                                                                        background: cardBg,
+                                                                                                        border: cardBorder,
+                                                                                                        boxShadow: cardShadow,
+                                                                                                        cursor: 'pointer',
+                                                                                                        transition: 'all 0.2s ease',
+                                                                                                        position: 'relative',
+                                                                                                        overflow: 'hidden',
+                                                                                                        ...(u.status === 'invisible' || u.status === 'stealth' || u.isStealth ? { opacity: 0.35, filter: 'grayscale(1)' } : {}),
+                                                                                                    }}>
+                                                                                                    {/* isSelf bulutsu glow çerçeve */}
+                                                                                                    {isCurrentUser && (
+                                                                                                        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
+                                                                                                            {/* Sol kenar — bulutsu glow */}
+                                                                                                            <div style={{ position: 'absolute', left: -2, top: '5%', bottom: '5%', width: 10, background: 'radial-gradient(ellipse at left, rgba(255,255,255,0.2) 0%, transparent 70%)', filter: 'blur(4px)' }} />
+                                                                                                            {/* Üst kenar — sol yarısı bulutsu */}
+                                                                                                            <div style={{ position: 'absolute', top: -1, left: 0, width: '50%', height: 8, background: 'radial-gradient(ellipse at top left, rgba(255,255,255,0.15) 0%, transparent 70%)', filter: 'blur(4px)' }} />
+                                                                                                            {/* Alt kenar — sol yarısı bulutsu */}
+                                                                                                            <div style={{ position: 'absolute', bottom: -1, left: 0, width: '50%', height: 8, background: 'radial-gradient(ellipse at bottom left, rgba(255,255,255,0.15) 0%, transparent 70%)', filter: 'blur(4px)' }} />
+                                                                                                        </div>
+                                                                                                    )}
+                                                                                                    {/* Avatar */}
+                                                                                                    <div style={{ position: 'relative', zIndex: 1, flexShrink: 0 }}>
+                                                                                                        {/* ★ Konuşmacı kırmızı blur glow */}
+                                                                                                        {isSpeaking && (
+                                                                                                            <div style={{
+                                                                                                                position: 'absolute', inset: -4, borderRadius: '50%',
+                                                                                                                background: 'radial-gradient(circle, rgba(239,68,68,0.35) 0%, rgba(239,68,68,0.15) 50%, transparent 70%)',
+                                                                                                                filter: 'blur(6px)',
+                                                                                                                animation: 'hpSpeakerGlow 2s ease-in-out infinite',
+                                                                                                            }} />
+                                                                                                        )}
+                                                                                                        {/* Self hafif glow */}
+                                                                                                        {!isSpeaking && isCurrentUser && (
+                                                                                                            <div style={{
+                                                                                                                position: 'absolute', inset: -2, borderRadius: '50%',
+                                                                                                                background: 'radial-gradient(circle, rgba(34,211,238,0.25) 0%, rgba(56,189,248,0.1) 50%, transparent 70%)',
+                                                                                                                filter: 'blur(3px)',
+                                                                                                            }} />
+                                                                                                        )}
+                                                                                                        <div style={{
+                                                                                                            width: 48, height: 48, borderRadius: '50%', overflow: 'hidden',
+                                                                                                            border: isSpeaking ? '2.5px solid rgba(239,68,68,0.8)' : `2px solid ${borderColor}`,
+                                                                                                            boxShadow: isSpeaking ? '0 0 16px rgba(239,68,68,0.5), 0 0 32px rgba(239,68,68,0.2)' : isCurrentUser ? '0 0 8px rgba(34,211,238,0.25)' : 'none',
+                                                                                                            position: 'relative', zIndex: 1,
+                                                                                                        }}>
+                                                                                                            <img src={avatarSrc} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    {/* İsim + Rol + Status */}
+                                                                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                                            <span style={{ fontSize: 12, fontWeight: 700, color: isSpeaking ? '#ef4444' : (u.nameColor || roleColor || '#e2e8f0'), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                                                                                                            {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
+                                                                                                            {isCurrentUser && <span style={{ fontSize: 8, color: 'rgba(34,211,238,0.6)', fontWeight: 600, letterSpacing: '0.05em' }}>(sen)</span>}
+                                                                                                            {isSpeaking && (
+                                                                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 1, height: 18, flexShrink: 0 }}>
+                                                                                                                    {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (
+                                                                                                                        <div key={i} style={{
+                                                                                                                            width: 2.5,
+                                                                                                                            height: [6, 10, 14, 10, 6][i],
+                                                                                                                            borderRadius: 2,
+                                                                                                                            background: 'linear-gradient(180deg, #34d399, #059669)',
+                                                                                                                            animation: `hpBarBounce 1.2s ease-in-out ${delay}s infinite`,
+                                                                                                                        }} />
+                                                                                                                    ))}
+                                                                                                                </div>
+                                                                                                            )}
+                                                                                                            {/* Queue hand indicator */}
+                                                                                                            {(() => {
+                                                                                                                const qi = (demoRoomRef.current?.state?.queue || []).indexOf(u.userId || '');
+                                                                                                                if (qi === -1 || isSpeaking) return null;
+                                                                                                                return (
+                                                                                                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2, animation: 'hpHandPulse 1.5s ease-in-out infinite' }}>
+                                                                                                                        <span style={{ fontSize: 12, filter: 'drop-shadow(0 0 4px rgba(251,191,36,0.6))' }}>✋</span>
+                                                                                                                        <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', background: 'rgba(245,158,11,0.2)', padding: '0 3px', borderRadius: 4 }}>{qi + 1}</span>
+                                                                                                                    </span>
+                                                                                                                );
+                                                                                                            })()}
+                                                                                                        </div>
+                                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                                            <span style={{ fontSize: 8, fontWeight: 600, color: roleColor }}>{roleLabel}</span>
+                                                                                                        </div>
+                                                                                                    </div>
+                                                                                                    {/* Online dot — kendi kullanıcı için userStatus, diğerleri için u.status */}
+                                                                                                    <div style={{
+                                                                                                        width: 6, height: 6, borderRadius: '50%',
+                                                                                                        background: isSpeaking ? '#ef4444' : (() => {
+                                                                                                            const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                                            return ({ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' } as Record<string, string>)[st] || '#34d399';
+                                                                                                        })(),
+                                                                                                        boxShadow: `0 0 4px ${isSpeaking ? 'rgba(239,68,68,0.5)' : (() => {
+                                                                                                            const st = isCurrentUser ? userStatus : (u.status || 'online');
+                                                                                                            return ({ online: 'rgba(52,211,153,0.4)', busy: 'rgba(248,113,113,0.4)', brb: 'rgba(251,191,36,0.4)', away: 'rgba(148,163,184,0.4)', phone: 'rgba(167,139,250,0.4)', invisible: 'rgba(100,116,139,0.3)' } as Record<string, string>)[st] || 'rgba(52,211,153,0.4)';
+                                                                                                        })()}`,
+                                                                                                        flexShrink: 0,
+                                                                                                    }} />
+                                                                                                </div>
+                                                                                            </React.Fragment>
+                                                                                        );
+                                                                                    })}
+                                                                                </>
+                                                                            );
                                                                         })()}
                                                                     </div>
                                                                 </>
@@ -3707,13 +3227,13 @@ export default function HomePage() {
                                                     {/* Alt kısım: Durum + Radyo + Mikrofon — glossy-panel'in doğrudan çocuğu */}
                                                     {roomsMode && (
                                                         <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-                                                            {/* Durum Çubuğu - Premium */}
+                                                            {/* Durum Çubuğu - Premium + Hiyerarşi */}
                                                             <div style={{ position: 'relative' }}>
                                                                 <button onClick={() => setStatusDropdown(p => !p)} style={{
                                                                     width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                                                                     padding: '8px 12px', borderRadius: 10, cursor: 'pointer',
                                                                     background: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)',
-                                                                    border: '1px solid rgba(255,255,255,0.1)',
+                                                                    border: `1px solid ${statusDropdown ? 'rgba(123,159,239,0.25)' : 'rgba(255,255,255,0.1)'}`,
                                                                     backdropFilter: 'blur(12px)',
                                                                     transition: 'all 0.3s ease',
                                                                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2)',
@@ -3721,7 +3241,7 @@ export default function HomePage() {
                                                                     <div style={{
                                                                         width: 10, height: 10, borderRadius: '50%',
                                                                         background: `radial-gradient(circle at 35% 35%, ${{ online: '#6ee7b7', busy: '#fca5a5', brb: '#fde68a', away: '#cbd5e1', phone: '#c4b5fd', invisible: '#94a3b8' }[userStatus]}, ${{ online: '#059669', busy: '#dc2626', brb: '#d97706', away: '#64748b', phone: '#7c3aed', invisible: '#475569' }[userStatus]})`,
-                                                                        boxShadow: `0 0 8px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus]}80, 0 0 16px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus]}40`,
+                                                                        boxShadow: `0 0 8px ${{ online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus]}80`,
                                                                         animation: userStatus === 'online' ? 'pulse 2s ease-in-out infinite' : 'none',
                                                                     }} />
                                                                     <span style={{ fontSize: 10, fontWeight: 700, color: { online: '#34d399', busy: '#f87171', brb: '#fbbf24', away: '#94a3b8', phone: '#a78bfa', invisible: '#64748b' }[userStatus], letterSpacing: 0.5 }}>
@@ -3735,18 +3255,21 @@ export default function HomePage() {
                                                                         background: 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(30,41,59,0.95) 100%)',
                                                                         backdropFilter: 'blur(20px)',
                                                                         border: '1px solid rgba(255,255,255,0.12)', borderRadius: 12,
-                                                                        padding: 6, animation: 'contentFadeIn 0.2s ease both',
+                                                                        padding: 6,
                                                                         boxShadow: '0 12px 32px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)',
                                                                     }}>
+                                                                        {/* ═══ Header ═══ */}
+                                                                        <div style={{ padding: '4px 10px 6px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                            <span style={{ fontSize: 8, fontWeight: 800, color: '#475569', textTransform: 'uppercase', letterSpacing: 1.5 }}>Durumunu Değiştir</span>
+                                                                        </div>
+
+                                                                        {/* ═══ TEMEL DURUMLAR — Herkes ═══ */}
                                                                         {[
-                                                                            { key: 'online' as const, label: 'Çevrimiçi', color: '#34d399', icon: '●' },
-                                                                            { key: 'busy' as const, label: 'Meşgul', color: '#f87171', icon: '⛔' },
-                                                                            { key: 'brb' as const, label: 'Dönecek', color: '#fbbf24', icon: '⏳' },
-                                                                            { key: 'away' as const, label: 'Dışarıda', color: '#94a3b8', icon: '🌙' },
-                                                                            { key: 'phone' as const, label: 'Telefonda', color: '#a78bfa', icon: '📞' },
-                                                                            { key: 'invisible' as const, label: 'Görünmez', color: '#64748b', icon: '👻' },
+                                                                            { key: 'online' as const, label: 'Çevrimiçi', color: '#34d399', icon: '🟢' },
+                                                                            { key: 'busy' as const, label: 'Meşgul', color: '#f87171', icon: '🔴' },
+                                                                            { key: 'brb' as const, label: 'Dönecek', color: '#fbbf24', icon: '🟡' },
                                                                         ].map(s => (
-                                                                            <button key={s.key} onClick={() => { setUserStatus(s.key); setStatusDropdown(false); demoRoomRef.current?.socket?.emit('user:setStatus', { status: s.key }); }}
+                                                                            <button key={s.key} onClick={() => { setUserStatus(s.key); setStatusDropdown(false); demoRoomRef.current?.actions?.changeStatus?.(s.key); }}
                                                                                 style={{
                                                                                     width: '100%', display: 'flex', alignItems: 'center', gap: 8,
                                                                                     padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
@@ -3761,6 +3284,94 @@ export default function HomePage() {
                                                                                 {userStatus === s.key && <Check style={{ width: 10, height: 10, marginLeft: 'auto' }} />}
                                                                             </button>
                                                                         ))}
+
+                                                                        {/* ═══ GELİŞMİŞ DURUMLAR — VIP+ (roleLevel >= 3) ═══ */}
+                                                                        {getRoleLevel(user.role) >= 3 && (
+                                                                            <>
+                                                                                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+                                                                                {[
+                                                                                    { key: 'away' as const, label: 'Dışarıda', color: '#94a3b8', icon: '🌙' },
+                                                                                    { key: 'phone' as const, label: 'Telefonda', color: '#a78bfa', icon: '📞' },
+                                                                                ].map(s => (
+                                                                                    <button key={s.key} onClick={() => { setUserStatus(s.key); setStatusDropdown(false); demoRoomRef.current?.actions?.changeStatus?.(s.key); }}
+                                                                                        style={{
+                                                                                            width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                                                                                            padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                                                                            background: userStatus === s.key ? `${s.color}18` : 'transparent',
+                                                                                            color: userStatus === s.key ? s.color : '#94a3b8',
+                                                                                            fontSize: 10, fontWeight: 600, transition: 'all 0.2s ease',
+                                                                                        }}
+                                                                                        onMouseEnter={e => { e.currentTarget.style.background = `${s.color}15`; }}
+                                                                                        onMouseLeave={e => { if (userStatus !== s.key) e.currentTarget.style.background = 'transparent'; }}
+                                                                                    >
+                                                                                        <span>{s.icon}</span> {s.label}
+                                                                                        {userStatus === s.key && <Check style={{ width: 10, height: 10, marginLeft: 'auto' }} />}
+                                                                                    </button>
+                                                                                ))}
+                                                                            </>
+                                                                        )}
+
+                                                                        {/* ═══ GÖRÜNMEZLİK — VIP+ roller (GodMaster hariç) ═══ */}
+                                                                        {getRoleLevel(user.role) >= 4 && user.role?.toLowerCase() !== 'godmaster' && (
+                                                                            <>
+                                                                                <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+                                                                                <button onClick={() => { setUserStatus('invisible'); setStatusDropdown(false); demoRoomRef.current?.actions?.changeStatus?.('stealth'); }}
+                                                                                    style={{
+                                                                                        width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+                                                                                        padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                                                                        background: userStatus === 'invisible' ? '#64748b18' : 'transparent',
+                                                                                        color: userStatus === 'invisible' ? '#64748b' : '#94a3b8',
+                                                                                        fontSize: 10, fontWeight: 600, transition: 'all 0.2s ease',
+                                                                                    }}
+                                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#64748b15'; }}
+                                                                                    onMouseLeave={e => { if (userStatus !== 'invisible') e.currentTarget.style.background = 'transparent'; }}
+                                                                                >
+                                                                                    <span>👻</span> Görünmez
+                                                                                    {userStatus === 'invisible' && <Check style={{ width: 10, height: 10, marginLeft: 'auto' }} />}
+                                                                                </button>
+                                                                            </>
+                                                                        )}
+
+                                                                        {/* ═══ GODMASTER ÖZEL MODLARI ═══ */}
+                                                                        {user.role?.toLowerCase() === 'godmaster' && (
+                                                                            <>
+                                                                                <div style={{ height: 1, background: 'rgba(217,70,239,0.15)', margin: '4px 0 2px' }} />
+                                                                                <div style={{ padding: '4px 10px 2px' }}>
+                                                                                    <span style={{ fontSize: 8, fontWeight: 800, color: 'rgba(217,70,239,0.5)', textTransform: 'uppercase', letterSpacing: 1.5 }}>🔱 GodMaster Modu</span>
+                                                                                </div>
+                                                                                {/* Görünür */}
+                                                                                <button onClick={() => { demoRoomRef.current?.actions?.setGodmasterVisibility?.('visible'); setStatusDropdown(false); }}
+                                                                                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#d946ef', fontSize: 10, fontWeight: 600, transition: 'all 0.2s ease' }}
+                                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#d946ef15'; }}
+                                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                                                                ><span>🔱</span> Görünür (GodMaster)</button>
+                                                                                {/* Kılık Değiştir — inline input */}
+                                                                                <div style={{ padding: '4px 10px' }}>
+                                                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+                                                                                        <span style={{ fontSize: 10 }}>👤</span>
+                                                                                        <span style={{ fontSize: 10, fontWeight: 600, color: '#60a5fa' }}>Kılık Değiştir</span>
+                                                                                    </div>
+                                                                                    <div style={{ display: 'flex', gap: 4 }}>
+                                                                                        <input
+                                                                                            type="text"
+                                                                                            placeholder="Takma isim girin..."
+                                                                                            id="gm-disguise-input"
+                                                                                            style={{ flex: 1, padding: '5px 8px', borderRadius: 6, fontSize: 10, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.3)', border: '1px solid rgba(96,165,250,0.25)', outline: 'none' }}
+                                                                                            onKeyDown={e => { if (e.key === 'Enter') { const v = (e.target as HTMLInputElement).value.trim(); if (v) { demoRoomRef.current?.actions?.setGodmasterVisibility?.('disguised', v); setStatusDropdown(false); } } }}
+                                                                                        />
+                                                                                        <button onClick={() => { const el = document.getElementById('gm-disguise-input') as HTMLInputElement; const v = el?.value?.trim(); if (v) { demoRoomRef.current?.actions?.setGodmasterVisibility?.('disguised', v); setStatusDropdown(false); } }}
+                                                                                            style={{ padding: '5px 10px', borderRadius: 6, border: 'none', cursor: 'pointer', background: 'rgba(96,165,250,0.2)', color: '#60a5fa', fontSize: 9, fontWeight: 700 }}
+                                                                                        >✓</button>
+                                                                                    </div>
+                                                                                </div>
+                                                                                {/* Gizli Mod */}
+                                                                                <button onClick={() => { demoRoomRef.current?.actions?.setGodmasterVisibility?.('hidden'); setStatusDropdown(false); }}
+                                                                                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '7px 10px', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'transparent', color: '#64748b', fontSize: 10, fontWeight: 600, transition: 'all 0.2s ease' }}
+                                                                                    onMouseEnter={e => { e.currentTarget.style.background = '#64748b15'; }}
+                                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                                                                                ><span>👻</span> Gizli Mod</button>
+                                                                            </>
+                                                                        )}
                                                                     </div>
                                                                 )}
                                                             </div>
@@ -3863,7 +3474,7 @@ export default function HomePage() {
                                                             <div>
                                                                 <label style={{ fontSize: 10, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 5 }}>Yeni Şifre</label>
                                                                 <div style={{ display: 'flex', gap: 6 }}>
-                                                                    <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="••••••••" />
+                                                                    <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)} className="input-inset" style={{ flex: 1, padding: '8px 12px', fontSize: 12, boxSizing: 'border-box' }} placeholder="••••••••" autoComplete="one-time-code" name="edit-otp" />
                                                                     <button onClick={() => editPassword.trim() && handleProfileUpdate('password', editPassword.trim())} className="btn-3d" style={{ padding: '8px 14px', fontSize: 9, fontWeight: 700, background: 'rgba(56,189,248,0.2)', color: '#7dd3fc', border: 'none', borderRadius: 8, cursor: 'pointer' }} disabled={profileSaving}>✓</button>
                                                                 </div>
                                                             </div>
@@ -3977,7 +3588,7 @@ export default function HomePage() {
 
                             {/* ODALAR — SAĞ SÜTÜN */}
                             {roomsMode && (
-                                <div className={demoEntrance === 'out' ? 'demo-exit-right' : 'demo-enter-right'} style={{ width: liveCollapsed ? 0 : 248, flex: liveCollapsed ? '0 0 0px' : '0 0 248px', maxWidth: liveCollapsed ? 0 : 268, display: 'flex', flexDirection: 'column', gap: liveCollapsed ? 0 : 16, order: 3, marginRight: liveCollapsed ? 0 : -24, overflow: liveCollapsed ? 'hidden' : 'visible', pointerEvents: liveHidden ? 'none' : 'auto', transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1), flex 0.5s cubic-bezier(0.4,0,0.2,1), max-width 0.5s cubic-bezier(0.4,0,0.2,1), margin-right 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.3s ease' }}>
+                                <div style={{ width: liveCollapsed ? 0 : 248, flex: liveCollapsed ? '0 0 0px' : '0 0 248px', maxWidth: liveCollapsed ? 0 : 268, display: 'flex', flexDirection: 'column', gap: liveCollapsed ? 0 : 16, order: 3, marginRight: liveCollapsed ? 0 : -24, overflow: liveCollapsed ? 'hidden' : 'visible', pointerEvents: liveHidden ? 'none' : 'auto', transition: 'width 0.5s cubic-bezier(0.4,0,0.2,1), flex 0.5s cubic-bezier(0.4,0,0.2,1), max-width 0.5s cubic-bezier(0.4,0,0.2,1), margin-right 0.5s cubic-bezier(0.4,0,0.2,1), gap 0.3s ease' }}>
                                     <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column' }}>
                                         {/* Lamba */}
                                         <div className="gallery-lamp-svg-right" style={{ animation: lampAnimDone.current['rightLive'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 1.1s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards'), ...(lampAnimDone.current['rightLive'] ? { transform: liveHidden ? 'translateX(-50%) translateY(-52px)' : 'translateX(-50%) translateY(0)', opacity: liveHidden ? 0 : 1, transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.6s ease' } : {}) }} onAnimationEnd={() => { lampAnimDone.current['rightLive'] = true; }}>
@@ -4217,8 +3828,8 @@ export default function HomePage() {
                             <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Gizlilik Sözleşmesi</a>
                         </div>
                     </footer>
-                </main >
-            </div >
+                </main>
+            </div>
 
             {/* CHECKOUT MODAL */}
             {
