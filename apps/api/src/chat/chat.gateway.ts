@@ -822,11 +822,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Accept both 'avatar' and 'avatarUrl' keys (frontend sends 'avatar', API sends 'avatarUrl')
         const newAvatar = data.avatarUrl ?? data.avatar;
         if (newAvatar !== undefined) {
-<<<<<<< HEAD
-          participant.avatar = newAvatar || `/avatars/neutral_1.png`;
-=======
           participant.avatar = newAvatar || undefined;
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         }
 
         // Update socket data
@@ -1282,39 +1278,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // GodMaster varsayılan olarak GÖRÜNMEZ girer (hidden mode)
     const hasStealthPermission = user.permissions?.['self.stealth'] === true;
     const isGodMasterRole = (user.role || 'guest').toLowerCase() === 'godmaster';
-<<<<<<< HEAD
-    // ★ VIP+ ve GodMaster kullanıcılar varsayılan stealth ile başlar
-    // ANCAK frontend oturum-içi 'online' tercihi gönderdiyse (sessionStorage) onu uygula
-    let initialStealth = isGodMasterRole ? true : (hasStealthPermission || userRoleLevel >= VIP_LEVEL);
-    let initialVisibilityMode: 'hidden' | 'visible' | 'disguised' | undefined = undefined;
-    let initialDisguiseName: string | undefined = undefined;
-
-    if (initialStealth && payload.initialStatus) {
-      // ★ Frontend oturum-içi tercih gönderdiyse VIP+ için de uygula
-      if (payload.initialStatus === 'online') {
-        initialStealth = false; // Kullanıcı bu oturumda görünür olmayı seçti
-      } else if (payload.initialStatus.startsWith('godmaster-')) {
-        // GodMaster visibility modları: godmaster-visible, godmaster-disguised, godmaster-hidden
-        if (payload.initialStatus === 'godmaster-visible') {
-          initialStealth = false;
-          initialVisibilityMode = 'visible';
-        } else if (payload.initialStatus === 'godmaster-disguised') {
-          initialStealth = false;
-          initialVisibilityMode = 'disguised';
-          initialDisguiseName = payload.disguiseName;
-        } else {
-          // godmaster-hidden → varsayılan stealth
-          initialVisibilityMode = 'hidden';
-        }
-      } else if (isGodMasterRole) {
-        initialVisibilityMode = 'hidden';
-      }
-    } else if (initialStealth) {
-      // Payload yok → varsayılan stealth
-      if (isGodMasterRole) {
-        initialVisibilityMode = 'hidden';
-      }
-=======
     // ★ GodMaster artık görünür olarak başlar — isterse dropdown'dan gizli moda geçebilir
     let initialStealth = false;
     let initialVisibilityMode: 'hidden' | 'visible' | 'disguised' | undefined = undefined;
@@ -1323,7 +1286,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (isGodMasterRole) {
       // GodMaster: varsayılan görünür, stealth değil
       initialVisibilityMode = 'visible';
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
     } else if (payload.initialStatus) {
       // ★ VIP altı kullanıcılar initialStatus payload'ını kullanabilir
       if (payload.initialStatus === 'stealth') {
@@ -1382,11 +1344,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       avatar:
         user.avatar ||
         payload.avatar ||
-<<<<<<< HEAD
-        `/avatars/neutral_1.png`,
-=======
         undefined,
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
       role: user.role || 'guest',
       socketId: client.id,
       roomId: scopedRoom,
@@ -4790,19 +4748,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       tenantId: actor.tenantId || '',
       challengerId: actor.userId,
       challengerName: actor.displayName,
-<<<<<<< HEAD
-      challengerAvatar: actor.avatar || `/avatars/neutral_1.png`,
-      challengerSocketId: client.id,
-      opponentId: targetParticipant.userId,
-      opponentName: targetParticipant.displayName,
-      opponentAvatar: targetParticipant.avatar || `/avatars/neutral_1.png`,
-=======
       challengerAvatar: actor.avatar || '',
       challengerSocketId: client.id,
       opponentId: targetParticipant.userId,
       opponentName: targetParticipant.displayName,
       opponentAvatar: targetParticipant.avatar || '',
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
       opponentSocketId: targetSocket,
       startedAt: 0,
       duration: 180_000, // 3 dakika

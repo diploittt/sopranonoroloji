@@ -282,12 +282,10 @@ export default function AllUsersModal({ isOpen, onClose, socket, currentUser, on
                                                     setSelectedUserId(isSelected ? null : user.userId);
                                                 }}
                                             >
-                                                <img
-                                                    src={user.avatar || `/avatars/neutral_1.png`}
-                                                    alt={user.displayName}
+                                                <div
                                                     className="au-user-avatar"
                                                     style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', overflow: 'hidden' }}
-                                                >{user.avatar ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}</div>
+                                                >{user.avatar ? <img src={user.avatar} alt={user.displayName} style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (user.displayName || '?').charAt(0)}</div>
                                                 <div className="au-user-info">
                                                     <div className="au-user-name">
                                                         {user.displayName}

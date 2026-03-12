@@ -907,19 +907,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             <>
                                                 {/* Avatar — baş harf placeholder */}
                                                 <div className="relative flex-shrink-0">
-                                                    <img
-                                                        src={(() => {
-                                                            const av = user.avatar;
-                                                            if (!av || av.startsWith('3d:') || av.startsWith('animated:') || av.startsWith('gifnick::')) {
-                                                                return `/avatars/neutral_1.png`;
-                                                            }
-                                                            // GIF avatarlar sadece GodMaster'a özel — diğer roller için DiceBear fallback
-                                                            const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
-                                                            if (isGif && user.role?.toLowerCase() !== 'godmaster') {
-                                                                return `/avatars/neutral_1.png`;
-                                                            }
-                                                            return av;
-                                                        })()}
+                                                    <div
                                                         className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover
                                             ${user.role?.toLowerCase() === 'godmaster'
                                                                 ? 'border-fuchsia-400/70 shadow-[0_0_8px_rgba(217,70,239,0.3)]'

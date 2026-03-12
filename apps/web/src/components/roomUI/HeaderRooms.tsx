@@ -4,6 +4,7 @@ import { Lock, Users, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-reac
 import { useRouter, usePathname } from 'next/navigation';
 import { RoomInfo } from '@/hooks/useSocket';
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import { useTranslation } from '@/i18n/LanguageProvider';
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -232,7 +233,7 @@ export function HeaderRooms({
                     {displayRooms.map((room, roomIndex) => {
                         const isActive = currentSlug === room.slug || currentSlug === room.id;
                         const isHovered = hoveredRoom === room.id;
-                        const btnColor = room.buttonColor || '#06b6d4';
+                        const btnColor = (room as any).buttonColor || '#06b6d4';
 
                         // ★ Stealth-aware participant count: active room uses hierarchy filter
                         const visibleCount = (isActive && activeRoomParticipants)

@@ -40,6 +40,7 @@ export interface BottomToolbarProps {
     // Moderation State
     isCurrentUserMuted?: boolean;
     isCurrentUserGagged?: boolean;
+    banInfo?: any;
 
     // Toolbar placeholder callbacks
     onEmojiClick?: () => void;
@@ -102,6 +103,7 @@ export function BottomToolbar({
 
 
     // ─── Animation (Sticker/GIF) restriction based on rolePermissions ───
+    const isHasbihal = systemSettings?.theme === 'hasbihal-islamic';
     const isAnimationBlocked = (() => {
         // Bireysel yetki varsa bypass
         if (currentUser?.permissions?.['self.animation'] === true) return false;

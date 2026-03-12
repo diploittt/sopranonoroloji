@@ -1416,12 +1416,7 @@ export class AdminService implements OnModuleInit {
     const rawPassword = data.password || require('crypto').randomBytes(12).toString('base64url');
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
     const avatarUrl =
-<<<<<<< HEAD
-      data.avatar ||
-      `/avatars/neutral_1.png`;
-=======
       data.avatar || undefined;
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
     const user = await this.prisma.user.create({
       data: {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 export interface ContextMenuItem {
     id: string;
     label: string;
@@ -129,7 +130,7 @@ export default function ContextMenu({
     }, [onClose]);
 
     // Tab değiştiğinde submenu kapat
-    useEffect(() => { setSubmenuOpen(null); }, [activeTab]);
+    useEffect(() => { setSubmenuOpen(null); }, []);
 
     const handleItemClick = (item: ContextMenuItem) => {
         if (item.type === 'submenu') {
@@ -148,7 +149,7 @@ export default function ContextMenu({
     const isDanger = (id: string) =>
         /ban|kick|mute|gag|block|sil|remove|delete/i.test(id);
 
-    return (
+    return createPortal(
         <>
             {/* Invisible overlay */}
             <div
@@ -352,37 +353,13 @@ export default function ContextMenu({
                                         })}
                                     </div>
                                 )}
-                                {catItems.map(item => (
-                                    <MenuItemRow
-                                        key={item.id} item={item}
-                                        submenuOpen={submenuOpen}
-                                        onItemClick={handleItemClick}
-                                        onSubmenuHover={(id) => setSubmenuOpen(id)}
-                                        onClose={onClose} onItemClickDirect={onItemClick}
-                                    />
-                                ))}
                             </div>
-                        ))
-                    ) : (
-                        filteredItems.map(item => (
-                            <MenuItemRow
-                                key={item.id} item={item}
-                                submenuOpen={submenuOpen}
-                                onItemClick={handleItemClick}
-                                onSubmenuHover={(id) => setSubmenuOpen(id)}
-                                onClose={onClose} onItemClickDirect={onItemClick}
-                            />
-                        ))
-                    )}
-                    {filteredItems.length === 0 && (
-                        <div style={{ padding: '16px 10px', textAlign: 'center', fontSize: 11, color: '#94a3b8', fontStyle: 'italic' }}>
-                            Bu kategoride işlem yok
-                        </div>
-                    )}
+                        );
+                    })}
                 </div>
 
                 {/* ═══ Alt Bilgi ═══ */}
-                {hasUser && targetUser?.userId && (
+                {targetUser?.userId && (
                     <div style={{
                         padding: '6px 14px', background: 'rgba(0,0,0,0.04)',
                         fontSize: 9, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic',

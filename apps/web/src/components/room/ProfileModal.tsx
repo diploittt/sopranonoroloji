@@ -168,7 +168,6 @@ export function ProfileModal({
                 className="relative w-full max-w-sm animate-pure-fade"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    ...modalStyle,
                     background: MODAL_BG,
                     backdropFilter: 'blur(28px) saturate(130%)',
                     WebkitBackdropFilter: 'blur(28px) saturate(130%)',
