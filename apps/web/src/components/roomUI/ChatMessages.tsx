@@ -163,7 +163,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     // === Avatar URL — GIF/3D/Animated modlarda avatar gösterme ===
     const getAvatarUrl = (msgOrUsername: Message | string): string | null => {
         const resolveAvatar = (avatar?: string, username?: string) => {
-            if (!avatar) return `https://api.dicebear.com/9.x/avataaars/svg?seed=${username || 'guest'}`;
+            if (!avatar) return `/avatars/neutral_1.png`;
             // gifnick:: prefix — parse ve URL kısmını çıkar
             if (avatar.startsWith('gifnick::')) {
                 const parts = avatar.split('::');
@@ -199,7 +199,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                 const resolved = resolveAvatar(user.avatar, msgOrUsername.sender);
                 if (resolved !== user.avatar || !user.avatar.startsWith('gifnick')) return resolved;
             }
-            return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername.sender}`;
+            return `/avatars/neutral_1.png`;
         }
 
         // Username string
@@ -213,7 +213,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             const resolved = resolveAvatar(user.avatar, msgOrUsername);
             return resolved;
         }
-        return `https://api.dicebear.com/9.x/avataaars/svg?seed=${msgOrUsername}`;
+        return `/avatars/neutral_1.png`;
     };
 
     // Format time

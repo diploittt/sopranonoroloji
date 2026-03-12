@@ -180,7 +180,7 @@ export function BottomToolbar({
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
-        <div className="bottom-toolbar p-4 bg-[#0F1626]/60 border-t border-white/5 backdrop-blur-2xl z-20 flex flex-col gap-3">
+        <div className="bottom-toolbar py-2 px-4 bg-transparent border-t border-white/5 backdrop-blur-sm z-20 flex flex-col gap-2">
 
             {/* Anchors */}
             <AnchorPopover
@@ -605,16 +605,24 @@ export function BottomToolbar({
                     />
                 </div>
 
-                <button type="submit" disabled={isChatDisabled} className={`send-button h-full w-32 group rounded-xl transition-all duration-300 ${isChatDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:shadow-[0_0_20px_rgba(123,159,239,0.25)]'}`}
+                <button type="submit" disabled={isChatDisabled} className={`send-button h-full w-24 group transition-all duration-300 ${isChatDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
                     style={{
-                        background: isChatDisabled ? 'rgba(255,255,255,0.03)' : 'linear-gradient(135deg, rgba(123,159,239,0.22) 0%, rgba(90,127,212,0.14) 50%, rgba(123,159,239,0.08) 100%)',
-                        border: isChatDisabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(123,159,239,0.30)',
-                        boxShadow: isChatDisabled ? 'none' : '0 2px 12px rgba(123,159,239,0.12), 0 0 20px rgba(123,159,239,0.06), inset 0 1px 0 rgba(255,255,255,0.06)',
+                        borderRadius: 14,
+                        background: isChatDisabled
+                            ? 'rgba(255,255,255,0.03)'
+                            : 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)',
+                        border: 'none',
+                        borderTop: isChatDisabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(120,130,150,0.35)',
+                        borderBottom: isChatDisabled ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(0,0,0,0.3)',
+                        boxShadow: isChatDisabled
+                            ? 'none'
+                            : '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.03)',
+                        cursor: isChatDisabled ? 'not-allowed' : 'pointer',
                     }}
                 >
                     <div className="relative z-10 flex items-center justify-center gap-2 w-full h-full">
-                        <span className="text-xs font-bold text-white tracking-widest" style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", color: '#022c22' } : undefined}>{isHasbihal ? 'GÖNDER' : t.send}</span>
-                        <SendHorizontal className="w-4 h-4 text-[#7b9fef] group-hover:translate-x-1 transition-transform" />
+                        <span className="font-extrabold tracking-[0.15em] uppercase" style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", color: '#022c22', fontSize: 11 } : { color: '#cbd5e1', fontSize: 11 }}>{isHasbihal ? 'GÖNDER' : t.send}</span>
+                        <SendHorizontal className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#94a3b8' }} />
                     </div>
                 </button>
             </form>

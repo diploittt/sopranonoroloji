@@ -756,7 +756,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Accept both 'avatar' and 'avatarUrl' keys (frontend sends 'avatar', API sends 'avatarUrl')
         const newAvatar = data.avatarUrl ?? data.avatar;
         if (newAvatar !== undefined) {
-          participant.avatar = newAvatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(participant.displayName)}&style=circle`;
+          participant.avatar = newAvatar || `/avatars/neutral_1.png`;
         }
 
         // Update socket data
@@ -1213,21 +1213,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // GodMaster varsayılan olarak GÖRÜNMEZ girer (hidden mode)
     const hasStealthPermission = user.permissions?.['self.stealth'] === true;
     const isGodMasterRole = (user.role || 'guest').toLowerCase() === 'godmaster';
-    // ★ VIP+ ve GodMaster kullanıcılar HER GİRİŞTE varsayılan stealth ile başlar
-    // Frontend'den gelen initialStatus payload'ı tamamen göz ardı edilir
-    // Kullanıcı odaya girdikten sonra manuel olarak görünür olabilir (status:change ile)
+    // ★ VIP+ ve GodMaster kullanıcılar varsayılan stealth ile başlar
+    // ANCAK frontend oturum-içi 'online' tercihi gönderdiyse (sessionStorage) onu uygula
     let initialStealth = isGodMasterRole ? true : (hasStealthPermission || userRoleLevel >= VIP_LEVEL);
     let initialVisibilityMode: 'hidden' | 'visible' | 'disguised' | undefined = undefined;
     let initialDisguiseName: string | undefined = undefined;
 
-    if (initialStealth) {
-      // ★ VIP+ / GodMaster → payload ne olursa olsun stealth ile başla
+    if (initialStealth && payload.initialStatus) {
+      // ★ Frontend oturum-içi tercih gönderdiyse VIP+ için de uygula
+      if (payload.initialStatus === 'online') {
+        initialStealth = false; // Kullanıcı bu oturumda görünür olmayı seçti
+      } else if (payload.initialStatus.startsWith('godmaster-')) {
+        // GodMaster visibility modları: godmaster-visible, godmaster-disguised, godmaster-hidden
+        if (payload.initialStatus === 'godmaster-visible') {
+          initialStealth = false;
+          initialVisibilityMode = 'visible';
+        } else if (payload.initialStatus === 'godmaster-disguised') {
+          initialStealth = false;
+          initialVisibilityMode = 'disguised';
+          initialDisguiseName = payload.disguiseName;
+        } else {
+          // godmaster-hidden → varsayılan stealth
+          initialVisibilityMode = 'hidden';
+        }
+      } else if (isGodMasterRole) {
+        initialVisibilityMode = 'hidden';
+      }
+    } else if (initialStealth) {
+      // Payload yok → varsayılan stealth
       if (isGodMasterRole) {
         initialVisibilityMode = 'hidden';
       }
-      // initialStatus payload'ı göz ardı edilir — stealth korunur
     } else if (payload.initialStatus) {
-      // ★ Sadece VIP altı kullanıcılar initialStatus payload'ını kullanabilir
+      // ★ VIP altı kullanıcılar initialStatus payload'ını kullanabilir
       if (payload.initialStatus === 'stealth') {
         if (hasStealthPermission) {
           initialStealth = true;
@@ -1281,7 +1299,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       avatar:
         user.avatar ||
         payload.avatar ||
-        `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(user.username)}&style=circle`,
+        `/avatars/neutral_1.png`,
       role: user.role || 'guest',
       socketId: client.id,
       roomId: scopedRoom,
@@ -1533,7 +1551,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           id: p.socketId,
           userId: p.userId,
           displayName: (showDisguisedAppearance || showDisguisedRole) ? (p.disguisedName || 'Misafir') : p.displayName,
-          avatar: (showDisguisedAppearance || showDisguisedRole) ? `https://api.dicebear.com/9.x/avataaars/svg?seed=${p.disguisedName || 'guest'}` : p.avatar,
+          avatar: (showDisguisedAppearance || showDisguisedRole) ? `/avatars/neutral_1.png` : p.avatar,
           role: showDisguisedRole ? 'guest' : p.role,
           socketId: p.socketId,
           isMuted: p.isMuted,
@@ -3957,7 +3975,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return {
           userId: p.userId,
           displayName: (showDisguisedAppearance || showDisguisedRole) ? (p.disguisedName || 'Misafir') : p.displayName,
-          avatar: (showDisguisedAppearance || showDisguisedRole) ? `https://api.dicebear.com/9.x/avataaars/svg?seed=${p.disguisedName || 'guest'}` : p.avatar,
+          avatar: (showDisguisedAppearance || showDisguisedRole) ? `/avatars/neutral_1.png` : p.avatar,
           role: showDisguisedRole ? 'guest' : p.role,
           socketId: p.socketId,
           isStealth: p.isStealth,
@@ -4417,11 +4435,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       tenantId: actor.tenantId || '',
       challengerId: actor.userId,
       challengerName: actor.displayName,
-      challengerAvatar: actor.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${actor.displayName}`,
+      challengerAvatar: actor.avatar || `/avatars/neutral_1.png`,
       challengerSocketId: client.id,
       opponentId: targetParticipant.userId,
       opponentName: targetParticipant.displayName,
-      opponentAvatar: targetParticipant.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${targetParticipant.displayName}`,
+      opponentAvatar: targetParticipant.avatar || `/avatars/neutral_1.png`,
       opponentSocketId: targetSocket,
       startedAt: 0,
       duration: 180_000, // 3 dakika

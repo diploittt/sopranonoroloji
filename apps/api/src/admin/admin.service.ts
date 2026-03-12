@@ -1417,7 +1417,7 @@ export class AdminService implements OnModuleInit {
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
     const avatarUrl =
       data.avatar ||
-      `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(username)}`;
+      `/avatars/neutral_1.png`;
 
     const user = await this.prisma.user.create({
       data: {

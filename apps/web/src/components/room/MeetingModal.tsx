@@ -165,7 +165,7 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                                             border: selectedUsers.includes(u.id || u.userId) ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                         }}
                                     >
-                                        <img src={u.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${u.username || u.displayName}`} alt="" className="w-7 h-7 rounded-full" style={{ background: '#0d0f17' }} />
+                                        <img src={u.avatar || `/avatars/neutral_1.png`} alt="" className="w-7 h-7 rounded-full" style={{ background: '#0d0f17' }} />
                                         <span className="text-sm text-white">{u.username || u.displayName}</span>
                                         {selectedUsers.includes(u.id || u.userId) && <span className="ml-auto text-[#7b9fef] text-sm">✓</span>}
                                     </button>

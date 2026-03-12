@@ -61,7 +61,8 @@ function getChatTextSettings() {
 }
 function saveChatTextSettings(s: { fontSize: number; fontWeight: string; textColor: string }) {
     localStorage.setItem('soprano_chat_text_settings', JSON.stringify(s));
-    window.dispatchEvent(new Event('chatTextSettingsChanged'));
+    // Defer event dispatch to avoid updating ChatMessages during SettingsModal render
+    setTimeout(() => window.dispatchEvent(new Event('chatTextSettingsChanged')), 0);
 }
 
 export function SettingsModal({

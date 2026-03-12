@@ -658,7 +658,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                 <div style={ARENA_STYLES.vsContainer}>
                     <div style={ARENA_STYLES.participant}>
                         <div style={ARENA_STYLES.avatar}>
-                            <img src={duelData.challengerAvatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${duelData.challengerName}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={duelData.challengerAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.challengerName}</span>
                         {(phase === 'voting' || phase === 'result') && (
@@ -668,7 +668,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                     <span style={ARENA_STYLES.vs}>⚔️</span>
                     <div style={ARENA_STYLES.participant}>
                         <div style={{ ...ARENA_STYLES.avatar, borderColor: 'rgba(236,72,153,0.5)' }}>
-                            <img src={duelData.opponentAvatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${duelData.opponentName}`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                            <img src={duelData.opponentAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.opponentName}</span>
                         {(phase === 'voting' || phase === 'result') && (

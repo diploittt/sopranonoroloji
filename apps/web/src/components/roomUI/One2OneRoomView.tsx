@@ -326,9 +326,12 @@ export function One2OneRoomView({
                         </div>
                     )}
                     {messages.map((msg: any, i: number) => {
-                        // Backend sends: sender (userId), senderName, senderAvatar
-                        // Also check msg.userId for backward compatibility
-                        const isMe = (msg.sender || msg.userId) === currentUser?.userId;
+                        // msg.sender is the display name (set by useRoomRealtime.ts line 660)
+                        // Compare against currentUser's displayName/username, not userId
+                        const senderName = msg.sender || msg.senderName || msg.displayName || '';
+                        const isMe = senderName === currentUser?.displayName
+                            || senderName === (currentUser as any)?.username
+                            || (msg.userId && msg.userId === currentUser?.userId);
                         return (
                             <div key={i} className="o2o-msg" style={{
                                 display: 'flex', alignItems: 'flex-start', gap: '8px',
@@ -341,7 +344,7 @@ export function One2OneRoomView({
                                     whiteSpace: 'nowrap',
                                     minWidth: 'fit-content',
                                 }}>
-                                    {msg.senderName || msg.displayName || (isMe ? myName : otherName)}:
+                                    {isMe ? myName : (senderName || otherName)}:
                                 </span>
                                 <span style={{
                                     color: 'rgba(255,255,255,0.85)',

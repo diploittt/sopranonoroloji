@@ -605,11 +605,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 displayName: p.displayName,
                 avatar: (() => {
                     const av = p.avatar;
-                    if (!av) return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(p.displayName)}&style=circle`;
+                    if (!av) return `/avatars/neutral_1.png`;
                     // GIF avatarlar sadece GodMaster'a özel
                     const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
                     if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
-                        return `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(p.displayName)}&style=circle`;
+                        return `/avatars/neutral_1.png`;
                     }
                     return av;
                 })(),
@@ -932,8 +932,15 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             if (!socket) return;
             const currentlyStealthed = mergedCurrentUser?.isStealth;
             const newStatus = currentlyStealthed ? 'online' : 'stealth';
-            // ★ localStorage'a yazma — VIP+ kullanıcılar için backend yönetiyor
-            // localStorage artık status için kullanılmıyor (buildJoinPayload'da da temizleniyor)
+            // ★ sessionStorage'a oturum-içi görünürlük tercihini kaydet
+            // Böylece oda değişikliklerinde buildJoinPayload bu tercihi kullanır
+            if (typeof window !== 'undefined') {
+                if (newStatus === 'online') {
+                    sessionStorage.setItem('soprano_session_visibility', 'online');
+                } else {
+                    sessionStorage.removeItem('soprano_session_visibility');
+                }
+            }
             // Optimistic local update for instant UI feedback
             if (mergedCurrentUser?.userId) {
                 updateParticipantLocally(mergedCurrentUser.userId, {
@@ -947,7 +954,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         changeStatus: (newStatus: string) => {
             if (!socket) return;
             const isStealth = newStatus === 'stealth';
-            // ★ localStorage'a yazma — VIP+ kullanıcılar için backend yönetiyor
+            // ★ sessionStorage'a oturum-içi görünürlük tercihini kaydet
+            if (typeof window !== 'undefined') {
+                if (!isStealth && newStatus !== 'stealth') {
+                    sessionStorage.setItem('soprano_session_visibility', newStatus);
+                } else {
+                    sessionStorage.removeItem('soprano_session_visibility');
+                }
+            }
             // Optimistic local update
             if (mergedCurrentUser?.userId) {
                 updateParticipantLocally(mergedCurrentUser.userId, {
@@ -971,7 +985,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             };
             console.log(`[setGodmasterVisibility] Emitting status:change with status=${statusMap[mode]}`);
             socket.emit('status:change', { status: statusMap[mode], disguiseName });
-            // ★ localStorage'a artık GodMaster status yazma — backend yönetiyor
+            // ★ sessionStorage'a GodMaster görünürlük tercihini kaydet
+            if (typeof window !== 'undefined') {
+                if (mode === 'visible' || mode === 'disguised') {
+                    sessionStorage.setItem('soprano_session_visibility', statusMap[mode]);
+                } else {
+                    sessionStorage.removeItem('soprano_session_visibility');
+                }
+            }
             // Optimistic local update — instant visual feedback
             if (mergedCurrentUser?.userId) {
                 const optimistic: any = {
@@ -983,7 +1004,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 if (mode === 'disguised') {
                     const dName = disguiseName || 'Misafir';
                     optimistic.displayName = dName;
-                    optimistic.avatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${dName}`;
+                    optimistic.avatar = `/avatars/neutral_1.png`;
                 } else if (mode === 'visible') {
                     // Restore original name/avatar from currentUser
                     optimistic.displayName = mergedCurrentUser.displayName;

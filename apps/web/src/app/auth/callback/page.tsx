@@ -23,7 +23,7 @@ function CallbackHandler() {
                 setAuthUser({
                     userId: user.sub,
                     username: user.displayName || user.username,
-                    avatar: user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`,
+                    avatar: user.avatar || `/avatars/neutral_1.png`,
                     isMember: user.isMember ?? true,
                     role: user.role || "member",
                 });

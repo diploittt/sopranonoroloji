@@ -283,7 +283,7 @@ export default function AllUsersModal({ isOpen, onClose, socket, currentUser, on
                                                 }}
                                             >
                                                 <img
-                                                    src={user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`}
+                                                    src={user.avatar || `/avatars/neutral_1.png`}
                                                     alt={user.displayName}
                                                     className="au-user-avatar"
                                                 />

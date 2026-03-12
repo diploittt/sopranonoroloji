@@ -25,7 +25,11 @@ const TABS = [
 ];
 
 const GODMASTER_ICONS = ['🔱', '⚡', '🌟', '👑', '💎', '🔥', '🌀', '⚔️', '🛡️', '✨', '💜', '🦅', '🐉', '☠️', '🎭', '🌙'];
-const AVATAR_STYLES = ['avataaars', 'bottts', 'fun-emoji', 'lorelei', 'pixel-art', 'thumbs'];
+const ALL_AVATARS = [
+    '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+];
 const NAME_COLORS = [
     '#d946ef', '#a855f7', '#8b5cf6', '#6366f1', '#ec4899', '#f43f5e',
     '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4',
@@ -119,8 +123,7 @@ export function GodMasterProfileModal({
     const [editorSection, setEditorSection] = useState<string>('anim');
 
     // Avatar
-    const [avatarSeed, setAvatarSeed] = useState('');
-    const [avatarStyle, setAvatarStyle] = useState('avataaars');
+    const [selectedAvatarUrl, setSelectedAvatarUrl] = useState('/avatars/neutral_1.png');
 
     // Name / Icon / Color
     const [newName, setNewName] = useState('');
@@ -138,7 +141,7 @@ export function GodMasterProfileModal({
         if (isOpen) {
             setActiveTab('gif');
             setNewName(currentUser?.username || '');
-            setAvatarSeed(currentUser?.username || 'godmaster');
+            setSelectedAvatarUrl(currentUser?.avatar || '/avatars/neutral_1.png');
             setSelectedColor(currentUser?.nameColor || '#d946ef');
             setCustomMainText(currentUser?.username || 'SopranoChat');
             setCustomSubText('Owner');
@@ -202,7 +205,7 @@ export function GodMasterProfileModal({
         setTimeout(() => { setSuccess(''); onClose(); }, 1000);
     };
     const handleRemoveGif = () => {
-        onChangeAvatar(`https://api.dicebear.com/9.x/avataaars/svg?seed=${currentUser?.username || 'gm'}`);
+        onChangeAvatar('/avatars/neutral_1.png');
         setGifPreview(null); setGifFileName('');
         setSuccess('GIF kaldırıldı.'); setTimeout(() => setSuccess(''), 1500);
     };
@@ -234,7 +237,7 @@ export function GodMasterProfileModal({
 
     if (!isOpen) return null;
 
-    const avatarUrl = `https://api.dicebear.com/9.x/${avatarStyle}/svg?seed=${avatarSeed}`;
+    const avatarUrl = selectedAvatarUrl;
     const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
     const EDITOR_SECTIONS = [
@@ -466,20 +469,23 @@ export function GodMasterProfileModal({
                     {/* ═══ AVATAR ═══ */}
                     {activeTab === 'avatar' && (
                         <div className="space-y-3">
-                            <div className="flex items-center gap-4">
-                                <img src={avatarUrl} alt="Avatar" className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20" style={{ background: '#10121b' }} />
-                                <div className="flex-1">
-                                    <label className="text-[10px] text-gray-500 mb-1 block">Seed</label>
-                                    <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: '#10121b' }} />
-                                </div>
+                            <div className="flex items-center justify-center">
+                                <img src={selectedAvatarUrl} alt="Avatar" className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20" style={{ background: '#10121b', objectFit: 'cover' }} />
                             </div>
-                            <div className="grid grid-cols-3 gap-1.5">
-                                {AVATAR_STYLES.map(s => (
-                                    <button key={s} onClick={() => setAvatarStyle(s)} className="py-1.5 text-[10px] font-medium rounded-lg transition-all"
-                                        style={{ background: avatarStyle === s ? 'rgba(217, 70, 239, 0.15)' : 'rgba(255,255,255,0.03)', color: avatarStyle === s ? '#e879f9' : '#94a3b8', border: avatarStyle === s ? '1px solid rgba(217, 70, 239, 0.3)' : '1px solid rgba(255,255,255,0.05)' }}>{s}</button>
+                            <div className="grid grid-cols-4 gap-2">
+                                {ALL_AVATARS.map(av => (
+                                    <button key={av} onClick={() => setSelectedAvatarUrl(av)} className="rounded-xl transition-all hover:scale-105"
+                                        style={{
+                                            padding: 3,
+                                            background: selectedAvatarUrl === av ? 'rgba(217, 70, 239, 0.2)' : 'rgba(255,255,255,0.03)',
+                                            border: selectedAvatarUrl === av ? '2px solid rgba(217, 70, 239, 0.5)' : '2px solid rgba(255,255,255,0.06)',
+                                            boxShadow: selectedAvatarUrl === av ? '0 0 12px rgba(217, 70, 239, 0.2)' : 'none',
+                                        }}>
+                                        <img src={av} alt="" className="w-full aspect-square rounded-lg" style={{ objectFit: 'cover' }} />
+                                    </button>
                                 ))}
                             </div>
-                            <button onClick={() => { onChangeAvatar(avatarUrl); setSuccess('Avatar kaydedildi!'); setTimeout(() => { setSuccess(''); onClose(); }, 800); }} className="w-full py-2.5 text-sm font-bold text-white rounded-xl" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)' }}>Avatarı Kaydet</button>
+                            <button onClick={() => { onChangeAvatar(selectedAvatarUrl); setSuccess('Avatar kaydedildi!'); setTimeout(() => { setSuccess(''); onClose(); }, 800); }} className="w-full py-2.5 text-sm font-bold text-white rounded-xl" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)' }}>Avatarı Kaydet</button>
                         </div>
                     )}
 

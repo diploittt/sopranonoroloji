@@ -376,7 +376,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
             const cleanAvatar = (editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') && !editAvatar.startsWith('3d:'))
                 ? editAvatar
                 : undefined;
-            const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(editName)}`;
+            const defaultAvatar = `/avatars/neutral_1.png`;
             const payload: any = {
                 displayName: editName,
                 role: editRole,

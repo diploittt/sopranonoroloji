@@ -24,7 +24,11 @@ const ALL_TABS = [
 // VIP+ level hierarchy
 const ROLE_LEVELS: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, super_admin: 6, owner: 7 };
 
-const AVATAR_STYLES = ['avataaars', 'bottts', 'fun-emoji', 'lorelei', 'pixel-art', 'thumbs'];
+const ALL_AVATARS = [
+    '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+];
 const NAME_COLORS = [
     '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4',
     '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e',
@@ -35,8 +39,7 @@ export function ProfileModal({
     isOpen, onClose, currentUser, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword
 }: ProfileModalProps) {
     const [activeTab, setActiveTab] = useState('avatar');
-    const [avatarSeed, setAvatarSeed] = useState('');
-    const [avatarStyle, setAvatarStyle] = useState('avataaars');
+    const [selectedAvatarUrl, setSelectedAvatarUrl] = useState('/avatars/neutral_1.png');
     const [newName, setNewName] = useState('');
     const [selectedColor, setSelectedColor] = useState('#ffffff');
     const [oldPass, setOldPass] = useState('');
@@ -95,7 +98,7 @@ export function ProfileModal({
             }
             setNewName(currentUser?.username || '');
             setSelectedColor(currentUser?.nameColor || '#ffffff');
-            setAvatarSeed(currentUser?.username || 'user');
+            setSelectedAvatarUrl(currentUser?.avatar || '/avatars/neutral_1.png');
             setOldPass(''); setNewPass(''); setConfirmPass('');
             setError('');
             setCentered(true);
@@ -139,7 +142,7 @@ export function ProfileModal({
 
     if (!isOpen) return null;
 
-    const avatarUrl = `https://api.dicebear.com/9.x/${avatarStyle}/svg?seed=${avatarSeed}`;
+    const avatarUrl = selectedAvatarUrl;
 
     const modalStyle: React.CSSProperties = centered
         ? {}
@@ -273,7 +276,7 @@ export function ProfileModal({
                                         if (animNick) {
                                             try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { }
                                         }
-                                        const defaultAvatar = `https://api.dicebear.com/9.x/avataaars/svg?seed=${encodeURIComponent(currentUser?.username || 'user')}`;
+                                        const defaultAvatar = '/avatars/neutral_1.png';
                                         onChangeAvatar(defaultAvatar);
                                     }
                                     onClose();
@@ -287,32 +290,26 @@ export function ProfileModal({
 
                     {activeTab === 'avatar' && (
                         <div className="space-y-4">
-                            <div className="flex items-center gap-4">
-                                <img src={avatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl border-2 border-amber-600/20" style={{ background: '#10121b' }} />
-                                <div className="flex-1">
-                                    <label className="text-xs text-gray-400 mb-1 block">Seed</label>
-                                    <input
-                                        value={avatarSeed}
-                                        onChange={(e) => setAvatarSeed(e.target.value)}
-                                        className="w-full text-sm text-white rounded-lg px-3 py-2 border border-white/10 focus:border-amber-600/40 focus:outline-none"
-                                        style={{ background: '#10121b' }}
-                                    />
-                                </div>
+                            <div className="flex items-center justify-center">
+                                <img src={selectedAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl border-2 border-amber-600/20" style={{ background: '#10121b', objectFit: 'cover' }} />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Stil</label>
-                                <div className="grid grid-cols-3 gap-2">
-                                    {AVATAR_STYLES.map(s => (
+                                <label className="text-xs text-gray-400 mb-2 block">Avatar Seç</label>
+                                <div className="grid grid-cols-4 gap-3">
+                                    {ALL_AVATARS.map(av => (
                                         <button
-                                            key={s}
-                                            onClick={() => setAvatarStyle(s)}
-                                            className="py-2 text-xs font-medium rounded-lg transition-all"
+                                            key={av}
+                                            onClick={() => setSelectedAvatarUrl(av)}
+                                            className="rounded-xl transition-all hover:scale-105"
                                             style={{
-                                                background: avatarStyle === s ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
-                                                color: avatarStyle === s ? '#a5b4fc' : '#94a3b8',
-                                                border: avatarStyle === s ? '1px solid rgba(99,102,241,0.3)' : '1px solid rgba(255,255,255,0.05)',
+                                                padding: 3,
+                                                background: selectedAvatarUrl === av ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)',
+                                                border: selectedAvatarUrl === av ? '2px solid rgba(99,102,241,0.5)' : '2px solid rgba(255,255,255,0.06)',
+                                                boxShadow: selectedAvatarUrl === av ? '0 0 12px rgba(99,102,241,0.2)' : 'none',
                                             }}
-                                        >{s}</button>
+                                        >
+                                            <img src={av} alt="" className="w-full aspect-square rounded-lg" style={{ objectFit: 'cover' }} />
+                                        </button>
                                     ))}
                                 </div>
                             </div>
@@ -320,11 +317,10 @@ export function ProfileModal({
                                 const currentAv = currentUser?.avatar || '';
                                 const isCurrentlyAnimated = currentAv.startsWith('animated:') || currentAv.startsWith('gifnick::');
                                 if (isCurrentlyAnimated) {
-                                    // Animated nick aktifken avatar'ı localStorage'a kaydet — animated nick korunur
-                                    try { localStorage.setItem('soprano_custom_avatar', avatarUrl); } catch (e) { }
+                                    try { localStorage.setItem('soprano_custom_avatar', selectedAvatarUrl); } catch (e) { }
                                     onClose();
                                 } else {
-                                    onChangeAvatar(avatarUrl);
+                                    onChangeAvatar(selectedAvatarUrl);
                                     onClose();
                                 }
                             }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 transition-all">

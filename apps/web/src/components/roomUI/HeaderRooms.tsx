@@ -1,9 +1,9 @@
-﻿"use client";
+"use client";
 
-import { Lock, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Lock, Users, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { RoomInfo } from '@/hooks/useSocket';
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -121,20 +121,91 @@ export function HeaderRooms({
         el.scrollBy({ left: dir === 'left' ? -amount : amount, behavior: 'smooth' });
     };
 
+    // Drawer toggle state
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+    // Get active room name
+    const activeRoom = displayRooms.find(r => currentSlug === r.slug || currentSlug === r.id);
+    const activeRoomName = activeRoom?.name || 'ODA SEÇ';
+
     return (
-        <header className="chat-header h-24 flex-shrink-0 border-b backdrop-blur-xl flex items-center relative z-30" style={{ paddingLeft: 4, paddingRight: 4, background: 'linear-gradient(180deg, rgba(10, 15, 28, 0.95) 0%, rgba(7, 11, 20, 0.85) 100%)', borderColor: 'rgba(6, 182, 212, 0.25)', boxShadow: 'inset 0 -1px 0 rgba(6, 182, 212, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(6, 182, 212, 0.08)' }}>
+        <>
+            {/* Drawer animation styles */}
+            <style>{`
+                @keyframes roomDrawerSlide {
+                    0% {
+                        opacity: 0;
+                        transform: translateY(-14px) scale(0.97);
+                    }
+                    100% {
+                        opacity: 1;
+                        transform: translateY(0) scale(1);
+                    }
+                }
+                .room-tab-drawer {
+                    animation: roomDrawerSlide 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both;
+                }
+                .room-drawer-panel {
+                    max-height: 0;
+                    overflow: hidden;
+                    transition: max-height 0.5s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.4s ease;
+                    opacity: 0;
+                }
+                .room-drawer-panel.open {
+                    max-height: 300px;
+                    opacity: 1;
+                }
+                .room-drawer-toggle {
+                    transition: transform 0.3s ease;
+                }
+                .room-drawer-toggle.open {
+                    transform: rotate(180deg);
+                }
+            `}</style>
+        <div className="flex-shrink-0 relative z-30">
+            {/* ─── Compact Header Bar ─── */}
+            <header
+                className="chat-header h-12 border-b backdrop-blur-xl flex items-center justify-between cursor-pointer relative"
+                style={{
+                    paddingLeft: 16, paddingRight: 16,
+                    background: 'linear-gradient(180deg, rgba(10, 15, 28, 0.95) 0%, rgba(7, 11, 20, 0.85) 100%)',
+                    borderColor: 'rgba(6, 182, 212, 0.25)',
+                    boxShadow: 'inset 0 -1px 0 rgba(6, 182, 212, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3)',
+                }}
+                onClick={() => setIsDrawerOpen(!isDrawerOpen)}
+            >
+                <div className="flex items-center gap-3">
+                    <span className="text-xs font-bold tracking-widest uppercase" style={{ color: '#06b6d4' }}>
+                        {activeRoomName}
+                    </span>
+                    <span className="text-[10px] font-semibold tabular-nums" style={{ color: 'rgba(6,182,212,0.6)' }}>
+                        {activeRoom ? (activeRoom as any).participantCount || totalUsers : totalUsers} Kişi
+                    </span>
+                </div>
+                <div className="flex items-center gap-2">
+                    <span className="text-[10px] text-gray-500">{displayRooms.length} Oda</span>
+                    <ChevronDown className={`w-4 h-4 text-gray-400 room-drawer-toggle ${isDrawerOpen ? 'open' : ''}`} />
+                </div>
+            </header>
+
+            {/* ─── Drawer Panel (slides down) ─── */}
+            <div className={`room-drawer-panel ${isDrawerOpen ? 'open' : ''}`} style={{
+                background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.92) 0%, rgba(10, 15, 28, 0.88) 100%)',
+                borderBottom: isDrawerOpen ? '1px solid rgba(6, 182, 212, 0.15)' : 'none',
+                backdropFilter: 'blur(16px)',
+                boxShadow: isDrawerOpen ? '0 8px 30px rgba(0,0,0,0.3)' : 'none',
+            }}>
+                <div style={{ padding: '12px 12px 14px' }}>
 
             {/* ◀ Left scroll arrow */}
             {canScrollLeft && (
                 <button
-                    onClick={() => scroll('left')}
-                    className="flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-white/10 active:scale-90"
+                    onClick={(e) => { e.stopPropagation(); scroll('left'); }}
+                    className="absolute left-0 top-0 bottom-0 flex items-center justify-center transition-all duration-200 hover:bg-white/10"
                     style={{
-                        width: 28, height: 40,
+                        width: 28,
                         background: 'linear-gradient(90deg, rgba(15,22,38,0.95) 0%, rgba(15,22,38,0.3) 100%)',
-                        border: '1px solid rgba(255,255,255,0.06)',
                         zIndex: 5,
-                        marginRight: -4,
                     }}
                 >
                     <ChevronLeft className="w-4 h-4 text-gray-400" />
@@ -144,7 +215,7 @@ export function HeaderRooms({
             {/* ─── Scrollable Room Tabs ─── */}
             <div
                 ref={scrollRef}
-                className="flex-1 overflow-x-auto no-scrollbar"
+                className="overflow-x-auto no-scrollbar"
                 style={{
                     scrollBehavior: 'smooth',
                     paddingLeft: 8,
@@ -157,7 +228,7 @@ export function HeaderRooms({
                     className="inline-flex items-center w-fit min-w-full justify-center"
                     style={{ gap: tier === 'mini' ? 6 : tier === 'compact' ? 8 : 10 }}
                 >
-                    {displayRooms.map((room) => {
+                    {displayRooms.map((room, roomIndex) => {
                         const isActive = currentSlug === room.slug || currentSlug === room.id;
                         const isHovered = hoveredRoom === room.id;
                         const btnColor = room.buttonColor || '#06b6d4';
@@ -172,7 +243,7 @@ export function HeaderRooms({
                         // ════════════════════════════════════════
                         if (tier === 'mini') {
                             return (
-                                <div key={room.id} className="relative flex-shrink-0">
+                                <div key={room.id} className="relative flex-shrink-0 room-tab-drawer" style={{ animationDelay: `${roomIndex * 60}ms` }}>
                                     <button
                                         onClick={() => navigate(room.slug)}
                                         onMouseEnter={() => setHoveredRoom(room.id)}
@@ -226,7 +297,7 @@ export function HeaderRooms({
                         // ════════════════════════════════════════
                         if (tier === 'compact') {
                             return (
-                                <div key={room.id} className="relative flex-shrink-0">
+                                <div key={room.id} className="relative flex-shrink-0 room-tab-drawer" style={{ animationDelay: `${roomIndex * 60}ms` }}>
                                     <button
                                         onClick={() => navigate(room.slug)}
                                         onMouseEnter={() => setHoveredRoom(room.id)}
@@ -291,8 +362,9 @@ export function HeaderRooms({
                                     onClick={() => navigate(room.slug)}
                                     onMouseEnter={() => setHoveredRoom(room.id)}
                                     onMouseLeave={() => setHoveredRoom(null)}
-                                    className={`flex-shrink-0 h-14 flex items-center justify-center gap-2.5 group relative transition-all duration-300`}
+                                    className={`flex-shrink-0 h-14 flex items-center justify-center gap-2.5 group relative transition-all duration-300 room-tab-drawer`}
                                     style={{
+                                        animationDelay: `${roomIndex * 60}ms`,
                                         minWidth: 110,
                                         maxWidth: 200,
                                         padding: '0 18px',
@@ -326,8 +398,8 @@ export function HeaderRooms({
                         }
 
                         // Normal tier, hidden names
-                        return (
-                            <div key={room.id} className="relative flex-shrink-0">
+                            return (
+                            <div key={room.id} className="relative flex-shrink-0 room-tab-drawer" style={{ animationDelay: `${roomIndex * 60}ms` }}>
                                 <button
                                     onClick={() => navigate(room.slug)}
                                     onMouseEnter={() => setHoveredRoom(room.id)}
@@ -386,19 +458,20 @@ export function HeaderRooms({
             {/* ▶ Right scroll arrow */}
             {canScrollRight && (
                 <button
-                    onClick={() => scroll('right')}
-                    className="flex-shrink-0 flex items-center justify-center rounded-lg transition-all duration-200 hover:bg-white/10 active:scale-90"
+                    onClick={(e) => { e.stopPropagation(); scroll('right'); }}
+                    className="absolute right-0 top-0 bottom-0 flex items-center justify-center transition-all duration-200 hover:bg-white/10"
                     style={{
-                        width: 28, height: 40,
+                        width: 28,
                         background: 'linear-gradient(270deg, rgba(15,22,38,0.95) 0%, rgba(15,22,38,0.3) 100%)',
-                        border: '1px solid rgba(255,255,255,0.06)',
                         zIndex: 5,
-                        marginLeft: -4,
                     }}
                 >
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                 </button>
             )}
-        </header>
+                </div>
+            </div>
+        </div>
+        </>
     );
 }

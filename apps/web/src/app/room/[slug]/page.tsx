@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { use, useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react';
 import { SidebarLeft } from '@/components/roomUI/SidebarLeft';
 import { HeaderRooms } from '@/components/roomUI/HeaderRooms';
 import { ChatMessages } from '@/components/roomUI/ChatMessages';
@@ -35,12 +35,10 @@ import { RoomMonitorModal } from '@/components/room/RoomMonitorModal';
 // MeetingModal kaldırıldı — toplantı odası artık ayrı sayfa olarak açılır
 import { MeetingRoomBanner } from '@/components/room/MeetingRoomBanner';
 import { LanguageProvider } from '@/i18n/LanguageProvider';
-import ThemeSwitcher from '@/components/room/ThemeSwitcher';
 
 import { UserHistoryModal } from '@/components/room/UserHistoryModal';
 import OneToOneCallView from '@/components/roomUI/OneToOneCallView';
 import { useRouter } from 'next/navigation';
-import { useCurrentTheme } from '@/hooks/useCurrentTheme';
 import DuelArena from '@/components/roomUI/DuelArena';
 
 // ─── PERMISSION-BASED MENU SYSTEM ──────────────────────────────────
@@ -500,8 +498,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const { openPanel, closePanel, setActiveTab } = useAdminPanelStore();
     const isMeetingRoom = activeSlug === 'staff-meeting';
     const isOne2OneRoom = activeSlug.startsWith('one2one-');
-    const currentTheme = useCurrentTheme();
-    const isModernTheme = currentTheme === 'modern' || currentTheme === '';
 
 
     // ─── Active Design (dizayn preset'inden gelen bölgesel renkler) ───
@@ -1161,7 +1157,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         <LanguageProvider lang={room.state.systemSettings?.defaultLanguage || 'tr'}>
             <>
                 {/* Nudge shake class applied via globals.css */}
-                <main className={`app-background h-screen w-full flex items-center justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30 ${nudgeActive ? 'nudge-shake' : ''}`} style={{ perspective: '1200px' }}>
+                <main className={`app-background h-screen w-full flex items-center justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30 ${nudgeActive ? 'nudge-shake' : ''}`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
 
                     {/* ★ ONE2ONE ROOM — Sanal bire bir oda ★ */}
                     {isOne2OneRoom ? (
@@ -1879,19 +1875,515 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 )
                             }
 
-                            <div className={`glass-panel room-container w-full max-w-[1700px] h-[88vh] rounded-[28px] flex overflow-hidden relative shadow-2xl`}
+                            {/* ═══ HOMEPAGE-STYLE FRAME + TOP BAR ═══ */}
+                            <div style={{
+                                width: '100%',
+                                maxWidth: 1400,
+                                margin: '0 auto',
+                                alignSelf: 'flex-start',
+                                backgroundColor: '#7a7e9e',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                borderLeft: '14px solid rgba(255,255,255,0.85)',
+                                borderRight: '14px solid rgba(255,255,255,0.85)',
+                                borderBottom: '14px solid rgba(255,255,255,0.85)',
+                                boxShadow: 'none',
+                                overflow: 'visible',
+                                height: 968,
+                                paddingBottom: 32,
+                                animation: 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                            }}>
+                                {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}
+                                <style>{`
+                                    @import url('https://fonts.cdnfonts.com/css/cooper-black');
+                                    body {
+                                        background: #c4c9ee !important;
+                                        background-attachment: fixed !important;
+                                    }
+                                    body > main, .room-container {
+                                        padding-top: 0 !important;
+                                        align-items: flex-start !important;
+                                    }
+                                    /* === ROOM DRAWER ANIMATION === */
+                                    .room-drawer-details summary::-webkit-details-marker,
+                                    .room-drawer-details summary::marker { display: none; content: ''; }
+                                    .room-drawer-details summary:hover { background: rgba(255,255,255,0.05); }
+                                    .room-drawer-details[open] .room-drawer-chevron {
+                                        transform: rotate(180deg);
+                                    }
+                                    .room-drawer-chevron {
+                                        transition: transform 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+                                    }
+                                    @keyframes roomDrawerSlideItem {
+                                        0% { opacity: 0; transform: translateY(-10px); }
+                                        100% { opacity: 1; transform: translateY(0); }
+                                    }
+                                    /* === TABLO LAMBALARI — tüm sütunlara (sopranonoro referansı) === */
+                                    .room-container .sidebar-left,
+                                    .room-container .right-live-panel,
+                                    .room-container .sidebar-right,
+                                    .room-container .live-panel {
+                                        position: relative !important;
+                                        overflow: visible !important;
+                                    }
+                                    .room-container .sidebar-left::before {
+                                        content: '';
+                                        position: absolute;
+                                        top: -53px;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 300px;
+                                        height: 52px;
+                                        z-index: 60;
+                                        pointer-events: none;
+                                        background-image: url("data:image/svg+xml,%3Csvg width='300' height='52' viewBox='0 0 300 52' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='bm' x1='0' y1='30' x2='0' y2='44' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%234a4a4a'/%3E%3Cstop offset='25%25' stop-color='%232a2a2a'/%3E%3Cstop offset='50%25' stop-color='%231a1a1a'/%3E%3Cstop offset='75%25' stop-color='%232a2a2a'/%3E%3Cstop offset='100%25' stop-color='%233a3a3a'/%3E%3C/linearGradient%3E%3ClinearGradient id='mp' x1='150' y1='0' x2='150' y2='14' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23555'/%3E%3Cstop offset='50%25' stop-color='%232a2a2a'/%3E%3Cstop offset='100%25' stop-color='%231a1a1a'/%3E%3C/linearGradient%3E%3ClinearGradient id='am' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23555'/%3E%3Cstop offset='50%25' stop-color='%23333'/%3E%3Cstop offset='100%25' stop-color='%232a2a2a'/%3E%3C/linearGradient%3E%3ClinearGradient id='ls' x1='150' y1='44' x2='150' y2='52' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23ffd080' stop-opacity='0.6'/%3E%3Cstop offset='100%25' stop-color='%23ffc864' stop-opacity='0'/%3E%3C/linearGradient%3E%3ClinearGradient id='ld' x1='50' y1='43' x2='250' y2='43' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3Cstop offset='15%25' stop-color='%23ffe0a0' stop-opacity='0.9'/%3E%3Cstop offset='50%25' stop-color='%23fff0cc' stop-opacity='1'/%3E%3Cstop offset='85%25' stop-color='%23ffe0a0' stop-opacity='0.9'/%3E%3Cstop offset='100%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M58 44 L35 52 L265 52 L242 44 Z' fill='url(%23ls)' opacity='0.5'/%3E%3Crect x='135' y='0' width='30' height='10' rx='2' fill='url(%23mp)' stroke='rgba(255,255,255,0.08)' stroke-width='0.5'/%3E%3Crect x='138' y='1' width='24' height='1.5' rx='0.75' fill='white' fill-opacity='0.1'/%3E%3Cline x1='142' y1='10' x2='115' y2='30' stroke='url(%23am)' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='142.5' y1='10.5' x2='115.8' y2='30' stroke='rgba(255,255,255,0.1)' stroke-width='0.5'/%3E%3Cline x1='158' y1='10' x2='185' y2='30' stroke='url(%23am)' stroke-width='3' stroke-linecap='round'/%3E%3Cline x1='157.5' y1='10.5' x2='184.2' y2='30' stroke='rgba(255,255,255,0.1)' stroke-width='0.5'/%3E%3Crect x='48' y='30' width='204' height='14' rx='7' fill='url(%23bm)' stroke='rgba(0,0,0,0.4)' stroke-width='0.8'/%3E%3Crect x='58' y='32' width='184' height='2' rx='1' fill='white' fill-opacity='0.12'/%3E%3Crect x='58' y='42' width='184' height='1' rx='0.5' fill='white' fill-opacity='0.04'/%3E%3Crect x='55' y='43.5' width='190' height='1.5' rx='0.75' fill='url(%23ld)'/%3E%3Ccircle cx='115' cy='34' r='2.5' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='115' cy='34' r='1' fill='%23555'/%3E%3Ccircle cx='185' cy='34' r='2.5' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='185' cy='34' r='1' fill='%23555'/%3E%3C/svg%3E");
+                                        background-size: contain;
+                                        background-repeat: no-repeat;
+                                        background-position: center;
+                                        filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+                                        animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
+                                    }
+                                    /* Warm glow beneath each lamp — sopranonoro exact */
+                                    .room-container .sidebar-left::after {
+                                        content: '';
+                                        position: absolute;
+                                        top: -16px;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 280px;
+                                        height: 110px;
+                                        background: radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%);
+                                        pointer-events: none;
+                                        border-radius: 0 0 50% 50%;
+                                        filter: blur(8px);
+                                        opacity: 0;
+                                        animation: glowLightUp 1.5s ease-out 2s forwards;
+                                    }
+                                    @keyframes lampSlideDown {
+                                        0% { opacity: 0; transform: translateX(-50%) translateY(-100%); }
+                                        40% { opacity: 1; }
+                                        100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                                    }
+                                    @keyframes glowLightUp {
+                                        0% { opacity: 0; }
+                                        100% { opacity: 1; }
+                                    }
+                                    /* === RAPTİYE (pushpins) — orta sütun chat kartı === */
+                                    .room-container main.flex-1 > .chat-area {
+                                        position: relative !important;
+                                        overflow: visible !important;
+                                    }
+                                    /* 3 raptiye — sol, orta, sağ */
+                                    .room-raptiye-left,
+                                    .room-raptiye-center,
+                                    .room-raptiye-right {
+                                        position: absolute;
+                                        top: -10px;
+                                        z-index: 20;
+                                        pointer-events: none;
+                                        filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
+                                        width: 20px;
+                                        height: 24px;
+                                    }
+                                    .room-raptiye-left { left: 30px; }
+                                    .room-raptiye-center { left: 50%; transform: translateX(-50%); }
+                                    .room-raptiye-right { right: 30px; }
+                                    .room-premium-header {
+                                        position: relative;
+                                        width: 99%;
+                                        margin: 0 auto;
+                                        height: 78px;
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        padding: 0 36px;
+                                        background: linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%);
+                                        border-radius: 0 0 28px 28px;
+                                        border: 1px solid rgba(0,0,0,0.5);
+                                        border-top: 1px solid rgba(120,130,150,0.6);
+                                        box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.05);
+                                        animation: roomHeaderSlide 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+                                        z-index: 50;
+                                        overflow: visible;
+                                        flex-shrink: 0;
+                                    }
+                                    .room-premium-header::after {
+                                        content: '';
+                                        position: absolute;
+                                        top: 0; left: 10%; right: 10%; height: 35%;
+                                        background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 50%, transparent 100%);
+                                        border-radius: 0 0 50% 50%;
+                                        pointer-events: none;
+                                    }
+                                    .room-header-logo {
+                                        display: flex; flex-direction: column; align-items: flex-start;
+                                        gap: 2px; flex-shrink: 0; position: absolute; left: 36px;
+                                    }
+                                    @keyframes roomHeaderSlide {
+                                        0% { transform: translateY(-100%); opacity: 0; }
+                                        100% { transform: translateY(0); opacity: 1; }
+                                    }
+                                    @keyframes roomLogoReveal {
+                                        0% { opacity: 0; filter: brightness(0.5); transform: translateX(-12px); }
+                                        60% { opacity: 1; filter: brightness(1.8); }
+                                        100% { opacity: 1; filter: brightness(1); transform: translateX(0); }
+                                    }
+                                    @keyframes roomLogoGlow {
+                                        0%, 100% { filter: drop-shadow(0 0 2px rgba(120,200,200,0)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                                        50% { filter: drop-shadow(0 0 8px rgba(120,200,200,0.3)) drop-shadow(0 0 20px rgba(120,200,200,0.1)) drop-shadow(0 2px 4px rgba(0,0,0,0.6)); }
+                                    }
+                                    .room-header-logo h1 {
+                                        margin: 0; font-size: 44px; line-height: 1; letter-spacing: -1px;
+                                        animation: roomLogoReveal 0.8s ease-out forwards; animation-delay: 0.2s; opacity: 0;
+                                    }
+                                    .room-retro-logo-text {
+                                        font-family: 'Cooper Black', 'Arial Rounded MT Bold', serif;
+                                        font-weight: 900;
+                                        letter-spacing: 0.5px;
+                                        transform: scaleY(1.05);
+                                        display: inline-flex;
+                                        gap: 0px;
+                                        position: relative;
+                                    }
+                                    .room-retro-logo-soprano {
+                                        background: linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%);
+                                        -webkit-background-clip: text;
+                                        -webkit-text-fill-color: transparent;
+                                        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4));
+                                    }
+                                    .room-retro-logo-chat {
+                                        background: linear-gradient(180deg, #b8f0f0 0%, #5ec8c8 30%, #3a9e9e 65%, #4db0a8 100%);
+                                        -webkit-background-clip: text;
+                                        -webkit-text-fill-color: transparent;
+                                        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(20,80,70,0.5));
+                                        animation: roomLogoGlow 3s ease-in-out infinite;
+                                    }
+                                    .room-header-nav {
+                                        display: flex; align-items: center; gap: 6px; padding-left: 60px;
+                                    }
+                                    .room-nav-dot {
+                                        width: 3px; height: 3px; border-radius: 50%;
+                                        background: rgba(200,170,110,0.2); flex-shrink: 0;
+                                    }
+                                    @keyframes roomContentFadeIn {
+                                        0% { transform: translateY(-30px); opacity: 0; }
+                                        100% { transform: translateY(0); opacity: 1; }
+                                    }
+
+                                    /* ═══ 4-PANEL LAYOUT — each column as separate rounded panel ═══ */
+                                    .room-container.glass-panel {
+                                        background: transparent !important;
+                                        backdrop-filter: none !important;
+                                        -webkit-backdrop-filter: none !important;
+                                        box-shadow: none !important;
+                                        border: none !important;
+                                        border-radius: 0 !important;
+                                        gap: 16px !important;
+                                        padding: 48px 32px 32px !important;
+                                        align-items: stretch !important;
+                                        flex-wrap: nowrap !important;
+                                    }
+                                    /* SOL PANEL — sopranonoro: 240×780px */
+                                    .room-container .sidebar-left {
+                                        width: 260px !important;
+                                        min-width: 240px !important;
+                                        max-width: 280px !important;
+                                        flex: 0 0 260px !important;
+                                        min-height: 780px !important;
+                                        align-self: flex-start !important;
+                                        margin-top: -15px !important;
+                                    }
+                                    /* Sopranonoro ANA İÇERİK (SOL ALAN) — esnek */
+                                    .room-container main.flex-1 {
+                                        flex: 1 1 65% !important;
+                                        min-width: 280px !important;
+                                        min-height: 780px !important;
+                                        max-height: 780px !important;
+                                        margin-top: -20px !important;
+                                        gap: 16px !important;
+                                    }
+                                    .room-container main.flex-1 > .chat-area {
+                                        gap: 16px !important;
+                                    }
+                                    /* SAĞ PANEL — sol sütun ile eşit genişlik: 260px */
+                                    .room-container .right-live-panel,
+                                    .room-container .sidebar-right,
+                                    .room-container .live-panel {
+                                        width: 260px !important;
+                                        min-width: 240px !important;
+                                        max-width: 280px !important;
+                                        flex: 0 0 260px !important;
+                                        min-height: 780px !important;
+                                        align-self: flex-start !important;
+                                        margin-right: -8px !important;
+                                        margin-top: -15px !important;
+                                        padding-top: 0 !important;
+                                    }
+                                    /* Sağ panel iç elemanları yukarı kaydır */
+                                    .room-container .sidebar-right > div:first-child,
+                                    .room-container .right-live-panel > div:first-child {
+                                        margin-top: -4px !important;
+                                        margin-bottom: 0 !important;
+                                    }
+                                    .room-container .sidebar-right .tv-wrapper,
+                                    .room-container .right-live-panel .tv-wrapper {
+                                        margin-top: 25px !important;
+                                        max-width: 280px !important;
+                                        overflow: visible !important;
+                                    }
+                                    /* Idle rotation — sola sağa yavaş sallanma */
+                                    @keyframes monitorIdleRotate {
+                                        0%, 100% { transform: rotateY(-15deg) rotateX(2deg); }
+                                        50% { transform: rotateY(15deg) rotateX(2deg); }
+                                    }
+                                    .room-container .sidebar-right .tv-monitor,
+                                    .room-container .right-live-panel .tv-monitor {
+                                        animation: monitorSettle 1.8s cubic-bezier(0.34,1.56,0.64,1) 1s backwards,
+                                                   monitorIdleRotate 8s ease-in-out 3s infinite !important;
+                                    }
+                                    .room-container .sidebar-right .tv-monitor.tv-broadcasting,
+                                    .room-container .right-live-panel .tv-monitor.tv-broadcasting {
+                                        animation: none !important;
+                                        transform: rotateY(0deg) rotateX(0deg) !important;
+                                    }
+                                    /* KÜRSÜ tabela — ince metal vintage tabela */
+                                    .room-container .right-live-panel::before,
+                                    .room-container .sidebar-right::before {
+                                        content: '';
+                                        position: absolute;
+                                        top: -36px;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 180px;
+                                        height: 36px;
+                                        z-index: 5;
+                                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='36' viewBox='0 0 180 36'%3E%3Cdefs%3E%3ClinearGradient id='metal' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%234a4a4a'/%3E%3Cstop offset='25%25' stop-color='%232a2a2a'/%3E%3Cstop offset='50%25' stop-color='%231a1a1a'/%3E%3Cstop offset='75%25' stop-color='%232a2a2a'/%3E%3Cstop offset='100%25' stop-color='%233a3a3a'/%3E%3C/linearGradient%3E%3ClinearGradient id='chain' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23555'/%3E%3Cstop offset='50%25' stop-color='%23333'/%3E%3Cstop offset='100%25' stop-color='%23555'/%3E%3C/linearGradient%3E%3ClinearGradient id='glow' x1='30' y1='30' x2='150' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3Cstop offset='30%25' stop-color='%23ffe0a0' stop-opacity='0.7'/%3E%3Cstop offset='50%25' stop-color='%23fff0cc' stop-opacity='1'/%3E%3Cstop offset='70%25' stop-color='%23ffe0a0' stop-opacity='0.7'/%3E%3Cstop offset='100%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Chains --%3E%3Crect x='38' y='0' width='3' height='4' rx='1' fill='url(%23chain)'/%3E%3Crect x='38' y='5' width='3' height='4' rx='1' fill='url(%23chain)'/%3E%3Crect x='139' y='0' width='3' height='4' rx='1' fill='url(%23chain)'/%3E%3Crect x='139' y='5' width='3' height='4' rx='1' fill='url(%23chain)'/%3E%3C!-- Metal plate --%3E%3Crect x='4' y='10' width='172' height='22' rx='7' fill='url(%23metal)' stroke='rgba(0,0,0,0.4)' stroke-width='0.8'/%3E%3C!-- Top highlight --%3E%3Crect x='14' y='12' width='152' height='1.5' rx='0.75' fill='white' fill-opacity='0.12'/%3E%3C!-- Bottom warm light strip --%3E%3Crect x='20' y='30' width='140' height='1.5' rx='0.75' fill='url(%23glow)'/%3E%3C!-- Rivets --%3E%3Ccircle cx='14' cy='21' r='2' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='14' cy='21' r='0.8' fill='%23555'/%3E%3Ccircle cx='166' cy='21' r='2' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='166' cy='21' r='0.8' fill='%23555'/%3E%3C!-- Text --%3E%3Ctext x='90' y='26' text-anchor='middle' font-family='Georgia,serif' font-size='11' font-weight='bold' letter-spacing='5' fill='%23d8c890'%3EK%C3%9CRS%C3%9C%3C/text%3E%3Ctext x='90' y='25' text-anchor='middle' font-family='Georgia,serif' font-size='11' font-weight='bold' letter-spacing='5' fill='%23111' opacity='0.3'%3EK%C3%9CRS%C3%9C%3C/text%3E%3C/svg%3E");
+                                        background-size: contain;
+                                        background-repeat: no-repeat;
+                                        background-position: center;
+                                        pointer-events: none;
+                                        filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
+                                        animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
+                                    }
+
+                                    .room-container .sidebar-left .chat-logo-area {
+                                        display: none !important;
+                                    }
+                                    /* Sidebar yukarı çekildi, lambayı eski konumuna sabitle */
+                                    .room-container .sidebar-left::before {
+                                        top: -48px !important;
+                                    }
+
+                                    .room-container .sidebar-left::after {
+                                        top: -30px !important;
+                                        height: 130px !important;
+                                    }
+                                    .room-container .sidebar-left {
+                                        margin-left: -8px !important;
+                                        background:
+                                            radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                                            linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                                            linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%) !important;
+                                        backdrop-filter: blur(24px) !important;
+                                        -webkit-backdrop-filter: blur(24px) !important;
+                                        border: 1px solid rgba(255,255,255,0.15) !important;
+                                        border-top: 1px solid rgba(255,255,255,0.35) !important;
+                                        border-left: 1px solid rgba(255,255,255,0.2) !important;
+                                        box-shadow:
+                                            0 8px 32px rgba(0,0,0,0.4),
+                                            0 2px 8px rgba(0,0,0,0.3),
+                                            inset 0 1px 0 rgba(255,255,255,0.06) !important;
+                                        border-radius: 22px !important;
+                                        overflow: hidden;
+                                    }
+                                    .room-container main.flex-1 {
+                                        background: transparent !important;
+                                        border-radius: 0 !important;
+                                        overflow: visible;
+                                        gap: 8px;
+                                    }
+                                    .room-container main.flex-1 > .chat-area,
+                                    .room-container main.flex-1 .chat-area {
+                                        background:
+                                            radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                                            linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                                            linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                                        backdrop-filter: blur(24px);
+                                        -webkit-backdrop-filter: blur(24px);
+                                        border: 1px solid rgba(255,255,255,0.15);
+                                        border-top: 1px solid rgba(255,255,255,0.35);
+                                        border-left: 1px solid rgba(255,255,255,0.2);
+                                        box-shadow:
+                                            0 8px 32px rgba(0,0,0,0.4),
+                                            0 2px 8px rgba(0,0,0,0.3),
+                                            inset 0 1px 0 rgba(255,255,255,0.06);
+                                        border-radius: 22px;
+                                        overflow: hidden;
+                                        flex: 1;
+                                        min-height: 0;
+                                    }
+                                    .room-container .chat-messages-container.chat-area {
+                                        background: transparent !important;
+                                        backdrop-filter: none !important;
+                                        -webkit-backdrop-filter: none !important;
+                                        border: none !important;
+                                        box-shadow: none !important;
+                                        border-radius: 0 !important;
+                                    }
+                                    .room-container .bottom-toolbar {
+                                        background: transparent !important;
+                                        border: none !important;
+                                    }
+                                    .room-container main.flex-1 > div:last-child {
+                                        background:
+                                            radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                                            linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                                            linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                                        backdrop-filter: blur(24px);
+                                        -webkit-backdrop-filter: blur(24px);
+                                        border: 1px solid rgba(255,255,255,0.15);
+                                        border-top: 1px solid rgba(255,255,255,0.35);
+                                        border-left: 1px solid rgba(255,255,255,0.2);
+                                        box-shadow:
+                                            0 8px 32px rgba(0,0,0,0.4),
+                                            0 2px 8px rgba(0,0,0,0.3),
+                                            inset 0 1px 0 rgba(255,255,255,0.06);
+                                        border-radius: 22px;
+                                        overflow: hidden;
+                                        flex-shrink: 0;
+                                    }
+                                    .room-container .right-live-panel,
+                                    .room-container .sidebar-right,
+                                    .room-container .live-panel {
+                                        background:
+                                            radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                                            linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                                            linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%) !important;
+                                        backdrop-filter: blur(24px) !important;
+                                        -webkit-backdrop-filter: blur(24px) !important;
+                                        border: 1px solid rgba(255,255,255,0.15) !important;
+                                        border-top: 1px solid rgba(255,255,255,0.35) !important;
+                                        border-left: 1px solid rgba(255,255,255,0.2) !important;
+                                        box-shadow:
+                                            0 8px 32px rgba(0,0,0,0.4),
+                                            0 2px 8px rgba(0,0,0,0.3),
+                                            inset 0 1px 0 rgba(255,255,255,0.06) !important;
+                                        border-radius: 22px !important;
+                                        overflow: hidden;
+                                    }
+                                    /* Sol sütun — tüm iç elemanları şeffaf yap */
+                                    .room-container .sidebar-left *:not(svg):not(img):not(canvas):not(video) {
+                                        background: transparent !important;
+                                        background-color: transparent !important;
+                                        background-image: none !important;
+                                        border-color: transparent !important;
+                                        box-shadow: none !important;
+                                        backdrop-filter: none !important;
+                                        -webkit-backdrop-filter: none !important;
+                                    }
+                                    .room-container .sidebar-left .mic-reactor {
+                                        height: 64px !important;
+                                        padding: 0 16px !important;
+                                        border-radius: 14px !important;
+                                        background: linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%) !important;
+                                        border: none !important;
+                                        border-top: 1px solid rgba(120,130,150,0.35) !important;
+                                        border-bottom: 1px solid rgba(0,0,0,0.3) !important;
+                                        box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(255,255,255,0.03) !important;
+                                        display: flex !important;
+                                        align-items: center !important;
+                                        justify-content: center !important;
+                                        gap: 10px !important;
+                                        cursor: pointer !important;
+                                        transition: all 0.3s ease !important;
+                                        backdrop-filter: none !important;
+                                        -webkit-backdrop-filter: none !important;
+                                    }
+                                    .room-container .sidebar-left .mic-reactor span {
+                                        font-size: 11px !important;
+                                        font-weight: 800 !important;
+                                        letter-spacing: 1.5px !important;
+                                        text-transform: uppercase !important;
+                                        color: #cbd5e1 !important;
+                                    }
+                                    .room-container .sidebar-left .mic-reactor svg {
+                                        width: 15px !important;
+                                        height: 15px !important;
+                                        color: #94a3b8 !important;
+                                    }
+                                `}</style>
+
+
+
+                                {/* ─── PREMIUM HEADER BAR (exact homepage copy) ─── */}
+                                <header className="room-premium-header">
+                                    <div className="room-header-logo">
+                                        <h1 className="room-retro-logo-text"><span className="room-retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="room-retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
+                                    </div>
+
+                                    <nav className="room-header-nav" style={{ flex: 1, justifyContent: 'center', position: 'relative' }}>
+                                        {/* Room Nav Links — centered */}
+                                        {(room.state.rooms || [])
+                                            .filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))
+                                            .map((tab: any, i: number) => {
+                                                const isActive = tab.slug === activeSlug;
+                                                return (
+                                                    <Fragment key={tab.slug}>
+                                                        {i > 0 && <span className="room-nav-dot" />}
+                                                        <button
+                                                            onClick={() => setActiveSlug(tab.slug)}
+                                                            style={{
+                                                                padding: '6px 14px',
+                                                                background: 'none',
+                                                                border: 'none',
+                                                                cursor: 'pointer',
+                                                                color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.55)',
+                                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                                                fontSize: 10,
+                                                                fontWeight: 600,
+                                                                letterSpacing: '2.5px',
+                                                                textTransform: 'uppercase' as const,
+                                                                textDecoration: 'none',
+                                                                transition: 'color 0.3s ease',
+                                                                textShadow: isActive ? '0 0 10px rgba(251,191,36,0.4)' : 'none',
+                                                                animation: `roomContentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`,
+                                                                whiteSpace: 'nowrap' as const,
+                                                            }}
+                                                        >
+                                                            {tab.name}
+                                                        </button>
+                                                    </Fragment>
+                                                );
+                                            })}
+
+                                        {/* HOME — far right */}
+                                        <a
+                                            href="/"
+                                            style={{ position: 'absolute', right: 0, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 6, animation: 'roomContentFadeIn 0.4s ease 0.1s both', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, fontSize: 11, textDecoration: 'none', padding: '8px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
+                                        >
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                            HOME
+                                        </a>
+                                    </nav>
+                                </header>
+
+                                {/* ─── CHATROOM CONTAINER ─── */}
+                            <div className={`glass-panel room-container w-full flex-1 flex overflow-hidden relative`}
                                 style={{
-                                    animation: 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
                                     ...(isMeetingRoom ? {
                                         background: 'linear-gradient(135deg, rgba(15, 10, 35, 0.95) 0%, rgba(25, 15, 50, 0.92) 50%, rgba(15, 10, 35, 0.95) 100%)',
-                                        border: '1px solid rgba(139, 92, 246, 0.3)',
-                                        boxShadow: '0 0 60px rgba(139, 92, 246, 0.08), 0 25px 50px rgba(0, 0, 0, 0.5)',
-                                    } : isModernTheme ? {
-                                        background: 'rgba(7, 11, 20, 0.92)',
-                                        backdropFilter: 'blur(80px) saturate(180%)',
-                                        WebkitBackdropFilter: 'blur(80px) saturate(180%)',
-                                        border: '1px solid rgba(123, 159, 239, 0.12)',
-                                        boxShadow: '0 0 40px rgba(123, 159, 239, 0.18), 0 0 80px rgba(123, 159, 239, 0.12), 0 0 140px rgba(123, 159, 239, 0.08), 0 0 220px rgba(123, 159, 239, 0.05), 0 0 320px rgba(123, 159, 239, 0.03), 0 40px 80px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(123, 159, 239, 0.10)',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                    } : {
+                                        background: 'transparent',
+                                        backdropFilter: 'none',
+                                        WebkitBackdropFilter: 'none',
+                                        border: 'none',
+                                        boxShadow: 'none',
+                                        borderRadius: 0,
+                                        gap: '8px',
+                                        padding: '8px',
                                         ...(activeDesign?.colors ? {
                                             '--room-sidebar-bg': activeDesign.colors.sidebarLeft || '',
                                             '--room-header-bg': activeDesign.colors.header || '',
@@ -1899,7 +2391,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             '--room-toolbar-bg': activeDesign.colors.toolbar || '',
                                             '--room-right-bg': activeDesign.colors.rightPanel || '',
                                         } as React.CSSProperties : {})
-                                    } : {})
+                                    })
                                 }}
                             >
                                 {/* ═══ UNIFIED TOP BAR OVERLAY — spans all columns ═══ */}
@@ -2005,16 +2497,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             <style>{`@keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
                                         </header>
                                     ) : (
-                                        <HeaderRooms
-                                            currentSlug={activeSlug}
-                                            totalUsers={room.state.users.length}
-                                            currentSpeaker={room.state.currentSpeaker}
-                                            rooms={room.state.rooms}
-                                            systemSettings={room.state.systemSettings}
-                                            onNavigate={setActiveSlug}
-                                            currentUserRole={room.state.currentUser?.role || 'guest'}
-                                            activeRoomParticipants={room.state.users}
-                                        />
+                                        null /* HeaderRooms removed — room names now in top bar */
                                     )}
                                     {/* 💳 ÖDEME HATIRLATMA — neon uyarı banner (oda isimlerinin altında) */}
                                     {room.state.paymentReminder && (
@@ -2207,6 +2690,46 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
                                             {/* Chat messages — visible even for soft-banned users */}
                                             <div className="chat-area" style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                                {/* ── Raptiyeler (pushpins) ── */}
+                                                <div className="room-raptiye-left">
+                                                    <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftL)" strokeWidth="1.8" strokeLinecap="round" />
+                                                        <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadL)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                        <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                        <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                        <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                        <defs>
+                                                            <radialGradient id="pinHeadL" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#d45b5b" /><stop offset="50%" stopColor="#bf3a3a" /><stop offset="100%" stopColor="#9a2a2a" /></radialGradient>
+                                                            <linearGradient id="pinShaftL" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#b0b8c0" /><stop offset="50%" stopColor="#8a9298" /><stop offset="100%" stopColor="#606870" /></linearGradient>
+                                                        </defs>
+                                                    </svg>
+                                                </div>
+                                                <div className="room-raptiye-center">
+                                                    <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftC)" strokeWidth="1.8" strokeLinecap="round" />
+                                                        <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadC)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                        <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                        <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                        <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                        <defs>
+                                                            <radialGradient id="pinHeadC" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#d45b5b" /><stop offset="50%" stopColor="#bf3a3a" /><stop offset="100%" stopColor="#9a2a2a" /></radialGradient>
+                                                            <linearGradient id="pinShaftC" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#b0b8c0" /><stop offset="50%" stopColor="#8a9298" /><stop offset="100%" stopColor="#606870" /></linearGradient>
+                                                        </defs>
+                                                    </svg>
+                                                </div>
+                                                <div className="room-raptiye-right">
+                                                    <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <line x1="10" y1="13" x2="10" y2="23" stroke="url(#pinShaftR)" strokeWidth="1.8" strokeLinecap="round" />
+                                                        <circle cx="10" cy="8" r="7.5" fill="url(#pinHeadR)" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
+                                                        <circle cx="10" cy="8" r="5.5" fill="none" stroke="rgba(0,0,0,0.08)" strokeWidth="0.4" />
+                                                        <ellipse cx="7.5" cy="5.5" rx="3" ry="2.2" fill="rgba(255,255,255,0.35)" />
+                                                        <circle cx="6.5" cy="4.5" r="1" fill="rgba(255,255,255,0.5)" />
+                                                        <defs>
+                                                            <radialGradient id="pinHeadR" cx="8" cy="6" r="8" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#d45b5b" /><stop offset="50%" stopColor="#bf3a3a" /><stop offset="100%" stopColor="#9a2a2a" /></radialGradient>
+                                                            <linearGradient id="pinShaftR" x1="10" y1="13" x2="10" y2="23" gradientUnits="userSpaceOnUse"><stop offset="0%" stopColor="#b0b8c0" /><stop offset="50%" stopColor="#8a9298" /><stop offset="100%" stopColor="#606870" /></linearGradient>
+                                                        </defs>
+                                                    </svg>
+                                                </div>
                                                 <ChatMessages
                                                     room={room}
                                                     messages={room.state.messages}
@@ -2359,6 +2882,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
                                 {/* Theme Switcher moved to BottomToolbar */}
                             </div>
+                            </div> {/* end of HOMEPAGE-STYLE FRAME wrapper */}
 
                             {/* ═══ CONTEXT MENU (sağ tık menüsü) — MUST be outside glass-panel to avoid backdrop-filter containing block ═══ */}
                             {contextMenu && (

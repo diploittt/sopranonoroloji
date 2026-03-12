@@ -89,7 +89,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         const storedGodmasterIcon = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_icon') : undefined;
 
         // ★ VIP+ roller için initialStatus gönderme — backend her zaman stealth uygular
-        // Bu sayede eski localStorage değerleri backend'i etkileyemez
+        // Ancak kullanıcı oturum içinde "görünür" olduysa sessionStorage'dan oku
         const roleLevel = (() => {
             const role = (effectiveUser?.role || 'guest').toLowerCase();
             const levels: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, superadmin: 6, super_admin: 6, owner: 7, godmaster: 8 };
@@ -102,7 +102,9 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             localStorage.removeItem('soprano_user_status');
             localStorage.removeItem('soprano_godmaster_disguise_name');
         }
-        const effectiveStatus = isVipPlus ? undefined : storedStatus;
+        // ★ sessionStorage'daki oturum-içi tercih: kullanıcı görünür olduysa 'online' gönder
+        const sessionVisibility = typeof window !== 'undefined' ? sessionStorage.getItem('soprano_session_visibility') : null;
+        const effectiveStatus = isVipPlus ? (sessionVisibility || undefined) : storedStatus;
 
         return { roomId: targetRoomId, initialStatus: effectiveStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined };
     }, []);
@@ -431,6 +433,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 const stealthRoles = ['vip', 'operator', 'moderator', 'admin', 'super_admin', 'superadmin', 'owner', 'godmaster'];
                 if (stealthRoles.includes(role)) {
                     localStorage.removeItem('soprano_user_status');
+                    // Tab kapanınca oturum-içi görünürlük tercihi de temizlensin
+                    sessionStorage.removeItem('soprano_session_visibility');
                     if (role === 'godmaster') {
                         localStorage.removeItem('soprano_godmaster_disguise_name');
                     }

@@ -530,11 +530,11 @@ export function RoomMonitorModal({
                                                                     border: `1.5px solid ${color}40`,
                                                                 }}>
                                                                     <img
-                                                                        src={user.avatar || `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`}
+                                                                        src={user.avatar || `/avatars/neutral_1.png`}
                                                                         alt=""
                                                                         style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                                         onError={(e) => {
-                                                                            (e.target as HTMLImageElement).src = `https://api.dicebear.com/9.x/avataaars/svg?seed=${user.displayName}`;
+                                                                            (e.target as HTMLImageElement).src = `/avatars/neutral_1.png`;
                                                                         }}
                                                                     />
                                                                 </div>
