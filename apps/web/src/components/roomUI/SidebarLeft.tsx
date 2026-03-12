@@ -526,11 +526,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         const speakerAvSrc = (() => {
                             if (isGodMasterGif) return av;
                             if (!av || isAnimatedMode || isGifNickMode || is3DMode) {
-<<<<<<< HEAD
                                 return `/avatars/neutral_1.png`;
-=======
-                                return generateGenderAvatar(speakerUser.username);
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                             }
                             return av;
                         })();
@@ -848,14 +844,10 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             <>
                                                 {gifNickShowAvatar && (
                                                     <div className="relative flex-shrink-0 mr-2.5">
-<<<<<<< HEAD
                                                         <img
                                                             src={`/avatars/neutral_1.png`}
                                                             className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover border-white/15 group-hover:border-[#7b9fef]/40`}
                                                         />
-=======
-                                                        <div className="w-10 h-10 rounded-full border-[1.5px] border-white/15 group-hover:border-[#7b9fef]/40 flex items-center justify-center transition-colors overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}><img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /></div>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                     </div>
                                                 )}
                                                 <div className={`${gifNickShowAvatar ? '' : 'w-full'} flex items-center ${gifNickShowAvatar ? 'justify-start' : 'justify-center'}`}>
@@ -874,7 +866,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                         ) : isAnimatedMode ? (
                                             /* ═══ Animated Text Nick Mode ═══ */
                                             <>
-<<<<<<< HEAD
                                                 {animShowAvatar && (() => {
                                                     // Kendi kullanıcımız mı? Eğer öyleyse localStorage'dan özel avatar kontrol et
                                                     const isSelf = currentUser && (user.username === currentUser.username || user.displayName === currentUser.displayName);
@@ -894,13 +885,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                         </div>
                                                     );
                                                 })()}
-=======
-                                                {animShowAvatar && (
-                                                    <div className="relative flex-shrink-0 mr-2.5">
-                                                        <div className="w-10 h-10 rounded-full border-[1.5px] border-white/15 group-hover:border-[#7b9fef]/40 flex items-center justify-center transition-colors overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}><img src={user.avatar || generateGenderAvatar(user.displayName || user.username || '?')} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /></div>
-                                                    </div>
-                                                )}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                 <div className={`${animShowAvatar ? '' : 'w-full'} flex items-center ${animShowAvatar ? 'justify-start' : 'justify-center'} py-1 gap-1.5`}>
                                                     <span className={`animated-nick ${animClass}`} style={{ fontSize: animFontSize }}>
                                                         {animText}
@@ -923,7 +907,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             <>
                                                 {/* Avatar — baş harf placeholder */}
                                                 <div className="relative flex-shrink-0">
-<<<<<<< HEAD
                                                     <img
                                                         src={(() => {
                                                             const av = user.avatar;
@@ -938,18 +921,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                             return av;
                                                         })()}
                                                         className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover
-=======
-                                                    {/* Self user glow ring */}
-                                                    {isSelf && !isSpeaker && !isGodMasterSpecialMode && !isInvisible && (
-                                                        <div className="absolute -inset-[3px] rounded-full" style={{
-                                                            background: 'linear-gradient(135deg, rgba(34,211,238,0.6), rgba(56,189,248,0.3), rgba(99,102,241,0.4), rgba(34,211,238,0.6))',
-                                                            animation: 'selfRingRotate 4s linear infinite',
-                                                            filter: 'blur(1px)',
-                                                        }} />
-                                                    )}
-                                                    <div
-                                                        className={`w-10 h-10 rounded-full border-[1.5px] transition-colors flex items-center justify-center
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                             ${user.role?.toLowerCase() === 'godmaster'
                                                                 ? 'border-fuchsia-400/70 shadow-[0_0_8px_rgba(217,70,239,0.3)]'
                                                                 : isOwnerUser ? 'border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.25)]'
@@ -1296,7 +1267,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 </div>
             )}
 
-<<<<<<< HEAD
             {/* BOTTOM CONTROLS */}
             <div className="p-3 relative" style={{
                 background: 'linear-gradient(180deg, rgba(10,15,28,0.95) 0%, rgba(7,11,20,0.98) 100%)',
@@ -1306,13 +1276,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 border: '1px solid rgba(255,255,255,0.08)',
                 boxShadow: '0 -4px 20px rgba(0,0,0,0.3), 0 2px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)',
             }}>
-=======
-            {/* ═══════════════════════════════════════════════════════════════════ */}
-            {/* ═══ STATUS BAR — Premium, Hiyerarşi Bazlı Durum Çubuğu ═══════ */}
-            {/* ═══════════════════════════════════════════════════════════════════ */}
-            <div className="p-3 border-t border-white/5 relative" style={{ background: 'linear-gradient(180deg, rgba(7,11,20,0.85) 0%, rgba(7,11,20,0.95) 100%)', backdropFilter: 'blur(24px)' }}>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
-
                 {/* STATUS TRIGGER BUTTON */}
                 <div className="relative" ref={statusMenuRef}>
                     <button
@@ -1324,7 +1287,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         onClick={() => setShowStatusMenu(!showStatusMenu)}
                     >
                         <div className="flex items-center gap-2.5">
-<<<<<<< HEAD
                             <div className="relative">
                                 <div className="w-2.5 h-2.5 rounded-full" style={{
                                     background: currentUser?.status === 'busy' ? '#ef4444'
@@ -1339,32 +1301,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             </span>
                         </div>
                         <ChevronUp className={`w-4 h-4 text-gray-500 transition-transform ${showStatusMenu ? 'rotate-180' : ''}`} />
-=======
-                            {/* Status dot */}
-                            <div className="relative">
-                                <div className="w-2.5 h-2.5 rounded-full" style={{
-                                    background: currentUser?.isStealth ? '#6b7280'
-                                        : currentUser?.status === 'busy' ? '#ef4444'
-                                            : currentUser?.status === 'away' || currentUser?.status === 'outside' ? '#f59e0b'
-                                                : currentUser?.status === 'phone' ? '#22d3ee'
-                                                    : isGodMaster && (!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? '#a855f7'
-                                                        : '#22c55e',
-                                    boxShadow: `0 0 6px ${currentUser?.isStealth ? 'rgba(107,114,128,0.4)' : currentUser?.status === 'busy' ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.4)'}`,
-                                }} />
-                                {currentUser?.isStealth && <div className="absolute inset-0 rounded-full animate-ping" style={{ background: 'rgba(107,114,128,0.3)' }} />}
-                            </div>
-                            <span className="text-[11px] font-semibold text-gray-300 group-hover:text-white transition-colors">
-                                {isGodMaster && (!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden')
-                                    ? '🔱 Gizli Mod'
-                                    : isGodMaster && currentUser?.visibilityMode === 'disguised'
-                                        ? '👤 Kılık Değiştirmiş'
-                                        : currentUser?.isStealth
-                                            ? t.statusInvisible
-                                            : getStatusLabel(currentUser?.status as string)}
-                            </span>
-                        </div>
-                        <ChevronUp className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${showStatusMenu ? '' : 'rotate-180'}`} />
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                     </button>
 
                     {/* STATUS DROPDOWN MENU */}
@@ -1722,24 +1658,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             ${isMicOn ? 'text-red-300' : isInQueue ? 'text-amber-300' : 'text-white'}
                         `}>
                                 {isSomeoneElseSpeaker
-<<<<<<< HEAD
                                     ? (isInQueue ? 'SIRADAN ÇIK' : 'SIRAYA GİR')
                                     : (isMicOn ? 'MİKROFONU BIRAK' : (isHasbihal ? 'KELAM İSTE' : isMidnight ? 'Mikrofon İste' : 'MİKROFON AL'))}
-=======
-                                    ? (isInQueue ? t.leaveQueue.toUpperCase() : t.joinQueue.toUpperCase())
-                                    : (isMicOn ? t.releaseMic : (isHasbihal ? t.requestWord : isMidnight ? t.requestMic : t.takeMic))}
-                            </span>
-                            <span className={`text-[10px]
-                             ${isMicOn ? 'text-red-400/70' : isInQueue ? 'text-amber-400/70' : 'text-gray-500'}
-                        `} style={isHasbihal ? { fontFamily: "'Amiri', serif", color: 'rgba(123,159,239,0.7)' } : undefined}>
-                                {isSomeoneElseSpeaker
-                                    ? (isInQueue
-                                        ? `#${queue.indexOf(currentUser?.userId || '') + 1}`
-                                        : `${currentSpeaker?.displayName} ${t.broadcasting}`)
-                                    : (isMicOn
-                                        ? (micTimeLeft > 0 ? `${formatTime(micTimeLeft)}` : t.releaseMic)
-                                        : '')}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                             </span>
                         </div>
                         <div className={`w-2 h-2 rounded-full animate-pulse

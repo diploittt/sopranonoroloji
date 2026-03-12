@@ -909,14 +909,9 @@ export default function OwnerPanel() {
 
                 <div className="p-4 border-t border-white/5">
                     <div className="flex items-center gap-3">
-<<<<<<< HEAD
                         <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden">
                             {/* Placeholder Avatar */}
                             <Image src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
-=======
-                        <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden" style={{ fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
-                            {adminUser?.avatarUrl ? <img src={adminUser.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (adminUser?.displayName || 'A').charAt(0)}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                         <div className="hidden lg:block overflow-hidden">
                             <div className="text-xs font-bold text-white truncate">{adminUser?.displayName || 'Admin'}</div>
@@ -1036,18 +1031,12 @@ export default function OwnerPanel() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
-<<<<<<< HEAD
                                         <Image
                                             src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`}
                                             alt="avatar"
                                             width={56} height={56}
                                             className="rounded-2xl border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/10"
                                         />
-=======
-                                        <div className="rounded-2xl border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/10 flex items-center justify-center overflow-hidden" style={{ width: 56, height: 56, background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 22, fontWeight: 900, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase' }}>
-                                            {adminUser?.avatarUrl ? <img src={adminUser.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (adminUser?.displayName || 'G').charAt(0)}
-                                        </div>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0a0c14]" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -1226,17 +1215,11 @@ export default function OwnerPanel() {
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
-<<<<<<< HEAD
                                                                     <Image
                                                                         src={member.avatarUrl && (member.avatarUrl.startsWith('http') || member.avatarUrl.startsWith('/')) ? member.avatarUrl : `/avatars/neutral_1.png`}
                                                                         alt="avatar" width={36} height={36}
                                                                         className="rounded-xl border border-white/10"
                                                                     />
-=======
-                                                                    <div className="rounded-xl border border-white/10 flex items-center justify-center overflow-hidden" style={{ width: 36, height: 36, background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
-                                                                        {member.avatarUrl ? <img src={member.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '10px', objectFit: 'cover' }} /> : (member.displayName || '?').charAt(0)}
-                                                                    </div>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                     <div>
                                                                         <div className="text-sm font-bold text-white flex items-center gap-1.5">
                                                                             {member.displayName}

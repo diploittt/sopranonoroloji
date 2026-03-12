@@ -3,13 +3,7 @@
 import { Lock, Users, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { RoomInfo } from '@/hooks/useSocket';
-<<<<<<< HEAD
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-=======
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useTranslation } from '@/i18n/LanguageProvider';
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
-
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -137,7 +131,6 @@ export function HeaderRooms({
     const activeRoomName = activeRoom?.name || 'ODA SEÇ';
 
     return (
-<<<<<<< HEAD
         <>
             {/* Drawer animation styles */}
             <style>{`
@@ -205,10 +198,6 @@ export function HeaderRooms({
                 boxShadow: isDrawerOpen ? '0 8px 30px rgba(0,0,0,0.3)' : 'none',
             }}>
                 <div style={{ padding: '12px 12px 14px' }}>
-=======
-        <header className="chat-header h-24 flex-shrink-0 border-b backdrop-blur-xl flex items-center relative z-30" style={{ paddingLeft: 4, paddingRight: 4, background: 'linear-gradient(180deg, rgba(10, 15, 28, 0.95) 0%, rgba(7, 11, 20, 0.85) 100%)', borderColor: 'rgba(6, 182, 212, 0.25)', boxShadow: 'inset 0 -1px 0 rgba(6, 182, 212, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(6, 182, 212, 0.08)', ...(isEmbed ? { display: 'none' } : {}) }}>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
-
             {/* ◀ Left scroll arrow */}
             {canScrollLeft && (
                 <button
@@ -374,7 +363,6 @@ export function HeaderRooms({
                                     onClick={() => navigate(room.slug)}
                                     onMouseEnter={() => setHoveredRoom(room.id)}
                                     onMouseLeave={() => setHoveredRoom(null)}
-<<<<<<< HEAD
                                     className={`flex-shrink-0 h-14 flex items-center justify-center gap-2.5 group relative transition-all duration-300 room-tab-drawer`}
                                     style={{
                                         animationDelay: `${roomIndex * 60}ms`,
@@ -382,14 +370,6 @@ export function HeaderRooms({
                                         maxWidth: 200,
                                         padding: '0 18px',
                                         borderRadius: 14,
-=======
-                                    className={`flex-shrink-0 h-[52px] flex items-center justify-center gap-3 group relative transition-all duration-300`}
-                                    style={{
-                                        minWidth: 130,
-                                        maxWidth: 240,
-                                        padding: '0 24px',
-                                        borderRadius: 16,
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         background: isActive
                                             ? 'linear-gradient(160deg, rgba(147,141,210,0.35) 0%, rgba(178,175,220,0.2) 50%, rgba(200,198,235,0.12) 100%)'
                                             : isHovered

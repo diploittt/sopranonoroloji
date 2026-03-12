@@ -164,41 +164,6 @@ export function RightLivePanel({
     return (
         <aside className={`right-live-panel sidebar-right live-panel ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 bg-[#0C101A] border-l border-white/5 flex flex-col z-20 items-center pt-8 overflow-y-auto custom-scrollbar pb-4 relative transition-all duration-300 shadow-[-15px_0_50px_rgba(0,0,0,0.8)]`}>
 
-<<<<<<< HEAD
-=======
-            {/* --- LIVE BADGE + CLOSE BUTTON --- */}
-            <div className="mb-4 flex items-center gap-3 w-full px-6">
-                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full ${isHasbihal ? 'bg-[#064e3b] border border-[#7b9fef] shadow-[0_0_15px_rgba(123,159,239,0.3)]' : 'bg-red-500/10 border border-red-500/20'}`}>
-                    <span className="relative flex h-2 w-2">
-                        <span className={`relative inline-flex rounded-full h-2 w-2 ${isHasbihal ? 'bg-[#7b9fef]' : 'bg-red-500'} animate-pulse`}></span>
-                    </span>
-                    <span className={`live-text text-[10px] font-bold tracking-[0.2em] ${isHasbihal ? 'text-[#a3bfff]' : 'text-red-400'}`} style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", letterSpacing: '0.15em', paddingTop: '0.25rem' } : undefined}>{isHasbihal ? t.liveChat : t.liveStream}</span>
-                </div>
-                <div style={{ flex: 1 }} />
-                <button
-                    onClick={() => setCollapsed(true)}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 26,
-                        height: 26,
-                        borderRadius: 6,
-                        background: 'rgba(255, 255, 255, 0.04)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        color: '#6b7280',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'; e.currentTarget.style.color = '#d1d5db'; }}
-                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.04)'; e.currentTarget.style.color = '#6b7280'; }}
-                    title={t.closePanel}
-                >
-                    <PanelRightClose className="w-3.5 h-3.5" />
-                </button>
-            </div>
-
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
             {/* --- TV SECTION --- */}
             <div className="shrink-0 w-full px-4">
             <div className="tv-wrapper relative shrink-0">

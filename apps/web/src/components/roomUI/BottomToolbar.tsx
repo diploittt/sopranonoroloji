@@ -178,12 +178,7 @@ export function BottomToolbar({
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
-<<<<<<< HEAD
         <div className="bottom-toolbar py-2 px-4 bg-transparent border-t border-white/5 backdrop-blur-sm z-20 flex flex-col gap-2">
-=======
-        <div className="bottom-toolbar py-2 px-4 bg-[#0F1626]/60 border-t border-white/5 backdrop-blur-2xl z-20 flex flex-col gap-2">
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
-
             {/* Anchors */}
             <AnchorPopover
                 targetRef={exitBtnRef}
@@ -626,11 +621,7 @@ export function BottomToolbar({
                     }}
                 >
                     <div className="relative z-10 flex items-center justify-center gap-2 w-full h-full">
-<<<<<<< HEAD
                         <span className="font-extrabold tracking-[0.15em] uppercase" style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", color: '#022c22', fontSize: 11 } : { color: '#cbd5e1', fontSize: 11 }}>{isHasbihal ? 'GÖNDER' : t.send}</span>
-=======
-                        <span className="font-extrabold tracking-[0.15em] uppercase" style={{ color: '#cbd5e1', fontSize: 11 }}>{t.send}</span>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         <SendHorizontal className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#94a3b8' }} />
                     </div>
                 </button>

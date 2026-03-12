@@ -206,11 +206,7 @@ export function GodMasterProfileModal({
         setTimeout(() => { setSuccess(''); onClose(); }, 1000);
     };
     const handleRemoveGif = () => {
-<<<<<<< HEAD
         onChangeAvatar('/avatars/neutral_1.png');
-=======
-        onChangeAvatar(generateGenderAvatar(currentUser?.username || 'gm'));
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         setGifPreview(null); setGifFileName('');
         setSuccess('GIF kaldırıldı.'); setTimeout(() => setSuccess(''), 1500);
     };
@@ -242,11 +238,7 @@ export function GodMasterProfileModal({
 
     if (!isOpen) return null;
 
-<<<<<<< HEAD
     const avatarUrl = selectedAvatarUrl;
-=======
-    const avatarUrl = generateGenderAvatar(currentUser?.username || 'gm');
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
     const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
     const EDITOR_SECTIONS = [
@@ -484,17 +476,8 @@ export function GodMasterProfileModal({
                     {/* ═══ AVATAR ═══ */}
                     {activeTab === 'avatar' && (
                         <div className="space-y-3">
-<<<<<<< HEAD
                             <div className="flex items-center justify-center">
                                 <img src={selectedAvatarUrl} alt="Avatar" className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20" style={{ background: '#10121b', objectFit: 'cover' }} />
-=======
-                            <div className="flex items-center gap-4">
-                                <div className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,23,42,0.6)', fontSize: 24, fontWeight: 900, color: 'rgba(233,121,249,0.6)', textTransform: 'uppercase' }}>{currentUser?.avatar ? <img src={currentUser.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (currentUser?.username || '?').charAt(0)}</div>
-                                <div className="flex-1">
-                                    <label className="text-[10px] text-gray-500 mb-1 block">Seed</label>
-                                    <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
-                                </div>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                             </div>
                             <div className="grid grid-cols-4 gap-2">
                                 {ALL_AVATARS.map(av => (

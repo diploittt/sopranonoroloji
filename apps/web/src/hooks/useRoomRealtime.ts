@@ -625,19 +625,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 displayName: p.displayName,
                 avatar: (() => {
                     const av = p.avatar;
-<<<<<<< HEAD
                     if (!av) return `/avatars/neutral_1.png`;
                     // GIF avatarlar sadece GodMaster'a özel
                     const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
                     if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
                         return `/avatars/neutral_1.png`;
-=======
-                    if (!av) return generateGenderAvatar(p.displayName);
-                    // GIF avatarlar sadece GodMaster'a özel
-                    const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
-                    if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
-                        return generateGenderAvatar(p.displayName);
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                     }
                     return av;
                 })(),

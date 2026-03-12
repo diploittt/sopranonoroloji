@@ -168,11 +168,7 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                                             border: selectedUsers.includes(u.id || u.userId) ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                         }}
                                     >
-<<<<<<< HEAD
                                         <img src={u.avatar || `/avatars/neutral_1.png`} alt="" className="w-7 h-7 rounded-full" style={{ background: '#0d0f17' }} />
-=======
-                                        <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.1)' }}>{(u as any).avatar ? <img src={(u as any).avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (u.username || u.displayName || '?').charAt(0)}</div>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         <span className="text-sm text-white">{u.username || u.displayName}</span>
                                         {selectedUsers.includes(u.id || u.userId) && <span className="ml-auto text-[#7b9fef] text-sm">✓</span>}
                                     </button>

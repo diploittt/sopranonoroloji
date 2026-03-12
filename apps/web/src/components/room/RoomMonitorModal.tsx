@@ -396,7 +396,6 @@ export function RoomMonitorModal({
                                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                                     fontSize: 7, fontWeight: 800, color: clr, textTransform: 'uppercase', overflow: 'hidden',
                                                                 }}>
-<<<<<<< HEAD
                                                                     <img
                                                                         src={user.avatar || `/avatars/neutral_1.png`}
                                                                         alt=""
@@ -405,9 +404,6 @@ export function RoomMonitorModal({
                                                                             (e.target as HTMLImageElement).src = `/avatars/neutral_1.png`;
                                                                         }}
                                                                     />
-=======
-                                                                    {user.avatar ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (user.displayName || '?')[0]}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                 </div>
                                                                 <span style={{ fontSize: 10, fontWeight: 600, color: clr, flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                                     {user.displayName}

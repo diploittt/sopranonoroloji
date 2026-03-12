@@ -24,14 +24,11 @@ const ALL_TABS = [
 
 const ROLE_LEVELS: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, super_admin: 6, owner: 7 };
 
-<<<<<<< HEAD
 const ALL_AVATARS = [
     '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
     '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
     '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
 ];
-=======
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 const NAME_COLORS = [
     '#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#06b6d4',
     '#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#ec4899', '#f43f5e',
@@ -56,11 +53,7 @@ export function ProfileModal({
     isOpen, onClose, currentUser, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword
 }: ProfileModalProps) {
     const [activeTab, setActiveTab] = useState('avatar');
-<<<<<<< HEAD
     const [selectedAvatarUrl, setSelectedAvatarUrl] = useState('/avatars/neutral_1.png');
-=======
-    const [selectedAvatarUrl, setSelectedAvatarUrl] = useState('');
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
     const [newName, setNewName] = useState('');
     const [selectedColor, setSelectedColor] = useState('#ffffff');
     const [oldPass, setOldPass] = useState('');
@@ -118,11 +111,7 @@ export function ProfileModal({
             else { try { localStorage.removeItem('soprano_animated_nick'); } catch (e) { } }
             setNewName(currentUser?.username || '');
             setSelectedColor(currentUser?.nameColor || '#ffffff');
-<<<<<<< HEAD
             setSelectedAvatarUrl(currentUser?.avatar || '/avatars/neutral_1.png');
-=======
-            setSelectedAvatarUrl('');
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
             setOldPass(''); setNewPass(''); setConfirmPass('');
             setError(''); setCentered(true);
         }
@@ -160,13 +149,7 @@ export function ProfileModal({
 
     if (!isOpen) return null;
 
-<<<<<<< HEAD
     const avatarUrl = selectedAvatarUrl;
-=======
-    const avatarUrl = generateGenderAvatar(currentUser?.username || 'user');
-    const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
-
     const inputStyle: React.CSSProperties = {
         width: '100%', fontSize: 12, color: TEXT_PRIMARY, borderRadius: 10,
         padding: '8px 12px', border: INPUT_BORDER, background: INPUT_BG, outline: 'none',
@@ -252,8 +235,6 @@ export function ProfileModal({
                                     >{opt.label}</button>
                                 ))}
                             </div>
-<<<<<<< HEAD
-
                             <button
                                 onClick={() => {
                                     const animNick = currentAvatar?.startsWith('animated:') || currentAvatar?.startsWith('gifnick::')
@@ -277,19 +258,10 @@ export function ProfileModal({
                             >
                                 Görünümü Kaydet
                             </button>
-=======
-                            <button onClick={() => {
-                                const animNick = currentAvatar?.startsWith('animated:') || currentAvatar?.startsWith('gifnick::') ? currentAvatar : (savedAnimatedNick || '');
-                                if (useAnimatedNick && animNick) { onChangeAvatar(animNick); try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { } }
-                                else { if (animNick) { try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { } } onChangeAvatar(generateGenderAvatar(currentUser?.username || 'user')); }
-                                onClose();
-                            }} style={btnStyle}>Görünümü Kaydet</button>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                     )}
 
                     {activeTab === 'avatar' && (
-<<<<<<< HEAD
                         <div className="space-y-4">
                             <div className="flex items-center justify-center">
                                 <img src={selectedAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl border-2 border-amber-600/20" style={{ background: '#10121b', objectFit: 'cover' }} />
@@ -327,90 +299,6 @@ export function ProfileModal({
                             }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 transition-all">
                                 Avatarı Kaydet
                             </button>
-=======
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            {/* Seçili avatar önizleme */}
-                            <div style={{
-                                display: 'flex', alignItems: 'center', gap: 10,
-                                padding: '8px 10px', borderRadius: 10,
-                                background: 'linear-gradient(135deg, rgba(15,23,42,0.06) 0%, rgba(30,41,59,0.04) 100%)',
-                                border: '1px solid rgba(15,23,42,0.08)',
-                            }}>
-                                <div style={{
-                                    width: 42, height: 42, borderRadius: 12, flexShrink: 0,
-                                    background: 'linear-gradient(135deg, #0f172a, #1e293b)',
-                                    padding: 2, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                                }}>
-                                    <img src={selectedAvatarUrl || currentUser?.avatar || avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover' }} />
-                                </div>
-                                <div>
-                                    <p style={{ fontSize: 13, fontWeight: 800, color: TEXT_PRIMARY, margin: 0, letterSpacing: '0.01em' }}>Avatar Seç</p>
-                                    <p style={{ fontSize: 10, color: TEXT_MUTED, margin: '2px 0 0', fontWeight: 500 }}>Cinsiyetinize uygun avatarlar</p>
-                                </div>
-                            </div>
-                            {avatarCategories.map(cat => {
-                                const isExpanded = expandedCategories.has(cat.label);
-                                return (
-                                    <div key={cat.label}>
-                                        <button
-                                            onClick={() => setExpandedCategories(prev => {
-                                                const next = new Set(prev);
-                                                if (next.has(cat.label)) next.delete(cat.label);
-                                                else next.add(cat.label);
-                                                return next;
-                                            })}
-                                            style={{
-                                                fontSize: 11, color: TEXT_SECONDARY, fontWeight: 700, textTransform: 'uppercase',
-                                                letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 5,
-                                                marginBottom: isExpanded ? 5 : 0, cursor: 'pointer',
-                                                background: 'none', border: 'none', padding: '4px 0', width: '100%', textAlign: 'left',
-                                            }}
-                                        >
-                                            <span style={{
-                                                fontSize: 9, transition: 'transform 0.2s',
-                                                transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)',
-                                                display: 'inline-block',
-                                            }}>▶</span>
-                                            {cat.label}
-                                            <span style={{ fontSize: 9, color: TEXT_MUTED, fontWeight: 500, marginLeft: 2 }}>({cat.avatars.length})</span>
-                                        </button>
-                                        {isExpanded && (
-                                            <div style={{
-                                                display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 6,
-                                                padding: '6px', borderRadius: 10,
-                                                background: 'rgba(255,255,255,0.4)',
-                                                border: '1px solid rgba(100,116,139,0.1)',
-                                            }}>
-                                                {cat.avatars.map(av => {
-                                                    const isSelected = (selectedAvatarUrl || currentUser?.avatar) === av;
-                                                    return (
-                                                        <button key={av} onClick={() => setSelectedAvatarUrl(av)}
-                                                            style={{
-                                                                border: isSelected ? '2.5px solid #0f172a' : '2px solid rgba(100,116,139,0.12)',
-                                                                boxShadow: isSelected ? '0 0 0 2px rgba(15,23,42,0.15), 0 2px 8px rgba(0,0,0,0.12)' : '0 1px 3px rgba(0,0,0,0.06)',
-                                                                background: 'rgba(255,255,255,0.7)', padding: 2, width: 48, height: 48,
-                                                                borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'all 0.2s',
-                                                                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
-                                                            }}
-                                                            onMouseOver={(e) => { if (!isSelected) e.currentTarget.style.transform = 'scale(1.05)'; }}
-                                                            onMouseOut={(e) => { if (!isSelected) e.currentTarget.style.transform = 'scale(1)'; }}
-                                                        ><img src={av} alt="" style={{ width: '100%', height: '100%', borderRadius: 10, objectFit: 'cover' }} /></button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
-                            <button onClick={() => {
-                                const currentAv = currentUser?.avatar || '';
-                                const isCurrentlyAnimated = currentAv.startsWith('animated:') || currentAv.startsWith('gifnick::');
-                                const newAvatar = selectedAvatarUrl || avatarUrl;
-                                if (isCurrentlyAnimated) { try { localStorage.setItem('soprano_custom_avatar', newAvatar); } catch (e) { } onClose(); }
-                                else { onChangeAvatar(newAvatar); onClose(); }
-                            }} style={btnStyle}>Avatarı Kaydet</button>
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                     )}
 

@@ -167,11 +167,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
     // === Avatar URL — GIF/3D/Animated modlarda avatar gösterme ===
     const getAvatarUrl = (msgOrUsername: Message | string): string | null => {
         const resolveAvatar = (avatar?: string, username?: string) => {
-<<<<<<< HEAD
             if (!avatar) return `/avatars/neutral_1.png`;
-=======
-            if (!avatar) return generateGenderAvatar(username || 'guest');
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
             // gifnick:: prefix — parse ve URL kısmını çıkar
             if (avatar.startsWith('gifnick::')) {
                 const parts = avatar.split('::');
@@ -207,11 +203,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                 const resolved = resolveAvatar(user.avatar, msgOrUsername.sender);
                 if (resolved !== user.avatar || !user.avatar.startsWith('gifnick')) return resolved;
             }
-<<<<<<< HEAD
             return `/avatars/neutral_1.png`;
-=======
-            return generateGenderAvatar(msgOrUsername.sender);
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         }
 
         // Username string
@@ -225,11 +217,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             const resolved = resolveAvatar(user.avatar, msgOrUsername);
             return resolved;
         }
-<<<<<<< HEAD
         return `/avatars/neutral_1.png`;
-=======
-        return generateGenderAvatar(msgOrUsername);
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
     };
 
     // Format time

@@ -658,11 +658,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                 <div style={ARENA_STYLES.vsContainer}>
                     <div style={ARENA_STYLES.participant}>
                         <div style={ARENA_STYLES.avatar}>
-<<<<<<< HEAD
                             <img src={duelData.challengerAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-=======
-                            {duelData.challengerAvatar ? <img src={duelData.challengerAvatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : <span style={{ fontSize: 24, fontWeight: 900, color: 'rgba(168,85,247,0.8)', textTransform: 'uppercase' }}>{(duelData.challengerName || '?').charAt(0)}</span>}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.challengerName}</span>
                         {(phase === 'voting' || phase === 'result') && (
@@ -672,11 +668,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                     <span style={ARENA_STYLES.vs}>⚔️</span>
                     <div style={ARENA_STYLES.participant}>
                         <div style={{ ...ARENA_STYLES.avatar, borderColor: 'rgba(236,72,153,0.5)' }}>
-<<<<<<< HEAD
                             <img src={duelData.opponentAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
-=======
-                            {duelData.opponentAvatar ? <img src={duelData.opponentAvatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : <span style={{ fontSize: 24, fontWeight: 900, color: 'rgba(236,72,153,0.8)', textTransform: 'uppercase' }}>{(duelData.opponentName || '?').charAt(0)}</span>}
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.opponentName}</span>
                         {(phase === 'voting' || phase === 'result') && (

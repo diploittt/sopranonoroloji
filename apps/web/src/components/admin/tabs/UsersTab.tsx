@@ -377,11 +377,7 @@ export function UsersTab({ socket, users, currentUser }: UsersTabProps) {
             const cleanAvatar = (editAvatar && !editAvatar.startsWith('animated:') && !editAvatar.startsWith('gifnick:') && !editAvatar.startsWith('3d:'))
                 ? editAvatar
                 : undefined;
-<<<<<<< HEAD
             const defaultAvatar = `/avatars/neutral_1.png`;
-=======
-            const defaultAvatar = generateGenderAvatar(editName);
->>>>>>> 2a4b46592931e0071e1280158602315f3c375626
             const payload: any = {
                 displayName: editName,
                 role: editRole,
