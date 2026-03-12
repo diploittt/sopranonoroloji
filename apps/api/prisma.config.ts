@@ -9,6 +9,6 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_Cl3YEjuNFxV1@ep-solitary-brook-agbxat72.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require",
+    url: process.env.DATABASE_URL || "postgresql://neondb_owner:npg_zJIkdyh9Ltc6@ep-shiny-haze-alfattlb.c-3.eu-central-1.aws.neon.tech/neondb?sslmode=require",
   },
 });

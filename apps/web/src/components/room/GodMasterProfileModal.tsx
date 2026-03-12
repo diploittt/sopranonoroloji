@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { generateGenderAvatar } from '@/lib/avatar';
 import { ThreeDTextBanner, DEFAULT_3D_PARAMS, serialize3DParams, ANIM_MODES, type ThreeDParams, type AnimMode } from './ThreeDTextBanner';
 
 interface GodMasterProfileModalProps {
@@ -205,7 +206,11 @@ export function GodMasterProfileModal({
         setTimeout(() => { setSuccess(''); onClose(); }, 1000);
     };
     const handleRemoveGif = () => {
+<<<<<<< HEAD
         onChangeAvatar('/avatars/neutral_1.png');
+=======
+        onChangeAvatar(generateGenderAvatar(currentUser?.username || 'gm'));
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         setGifPreview(null); setGifFileName('');
         setSuccess('GIF kaldırıldı.'); setTimeout(() => setSuccess(''), 1500);
     };
@@ -237,7 +242,11 @@ export function GodMasterProfileModal({
 
     if (!isOpen) return null;
 
+<<<<<<< HEAD
     const avatarUrl = selectedAvatarUrl;
+=======
+    const avatarUrl = generateGenderAvatar(currentUser?.username || 'gm');
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
     const modalStyle: React.CSSProperties = centered ? {} : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
     const EDITOR_SECTIONS = [
@@ -250,40 +259,46 @@ export function GodMasterProfileModal({
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose} style={centered ? {} : { display: 'block' }}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div ref={modalRef} className="relative w-full max-w-2xl animate-pure-fade" onClick={(e) => e.stopPropagation()}
+            <div ref={modalRef} className="relative w-full max-w-lg animate-pure-fade" onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, #1a0e2e 0%, #0f0a1a 50%, #1a0e2e 100%)',
-                    border: '1px solid rgba(217, 70, 239, 0.2)',
-                    borderRadius: '20px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(217, 70, 239, 0.08)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
+                    borderRadius: '16px',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 1px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    backdropFilter: 'blur(24px) saturate(150%)',
+                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
                 }}>
-                <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #d946ef, #a855f7, #6366f1, transparent)', opacity: 0.8, borderRadius: '20px 20px 0 0' }} />
+                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(168,85,247,0.35) 40%, rgba(217,70,239,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-6 pt-4 pb-0" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2.5">
-                        <span className="text-xl">🔱</span>
-                        <span className="bg-gradient-to-r from-fuchsia-400 to-[#7b9fef] bg-clip-text text-transparent">GodMaster Profil</span>
+                <div className="flex items-center justify-between px-5 pt-3 pb-0" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
+                    <h2 style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: 15 }}>🔱</span>
+                        <span style={{ background: 'linear-gradient(90deg, #e879f9, #7b9fef)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GodMaster Profil</span>
                     </h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
+                    <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    >✕</button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex gap-1 px-6 pt-3 pb-2 flex-wrap">
+                <div style={{ display: 'flex', gap: 3, padding: '6px 20px 4px', flexWrap: 'wrap' }}>
                     {TABS.map(tab => (
                         <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); setSuccess(''); }}
-                            className="px-3 py-1.5 text-xs font-semibold rounded-lg transition-all"
                             style={{
-                                background: activeTab === tab.id ? 'rgba(217, 70, 239, 0.15)' : 'transparent',
-                                color: activeTab === tab.id ? '#e879f9' : '#64748b',
-                                border: activeTab === tab.id ? '1px solid rgba(217, 70, 239, 0.25)' : '1px solid transparent',
+                                padding: '4px 8px', fontSize: 10, fontWeight: 600, borderRadius: 7, transition: 'all 0.2s', cursor: 'pointer',
+                                background: activeTab === tab.id ? 'rgba(168,85,247,0.12)' : 'transparent',
+                                color: activeTab === tab.id ? '#c084fc' : '#64748b',
+                                border: activeTab === tab.id ? '1px solid rgba(168,85,247,0.2)' : '1px solid transparent',
                             }}>{tab.icon} {tab.label}</button>
                     ))}
                 </div>
 
                 {/* Content */}
-                <div className="px-6 pb-6 pt-2" style={{ maxHeight: activeTab === '3d' ? '70vh' : 'auto', overflowY: activeTab === '3d' ? 'auto' : 'visible' }}>
+                <div style={{ padding: '4px 20px 16px', maxHeight: activeTab === '3d' ? '65vh' : 'auto', overflowY: activeTab === '3d' ? 'auto' : 'visible' }}>
                     {error && <div className="mb-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-xs">{error}</div>}
                     {success && <div className="mb-3 px-3 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-400 text-xs">{success}</div>}
 
@@ -358,12 +373,12 @@ export function GodMasterProfileModal({
                                 <div>
                                     <label style={{ fontSize: '10px', color: '#64748b', marginBottom: '3px', display: 'block' }}>Ana Metin</label>
                                     <input value={customMainText} onChange={(e) => setCustomMainText(e.target.value)} maxLength={16} placeholder="SopranoChat"
-                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: '#10121b', outline: 'none' }} />
+                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', outline: 'none' }} />
                                 </div>
                                 <div>
                                     <label style={{ fontSize: '10px', color: '#64748b', marginBottom: '3px', display: 'block' }}>Alt Metin</label>
                                     <input value={customSubText} onChange={(e) => setCustomSubText(e.target.value)} maxLength={12} placeholder="Owner"
-                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: '#10121b', outline: 'none' }} />
+                                        style={{ width: '100%', fontSize: '12px', color: '#fff', borderRadius: '8px', padding: '7px 10px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(15,23,42,0.6)', outline: 'none' }} />
                                 </div>
                             </div>
 
@@ -469,8 +484,17 @@ export function GodMasterProfileModal({
                     {/* ═══ AVATAR ═══ */}
                     {activeTab === 'avatar' && (
                         <div className="space-y-3">
+<<<<<<< HEAD
                             <div className="flex items-center justify-center">
                                 <img src={selectedAvatarUrl} alt="Avatar" className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20" style={{ background: '#10121b', objectFit: 'cover' }} />
+=======
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-2xl border-2 border-fuchsia-500/20 flex items-center justify-center overflow-hidden" style={{ background: 'rgba(15,23,42,0.6)', fontSize: 24, fontWeight: 900, color: 'rgba(233,121,249,0.6)', textTransform: 'uppercase' }}>{currentUser?.avatar ? <img src={currentUser.avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (currentUser?.username || '?').charAt(0)}</div>
+                                <div className="flex-1">
+                                    <label className="text-[10px] text-gray-500 mb-1 block">Seed</label>
+                                    <input value={avatarSeed} onChange={(e) => setAvatarSeed(e.target.value)} className="w-full text-xs text-white rounded-lg px-2.5 py-2 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
+                                </div>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                             </div>
                             <div className="grid grid-cols-4 gap-2">
                                 {ALL_AVATARS.map(av => (
@@ -493,7 +517,7 @@ export function GodMasterProfileModal({
                     {activeTab === 'name' && (
                         <div className="space-y-3">
                             <div className="text-xs text-fuchsia-300 bg-fuchsia-500/5 rounded-lg px-3 py-2 border border-fuchsia-500/10">Mevcut: {currentUser?.username || '—'}</div>
-                            <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isim..." className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: '#10121b' }} />
+                            <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isim..." className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-fuchsia-500/40 focus:outline-none" style={{ background: 'rgba(15,23,42,0.6)' }} />
                             <button onClick={() => { if (!newName.trim() || newName.trim().length < 2) { setError('En az 2 karakter'); return; } onChangeName(newName.trim()); setSuccess('İsim değiştirildi!'); setTimeout(() => { setSuccess(''); onClose(); }, 800); }} className="w-full py-2.5 text-sm font-bold text-white rounded-xl" style={{ background: 'linear-gradient(135deg, #d946ef, #a855f7)' }}>İsmi Değiştir</button>
                         </div>
                     )}

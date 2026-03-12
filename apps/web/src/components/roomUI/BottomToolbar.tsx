@@ -7,8 +7,7 @@ import { EmojiPicker } from './EmojiPicker';
 import { StickerPicker } from './StickerPicker';
 import { GifPicker } from './GifPicker';
 import { useTranslation } from '@/i18n/LanguageProvider';
-import ThemeSwitcher from '@/components/room/ThemeSwitcher';
-import { useCurrentTheme } from '@/hooks/useCurrentTheme';
+
 
 export interface BottomToolbarProps {
     onSendMessage: (text: string) => void;
@@ -100,8 +99,7 @@ export function BottomToolbar({
     const [text, setText] = useState('');
     const isChatDisabled = isChatLocked || isCurrentUserGagged;
     const { t } = useTranslation();
-    const currentTheme = useCurrentTheme();
-    const isHasbihal = currentTheme === 'hasbihal-islamic';
+
 
     // ─── Animation (Sticker/GIF) restriction based on rolePermissions ───
     const isAnimationBlocked = (() => {
@@ -180,7 +178,11 @@ export function BottomToolbar({
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
+<<<<<<< HEAD
         <div className="bottom-toolbar py-2 px-4 bg-transparent border-t border-white/5 backdrop-blur-sm z-20 flex flex-col gap-2">
+=======
+        <div className="bottom-toolbar py-2 px-4 bg-[#0F1626]/60 border-t border-white/5 backdrop-blur-2xl z-20 flex flex-col gap-2">
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
             {/* Anchors */}
             <AnchorPopover
@@ -207,7 +209,7 @@ export function BottomToolbar({
                 <div className="w-64 space-y-4 p-2">
                     {/* Header with Visualizer */}
                     <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">🎤 Konuşmacı Sesi</span>
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">🎤 {t.speakerVolume}</span>
                     </div>
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
@@ -295,7 +297,7 @@ export function BottomToolbar({
                         <>
                             <div className="w-full h-px bg-white/10 my-3" />
                             <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">📺 TV Sesi</span>
+                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">📺 {t.tvVolume}</span>
                                 <span className="text-[10px] text-gray-500 font-mono">%{localTvVolume}</span>
                             </div>
 
@@ -408,26 +410,26 @@ export function BottomToolbar({
             {/* TOP ROW: ICONS */}
             <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
 
-                <div className="flex items-center gap-3 p-2 bg-[#070B14]/80 rounded-2xl border border-white/5 shadow-xl">
+                <div className="flex items-center gap-3 p-2 bg-white/[0.025] rounded-2xl border border-white/5">
                     {/* Hand (Queue) OR Meeting Mic Toggle */}
                     {isMeetingRoom ? (
                         <button
                             onClick={() => onToggleMeetingMic?.()}
-                            className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                            className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                                 ${isCurrentUserMuted
                                     ? 'bg-red-500/20 text-red-400 border border-red-500/50 cursor-not-allowed opacity-60'
                                     : isMicOn
                                         ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                                         : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
                             `}
-                            title={isCurrentUserMuted ? 'Susturuldunuz' : isMicOn ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
+                            title={isCurrentUserMuted ? t.youAreMuted : isMicOn ? t.turnOffMic : t.turnOnMic}
                         >
                             {isCurrentUserMuted ? (
-                                <MicOff className="w-5 h-5" />
+                                <MicOff className="w-4 h-4" />
                             ) : isMicOn ? (
-                                <Mic className="w-5 h-5" />
+                                <Mic className="w-4 h-4" />
                             ) : (
-                                <Mic className="w-5 h-5" />
+                                <Mic className="w-4 h-4" />
                             )}
                             {isMicOn && !isCurrentUserMuted && (
                                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
@@ -444,14 +446,14 @@ export function BottomToolbar({
                                 else onJoinQueue();
                             }}
                             disabled={isMeSpeaker}
-                            className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                            className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                                 ${isInQueue
                                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                                     : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
                             `}
                             title={isInQueue ? t.leaveQueue : t.joinQueue}
                         >
-                            <Hand className={`w-5 h-5 transition-transform group-hover:scale-110`} />
+                            <Hand className={`w-4 h-4 transition-transform group-hover:scale-110`} />
                             {isInQueue && (
                                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
@@ -479,7 +481,7 @@ export function BottomToolbar({
                                     }
                                     onToggleCamera();
                                 }}
-                                className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                                className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                                     ${cameraDisabled
                                         ? 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed opacity-50'
                                         : isCameraOn
@@ -488,7 +490,7 @@ export function BottomToolbar({
                                 `}
                                 title={cameraDisabled ? t.guestCameraDisabled : t.camera}
                             >
-                                <Video className="w-5 h-5 transition-transform group-hover:scale-110" />
+                                <Video className="w-4 h-4 transition-transform group-hover:scale-110" />
                                 {isCameraOn && <span className="absolute top-2 right-2 w-1.5 h-1.5 bg-blue-400 rounded-full"></span>}
                             </button>
                         );
@@ -498,7 +500,7 @@ export function BottomToolbar({
                     <button
                         ref={volumeBtnRef}
                         onClick={() => setShowVolumeSlider(prev => !prev)}
-                        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                        className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                             ${isRemoteMuted
                                 ? 'bg-red-500/20 text-red-500 border border-red-500/50 shadow-[0_0_10px_rgba(239,68,68,0.3)]'
                                 : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-[#7b9fef]/10 hover:text-[#7b9fef] hover:border-[#7b9fef]/30'}
@@ -506,8 +508,8 @@ export function BottomToolbar({
                         title={t.volumeSettings}
                     >
                         {isRemoteMuted
-                            ? <VolumeX className="w-5 h-5 transition-transform group-hover:scale-110" />
-                            : <Volume2 className="w-5 h-5 transition-transform group-hover:scale-110" />
+                            ? <VolumeX className="w-4 h-4 transition-transform group-hover:scale-110" />
+                            : <Volume2 className="w-4 h-4 transition-transform group-hover:scale-110" />
                         }
                     </button>
 
@@ -517,7 +519,7 @@ export function BottomToolbar({
                     {/* Fun Icons */}
                     <button
                         ref={emojiBtnRef}
-                        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                        className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                             ${showEmojiPicker
                                 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50'
                                 : 'bg-white/5 border-white/5 text-gray-400 hover:text-yellow-400 hover:bg-yellow-500/10 hover:border-yellow-500/30'}
@@ -525,11 +527,11 @@ export function BottomToolbar({
                         title="Emoji"
                         onClick={() => openPicker('emoji')}
                     >
-                        <Smile className="w-5 h-5 transition-transform group-hover:rotate-12 group-hover:scale-110" />
+                        <Smile className="w-4 h-4 transition-transform group-hover:rotate-12 group-hover:scale-110" />
                     </button>
                     <button
                         ref={stickerBtnRef}
-                        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                        className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                             ${isAnimationBlocked
                                 ? 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed opacity-50'
                                 : showStickerPicker
@@ -545,11 +547,11 @@ export function BottomToolbar({
                             openPicker('sticker');
                         }}
                     >
-                        <Sticker className="w-5 h-5 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
+                        <Sticker className="w-4 h-4 transition-transform group-hover:-rotate-12 group-hover:scale-110" />
                     </button>
                     <button
                         ref={gifBtnRef}
-                        className={`relative group w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300
+                        className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
                             ${isAnimationBlocked
                                 ? 'bg-white/5 text-gray-600 border border-white/5 cursor-not-allowed opacity-50'
                                 : showGifPicker
@@ -565,43 +567,46 @@ export function BottomToolbar({
                             openPicker('gif');
                         }}
                     >
-                        <Clapperboard className="w-5 h-5 transition-transform group-hover:scale-110" />
+                        <Clapperboard className="w-4 h-4 transition-transform group-hover:scale-110" />
                     </button>
                 </div>
 
                 <div className="flex gap-3">
-                    <ThemeSwitcher />
+
                     <button
                         ref={settingsBtnRef}
                         onClick={onToggleSettings}
-                        className="relative group w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-[#7b9fef] hover:bg-[#7b9fef]/10 hover:border-[#7b9fef]/30 transition-all duration-300 shadow-lg"
+                        className="relative group w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-[#7b9fef] hover:bg-[#7b9fef]/10 hover:border-[#7b9fef]/30 transition-all duration-300 shadow-lg"
                         title={t.settings}
                     >
-                        <Settings2 className="w-5 h-5 transition-transform group-hover:rotate-90" />
+                        <Settings2 className="w-4 h-4 transition-transform group-hover:rotate-90" />
                     </button>
                     <button
                         ref={exitBtnRef}
                         onClick={() => setShowExitConfirm(true)}
-                        className="relative group w-10 h-10 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 shadow-lg hover:shadow-red-500/20"
+                        className="relative group w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-red-500/60 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/30 transition-all duration-300 shadow-lg hover:shadow-red-500/20"
                         title={t.exit}
                     >
-                        <Power className="w-5 h-5 transition-transform group-hover:scale-110" />
+                        <Power className="w-4 h-4 transition-transform group-hover:scale-110" />
                     </button>
                 </div>
 
             </div>
 
             {/* BOTTOM ROW: INPUT & SEND */}
-            <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto h-14 flex gap-4">
+            <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto h-11 flex gap-3">
                 <div className="flex-1 relative group">
-                    <div className={`absolute -inset-0.5 bg-gradient-to-r from-[#7b9fef]/20 to-[#5a7fd4]/20 rounded-xl blur opacity-0 ${!isChatDisabled && 'group-focus-within:opacity-100'} transition-opacity duration-500`}></div>
+                    <div className="absolute -inset-0.5 rounded-xl" style={{ opacity: 0, pointerEvents: 'none' }}></div>
                     <input
                         type="text"
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         disabled={isChatDisabled}
-                        placeholder={isCurrentUserGagged ? t.gagWarning : isChatLocked ? t.chatLocked : (isHasbihal ? 'Kelamınızı buraya yazınız...' : t.typeMessage)}
-                        className={`message-input w-full h-full bg-[#070B14] text-gray-200 text-sm rounded-xl pl-6 focus:outline-none border ${isChatDisabled ? 'border-red-500/20 cursor-not-allowed text-gray-500' : 'border-white/10 focus:border-[#7b9fef]/40'} relative z-10 placeholder:text-gray-600`}
+                        placeholder={isCurrentUserGagged ? t.gagWarning : isChatLocked ? t.chatLocked : t.typeMessage}
+                        className={`message-input w-full h-full bg-white/[0.03] text-gray-200 text-sm rounded-xl pl-6 focus:outline-none border ${isChatDisabled ? 'border-red-500/20 cursor-not-allowed text-gray-500' : 'border-white/10 focus:border-white/25'} relative z-10 placeholder:text-gray-600`}
+                        style={{ transition: 'border-color 0.3s ease, box-shadow 0.3s ease' }}
+                        onFocus={(e) => { e.currentTarget.style.boxShadow = '0 0 0 2px rgba(148,163,184,0.15), 0 0 16px rgba(148,163,184,0.08)'; e.currentTarget.style.borderColor = 'rgba(148,163,184,0.3)'; }}
+                        onBlur={(e) => { e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.borderColor = ''; }}
                     />
                 </div>
 
@@ -621,7 +626,11 @@ export function BottomToolbar({
                     }}
                 >
                     <div className="relative z-10 flex items-center justify-center gap-2 w-full h-full">
+<<<<<<< HEAD
                         <span className="font-extrabold tracking-[0.15em] uppercase" style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif", color: '#022c22', fontSize: 11 } : { color: '#cbd5e1', fontSize: 11 }}>{isHasbihal ? 'GÖNDER' : t.send}</span>
+=======
+                        <span className="font-extrabold tracking-[0.15em] uppercase" style={{ color: '#cbd5e1', fontSize: 11 }}>{t.send}</span>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         <SendHorizontal className="w-4 h-4 group-hover:translate-x-1 transition-transform" style={{ color: '#94a3b8' }} />
                     </div>
                 </button>

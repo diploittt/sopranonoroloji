@@ -13,7 +13,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
     const [isTesting, setIsTesting] = useState(false);
     const [isMonitoring, setIsMonitoring] = useState(false);
     const [isPlayingTest, setIsPlayingTest] = useState(false);
-    const [bars, setBars] = useState<number[]>(new Array(24).fill(0));
+    const [bars, setBars] = useState<number[]>(new Array(20).fill(0));
     const [peak, setPeak] = useState(0);
 
     const streamRef = useRef<MediaStream | null>(null);
@@ -47,7 +47,6 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
             source.connect(analyser);
             analyserRef.current = analyser;
 
-            // Loopback gain node — routes mic audio to speakers (default off)
             const gainNode = audioCtx.createGain();
             gainNode.gain.value = 0;
             source.connect(gainNode);
@@ -59,7 +58,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
             const dataArray = new Uint8Array(analyser.frequencyBinCount);
             const updateBars = () => {
                 analyser.getByteFrequencyData(dataArray);
-                const barCount = 24;
+                const barCount = 20;
                 const step = Math.floor(dataArray.length / barCount);
                 const newBars: number[] = [];
                 let maxVal = 0;
@@ -93,7 +92,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
         monitorGainRef.current = null;
         setIsTesting(false);
         setIsMonitoring(false);
-        setBars(new Array(24).fill(0));
+        setBars(new Array(20).fill(0));
         setPeak(0);
     }, []);
 
@@ -126,106 +125,151 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
         onClose();
     }, [stopAll, onClose]);
 
+    // Dynamic glow color based on peak
+    const glowHue = peak > 70 ? 0 : peak > 40 ? 30 : 150;
+    const glowColor = `hsl(${glowHue}, 80%, 55%)`;
+    const glowAlpha = Math.min(0.6, peak / 100);
+
     return (
-        <div className="flex-1 flex flex-col animate-in fade-in duration-300 overflow-hidden">
-            {/* Header */}
-            <div
-                className="flex items-center gap-3 px-5 py-4 border-b border-white/5"
-                style={{ background: 'rgba(10,12,20,0.6)' }}
-            >
+        <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            animation: 'fadeIn 0.3s ease',
+        }}>
+            {/* Premium Header */}
+            <div style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px',
+                background: 'linear-gradient(135deg, rgba(139,92,246,0.12), rgba(59,130,246,0.08))',
+                borderBottom: '1px solid rgba(139,92,246,0.15)',
+            }}>
                 <button
                     onClick={handleClose}
-                    className="w-8 h-8 rounded-xl bg-white/5 hover:bg-white/10 flex items-center justify-center transition-all hover:scale-105"
+                    style={{
+                        width: 24, height: 24, borderRadius: 8,
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        cursor: 'pointer', transition: 'all 0.2s',
+                        color: '#94a3b8',
+                    }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.2)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                    onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
                 >
-                    <ArrowLeft className="w-4 h-4 text-gray-400" />
+                    <ArrowLeft style={{ width: 12, height: 12 }} />
                 </button>
-                <div>
-                    <h2 className="text-sm font-bold text-white tracking-wide">Ses Testi</h2>
-                    <p className="text-[10px] text-gray-500">Mikrofon & hoparlör kontrolü</p>
+                <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 11, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.03em' }}>🎙️ Ses Testi</div>
                 </div>
+                {/* Live indicator when testing */}
+                {isTesting && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        padding: '2px 8px', borderRadius: 10,
+                        background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.25)',
+                    }}>
+                        <div style={{
+                            width: 5, height: 5, borderRadius: '50%', background: '#ef4444',
+                            boxShadow: '0 0 6px rgba(239,68,68,0.6)',
+                            animation: 'pulse 1.5s ease-in-out infinite',
+                        }} />
+                        <span style={{ fontSize: 8, fontWeight: 700, color: '#f87171', textTransform: 'uppercase', letterSpacing: 1 }}>Canlı</span>
+                    </div>
+                )}
             </div>
 
             {/* Content */}
-            <div className="flex-1 flex flex-col items-center justify-center px-6 gap-6 overflow-y-auto py-6">
+            <div style={{
+                flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
+                padding: '10px 10px 8px', gap: 8,
+            }}>
 
-                {/* Circular VU Meter */}
-                <div className="relative">
-                    <div
-                        className="w-36 h-36 rounded-full flex items-center justify-center relative"
-                        style={{
-                            background: `conic-gradient(
-                                ${isTesting && peak > 0
-                                    ? `hsl(${140 - peak * 1.4}, 80%, 50%) 0deg, hsl(${140 - peak * 1.4}, 80%, 50%) ${peak * 3.6}deg, rgba(255,255,255,0.03) ${peak * 3.6}deg`
-                                    : 'rgba(255,255,255,0.03) 0deg'
-                                }, rgba(255,255,255,0.03) 360deg)`,
-                            boxShadow: isTesting && peak > 20
-                                ? `0 0 ${peak / 2}px hsla(${140 - peak * 1.4}, 80%, 50%, 0.3), inset 0 0 20px rgba(0,0,0,0.4)`
-                                : 'inset 0 0 20px rgba(0,0,0,0.4)',
-                            border: '2px solid rgba(255,255,255,0.06)',
-                            transition: 'box-shadow 0.15s ease',
-                        }}
-                    >
-                        <div
-                            className="w-28 h-28 rounded-full flex flex-col items-center justify-center"
-                            style={{ background: 'rgba(10,12,20,0.9)', border: '1px solid rgba(255,255,255,0.04)' }}
-                        >
+                {/* Premium VU Ring */}
+                <div style={{ position: 'relative' }}>
+                    {/* Outer glow ring */}
+                    <div style={{
+                        width: 76, height: 76, borderRadius: '50%',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: `conic-gradient(
+                            ${isTesting && peak > 0
+                                ? `${glowColor} 0deg, ${glowColor} ${peak * 3.6}deg, rgba(255,255,255,0.03) ${peak * 3.6}deg`
+                                : 'rgba(139,92,246,0.08) 0deg, rgba(59,130,246,0.08) 180deg, rgba(139,92,246,0.08) 360deg'
+                            })`,
+                        boxShadow: isTesting && peak > 15
+                            ? `0 0 ${peak / 3}px rgba(${peak > 70 ? '239,68,68' : peak > 40 ? '251,191,36' : '52,211,153'}, ${glowAlpha}), inset 0 0 8px rgba(0,0,0,0.3)`
+                            : '0 0 12px rgba(139,92,246,0.1), inset 0 0 8px rgba(0,0,0,0.3)',
+                        border: `1.5px solid ${isTesting ? `rgba(${peak > 70 ? '239,68,68' : peak > 40 ? '251,191,36' : '52,211,153'}, 0.3)` : 'rgba(139,92,246,0.15)'}`,
+                        transition: 'box-shadow 0.15s ease, border-color 0.2s ease',
+                    }}>
+                        {/* Inner circle */}
+                        <div style={{
+                            width: 58, height: 58, borderRadius: '50%',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            background: 'radial-gradient(circle at 40% 35%, rgba(30,32,48,0.95), rgba(15,17,28,0.98))',
+                            border: '1px solid rgba(255,255,255,0.04)',
+                        }}>
                             {isTesting ? (
                                 <>
-                                    <span className="text-3xl font-black text-white tabular-nums">{peak}</span>
-                                    <span className="text-[9px] text-gray-500 uppercase tracking-wider font-bold">Seviye</span>
+                                    <span style={{
+                                        fontSize: 20, fontWeight: 900, color: '#fff',
+                                        fontVariantNumeric: 'tabular-nums',
+                                        textShadow: `0 0 8px rgba(${peak > 70 ? '239,68,68' : peak > 40 ? '251,191,36' : '52,211,153'}, 0.4)`,
+                                    }}>{peak}</span>
+                                    <span style={{ fontSize: 6, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5 }}>dB</span>
                                 </>
                             ) : (
                                 <>
-                                    <Mic className="w-8 h-8 text-gray-600 mb-1" />
-                                    <span className="text-[9px] text-gray-600 font-bold">HAZIR</span>
+                                    <Mic style={{ width: 18, height: 18, color: 'rgba(139,92,246,0.5)' }} />
+                                    <span style={{ fontSize: 6, color: '#64748b', fontWeight: 700, marginTop: 2, letterSpacing: 1 }}>HAZIR</span>
                                 </>
                             )}
                         </div>
                     </div>
                 </div>
 
-                {/* Frequency Bars */}
-                <div
-                    className="w-full flex items-end gap-[2px] justify-center"
-                    style={{
-                        height: '56px',
-                        padding: '6px 8px',
-                        borderRadius: '12px',
-                        background: 'rgba(0,0,0,0.3)',
-                        border: '1px solid rgba(255,255,255,0.04)',
-                    }}
-                >
+                {/* Premium Frequency Bars */}
+                <div style={{
+                    width: '100%', display: 'flex', alignItems: 'flex-end', gap: 1.5, justifyContent: 'center',
+                    height: 32, padding: '4px 6px', borderRadius: 8,
+                    background: 'linear-gradient(180deg, rgba(0,0,0,0.25), rgba(0,0,0,0.4))',
+                    border: '1px solid rgba(255,255,255,0.04)',
+                    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.3)',
+                }}>
                     {bars.map((val, i) => {
-                        const hue = val > 70 ? 0 : val > 40 ? 45 : 140;
+                        const hue = val > 70 ? 0 : val > 40 ? 45 : 150;
                         return (
                             <div
                                 key={i}
-                                className="flex-1 rounded-sm transition-all duration-75"
                                 style={{
-                                    height: `${Math.max(4, val)}%`,
+                                    flex: 1, borderRadius: 2,
+                                    height: `${Math.max(8, val)}%`,
                                     background: isTesting
-                                        ? `linear-gradient(to top, hsl(${hue}, 80%, 45%), hsl(${hue}, 90%, 65%))`
-                                        : 'rgba(255,255,255,0.05)',
+                                        ? `linear-gradient(to top, hsl(${hue}, 75%, 40%), hsl(${hue}, 85%, 60%))`
+                                        : 'linear-gradient(to top, rgba(139,92,246,0.08), rgba(139,92,246,0.15))',
                                     boxShadow: isTesting && val > 15
-                                        ? `0 0 4px hsla(${hue}, 80%, 50%, 0.35)`
+                                        ? `0 0 3px hsla(${hue}, 80%, 50%, 0.3)`
                                         : 'none',
-                                    minWidth: '3px',
+                                    transition: 'height 0.06s ease-out',
+                                    minWidth: 2,
                                 }}
                             />
                         );
                     })}
                 </div>
 
-                {/* Mic Selector */}
-                <div className="w-full">
-                    <label className="text-[10px] text-gray-500 uppercase tracking-wider font-bold mb-1.5 block">
-                        Mikrofon Seçimi
-                    </label>
+                {/* Mic Selector — styled */}
+                <div style={{ width: '100%' }}>
+                    <div style={{ fontSize: 7, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 3 }}>
+                        Mikrofon
+                    </div>
                     <select
                         value={selectedMic}
                         onChange={(e) => { setSelectedMic(e.target.value); if (isTesting) stopAll(); }}
-                        className="w-full text-[12px] text-white font-medium rounded-xl px-3 py-2.5 border border-white/10 focus:border-amber-600/40 focus:outline-none appearance-none cursor-pointer"
-                        style={{ background: 'rgba(255,255,255,0.06)' }}
+                        style={{
+                            width: '100%', fontSize: 9, color: '#e2e8f0', fontWeight: 600,
+                            borderRadius: 6, padding: '5px 8px',
+                            background: 'rgba(255,255,255,0.04)',
+                            border: '1px solid rgba(139,92,246,0.12)',
+                            outline: 'none', cursor: 'pointer',
+                            appearance: 'none' as const,
+                        }}
                     >
                         <option value="" style={{ background: '#1a1d2e', color: '#fff' }}>Varsayılan Mikrofon</option>
                         {audioDevices.map(d => (
@@ -236,71 +280,80 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                     </select>
                 </div>
 
-                {/* Mic Start/Stop */}
+                {/* Primary Action Button */}
                 <button
                     onClick={isTesting ? stopAll : startMicTest}
-                    className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold rounded-xl transition-all"
                     style={{
+                        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                        padding: '7px 0', fontSize: 10, fontWeight: 800, borderRadius: 8,
                         background: isTesting
-                            ? 'linear-gradient(135deg, rgba(239,68,68,0.85), rgba(220,38,38,0.85))'
-                            : 'linear-gradient(135deg, rgba(34,197,94,0.85), rgba(22,163,74,0.85))',
-                        color: 'white',
+                            ? 'linear-gradient(135deg, rgba(239,68,68,0.8), rgba(220,38,38,0.9))'
+                            : 'linear-gradient(135deg, rgba(139,92,246,0.8), rgba(99,102,241,0.9))',
+                        color: '#fff', border: 'none', cursor: 'pointer',
                         boxShadow: isTesting
-                            ? '0 4px 20px rgba(239,68,68,0.25)'
-                            : '0 4px 20px rgba(34,197,94,0.25)',
+                            ? '0 2px 12px rgba(239,68,68,0.3), inset 0 1px 0 rgba(255,255,255,0.1)'
+                            : '0 2px 12px rgba(139,92,246,0.3), inset 0 1px 0 rgba(255,255,255,0.1)',
+                        letterSpacing: '0.05em', textTransform: 'uppercase',
+                        transition: 'all 0.2s ease',
                     }}
                 >
-                    {isTesting ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                    {isTesting ? 'Mikrofonu Durdur' : 'Mikrofon Testi Başlat'}
+                    {isTesting ? <MicOff style={{ width: 12, height: 12 }} /> : <Mic style={{ width: 12, height: 12 }} />}
+                    {isTesting ? 'Testi Durdur' : 'Testi Başlat'}
                 </button>
 
-                {/* Secondary controls row */}
-                <div className="w-full flex gap-2">
-                    {/* Loopback — hear yourself */}
+                {/* Secondary Controls — pill style */}
+                <div style={{ width: '100%', display: 'flex', gap: 4 }}>
                     <button
                         onClick={toggleMonitor}
                         disabled={!isTesting}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold rounded-xl transition-all disabled:opacity-25 disabled:cursor-not-allowed"
                         style={{
+                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                            padding: '5px 0', fontSize: 8, fontWeight: 700, borderRadius: 6,
                             background: isMonitoring
-                                ? 'linear-gradient(135deg, rgba(168,85,247,0.85), rgba(139,92,246,0.85))'
-                                : 'rgba(255,255,255,0.05)',
-                            color: isMonitoring ? 'white' : '#9ca3af',
-                            border: `1px solid ${isMonitoring ? 'rgba(168,85,247,0.4)' : 'rgba(255,255,255,0.06)'}`,
-                            boxShadow: isMonitoring ? '0 4px 16px rgba(168,85,247,0.25)' : 'none',
+                                ? 'linear-gradient(135deg, rgba(168,85,247,0.7), rgba(139,92,246,0.8))'
+                                : 'rgba(255,255,255,0.03)',
+                            color: isMonitoring ? '#fff' : '#64748b',
+                            border: `1px solid ${isMonitoring ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                            cursor: isTesting ? 'pointer' : 'not-allowed',
+                            opacity: isTesting ? 1 : 0.3,
+                            transition: 'all 0.2s ease',
+                            letterSpacing: '0.03em',
                         }}
-                        title="Mikrofon sesini kulaklığından dinle"
                     >
-                        <Headphones className="w-4 h-4" />
+                        <Headphones style={{ width: 10, height: 10 }} />
                         {isMonitoring ? 'Dinleniyor' : 'Sesini Duy'}
                     </button>
 
-                    {/* Speaker Test */}
                     <button
                         onClick={playTestSound}
                         disabled={isPlayingTest}
-                        className="flex-1 flex items-center justify-center gap-2 py-2.5 text-[11px] font-bold rounded-xl transition-all disabled:opacity-40"
                         style={{
+                            flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3,
+                            padding: '5px 0', fontSize: 8, fontWeight: 700, borderRadius: 6,
                             background: isPlayingTest
-                                ? 'rgba(99,102,241,0.25)'
-                                : 'rgba(255,255,255,0.05)',
-                            color: isPlayingTest ? '#818cf8' : '#9ca3af',
+                                ? 'rgba(99,102,241,0.2)'
+                                : 'rgba(255,255,255,0.03)',
+                            color: isPlayingTest ? '#818cf8' : '#64748b',
                             border: '1px solid rgba(255,255,255,0.06)',
+                            cursor: isPlayingTest ? 'not-allowed' : 'pointer',
+                            opacity: isPlayingTest ? 0.7 : 1,
+                            transition: 'all 0.2s ease',
+                            letterSpacing: '0.03em',
                         }}
-                        title="Hoparlör Testi — 440Hz test tonu"
                     >
-                        <Volume2 className="w-4 h-4" />
-                        {isPlayingTest ? 'Çalıyor...' : 'Hoparlör Test'}
+                        <Volume2 style={{ width: 10, height: 10 }} />
+                        {isPlayingTest ? 'Çalıyor...' : 'Hoparlör'}
                     </button>
                 </div>
 
-                {/* Status hint */}
-                <p className="text-[10px] text-gray-600 text-center leading-relaxed">
+                {/* Premium hint */}
+                <p style={{
+                    fontSize: 7, color: '#475569', textAlign: 'center', lineHeight: 1.4,
+                    fontStyle: 'italic', margin: 0,
+                }}>
                     {isTesting
-                        ? (isMonitoring
-                            ? '🎧 Mikrofon sesiniz kulaklığınızdan geri dönüyor'
-                            : '💡 "Sesini Duy" butonuyla kendinizi dinleyebilirsiniz')
-                        : '🎤 Mikrofon testini başlatarak ses seviyenizi kontrol edin'}
+                        ? (isMonitoring ? '🎧 Ses geri dönüyor' : '💡 "Sesini Duy" ile kendinizi dinleyin')
+                        : '🎤 Test başlatarak ses seviyenizi kontrol edin'}
                 </p>
             </div>
         </div>

@@ -1,5 +1,6 @@
 'use client';
 import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { useTranslation } from '@/i18n/LanguageProvider';
 
 /* ───── Types ───── */
 interface One2OneRoomProps {
@@ -35,6 +36,7 @@ export function One2OneRoomView({
 }: One2OneRoomProps) {
     const [msgInput, setMsgInput] = useState('');
     const [callDuration, setCallDuration] = useState(0);
+    const { t } = useTranslation();
     const chatEndRef = useRef<HTMLDivElement>(null);
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -43,7 +45,7 @@ export function One2OneRoomView({
     const other = otherUser || (() => {
         const p = participants.find(u => u.userId !== currentUser?.userId);
         return p ? {
-            otherDisplayName: p.displayName || 'Kullanıcı',
+            otherDisplayName: p.displayName || t.user,
             otherAvatar: p.avatar || '',
             otherRole: p.role || 'guest',
             otherUserId: p.userId || '',
@@ -94,9 +96,9 @@ export function One2OneRoomView({
         return `${m.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
     };
 
-    const myName = currentUser?.displayName || 'Sen';
+    const myName = currentUser?.displayName || t.user;
     const myAvatar = currentUser?.avatar || '';
-    const otherName = other?.otherDisplayName || 'Bekleniyor...';
+    const otherName = other?.otherDisplayName || t.loading;
     const otherAvatarUrl = other?.otherAvatar || '';
     const hasRemoteVideo = !!remoteVideo;
 
@@ -272,7 +274,7 @@ export function One2OneRoomView({
                     </button>
 
                     {/* Mic toggle */}
-                    <button className="o2o-btn" onClick={handleMicToggle} title={isMicOn ? 'Mikrofonu Kapat' : 'Mikrofonu Aç'}
+                    <button className="o2o-btn" onClick={handleMicToggle} title={isMicOn ? t.turnOffMic : t.turnOnMic}
                         style={{
                             width: '56px', height: '56px', borderRadius: '50%',
                             background: isMicOn
@@ -371,7 +373,7 @@ export function One2OneRoomView({
                         value={msgInput}
                         onChange={e => setMsgInput(e.target.value)}
                         onKeyDown={e => { if (e.key === 'Enter') handleSend(); }}
-                        placeholder="Mesajını yaz..."
+                        placeholder={t.typeMessage}
                         style={{
                             flex: 1, background: 'rgba(255,255,255,0.05)',
                             border: '1px solid rgba(255,255,255,0.08)',

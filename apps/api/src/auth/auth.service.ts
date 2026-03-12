@@ -11,13 +11,19 @@ import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcryptjs';
 
 /**
+<<<<<<< HEAD
  * Cinsiyete uygun yerel avatar URL'i oluşturur.
  * Seed string'den deterministik index seçer.
+=======
+ * Cinsiyete uygun yerel PNG avatar URL'i oluşturur.
+ * seed parametresi ile deterministik seçim yapılır.
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
  */
 const MALE_AVATARS = ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'];
 const FEMALE_AVATARS = ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'];
 const NEUTRAL_AVATARS = ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'];
 
+<<<<<<< HEAD
 function hashSeed(seed: string): number {
   let hash = 0;
   for (let i = 0; i < seed.length; i++) {
@@ -25,14 +31,34 @@ function hashSeed(seed: string): number {
     hash |= 0;
   }
   return Math.abs(hash);
+=======
+function seedToIndex(seed: string, count: number): number {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    const char = seed.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return Math.abs(hash) % count;
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 }
 
 function generateGenderAvatar(seed: string, gender?: string): string {
   const g = (gender || '').toLowerCase();
+<<<<<<< HEAD
   const idx = hashSeed(seed) % 4;
   if (g === 'male' || g === 'erkek') return MALE_AVATARS[idx];
   if (g === 'female' || g === 'kadın' || g === 'kadin') return FEMALE_AVATARS[idx];
   return NEUTRAL_AVATARS[idx];
+=======
+  if (g === 'male' || g === 'erkek') {
+    return MALE_AVATARS[seedToIndex(seed, MALE_AVATARS.length)];
+  }
+  if (g === 'female' || g === 'kadın' || g === 'kadin') {
+    return FEMALE_AVATARS[seedToIndex(seed, FEMALE_AVATARS.length)];
+  }
+  return NEUTRAL_AVATARS[seedToIndex(seed, NEUTRAL_AVATARS.length)];
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 }
 
 @Injectable()
@@ -76,7 +102,10 @@ export class AuthService {
     const user = await this.prisma.user.findFirst({
       where: {
         tenantId: tenantId,
-        OR: [{ email: identifier }, { displayName: identifier }],
+        OR: [
+          { email: { equals: identifier, mode: 'insensitive' } },
+          { displayName: { equals: identifier, mode: 'insensitive' } },
+        ],
       },
     });
 
@@ -102,10 +131,11 @@ export class AuthService {
       nameColor: user.nameColor || null,
     };
 
-    // Full user response includes avatar (not in JWT to avoid bloat)
+    // Full user response includes avatar and gender (not in JWT to avoid bloat)
     const userResponse = {
       ...jwtPayload,
       avatar: user.avatarUrl || null,
+      gender: user.gender || null,
     };
 
     // Update login stats
@@ -278,6 +308,7 @@ export class AuthService {
         email: data.email,
         passwordHash: hashedPassword,
         avatarUrl,
+        gender: data.gender || null,
         role: 'member',
         isOnline: true,
         lastLoginAt: new Date(),

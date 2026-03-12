@@ -23,6 +23,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.74.0",
+    "@neondatabase/serverless": "^1.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
@@ -35,6 +36,7 @@
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/typeorm": "^11.0.0",
     "@nestjs/websockets": "^11.1.13",
+    "@prisma/adapter-neon": "^7.4.2",
     "@prisma/adapter-pg": "^7.4.0",
     "@prisma/client": "^7.4.0",
     "@types/bcryptjs": "^2.4.6",
@@ -59,7 +61,8 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
-    "typeorm": "^0.3.28"
+    "typeorm": "^0.3.28",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",

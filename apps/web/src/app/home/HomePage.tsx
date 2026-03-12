@@ -14,7 +14,11 @@ import {
 import { API_URL } from '@/lib/api';
 import { adminApi } from '@/lib/admin/api';
 import ToastContainer from '@/components/ui/ToastContainer';
+<<<<<<< HEAD
 
+=======
+import LaptopSimulation from '@/components/home/LaptopSimulation';
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 import { useAdminStore } from '@/lib/admin/store';
 import { RadioPlayer } from '@/components/roomUI/RadioPlayer';
 import { ChatMessages } from '@/components/roomUI/ChatMessages';
@@ -1055,6 +1059,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 @keyframes hpSpeakerGlow {
                     0%, 100% { opacity: 0.6; transform: scale(1); }
                     50% { opacity: 1; transform: scale(1.08); }
+<<<<<<< HEAD
                 }
                 @keyframes hpModPulse {
                     0%, 100% { opacity: 0.5; transform: scale(0.9); }
@@ -1063,6 +1068,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 @keyframes hpBanScreenPulse {
                     0%, 100% { opacity: 0.7; transform: scale(0.95); }
                     50% { opacity: 1; transform: scale(1.05); }
+=======
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                 }
             `}</style>
 
@@ -1207,7 +1214,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                         ) : (
                             [
                                 { label: 'HOME', section: 'home' },
+<<<<<<< HEAD
                                 { label: 'ODALAR', section: '_odalar' },
+=======
+                                { label: 'DEMO', section: 'odalar' },
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                 { label: 'REHBER', section: 'rehber' },
                                 { label: 'FİYATLAR', section: 'fiyatlar' },
                                 { label: 'REFERANSLAR', section: 'referanslar' },
@@ -1217,6 +1228,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                     <button
                                         className={`nav-link nav-link-${i}`}
                                         onClick={() => {
+<<<<<<< HEAD
                                             // ODALAR — doğrudan chat room'a yönlendir
                                             if (item.section === '_odalar') {
                                                 if (!user) {
@@ -1226,6 +1238,17 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                 }
                                                 const slug = dbRooms.length > 0 ? dbRooms[0].slug : 'genel-sohbet';
                                                 router.push(`/room/${slug}`);
+=======
+                                            if (item.section === 'odalar' && !user) {
+                                                setShowLoginToast(true);
+                                                setTimeout(() => setShowLoginToast(false), 4000);
+                                                return;
+                                            }
+                                            if (item.section === 'odalar' && user) {
+                                                if (roomsMode) return;
+                                                // System room page'e yönlendir
+                                                window.location.href = '/room/genel-sohbet';
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                 return;
                                             }
                                             if (roomsMode) {
@@ -1516,7 +1539,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                             </div>
                                                         </div>
 
+<<<<<<< HEAD
 
+=======
+                                                        {/* SAĞ: 3D Laptop Simülasyonu */}
+                                                        <div style={{ flex: 1, minWidth: 260, display: 'flex', justifyContent: 'center' }}>
+                                                            <LaptopSimulation />
+                                                        </div>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
                                                     </div>
 
@@ -1755,6 +1785,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             </div>
                                         </div>
 
+<<<<<<< HEAD
                                         {/* ═══ BAN OVERLAY — tam ekran ban + kalan süre geri sayımı ═══ */}
                                         {roomsMode && demoRoomReady && demoRoomRef.current?.state?.banInfo?.banLevel === 'hard' && (() => {
                                             const banInfo = demoRoomRef.current.state.banInfo;
@@ -2013,6 +2044,208 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     boxShadow: '0 6px 16px rgba(56,189,248,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
                                                 }}>
+=======
+                                        {/* roomsMode: Gerçek BottomToolbar — ayrı glossy-panel kart */}
+                                        {roomsMode && demoRoomReady && demoRoomRef.current && (
+                                            <div className={`glossy-panel demo-chatroom-override`} style={{
+                                                padding: '16px 20px', marginTop: -2, position: 'relative', zIndex: 6,
+                                                boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 2px 6px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
+                                            }}>
+                                                <BottomToolbar
+                                                    onSendMessage={demoRoomRef.current.actions.sendMessage}
+                                                    onRequestMic={demoRoomRef.current.actions.requestMic}
+                                                    onReleaseMic={demoRoomRef.current.actions.releaseMic}
+                                                    onJoinQueue={demoRoomRef.current.actions.joinQueue}
+                                                    onLeaveQueue={demoRoomRef.current.actions.leaveQueue}
+                                                    onToggleCamera={demoRoomRef.current.actions.toggleCamera}
+                                                    onLeaveRoom={() => {
+                                                        demoRoomRef.current?.actions?.leaveRoom?.();
+                                                        if (roomExitUrl) {
+                                                            window.location.href = roomExitUrl;
+                                                        }
+                                                    }}
+                                                    onToggleSettings={() => demoRoomRef.current?.setIsSettingsOpen?.((prev: boolean) => !prev)}
+                                                    onRegisterSettingsRef={(ref: any) => demoRoomRef.current?.setSettingsAnchor?.(ref)}
+                                                    isCameraOn={demoRoomRef.current.state.isCameraOn}
+                                                    isMicOn={demoRoomRef.current.state.isMicOn}
+                                                    currentSpeaker={demoRoomRef.current.state.currentSpeaker}
+                                                    currentUser={demoRoomRef.current.state.currentUser}
+                                                    queue={demoRoomRef.current.state.queue}
+                                                    lastError={demoRoomRef.current.state.lastError}
+                                                    onDismissError={demoRoomRef.current.actions.dismissError}
+                                                    onToggleRemoteVolume={demoRoomRef.current.actions.toggleRemoteVolume}
+                                                    isRemoteMuted={demoRoomRef.current.state.isRemoteMuted}
+                                                    remoteVolume={demoRoomRef.current.state.remoteVolume}
+                                                    isChatLocked={demoRoomRef.current.state.isChatLocked}
+                                                    isCurrentUserMuted={demoRoomRef.current.state.isCurrentUserMuted}
+                                                    isCurrentUserGagged={demoRoomRef.current.state.isCurrentUserGagged}
+                                                    onEmojiClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'Emoji özelliği yakında eklenecek. 😊')}
+                                                    onStickerClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'Sticker özelliği yakında eklenecek. 🎨')}
+                                                    onGifClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'GIF özelliği yakında eklenecek. 🎬')}
+                                                    onVolumeChange={demoRoomRef.current.actions.setRemoteVolume}
+                                                    systemSettings={demoRoomRef.current.state.systemSettings}
+                                                />
+                                            </div>
+                                        )}
+
+                                        {/* Müşteri Platformları / Chat Toolbar */}
+                                        <div className="glossy-panel content-fade content-fade-2" style={{ padding: roomsMode ? '16px 20px' : '24px 32px', minHeight: roomsMode ? undefined : 180, ...(roomsMode ? { display: 'none' } : {}) }}>
+                                            {roomsMode ? (
+                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                    {/* Toolbar Üst Satır */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '5px 6px', background: 'rgba(255,255,255,0.03)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)', backdropFilter: 'blur(8px)' }}>
+                                                            {/* Sıra Al */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Sıra Al">
+                                                                <Hand style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                            {/* Ses */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Ses Ayarı">
+                                                                <Volume2 style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                            {/* Ayırıcı */}
+                                                            <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.08)', margin: '0 3px' }} />
+                                                            {/* Emoji */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Emoji">
+                                                                <Smile style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                            {/* Sticker */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Sticker">
+                                                                <Sticker style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                            {/* GIF */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="GIF">
+                                                                <Clapperboard style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                        </div>
+                                                        <div style={{ display: 'flex', gap: 5 }}>
+                                                            {/* Ayarlar */}
+                                                            <button className="feature-toast" style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', color: '#64748b', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Ayarlar">
+                                                                <Settings style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                            {/* Çıkış */}
+                                                            <button className="feature-toast" onClick={() => {
+                                                                if (roomExitUrl) {
+                                                                    window.location.href = roomExitUrl;
+                                                                    return;
+                                                                }
+                                                                setDemoEntrance('out');
+                                                                setTimeout(() => {
+                                                                    setRoomsMode(false);
+                                                                    setDemoEntrance('idle');
+                                                                    setActiveSection('home');
+                                                                    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+                                                                }, 500);
+                                                            }} style={{ width: 32, height: 32, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(239,68,68,0.12)', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', transition: 'all 0.3s', padding: 0 }} title="Çıkış">
+                                                                <Power style={{ width: 14, height: 14 }} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    {/* Mesaj Input + Gönder */}
+                                                    <div style={{ display: 'flex', gap: 8, height: 40 }}>
+                                                        <div style={{ flex: 1, position: 'relative' }}>
+                                                            <input type="text" placeholder="Mesajınızı buraya yazın..." style={{ width: '100%', height: '100%', padding: '0 14px', borderRadius: 10, fontSize: 12, fontWeight: 500, color: '#cbd5e1', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', boxSizing: 'border-box', backdropFilter: 'blur(8px)' }} />
+                                                        </div>
+                                                        <button style={{ height: '100%', padding: '0 18px', borderRadius: 10, fontSize: 10, fontWeight: 800, color: '#e2e8f0', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, letterSpacing: 1.5, transition: 'all 0.3s' }}>
+                                                            GÖNDER <SendHorizontal style={{ width: 13, height: 13, color: '#64748b', marginLeft: 2 }} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <div style={{ paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
+                                                        <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                            <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Müşteri Platformları
+                                                        </h3>
+                                                        <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: 500 }}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</p>
+                                                    </div>
+
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                                        {[
+                                                            { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
+                                                            { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
+                                                        ].map((p, i) => (
+                                                            <div key={i} className="feature-toast" style={{
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                                                padding: '14px 16px', borderRadius: 14,
+                                                                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                                                            }}>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                                                    <div style={{
+                                                                        width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                        background: `linear-gradient(135deg, ${p.color}33, ${p.color}11)`,
+                                                                        border: `1px solid ${p.color}44`, fontSize: 22,
+                                                                    }}>{p.emoji}</div>
+                                                                    <div>
+                                                                        <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{p.name}</div>
+                                                                        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.room}</div>
+                                                                        <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
+                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.users}</span>
+                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.rooms} oda</span>
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                                <button className="btn-3d btn-3d-blue" style={{
+                                                                    padding: '6px 18px', fontSize: 11, fontWeight: 800, borderRadius: 10,
+                                                                }}>Katıl</button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* İLETİŞİM SECTION */}
+                                {activeSection === 'iletisim' && (
+                                    <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
+                                        {/* Gallery Lamp */}
+                                        <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: lampAnimDone.current['iletisim'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['iletisim'] = true; }}>
+                                            <svg width="500" height="52" viewBox="0 0 500 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                <defs>
+                                                    <linearGradient id="glBarMetalC" x1="0" y1="30" x2="0" y2="44" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#4a4a4a" /><stop offset="25%" stopColor="#2a2a2a" /><stop offset="50%" stopColor="#1a1a1a" /><stop offset="75%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#3a3a3a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glMountPlateC" x1="250" y1="0" x2="250" y2="14" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#2a2a2a" /><stop offset="100%" stopColor="#1a1a1a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glArmMetalC" x1="0" y1="0" x2="0" y2="1">
+                                                        <stop offset="0%" stopColor="#555" /><stop offset="50%" stopColor="#333" /><stop offset="100%" stopColor="#2a2a2a" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glLightSpreadC" x1="250" y1="44" x2="250" y2="52" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#ffd080" stopOpacity="0.6" /><stop offset="100%" stopColor="#ffc864" stopOpacity="0" />
+                                                    </linearGradient>
+                                                    <linearGradient id="glLedStripC" x1="70" y1="43" x2="430" y2="43" gradientUnits="userSpaceOnUse">
+                                                        <stop offset="0%" stopColor="#ffcc66" stopOpacity="0" /><stop offset="15%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="50%" stopColor="#fff0cc" stopOpacity="1" /><stop offset="85%" stopColor="#ffe0a0" stopOpacity="0.9" /><stop offset="100%" stopColor="#ffcc66" stopOpacity="0" />
+                                                    </linearGradient>
+                                                </defs>
+                                                <path d="M78 44 L50 52 L450 52 L422 44 Z" fill="url(#glLightSpreadC)" opacity="0.5" />
+                                                <rect x="235" y="0" width="30" height="10" rx="2" fill="url(#glMountPlateC)" stroke="rgba(255,255,255,0.08)" strokeWidth="0.5" />
+                                                <rect x="238" y="1" width="24" height="1.5" rx="0.75" fill="white" fillOpacity="0.1" />
+                                                <line x1="242" y1="10" x2="205" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                                <line x1="242.5" y1="10.5" x2="205.8" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                                <line x1="258" y1="10" x2="295" y2="30" stroke="url(#glArmMetalC)" strokeWidth="3" strokeLinecap="round" />
+                                                <line x1="257.5" y1="10.5" x2="294.2" y2="30" stroke="rgba(255,255,255,0.1)" strokeWidth="0.5" />
+                                                <rect x="60" y="30" width="380" height="14" rx="7" fill="url(#glBarMetalC)" stroke="rgba(0,0,0,0.4)" strokeWidth="0.8" />
+                                                <rect x="70" y="32" width="360" height="2" rx="1" fill="white" fillOpacity="0.12" />
+                                                <rect x="70" y="42" width="360" height="1" rx="0.5" fill="white" fillOpacity="0.04" />
+                                                <rect x="67" y="43.5" width="366" height="1.5" rx="0.75" fill="url(#glLedStripC)" />
+                                                <circle cx="205" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="205" cy="34" r="1" fill="#555" />
+                                                <circle cx="295" cy="34" r="2.5" fill="#333" stroke="#555" strokeWidth="0.5" /><circle cx="295" cy="34" r="1" fill="#555" />
+                                            </svg>
+                                            <div className="gallery-lamp-glow" key={'glow-section-' + sectionChangeKey} style={{ width: 450, animation: !isInitialLoad.current ? 'glowReveal 1.2s ease-out 0.9s both' : undefined }}></div>
+                                        </div>
+                                        <div className="glossy-panel" style={{ padding: '28px 32px', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', zIndex: 10 }}>
+                                            {/* Başlık */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+                                                <div style={{
+                                                    width: 44, height: 44, borderRadius: 14,
+                                                    background: 'linear-gradient(135deg, #38bdf8, #06b6d4)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    boxShadow: '0 6px 16px rgba(56,189,248,0.25), inset 0 1px 1px rgba(255,255,255,0.4)',
+                                                }}>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                     <Phone style={{ width: 20, height: 20, color: '#fff' }} />
                                                 </div>
                                                 <div>
@@ -2989,9 +3222,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                 </div>
                                                             )}
                                                             <button onClick={() => {
+<<<<<<< HEAD
                                                                 // System room page'e yönlendir — dbRooms varsa ilk odayı kullan
                                                                 const slug = dbRooms.length > 0 ? dbRooms[0].slug : 'genel-sohbet';
                                                                 router.push(`/room/${slug}`);
+=======
+                                                                // System room page'e yönlendir
+                                                                window.location.href = '/room/genel-sohbet';
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                             }} className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
                                                                 Odaya Gir
                                                             </button>
@@ -3055,8 +3293,13 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                                     case 'moderator': return '#34d399';
                                                                                     case 'operator': return '#22d3ee';
                                                                                     case 'vip': return '#fde047';
+<<<<<<< HEAD
                                                                                     case 'member': return '#ffffff';
                                                                                     default: return '#ffffff';
+=======
+                                                                                    case 'member': return '#94a3b8';
+                                                                                    default: return '#64748b';
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                                 }
                                                                             };
                                                                             const getRoleLabel = (role?: string) => {
@@ -3168,7 +3411,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                                         // ★ İlk non-speaker kullanıcı öncesi "Çevrimiçi" ayırıcı
                                                                                         const showOnlineDivider = !isSpeaking && speaker && idx > 0 && sorted[idx - 1] && speaker.userId === sorted[idx - 1]?.userId;
                                                                                         return (
+<<<<<<< HEAD
                                                                                             <React.Fragment key={u.odaSoketId || `${u.userId || u.odaUserId}-${idx}`}>
+=======
+                                                                                            <React.Fragment key={u.odaUserId || u.odaRollId || u.odaSoketId || u.odaJoinedAt || u.userId || idx}>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                                                 {showOnlineDivider && (
                                                                                                     <div style={{ fontSize: 9, fontWeight: 800, color: '#34d399', letterSpacing: 1.5, textTransform: 'uppercase', paddingTop: 6, paddingBottom: 2, display: 'flex', alignItems: 'center', gap: 5, borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: 4 }}>
                                                                                                         <span style={{ fontSize: 11 }}>🟢</span> Çevrimiçi
@@ -3230,6 +3477,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                                                     {/* İsim + Rol + Status */}
                                                                                                     <div style={{ flex: 1, minWidth: 0 }}>
                                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+<<<<<<< HEAD
                                                                                                             <span style={{ fontSize: 12, fontWeight: 700, color: isSpeaking ? '#ef4444' : (roleColor || '#ffffff'), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
                                                                                                             {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
                                                                                                             {isCurrentUser && <span style={{ fontSize: 8, color: 'rgba(34,211,238,0.6)', fontWeight: 600, letterSpacing: '0.05em' }}>(sen)</span>}
@@ -3238,6 +3486,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                                                             {u.isGagged && <span title="Yazma Yasağı" style={{ fontSize: 11, animation: 'hpModPulse 1.5s ease-in-out infinite', filter: 'drop-shadow(0 0 4px rgba(249,115,22,0.6))' }}>🚫</span>}
                                                                                                             {u.isBanned && <span title="Yasaklı" style={{ fontSize: 11, animation: 'hpModPulse 1.2s ease-in-out infinite', filter: 'drop-shadow(0 0 6px rgba(220,38,38,0.8))' }}>⛔</span>}
                                                                                                             {u.isCamBlocked && <span title="Kamera Yasağı" style={{ fontSize: 11, animation: 'hpModPulse 1.5s ease-in-out infinite', filter: 'drop-shadow(0 0 4px rgba(107,114,128,0.6))' }}>📵</span>}
+=======
+                                                                                                            <span style={{ fontSize: 12, fontWeight: 700, color: isSpeaking ? '#ef4444' : (u.nameColor || roleColor || '#e2e8f0'), overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                                                                                                            {roleIcon && <span style={{ fontSize: 10 }}>{roleIcon}</span>}
+                                                                                                            {isCurrentUser && <span style={{ fontSize: 8, color: 'rgba(34,211,238,0.6)', fontWeight: 600, letterSpacing: '0.05em' }}>(sen)</span>}
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                                                             {isSpeaking && (
                                                                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 1, height: 18, flexShrink: 0 }}>
                                                                                                                     {[0, 0.15, 0.3, 0.45, 0.6].map((delay, i) => (

@@ -113,10 +113,13 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, #14161f 0%, #0d0f17 100%)',
-                    border: '1px solid rgba(99, 102, 241, 0.15)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
                     borderRadius: '18px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
                 }}
             >
                 <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7 }} />
@@ -141,7 +144,7 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                             onChange={(e) => { setRoomName(e.target.value); setError(''); }}
                             placeholder={mode === 'meeting' ? 'Toplantı adı...' : 'Konferans adı...'}
                             className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none"
-                            style={{ background: '#10121b' }}
+                            style={{ background: 'rgba(15,23,42,0.6)' }}
                         />
                         {error && <span className="text-xs text-red-400 mt-1 block">{error}</span>}
                     </div>
@@ -154,7 +157,7 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                     {availableUsers.length > 0 && (
                         <div>
                             <label className="text-xs text-gray-400 mb-2 block">Katılımcı Davet Et ({selectedUsers.length})</label>
-                            <div className="max-h-[180px] overflow-y-auto space-y-1 rounded-xl p-2" style={{ background: '#10121b', border: '1px solid rgba(255,255,255,0.05)', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
+                            <div className="max-h-[180px] overflow-y-auto space-y-1 rounded-xl p-2" style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)', scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.1) transparent' }}>
                                 {availableUsers.map((u: any) => (
                                     <button
                                         key={u.id || u.userId}
@@ -165,7 +168,11 @@ export function MeetingModal({ isOpen, onClose, socket, currentRoomSlug, users, 
                                             border: selectedUsers.includes(u.id || u.userId) ? '1px solid rgba(99,102,241,0.2)' : '1px solid transparent',
                                         }}
                                     >
+<<<<<<< HEAD
                                         <img src={u.avatar || `/avatars/neutral_1.png`} alt="" className="w-7 h-7 rounded-full" style={{ background: '#0d0f17' }} />
+=======
+                                        <div className="w-7 h-7 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', border: '1px solid rgba(255,255,255,0.1)' }}>{(u as any).avatar ? <img src={(u as any).avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (u.username || u.displayName || '?').charAt(0)}</div>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         <span className="text-sm text-white">{u.username || u.displayName}</span>
                                         {selectedUsers.includes(u.id || u.userId) && <span className="ml-auto text-[#7b9fef] text-sm">✓</span>}
                                     </button>

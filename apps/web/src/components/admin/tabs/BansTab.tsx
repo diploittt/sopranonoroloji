@@ -98,7 +98,7 @@ export function BansTab({ socket }: BansTabProps) {
             <div className="admin-split-left">
                 <div className="admin-toolbar">
                     <Shield style={{ width: 13, height: 13, color: '#ef4444' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Ban/Gag Listesi</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>Ban/Gag Listesi</span>
                     <div style={{ flex: 1 }} />
                     {(['all', 'active', 'lifted'] as const).map(f => (
                         <button
@@ -134,7 +134,7 @@ export function BansTab({ socket }: BansTabProps) {
                                         <td style={{ fontWeight: 600 }}>{ban.user?.displayName || ban.userId?.slice(0, 8)}</td>
                                         <td>
                                             <span style={{
-                                                padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 700,
+                                                padding: '2px 6px', borderRadius: 4, fontSize: 11, fontWeight: 700,
                                                 background: ban.type === 'BAN' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
                                                 color: ban.type === 'BAN' ? '#fca5a5' : '#fcd34d',
                                                 border: `1px solid ${ban.type === 'BAN' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
@@ -142,11 +142,11 @@ export function BansTab({ socket }: BansTabProps) {
                                                 {ban.type === 'BAN' ? '🚫 Ban' : '🤐 Gag'}
                                             </span>
                                         </td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{DURATION_LABELS[ban.duration] || ban.duration}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{fmtDate(ban.createdAt)}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{DURATION_LABELS[ban.duration] || ban.duration}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{fmtDate(ban.createdAt)}</td>
                                         <td>
                                             <span style={{
-                                                padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 700,
+                                                padding: '2px 6px', borderRadius: 4, fontSize: 11, fontWeight: 700,
                                                 background: ban.isActive ? 'rgba(239,68,68,0.1)' : 'rgba(34,197,94,0.1)',
                                                 color: ban.isActive ? '#fca5a5' : '#86efac',
                                             }}>
@@ -156,14 +156,14 @@ export function BansTab({ socket }: BansTabProps) {
                                     </tr>
                                 ))}
                                 {bans.length === 0 && (
-                                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>Yasaklı kullanıcı yok</td></tr>
+                                    <tr><td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>Yasaklı kullanıcı yok</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(123,159,239,0.06)', fontSize: 10, color: '#4b5563', flexShrink: 0, background: 'rgba(123,159,239,0.01)' }}>
+                <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(37,99,235,0.08)', fontSize: 12, color: '#1e293b', flexShrink: 0, background: 'rgba(241,245,249,0.3)' }}>
                     Toplam: <span className="admin-count">{bans.length}</span> kayıt
                 </div>
             </div>
@@ -189,8 +189,8 @@ export function BansTab({ socket }: BansTabProps) {
                                 {selectedBan.type === 'BAN' ? '🚫' : '🤐'}
                             </div>
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: 'white' }}>{selectedBan.user?.displayName || selectedBan.userId}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#6b7280' }}>
+                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: '#1e293b' }}>{selectedBan.user?.displayName || selectedBan.userId}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#334155' }}>
                                     <span style={{
                                         padding: '1px 6px', borderRadius: 4, fontSize: 8, fontWeight: 700,
                                         background: selectedBan.type === 'BAN' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
@@ -206,33 +206,33 @@ export function BansTab({ socket }: BansTabProps) {
                         <div className="admin-info-card">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Kullanıcı</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0', fontWeight: 600 }}>{selectedBan.user?.displayName || selectedBan.userId}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Kullanıcı</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a', fontWeight: 600 }}>{selectedBan.user?.displayName || selectedBan.userId}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Admin</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{selectedBan.admin?.displayName || selectedBan.adminId?.slice(0, 8)}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Admin</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{selectedBan.admin?.displayName || selectedBan.adminId?.slice(0, 8)}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tür</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{selectedBan.type === 'BAN' ? 'Ban (Yasaklama)' : 'Gag (Yazı Yasağı)'}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tür</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{selectedBan.type === 'BAN' ? 'Ban (Yasaklama)' : 'Gag (Yazı Yasağı)'}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Süre</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{DURATION_LABELS[selectedBan.duration] || selectedBan.duration}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Süre</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{DURATION_LABELS[selectedBan.duration] || selectedBan.duration}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{fmtDate(selectedBan.createdAt)}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{fmtDate(selectedBan.createdAt)}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Bitiş</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{selectedBan.expiresAt ? fmtDate(selectedBan.expiresAt) : 'Süresiz'}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Bitiş</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{selectedBan.expiresAt ? fmtDate(selectedBan.expiresAt) : 'Süresiz'}</div>
                                 </div>
                                 {selectedBan.ip && (
                                     <div>
-                                        <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>IP Adresi</div>
-                                        <div style={{ fontSize: 13, color: '#e0e0e0', fontFamily: 'monospace' }}>{selectedBan.ip}</div>
+                                        <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>IP Adresi</div>
+                                        <div style={{ fontSize: 13, color: '#0f172a', fontFamily: 'monospace' }}>{selectedBan.ip}</div>
                                     </div>
                                 )}
                             </div>

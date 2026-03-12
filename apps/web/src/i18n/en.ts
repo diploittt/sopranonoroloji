@@ -10,6 +10,12 @@ const en: Translations = {
     no: 'No',
     loading: 'Loading...',
     unknown: 'Unknown',
+    confirm: 'Confirm',
+    delete: 'Delete',
+    edit: 'Edit',
+    back: 'Back',
+    search: 'Search',
+    noResults: 'No results found',
 
     // ─── Sidebar ───
     online: 'ONLINE',
@@ -24,11 +30,18 @@ const en: Translations = {
     statusOutside: 'Outside',
     statusOnPhone: 'On Phone',
     statusPrefix: 'Status',
+    disguiseAsGuest: 'Appear as Guest',
+    disguisePlaceholder: 'Enter guest name...',
+    announcements: 'Announcements',
+    announcement: 'Announcement',
+    mobileUser: 'Mobile User',
+    micQueue: 'Mic queue',
 
     // Moderation states
     muted: 'Muted',
     gagged: 'Typing Blocked',
     bannedUser: 'Banned',
+    youAreMuted: 'You are muted',
 
     // Role labels
     roleSiteOwner: 'Site Owner',
@@ -47,6 +60,8 @@ const en: Translations = {
     typeMessage: 'Type your message here...',
     chatLocked: 'Chat locked by admin.',
     gagWarning: '🤐 You are muted from typing.',
+    welcomeToRoom: 'Welcome to the room',
+    generalChat: 'GENERAL CHAT',
 
     // ─── Bottom Toolbar ───
     leaveRoom: 'Leave Room',
@@ -67,6 +82,19 @@ const en: Translations = {
     selectEmoji: 'Select Emoji',
     sendSticker: 'Send Sticker',
     searchGif: 'Search & Send GIF',
+    speakerVolume: 'Speaker Volume',
+    tvVolume: 'TV Volume',
+    turnOffMic: 'Turn Off Mic',
+    turnOnMic: 'Turn On Mic',
+    animationsBlocked: 'Animations are disabled for this role',
+
+    // ─── Microphone ───
+    takeMic: 'TAKE MIC',
+    releaseMic: 'RELEASE MIC',
+    requestMic: 'Request Mic',
+    requestWord: 'REQUEST WORD',
+    micTestTitle: 'Microphone Test',
+    defaultMic: 'Default Microphone',
 
     // ─── Right Live Panel ───
     liveStream: 'LIVE STREAM',
@@ -79,11 +107,13 @@ const en: Translations = {
     openPanel: 'Open Live Panel',
     broadcast: 'LIVE',
     pinToTv: 'Pin to TV',
+    liveChat: 'LIVE CHAT',
+    speaker: 'Speaker',
 
     // ─── Settings Modal ───
     cameraDevice: 'Camera',
     microphone: 'Microphone',
-    speaker: 'Speaker',
+    speakerDevice: 'Speaker',
     noDevice: 'No device found',
     micTest: 'Microphone Test',
 
@@ -104,6 +134,78 @@ const en: Translations = {
     banExpiry: 'Expires',
     banPermanent: 'Permanent',
     banReason: 'Reason',
+
+    // ─── Duel ───
+    duelMicLocked: 'Microphone is locked during the duel (no one can use it)',
+    duelInProgress: 'Duel in progress!',
+    duelMicLockedMsg: 'Microphone is locked during the duel. Listeners will rate and vote.',
+    duelChallenge: 'Duel Challenge',
+    duelAccept: 'Accept',
+    duelReject: 'Reject',
+
+    // ─── GIF ───
+    gifsLoading: 'Loading GIFs...',
+
+    // ─── One2One ───
+    user: 'User',
+
+    // ─── Audio Test ───
+    audioMicrophone: 'Microphone',
+
+    // ─── Context Menu ───
+    menuChangeName: 'Change Name',
+    menuAdminPanel: 'Admin Panel',
+    menuMeetingRoom: 'Meeting Room',
+    menuClearChat: 'Clear Chat',
+    menuCheckHistory: 'Check History',
+    menuUsers: 'Users',
+    menuRoomMonitor: 'Monitor Rooms',
+    menuFreeMic: 'Release Microphone',
+    menuTakeMic: 'Take Microphone',
+    menuMicTest: 'Mic Test',
+    menuMyProfile: 'My Profile',
+    menuUnmute: 'Unmute',
+    menuMute: 'Mute',
+    menuKick: 'Kick',
+    menuHardKick: 'Force Kick',
+    menuUngag: 'Remove Gag',
+    menuGag: 'Gag',
+    menuUnban: 'Remove Ban',
+    menuBan1Day: 'Ban 1 Day',
+    menuBanMore: 'Ban More',
+    menuBan1Week: '1 Week',
+    menuBan1Month: '1 Month',
+    menuBanPermanent: 'Permanent',
+    menuCamUnblock: 'Unblock Camera',
+    menuCamBlock: 'Block Camera',
+    menuExitBrowser: 'Close Browser',
+    menuManagePanel: 'Management Panel',
+    menuHistory: 'History',
+    menuUserList: 'User List',
+    menuUserInfo: 'User Info',
+    menuMoveToMeeting: 'Move to Meeting',
+    menuRevokeRole: 'Revoke Role',
+    menuMakeOperator: 'Make Room Operator',
+    menuClearMessages: 'Clear Messages',
+    menuNudge: 'Nudge',
+    menuDuel: 'Duel',
+    menuSendGift: 'Send Gift',
+    menuPrivateChat: 'Private Message',
+    menuInviteOne2One: 'One-to-One Invite',
+    menuIgnore: 'Ignore',
+    menuUnignore: 'Unignore',
+    menuAudioTest: 'Audio Test',
+    menuCopy: 'Copy',
+    menuSelectAll: 'Select All',
+    menuPaste: 'Paste',
+    menuStopText: 'Stop Messages',
+    menuStopTextLocal: 'Stop Messages (Local)',
+    menuClearTextGlobal: 'Clear Messages',
+    menuClearTextLocal: 'Clear Messages (Local)',
+    menuChangeAvatar: 'Change Avatar',
+    menuChangePassword: 'Change Password',
+    menuNameColor: 'Name Color',
+    menuPreview: 'PREVIEW',
 };
 
 export default en;

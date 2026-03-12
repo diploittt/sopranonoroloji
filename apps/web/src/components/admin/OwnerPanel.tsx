@@ -909,9 +909,14 @@ export default function OwnerPanel() {
 
                 <div className="p-4 border-t border-white/5">
                     <div className="flex items-center gap-3">
+<<<<<<< HEAD
                         <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden">
                             {/* Placeholder Avatar */}
                             <Image src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
+=======
+                        <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden" style={{ fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                            {adminUser?.avatarUrl ? <img src={adminUser.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (adminUser?.displayName || 'A').charAt(0)}
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                         </div>
                         <div className="hidden lg:block overflow-hidden">
                             <div className="text-xs font-bold text-white truncate">{adminUser?.displayName || 'Admin'}</div>
@@ -1031,12 +1036,18 @@ export default function OwnerPanel() {
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <div className="relative">
+<<<<<<< HEAD
                                         <Image
                                             src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`}
                                             alt="avatar"
                                             width={56} height={56}
                                             className="rounded-2xl border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/10"
                                         />
+=======
+                                        <div className="rounded-2xl border-2 border-cyan-500/30 shadow-lg shadow-cyan-500/10 flex items-center justify-center overflow-hidden" style={{ width: 56, height: 56, background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 22, fontWeight: 900, color: 'rgba(34,211,238,0.6)', textTransform: 'uppercase' }}>
+                                            {adminUser?.avatarUrl ? <img src={adminUser.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '14px', objectFit: 'cover' }} /> : (adminUser?.displayName || 'G').charAt(0)}
+                                        </div>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0a0c14]" />
                                     </div>
                                     <div className="flex-1 min-w-0">
@@ -1215,11 +1226,17 @@ export default function OwnerPanel() {
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
+<<<<<<< HEAD
                                                                     <Image
                                                                         src={member.avatarUrl && (member.avatarUrl.startsWith('http') || member.avatarUrl.startsWith('/')) ? member.avatarUrl : `/avatars/neutral_1.png`}
                                                                         alt="avatar" width={36} height={36}
                                                                         className="rounded-xl border border-white/10"
                                                                     />
+=======
+                                                                    <div className="rounded-xl border border-white/10 flex items-center justify-center overflow-hidden" style={{ width: 36, height: 36, background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 14, fontWeight: 900, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>
+                                                                        {member.avatarUrl ? <img src={member.avatarUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '10px', objectFit: 'cover' }} /> : (member.displayName || '?').charAt(0)}
+                                                                    </div>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                                                     <div>
                                                                         <div className="text-sm font-bold text-white flex items-center gap-1.5">
                                                                             {member.displayName}
@@ -2172,37 +2189,37 @@ export default function OwnerPanel() {
                                         {/* ── FİYATLANDIRMA ── */}
                                         {settingsTab === 'pricing' && (
                                             <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
-                                                <div className="p-5 border-b border-white/5">
-                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2"><Wallet className="w-5 h-5 text-green-400" /> Fiyatlandırma</h2>
-                                                    <p className="text-xs text-gray-500 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
+                                                <div className="p-6 border-b border-white/5">
+                                                    <h2 className="text-xl font-bold text-white flex items-center gap-2"><Wallet className="w-5 h-5 text-green-400" /> Fiyatlandırma</h2>
+                                                    <p className="text-sm text-gray-500 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
                                                 </div>
-                                                <div className="p-5 space-y-5">
+                                                <div className="p-6 space-y-6">
                                                     {/* Yıllık indirim metni */}
                                                     <div>
-                                                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Yıllık İndirim Mesajı</label>
-                                                        <input value={siteConfig.pricing?.yearlyDiscount || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), yearlyDiscount: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="2 Ay Hediye 🎁" />
+                                                        <label className="text-xs font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Yıllık İndirim Mesajı</label>
+                                                        <input value={siteConfig.pricing?.yearlyDiscount || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), yearlyDiscount: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="2 Ay Hediye 🎁" />
                                                     </div>
                                                     {/* Paketler */}
-                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                                                         {[
                                                             { key: 'p1', label: 'Paket 1', color: 'amber' },
                                                             { key: 'p2', label: 'Paket 2 (Popüler)', color: 'green' },
                                                             { key: 'p3', label: 'Paket 3 (Bayi)', color: 'blue' },
                                                         ].map(pkg => (
-                                                            <div key={pkg.key} className={`rounded-xl border border-white/10 p-4 space-y-3 bg-white/[0.02]`}>
-                                                                <div className="text-xs font-bold text-white uppercase tracking-wider">{pkg.label}</div>
+                                                            <div key={pkg.key} className={`rounded-xl border border-white/10 p-5 space-y-4 bg-white/[0.02]`}>
+                                                                <div className="text-sm font-bold text-white uppercase tracking-wider">{pkg.label}</div>
                                                                 <div>
-                                                                    <label className="text-[10px] text-gray-500 block mb-1">Paket Adı</label>
-                                                                    <input value={siteConfig.pricing?.[`${pkg.key}Name`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Name`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" />
+                                                                    <label className="text-xs text-gray-500 block mb-1.5">Paket Adı</label>
+                                                                    <input value={siteConfig.pricing?.[`${pkg.key}Name`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Name`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" />
                                                                 </div>
-                                                                <div className="grid grid-cols-2 gap-2">
+                                                                <div className="grid grid-cols-2 gap-3">
                                                                     <div>
-                                                                        <label className="text-[10px] text-gray-500 block mb-1">Aylık (₺)</label>
-                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Monthly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Monthly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="990" />
+                                                                        <label className="text-xs text-gray-500 block mb-1.5">Aylık (₺)</label>
+                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Monthly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Monthly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="990" />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-[10px] text-gray-500 block mb-1">Yıllık (₺)</label>
-                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Yearly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Yearly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="9.900" />
+                                                                        <label className="text-xs text-gray-500 block mb-1.5">Yıllık (₺)</label>
+                                                                        <input value={siteConfig.pricing?.[`${pkg.key}Yearly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Yearly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="9.900" />
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -3122,7 +3139,7 @@ export default function OwnerPanel() {
                                         )}
                                     </div>
                                     {/* Sağ Taraf — Ana Sayfa Önizleme (rooms sekmesi hariç, o kendi önizlemesine sahip) */}
-                                    {settingsTab !== 'rooms' && (
+                                    {settingsTab !== 'rooms' && settingsTab !== 'pricing' && (
                                         <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
                                             <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md overflow-hidden">
                                                 <div className="p-3 border-b border-white/5 flex items-center justify-between">

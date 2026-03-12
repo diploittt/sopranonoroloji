@@ -69,6 +69,10 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const [announcement, setAnnouncement] = useState<{ id: string; message: string; createdAt: string } | null>(null);
     const [hasNewAnnouncement, setHasNewAnnouncement] = useState(false);
     const [duplicateBlocked, setDuplicateBlocked] = useState<{ message: string; countdown: number } | null>(null);
+    const [lastBonus, setLastBonus] = useState<{ amount: number; type: string; message: string } | null>(null);
+
+    // ★ Action indicators — kullanıcı kartlarında geçici overlay göstermek için
+    const [actionIndicators, setActionIndicators] = useState<Map<string, { icon: string; message: string; type: string; action: string; actor: string; ts: number }>>(new Map());
 
     // ─── Helper: build room:join payload ─────────────────────────────
     const buildJoinPayload = useCallback((targetRoomId: string) => {
@@ -111,7 +115,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
     // ─── Socket Connection (stable — NOT re-created on room change) ───
     useEffect(() => {
-        if (!roomId) return;
+        if (!roomId || roomId === '__skip__') return;
 
         // Force token from localStorage if not provided (fixes admin/socket auth)
         const isTenantPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/t/');
@@ -148,30 +152,26 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('disconnect', () => {
             console.log('Socket disconnected');
             setIsConnected(false);
-            // NOT: data-theme burada SİLİNMİYOR — oda geçişlerinde tema flash'ını önler.
-            // Yeni oda teması room:joined event'i ile gelecek ve orada set edilecek.
         });
 
         socket.on('room:joined', (data: { messages: any[], participants: any[], rooms?: RoomInfo[], roomSettings?: any, systemSettings?: any, userPermissions?: Record<string, boolean> }) => {
             console.log('Joined room:', data);
             console.log('[useSocket] room:joined systemSettings:', data.systemSettings ? 'EXISTS' : 'NULL');
-            setMessages(data.messages || []);
-            setParticipants(data.participants || []);
+            // Merge instead of replace — prevent UI flash on reconnect
+            if (data.messages && data.messages.length > 0) {
+                setMessages(data.messages);
+            }
+            // ★ Race condition koruması: room:participants broadcast daha güncel listeyi getirdiyse 
+            // room:joined'ın onu ezmesini önle (daha fazla katılımcı = daha güncel)
+            if (data.participants && data.participants.length > 0) {
+                setParticipants(prev => {
+                    if (prev.length > data.participants.length) return prev; // Daha güncel liste zaten var
+                    return data.participants;
+                });
+            }
             if (data.rooms) setRooms(data.rooms);
             if (data.roomSettings) {
                 setRoomSettings(data.roomSettings);
-                // Oda temasını uygula — sunucu teması yoksa kullanıcının kendi tercihine dön
-                if (data.roomSettings.themeId) {
-                    document.documentElement.setAttribute('data-theme', data.roomSettings.themeId);
-                } else {
-                    // Sunucu teması yok → kullanıcının kendi seçtiği temayı koru
-                    const userTheme = localStorage.getItem('soprano_user_theme');
-                    if (userTheme && userTheme !== 'modern') {
-                        document.documentElement.setAttribute('data-theme', userTheme);
-                    } else {
-                        document.documentElement.removeAttribute('data-theme');
-                    }
-                }
             }
             if (data.systemSettings) {
                 setSystemSettings(data.systemSettings);
@@ -262,6 +262,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         });
 
         socket.on('room:participant-joined', (participant: any) => {
+            console.log('[room:participant-joined]', participant.displayName, participant.userId);
             setParticipants((prev) => {
                 if (prev.find(p => p.userId === participant.userId)) return prev;
                 return [...prev, participant];
@@ -270,8 +271,35 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
         // Add listener for full participant list updates (e.g. status changes)
         socket.on('room:participants', (data: { participants: any[] }) => {
-            console.log('[room:participants] Updated:', data.participants.length, 'users', data.participants.map(p => `${p.displayName}(role=${p.role},stealth=${p.isStealth},status=${p.status})`));
-            setParticipants(data.participants);
+            console.log('[room:participants] received:', data.participants.length, 'users:', data.participants.map((p: any) => p.displayName).join(', '));
+            setParticipants(prev => {
+                const next = data.participants;
+                // Quick length check
+                if (prev.length !== next.length) return next;
+                // Deep compare by serializing — only update if actually changed
+                const prevKey = prev.map(p => `${p.userId}|${p.displayName}|${p.role}|${p.isStealth}|${p.status}|${p.isMuted}|${p.isGagged}|${p.isBanned}|${p.isCamBlocked}|${p.avatar}|${(p as any).nameColor}`).join(',');
+                const nextKey = next.map((p: any) => `${p.userId}|${p.displayName}|${p.role}|${p.isStealth}|${p.status}|${p.isMuted}|${p.isGagged}|${p.isBanned}|${p.isCamBlocked}|${p.avatar}|${p.nameColor}`).join(',');
+                if (prevKey === nextKey) return prev; // No change — skip re-render
+                return next;
+            });
+        });
+
+        // ★ Real-time status updates — instant status reflection without waiting for broadcastParticipants debounce
+        socket.on('user-status-changed', (data: { userId: string; status: string; isInvisible: boolean }) => {
+            console.log('[user-status-changed] ★ RECEIVED:', JSON.stringify(data));
+            setParticipants(prev => {
+                // If user went invisible and it's NOT self → remove from list immediately
+                if (data.isInvisible && data.userId !== (JSON.parse(localStorage.getItem('soprano_auth_user') || '{}')?.sub)) {
+                    const filtered = prev.filter(p => p.userId !== data.userId);
+                    console.log('[user-status-changed] INVISIBLE — removed from list. Remaining:', filtered.map((p: any) => p.displayName).join(', '));
+                    return filtered;
+                }
+                const updated = prev.map(p =>
+                    p.userId === data.userId ? { ...p, status: data.status, isStealth: data.isInvisible } : p
+                );
+                console.log('[user-status-changed] Updated participants:', updated.map((p: any) => `${p.displayName}:${p.status}`).join(', '));
+                return updated;
+            });
         });
 
         // ★ Real-time ban/unban updates for ALL users in the room (instant sidebar update)
@@ -299,6 +327,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             window.dispatchEvent(new CustomEvent('soprano:force-navigate', { detail: data }));
         });
 
+
         // Password-protected room handler
         socket.on('room:password-required', (data: { roomId: string; roomName: string; rooms?: RoomInfo[] }) => {
             console.log('[Password] Room requires password:', data.roomName);
@@ -312,20 +341,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:settings-updated', (data: any) => {
             console.log('[Room Settings] Updated:', data);
             setRoomSettings(data);
-            // Tema değişikliğini anında uygula
-            if (data.themeId !== undefined) {
-                if (data.themeId) {
-                    document.documentElement.setAttribute('data-theme', data.themeId);
-                } else {
-                    // Sunucu teması kaldırıldı → kullanıcının kendi tercihine dön
-                    const userTheme = localStorage.getItem('soprano_user_theme');
-                    if (userTheme && userTheme !== 'modern') {
-                        document.documentElement.setAttribute('data-theme', userTheme);
-                    } else {
-                        document.documentElement.removeAttribute('data-theme');
-                    }
-                }
-            }
         });
 
         // Gerçek zamanlı oda katılımcı sayısı güncellemesi
@@ -385,6 +400,14 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             console.log('[tenant:announcement]', data);
             setAnnouncement(data);
             setHasNewAnnouncement(true);
+        });
+
+        // Bonus bildirimi (günlük, VIP haftalık, oda giriş puanı)
+        socket.on('dailyBonus:received', (data: { amount: number; type: string; message: string }) => {
+            console.log('[dailyBonus:received]', data);
+            setLastBonus(data);
+            // 5sn sonra temizle
+            setTimeout(() => setLastBonus(null), 5000);
         });
 
         // ═══ Profil senkronizasyonu (cross-tab + aynı tab) ═══
@@ -474,29 +497,10 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         }
         // Clear stale data
         setMessages([]);
+        setParticipants([]);
         setRoomSettings(null);
         setPasswordRequired(null);
         setRoomError(null);
-        // Optimistic: add self to participants immediately so user sees themselves
-        try {
-            const authUser = JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null');
-            if (authUser) {
-                const optimistic = {
-                    userId: authUser.id || authUser.userId,
-                    displayName: authUser.displayName || authUser.username || 'Kullanıcı',
-                    role: authUser.role || 'member',
-                    avatar: authUser.avatar,
-                    gender: authUser.gender,
-                    isMuted: false,
-                    isBanned: false,
-                };
-                setParticipants([optimistic as any]);
-            } else {
-                setParticipants([]);
-            }
-        } catch {
-            setParticipants([]);
-        }
         // Join new room
         currentRoomRef.current = roomId;
         socket.emit('room:join', buildJoinPayload(roomId));
@@ -557,5 +561,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         setAnnouncement,
         duplicateBlocked,
         userPermissions,
+        lastBonus,
+        actionIndicators,
+        setActionIndicators,
     };
 };

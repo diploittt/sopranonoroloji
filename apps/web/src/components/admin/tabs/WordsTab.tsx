@@ -91,7 +91,7 @@ export function WordsTab({ socket }: WordsTabProps) {
             <div className="admin-split-left">
                 <div className="admin-toolbar">
                     <MessageSquare style={{ width: 13, height: 13, color: '#f59e0b' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Yasaklı Kelimeler</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>Yasaklı Kelimeler</span>
                     <div style={{ flex: 1 }} />
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadWords} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12, ...(loading ? { animation: 'adminSpin 0.6s linear infinite' } : {}) }} />
@@ -107,9 +107,9 @@ export function WordsTab({ socket }: WordsTabProps) {
                             <tbody>
                                 {words.map(word => (
                                     <tr key={word.id} className={selectedId === word.id ? 'selected' : ''} onClick={() => setSelectedId(word.id)}>
-                                        <td style={{ fontWeight: 600, color: '#fca5a5' }}>{word.badWord}</td>
-                                        <td style={{ color: '#86efac' }}>{word.replacement}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{new Date(word.createdAt).toLocaleDateString('tr-TR')}</td>
+                                        <td style={{ fontWeight: 700, color: '#dc2626', background: 'rgba(220,38,38,0.08)', padding: '4px 8px', borderRadius: 4 }}>{word.badWord}</td>
+                                        <td style={{ fontWeight: 600, color: '#059669', background: 'rgba(5,150,105,0.08)', padding: '4px 8px', borderRadius: 4 }}>{word.replacement}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{new Date(word.createdAt).toLocaleDateString('tr-TR')}</td>
                                         <td>
                                             <button className="admin-btn admin-btn-danger admin-btn-icon admin-btn-sm" onClick={(e) => { e.stopPropagation(); handleRemove(word.id); }} title="Sil">
                                                 <Trash2 style={{ width: 11, height: 11 }} />
@@ -118,14 +118,14 @@ export function WordsTab({ socket }: WordsTabProps) {
                                     </tr>
                                 ))}
                                 {words.length === 0 && (
-                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>Yasaklı kelime yok</td></tr>
+                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>Yasaklı kelime yok</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(255,255,255,0.04)', fontSize: 10, color: '#4b5563', flexShrink: 0 }}>
+                <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(148,163,184,0.12)', fontSize: 12, color: '#1e293b', flexShrink: 0 }}>
                     Toplam: {words.length} kelime
                 </div>
             </div>
@@ -166,16 +166,16 @@ export function WordsTab({ socket }: WordsTabProps) {
                         <div className="admin-info-card">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Yasaklı Kelime</div>
-                                    <div style={{ fontSize: 14, color: '#fca5a5', fontWeight: 600 }}>{selectedWord.badWord}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Yasaklı Kelime</div>
+                                    <div style={{ fontSize: 14, color: '#dc2626', fontWeight: 700 }}>{selectedWord.badWord}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Yerine</div>
-                                    <div style={{ fontSize: 14, color: '#86efac', fontWeight: 600 }}>{selectedWord.replacement}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Yerine</div>
+                                    <div style={{ fontSize: 14, color: '#059669', fontWeight: 700 }}>{selectedWord.replacement}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Eklenme Tarihi</div>
-                                    <div style={{ fontSize: 12, color: '#d1d5db' }}>{new Date(selectedWord.createdAt).toLocaleString('tr-TR')}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Eklenme Tarihi</div>
+                                    <div style={{ fontSize: 12, color: '#334155' }}>{new Date(selectedWord.createdAt).toLocaleString('tr-TR')}</div>
                                 </div>
                             </div>
                         </div>

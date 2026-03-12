@@ -101,9 +101,7 @@ export default function OneToOneCallView({
                     border: '2px solid rgba(245, 87, 108, 0.4)',
                     overflow: 'hidden',
                 }}>
-                    {avatar ? (
-                        <img src={avatar} alt={displayName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    ) : getInitial(displayName)}
+                    {avatar ? <img src={avatar} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : getInitial(displayName)}
                 </div>
                 {/* Online dot */}
                 <div style={{

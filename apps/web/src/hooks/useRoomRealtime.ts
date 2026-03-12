@@ -4,6 +4,7 @@ import { useSocket, Message as SocketMessage, Participant as SocketParticipant }
 import { useMediasoup } from './useMediasoup';
 import { User, Message } from '@/types';
 import { ensureAuthUser, getAuthUser } from '@/lib/auth';
+import { generateGenderAvatar } from '@/lib/avatar';
 
 const AUTH_TOKEN_KEY = 'soprano_auth_token';
 
@@ -56,6 +57,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         setAnnouncement,
         duplicateBlocked,
         userPermissions,
+        lastBonus,
+        actionIndicators,
+        setActionIndicators,
     } = useSocket({ roomId: slug, token });
 
     // Mediasoup — camera/video + audio streaming
@@ -180,6 +184,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio:', err);
+                    setIsMicOn(false);
+                    // Server'a mic bırakma bildir — UI bug'da kalmasın
+                    socket.emit('mic:release', { roomId: slug });
                     setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon yakılanamıyor.' });
                 }
             }
@@ -487,6 +494,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         const onUserStatusChanged = (data: { userId: string; status: string; isInvisible: boolean }) => {
             console.log('[Status Change]', data);
 
+            // Update in participants list so sidebar reflects immediately
+            updateParticipantLocally(data.userId, { status: data.status, isStealth: data.isInvisible } as any);
+
             // Update Local User State if it is me
             if (currentUser && data.userId === currentUser.userId) {
                 setCurrentUser((prev: any) => ({
@@ -548,6 +558,16 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
         socket.on('dm:receive', onDmReceive);
 
+        // Socket disconnect — mic state temizle
+        const onDisconnect = () => {
+            setIsMicOn(false);
+            setCurrentSpeaker(null);
+            setDuelSpeakers([]);
+            stopCountdown();
+            cleanupMicStream();
+        };
+        socket.on('disconnect', onDisconnect);
+
         return () => {
             socket.off('mic:acquired', onMicAcquired);
             socket.off('mic:released', onMicReleased);
@@ -567,11 +587,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             socket.off('room:chat-cleared', onChatCleared);
             socket.off('room:moveToMeeting', onMoveToMeeting);
             socket.off('auth:session-update', onSessionUpdate);
-            // socket.off('user-status-changed', onUserStatusChanged);
             socket.off('dm:receive', onDmReceive);
             socket.off('room:ban-lifted', onBanLifted);
             socket.off('room:user-banned', onUserBanned);
             socket.off('room:user-unbanned', onUserUnbanned);
+            socket.off('disconnect', onDisconnect);
         };
     }, [socket, startCountdown, stopCountdown]); // Removed isCameraOn/isMicOn — now accessed via refs
 
@@ -605,11 +625,19 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 displayName: p.displayName,
                 avatar: (() => {
                     const av = p.avatar;
+<<<<<<< HEAD
                     if (!av) return `/avatars/neutral_1.png`;
                     // GIF avatarlar sadece GodMaster'a özel
                     const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
                     if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
                         return `/avatars/neutral_1.png`;
+=======
+                    if (!av) return generateGenderAvatar(p.displayName);
+                    // GIF avatarlar sadece GodMaster'a özel
+                    const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
+                    if (isGif && (p.role || 'member').toLowerCase() !== 'godmaster') {
+                        return generateGenderAvatar(p.displayName);
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                     }
                     return av;
                 })(),
@@ -673,6 +701,13 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         const user = ensureAuthUser();
         if (user) setCurrentUser(user);
     }, []);
+
+    // ─── Bonus toast (oda giriş, günlük, VIP haftalık) ───
+    useEffect(() => {
+        if (lastBonus) {
+            setToastMessage({ type: 'success', title: '🎁 Bonus', message: lastBonus.message });
+        }
+    }, [lastBonus]);
 
     // Merge static auth user with live socket participant data (for isStealth, isMuted, etc.)
     const mergedCurrentUser = useMemo(() => {
@@ -952,7 +987,15 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             console.log(`[toggleStealth] ${currentlyStealthed ? 'visible' : 'stealth'} → emit status:change(${newStatus})`);
         },
         changeStatus: (newStatus: string) => {
-            if (!socket) return;
+            console.log(`[changeStatus] called with status=${newStatus}, socket=${!!socket}, connected=${socket?.connected}`);
+            if (!socket) {
+                console.warn('[changeStatus] SOCKET IS NULL — cannot emit status:change');
+                return;
+            }
+            if (!socket.connected) {
+                console.warn('[changeStatus] SOCKET IS DISCONNECTED — cannot emit status:change');
+                return;
+            }
             const isStealth = newStatus === 'stealth';
             // ★ sessionStorage'a oturum-içi görünürlük tercihini kaydet
             if (typeof window !== 'undefined') {
@@ -970,7 +1013,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 });
             }
             socket.emit('status:change', { status: newStatus });
-            console.log(`[changeStatus] → emit status:change(${newStatus})`);
+            console.log(`[changeStatus] ✅ emitted status:change(${newStatus})`);
         },
         setGodmasterVisibility: (mode: 'hidden' | 'visible' | 'disguised', disguiseName?: string) => {
             console.log(`[setGodmasterVisibility] CALLED! mode=${mode}, socket=${!!socket}, disguiseName=${disguiseName}`);
@@ -1173,6 +1216,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             duplicateBlocked,
             userPermissions,
             speakingUsers,
+            actionIndicators,
         },
         actions: {
             ...actions,
@@ -1183,6 +1227,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             dismissAnnouncement: () => { setAnnouncement(null); setHasNewAnnouncement(false); },
             markAnnouncementSeen: () => setHasNewAnnouncement(false),
             setDmIgnoredUserIds: (ids: Set<string>) => { dmIgnoredUserIdsRef.current = ids; },
+            setActionIndicators,
         },
         socket,
         passwordRequired,

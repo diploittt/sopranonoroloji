@@ -107,6 +107,9 @@ export function AnchorPopover({
     // Click Outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
+            // Don't close when interacting with native <select> dropdowns
+            const el = e.target as HTMLElement;
+            if (el.tagName === 'OPTION' || el.tagName === 'SELECT') return;
             if (
                 popoverRef.current &&
                 !popoverRef.current.contains(e.target as Node) &&
@@ -212,16 +215,16 @@ export function AnchorPopover({
 
                 {/* ═══ PANEL VARIANT — Premium Glassmorphism ═══ */}
                 {variant === 'panel' && (
-                    <div className="relative overflow-hidden rounded-2xl border border-white/[0.08] shadow-[0_25px_60px_-12px_rgba(0,0,0,0.8),0_0_50px_rgba(123,159,239,0.08)] min-w-[300px]">
+                    <div className="relative overflow-hidden rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.4),0_0_30px_rgba(56,189,248,0.05)] min-w-[240px]" style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'linear-gradient(135deg, rgba(51,65,85,0.93), rgba(30,41,59,0.95))', backdropFilter: 'blur(28px)' }}>
                         {/* Glass Background */}
-                        <div className="absolute inset-0 bg-[#0a0d16]/[0.97] backdrop-blur-2xl" />
+                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 100%)' }} />
 
                         {/* Decorative top accent — gradient line */}
-                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#7b9fef]/50 to-transparent" />
+                        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(125,211,252,0.3), transparent)' }} />
 
                         {/* Corner glows */}
-                        <div className="absolute -top-24 -right-24 w-48 h-48 bg-[#7b9fef]/[0.04] rounded-full blur-3xl pointer-events-none" />
-                        <div className="absolute -bottom-24 -left-24 w-48 h-48 bg-purple-500/[0.03] rounded-full blur-3xl pointer-events-none" />
+                        <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(56,189,248,0.04)' }} />
+                        <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(125,211,252,0.03)' }} />
 
                         <div className="relative z-10 flex flex-col max-h-[600px]">
                             {/* Header */}

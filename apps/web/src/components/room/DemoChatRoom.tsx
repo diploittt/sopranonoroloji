@@ -251,17 +251,26 @@ export function DemoChatRoom({ slug, room: externalRoom, onRoomData }: { slug: s
 
     const handleEmptyAreaContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+<<<<<<< HEAD
         if (room.state.banInfo) { demoAddToast('error', '⛔ Yasaklı', 'Yasaklısınız — hiçbir işlem yapamazsınız.'); return; }
+=======
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         setContextMenu({ type: 'empty', x: e.clientX, y: e.clientY });
     };
     const handleUserContextMenu = (e: React.MouseEvent, user: any) => {
         e.preventDefault();
+<<<<<<< HEAD
         if (room.state.banInfo) { demoAddToast('error', '⛔ Yasaklı', 'Yasaklısınız — hiçbir işlem yapamazsınız.'); return; }
+=======
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         setContextMenu({ type: 'user', x: e.clientX, y: e.clientY, targetUser: user });
     };
     const handleChatContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
+<<<<<<< HEAD
         if (room.state.banInfo) { demoAddToast('error', '⛔ Yasaklı', 'Yasaklısınız — hiçbir işlem yapamazsınız.'); return; }
+=======
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
         const sel = window.getSelection();
         savedSelectionRef.current = sel?.toString() || '';
         setContextMenu({ type: 'chat', x: e.clientX, y: e.clientY });

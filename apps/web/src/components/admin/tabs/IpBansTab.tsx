@@ -96,7 +96,7 @@ export function IpBansTab({ socket }: IpBansTabProps) {
             <div className="admin-split-left">
                 <div className="admin-toolbar">
                     <Globe style={{ width: 13, height: 13, color: '#f59e0b' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>IP Ban Listesi</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>IP Ban Listesi</span>
                     <div style={{ flex: 1 }} />
                     <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => setShowAddForm(!showAddForm)}>
                         <Plus style={{ width: 12, height: 12 }} /> Ekle
@@ -107,7 +107,7 @@ export function IpBansTab({ socket }: IpBansTabProps) {
                 </div>
 
                 {showAddForm && (
-                    <div style={{ padding: 12, borderBottom: '1px solid rgba(123,159,239,0.06)', background: 'linear-gradient(180deg, rgba(123,159,239,0.03) 0%, transparent 100%)' }}>
+                    <div style={{ padding: 12, borderBottom: '1px solid rgba(37,99,235,0.08)', background: 'linear-gradient(180deg, rgba(226,232,240,0.4) 0%, transparent 100%)' }}>
                         <div className="admin-form-group" style={{ marginBottom: 8 }}>
                             <label>IP Adresi</label>
                             <input type="text" value={newIp} onChange={e => setNewIp(e.target.value)} placeholder="192.168.1.1" />
@@ -133,8 +133,8 @@ export function IpBansTab({ socket }: IpBansTabProps) {
                                 {ipBans.map(ban => (
                                     <tr key={ban.id} className={selectedId === ban.id ? 'selected' : ''} onClick={() => setSelectedId(ban.id)}>
                                         <td style={{ fontFamily: 'monospace', fontWeight: 600, fontSize: 11 }}>{ban.ip}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{ban.reason ? (ban.reason.length > 25 ? ban.reason.slice(0, 25) + '...' : ban.reason) : '—'}</td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{fmtDate(ban.createdAt)}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{ban.reason ? (ban.reason.length > 25 ? ban.reason.slice(0, 25) + '...' : ban.reason) : '—'}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{fmtDate(ban.createdAt)}</td>
                                         <td>
                                             <button className="admin-btn admin-btn-danger admin-btn-icon admin-btn-sm" onClick={(e) => { e.stopPropagation(); setConfirmRemove(ban.id); setSelectedId(ban.id); }} title="Kaldır">
                                                 <Trash2 style={{ width: 11, height: 11 }} />
@@ -143,14 +143,14 @@ export function IpBansTab({ socket }: IpBansTabProps) {
                                     </tr>
                                 ))}
                                 {ipBans.length === 0 && (
-                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>IP yasağı yok</td></tr>
+                                    <tr><td colSpan={4} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>IP yasağı yok</td></tr>
                                 )}
                             </tbody>
                         </table>
                     </div>
                 )}
 
-                <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(123,159,239,0.06)', fontSize: 10, color: '#4b5563', flexShrink: 0, background: 'rgba(123,159,239,0.01)' }}>
+                <div style={{ padding: '10px 16px', borderTop: '1px solid rgba(37,99,235,0.08)', fontSize: 12, color: '#1e293b', flexShrink: 0, background: 'rgba(241,245,249,0.3)' }}>
                     Toplam: <span className="admin-count">{ipBans.length}</span> IP yasağı
                 </div>
             </div>
@@ -167,18 +167,18 @@ export function IpBansTab({ socket }: IpBansTabProps) {
                         <div className="admin-user-profile-header">
                             <div style={{
                                 width: 42, height: 42, borderRadius: 12,
-                                background: 'linear-gradient(135deg, rgba(123,159,239,0.15), rgba(90,127,212,0.08))',
-                                border: '2px solid rgba(123,159,239,0.2)',
+                                background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(37,99,235,0.06))',
+                                border: '2px solid rgba(37,99,235,0.18)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 flexShrink: 0, boxShadow: '0 4px 16px rgba(0,0,0,0.3)', fontSize: 18,
                             }}>
                                 🌐
                             </div>
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: 'white', fontFamily: 'monospace' }}>{selectedBan.ip}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#6b7280' }}>
+                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: '#1e293b', fontFamily: 'monospace' }}>{selectedBan.ip}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#334155' }}>
                                     <span style={{ fontSize: 10 }}>IP Yasağı</span>
-                                    <span style={{ fontSize: 9, color: '#7b9fef' }}>{fmtDate(selectedBan.createdAt)}</span>
+                                    <span style={{ fontSize: 11, color: '#1e3a5f' }}>{fmtDate(selectedBan.createdAt)}</span>
                                 </div>
                             </div>
                         </div>
@@ -186,16 +186,16 @@ export function IpBansTab({ socket }: IpBansTabProps) {
                         <div className="admin-info-card">
                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>IP Adresi</div>
-                                    <div style={{ fontSize: 14, color: '#e0e0e0', fontWeight: 600, fontFamily: 'monospace' }}>{selectedBan.ip}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>IP Adresi</div>
+                                    <div style={{ fontSize: 14, color: '#0f172a', fontWeight: 600, fontFamily: 'monospace' }}>{selectedBan.ip}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Ekleyen</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{selectedBan.admin?.displayName || selectedBan.adminId?.slice(0, 8) || '—'}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Ekleyen</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{selectedBan.admin?.displayName || selectedBan.adminId?.slice(0, 8) || '—'}</div>
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 10, color: '#6b7280', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
-                                    <div style={{ fontSize: 13, color: '#e0e0e0' }}>{fmtDate(selectedBan.createdAt)}</div>
+                                    <div style={{ fontSize: 12, color: '#334155', fontWeight: 700, textTransform: 'uppercase', marginBottom: 4 }}>Tarih</div>
+                                    <div style={{ fontSize: 13, color: '#0f172a' }}>{fmtDate(selectedBan.createdAt)}</div>
                                 </div>
                             </div>
                         </div>

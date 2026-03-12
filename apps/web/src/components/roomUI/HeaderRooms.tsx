@@ -3,7 +3,12 @@
 import { Lock, Users, ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 import { RoomInfo } from '@/hooks/useSocket';
+<<<<<<< HEAD
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+=======
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useTranslation } from '@/i18n/LanguageProvider';
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
 // Convert hex to rgba
 function hexToRgba(hex: string, alpha: number): string {
@@ -48,6 +53,7 @@ interface HeaderRoomsProps {
     onNavigate?: (slug: string) => void;
     currentUserRole?: string;
     activeRoomParticipants?: any[];
+    isEmbed?: boolean;
 }
 
 export function HeaderRooms({
@@ -59,9 +65,11 @@ export function HeaderRooms({
     onNavigate,
     currentUserRole = 'guest',
     activeRoomParticipants,
+    isEmbed = false,
 }: HeaderRoomsProps) {
     const router = useRouter();
     const pathname = usePathname();
+    const { t } = useTranslation();
     const showNames = systemSettings?.showRoomName !== false;
     const [hoveredRoom, setHoveredRoom] = useState<string | null>(null);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -69,7 +77,7 @@ export function HeaderRooms({
     const [canScrollRight, setCanScrollRight] = useState(false);
 
     const displayRooms = (rooms.length > 0 ? rooms : [
-        { id: 'genel', name: 'GENEL SOHBET', slug: 'genel-sohbet', status: 'ACTIVE', isLocked: false, isVipRoom: false, isMeetingRoom: false, participantCount: totalUsers },
+        { id: 'genel', name: t.generalChat, slug: 'genel-sohbet', status: 'ACTIVE', isLocked: false, isVipRoom: false, isMeetingRoom: false, participantCount: totalUsers },
     ]).filter(r => !r.isMeetingRoom);
 
     const count = displayRooms.length;
@@ -129,6 +137,7 @@ export function HeaderRooms({
     const activeRoomName = activeRoom?.name || 'ODA SEÇ';
 
     return (
+<<<<<<< HEAD
         <>
             {/* Drawer animation styles */}
             <style>{`
@@ -196,6 +205,9 @@ export function HeaderRooms({
                 boxShadow: isDrawerOpen ? '0 8px 30px rgba(0,0,0,0.3)' : 'none',
             }}>
                 <div style={{ padding: '12px 12px 14px' }}>
+=======
+        <header className="chat-header h-24 flex-shrink-0 border-b backdrop-blur-xl flex items-center relative z-30" style={{ paddingLeft: 4, paddingRight: 4, background: 'linear-gradient(180deg, rgba(10, 15, 28, 0.95) 0%, rgba(7, 11, 20, 0.85) 100%)', borderColor: 'rgba(6, 182, 212, 0.25)', boxShadow: 'inset 0 -1px 0 rgba(6, 182, 212, 0.1), 0 4px 20px rgba(0, 0, 0, 0.3), 0 1px 0 rgba(6, 182, 212, 0.08)', ...(isEmbed ? { display: 'none' } : {}) }}>
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
             {/* ◀ Left scroll arrow */}
             {canScrollLeft && (
@@ -362,6 +374,7 @@ export function HeaderRooms({
                                     onClick={() => navigate(room.slug)}
                                     onMouseEnter={() => setHoveredRoom(room.id)}
                                     onMouseLeave={() => setHoveredRoom(null)}
+<<<<<<< HEAD
                                     className={`flex-shrink-0 h-14 flex items-center justify-center gap-2.5 group relative transition-all duration-300 room-tab-drawer`}
                                     style={{
                                         animationDelay: `${roomIndex * 60}ms`,
@@ -369,29 +382,39 @@ export function HeaderRooms({
                                         maxWidth: 200,
                                         padding: '0 18px',
                                         borderRadius: 14,
+=======
+                                    className={`flex-shrink-0 h-[52px] flex items-center justify-center gap-3 group relative transition-all duration-300`}
+                                    style={{
+                                        minWidth: 130,
+                                        maxWidth: 240,
+                                        padding: '0 24px',
+                                        borderRadius: 16,
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                                         background: isActive
-                                            ? `linear-gradient(135deg, ${hexToRgba(btnColor, 0.12)} 0%, ${hexToRgba(btnColor, 0.04)} 100%)`
-                                            : isHovered ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.02)',
+                                            ? 'linear-gradient(160deg, rgba(147,141,210,0.35) 0%, rgba(178,175,220,0.2) 50%, rgba(200,198,235,0.12) 100%)'
+                                            : isHovered
+                                                ? 'linear-gradient(160deg, rgba(147,141,210,0.12) 0%, rgba(178,175,220,0.06) 100%)'
+                                                : 'linear-gradient(160deg, rgba(147,141,210,0.06) 0%, rgba(178,175,220,0.03) 100%)',
                                         border: isActive
-                                            ? `1px solid ${hexToRgba(btnColor, 0.22)}`
-                                            : `1px solid ${isHovered ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.04)'}`,
+                                            ? '1px solid rgba(165,160,220,0.35)'
+                                            : `1px solid ${isHovered ? 'rgba(165,160,220,0.18)' : 'rgba(165,160,220,0.08)'}`,
                                         boxShadow: isActive
-                                            ? `0 4px 20px ${hexToRgba(btnColor, 0.1)}, inset 0 1px 0 rgba(255,255,255,0.05)`
-                                            : isHovered ? 'inset 0 1px 0 rgba(255,255,255,0.03)' : 'none',
+                                            ? '0 4px 24px rgba(147,141,210,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+                                            : isHovered ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
                                         backdropFilter: 'blur(12px)',
                                     }}
                                 >
                                     <div className="flex flex-col items-start min-w-0">
-                                        <span className="text-xs font-semibold tracking-wide truncate max-w-full" style={{ color: isActive ? '#eef1f8' : isHovered ? '#c5cdd8' : '#8892a6', transition: 'color 0.3s' }}>
+                                        <span className="text-[13px] font-bold tracking-wide truncate max-w-full" style={{ color: isActive ? '#e8e6f4' : isHovered ? '#c8c5e0' : '#a09cb8', transition: 'color 0.3s' }}>
                                             {room.name}
                                         </span>
-                                        <span className="text-[9px] flex items-center gap-1" style={{ color: isActive ? hexToRgba(btnColor, 0.85) : '#4b5563', transition: 'color 0.3s' }}>
+                                        <span className="text-[10px] flex items-center gap-1 font-medium" style={{ color: isActive ? 'rgba(190,185,230,0.9)' : '#6b6890', transition: 'color 0.3s' }}>
                                             {room.isLocked && <Lock className="w-2.5 h-2.5" />}
-                                            {room.isVipRoom ? 'VIP' : `${visibleCount} Kişi`}
+                                            {room.isVipRoom ? t.vip : `${visibleCount} ${t.people}`}
                                         </span>
                                     </div>
                                     {isActive && (
-                                        <div className="absolute -bottom-px left-1/2 -translate-x-1/2 rounded-full" style={{ width: 24, height: 2, background: `linear-gradient(90deg, transparent, ${btnColor}, transparent)`, boxShadow: `0 2px 10px ${hexToRgba(btnColor, 0.4)}` }} />
+                                        <div className="absolute -bottom-px left-1/2 -translate-x-1/2 rounded-full" style={{ width: 28, height: 2.5, background: 'linear-gradient(90deg, transparent, rgba(165,160,220,0.8), transparent)', boxShadow: '0 2px 12px rgba(165,160,220,0.4)' }} />
                                     )}
                                 </button>
                             );

@@ -144,10 +144,13 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'linear-gradient(160deg, #14161f 0%, #0d0f17 100%)',
-                    border: '1px solid rgba(99, 102, 241, 0.15)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.30)',
                     borderRadius: '18px',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
                 }}
             >
                 <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7 }} />
@@ -171,7 +174,7 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
                             value={selectedMic}
                             onChange={(e) => { setSelectedMic(e.target.value); if (isTesting) { stopMicTest(); } }}
                             className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none appearance-none"
-                            style={{ background: '#10121b' }}
+                            style={{ background: 'rgba(15,23,42,0.6)' }}
                         >
                             <option value="">Varsayılan Mikrofon</option>
                             {audioDevices.map(d => (
@@ -183,7 +186,7 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
                     {/* VU Meter */}
                     <div>
                         <label className="text-xs text-gray-400 mb-2 block">Mikrofon Seviyesi</label>
-                        <div className="h-6 rounded-lg overflow-hidden" style={{ background: '#10121b', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div className="h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
                             <div
                                 className="h-full transition-all duration-75 rounded-lg"
                                 style={{

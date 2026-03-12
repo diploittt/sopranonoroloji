@@ -3,6 +3,7 @@
 import { useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { setAuthUser } from "@/lib/auth";
+import { generateGenderAvatar } from "@/lib/avatar";
 
 const AUTH_TOKEN_KEY = "soprano_auth_token";
 
@@ -23,7 +24,11 @@ function CallbackHandler() {
                 setAuthUser({
                     userId: user.sub,
                     username: user.displayName || user.username,
+<<<<<<< HEAD
                     avatar: user.avatar || `/avatars/neutral_1.png`,
+=======
+                    avatar: user.avatar || generateGenderAvatar(user.displayName || user.username),
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
                     isMember: user.isMember ?? true,
                     role: user.role || "member",
                 });

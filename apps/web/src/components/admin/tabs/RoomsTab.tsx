@@ -201,7 +201,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
             {/* ─── Sol Panel: Oda Listesi ─── */}
             <div className="admin-split-left">
                 <div className="admin-toolbar">
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Odalar</span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>Odalar</span>
                     <div style={{ flex: 1 }} />
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadRooms} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12, ...(loading ? { animation: 'adminSpin 0.6s linear infinite' } : {}) }} />
@@ -218,8 +218,8 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                 {showCreateForm && (
                     <div style={{
                         padding: '10px 14px',
-                        borderBottom: '1px solid rgba(123,159,239,0.1)',
-                        background: 'linear-gradient(180deg, rgba(123,159,239,0.03) 0%, transparent 100%)',
+                        borderBottom: '1px solid rgba(100,116,139,0.15)',
+                        background: 'linear-gradient(180deg, rgba(226,232,240,0.4) 0%, transparent 100%)',
                         display: 'flex',
                         gap: 8,
                         alignItems: 'center',
@@ -233,11 +233,11 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                             autoFocus
                             style={{
                                 flex: 1,
-                                background: 'rgba(255,255,255,0.06)',
-                                border: '1px solid rgba(123,159,239,0.15)',
+                                background: 'rgba(148,163,184,0.15)',
+                                border: '1px solid rgba(37,99,235,0.12)',
                                 borderRadius: 8,
                                 padding: '7px 12px',
-                                color: '#e0e0e0',
+                                color: '#0f172a',
                                 fontSize: 12,
                                 outline: 'none',
                             }}
@@ -246,14 +246,14 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                             className="admin-btn admin-btn-success admin-btn-sm"
                             onClick={handleCreate}
                             disabled={saving || !newRoomName.trim()}
-                            style={{ fontSize: 10, padding: '5px 12px' }}
+                            style={{ fontSize: 12, padding: '5px 12px' }}
                         >
                             {saving ? '...' : 'Oluştur'}
                         </button>
                         <button
                             className="admin-btn admin-btn-ghost admin-btn-sm"
                             onClick={() => { setShowCreateForm(false); setNewRoomName(''); }}
-                            style={{ fontSize: 10, padding: '5px 8px' }}
+                            style={{ fontSize: 12, padding: '5px 8px' }}
                         >
                             İptal
                         </button>
@@ -274,7 +274,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                     <th>Slug</th>
                                     <th>Şifre</th>
                                     <th>Durum</th>
-                                    <th style={{ textAlign: 'center' }}>Kişi</th>
+                                    <th style={{ textAlign: 'center' }}>Çevrimiçi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -286,37 +286,51 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                     >
                                         <td style={{ fontWeight: 600 }}>
                                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                                <Home style={{ width: 11, height: 11, color: '#6b7280' }} />
+                                                <Home style={{ width: 11, height: 11, color: '#334155' }} />
                                                 {room.name}
                                             </div>
                                         </td>
-                                        <td style={{ color: '#6b7280', fontSize: 10 }}>{room.slug}</td>
+                                        <td style={{ color: '#334155', fontSize: 10 }}>{room.slug}</td>
                                         <td style={{ textAlign: 'center' }}>
                                             {room.password ? (
                                                 <Lock style={{ width: 11, height: 11, color: '#f59e0b' }} />
                                             ) : (
-                                                <Unlock style={{ width: 11, height: 11, color: '#4b5563' }} />
+                                                <Unlock style={{ width: 11, height: 11, color: '#1e293b' }} />
                                             )}
                                         </td>
                                         <td>
-                                            <span className="status-dot" style={{
-                                                ...(room.status?.toUpperCase() !== 'CLOSED'
-                                                    ? { background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.5)' }
-                                                    : { background: '#6b7280' }),
-                                                marginRight: 5,
-                                            }} />
-                                            <span style={{ fontSize: 10, color: '#9ca3af' }}>
-                                                {room.status?.toUpperCase() === 'CLOSED' ? 'Kapalı' : 'Aktif'}
-                                            </span>
+                                            {(() => {
+                                                const online = room._count?.participants ?? 0;
+                                                const isClosed = room.status?.toUpperCase() === 'CLOSED';
+                                                let statusColor = '#6b7280';
+                                                let statusShadow = 'none';
+                                                let statusLabel = 'Boş';
+                                                if (isClosed) {
+                                                    statusLabel = 'Kapalı';
+                                                } else if (online > 0) {
+                                                    statusColor = '#22c55e';
+                                                    statusShadow = '0 0 6px rgba(34,197,94,0.5)';
+                                                    statusLabel = 'Aktif';
+                                                } else {
+                                                    statusColor = '#94a3b8';
+                                                    statusLabel = 'Boş';
+                                                }
+                                                return (
+                                                    <>
+                                                        <span className="status-dot" style={{ background: statusColor, boxShadow: statusShadow, marginRight: 5 }} />
+                                                        <span style={{ fontSize: 12, color: '#475569' }}>{statusLabel}</span>
+                                                    </>
+                                                );
+                                            })()}
                                         </td>
-                                        <td style={{ textAlign: 'center', color: '#6b7280', fontSize: 10 }}>
-                                            {room.maxParticipants || '∞'}
+                                        <td style={{ textAlign: 'center', color: '#334155', fontSize: 12, fontWeight: 600 }}>
+                                            {(room._count?.participants ?? 0)}{room.maxParticipants ? `/${room.maxParticipants}` : ''}
                                         </td>
                                     </tr>
                                 ))}
                                 {rooms.length === 0 && (
                                     <tr>
-                                        <td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#4b5563' }}>
+                                        <td colSpan={5} style={{ textAlign: 'center', padding: 30, color: '#1e293b' }}>
                                             Henüz oda yok
                                         </td>
                                     </tr>
@@ -328,11 +342,11 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
 
                 <div style={{
                     padding: '10px 16px',
-                    borderTop: '1px solid rgba(123,159,239,0.06)',
-                    fontSize: 10,
-                    color: '#4b5563',
+                    borderTop: '1px solid rgba(37,99,235,0.08)',
+                    fontSize: 12,
+                    color: '#1e293b',
                     flexShrink: 0,
-                    background: 'rgba(123,159,239,0.01)',
+                    background: 'rgba(241,245,249,0.3)',
                 }}>
                     Toplam: <span className="admin-count">{rooms.filter(r => !r.isMeetingRoom).length}</span> oda
                 </div>
@@ -352,8 +366,8 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                         <div className="admin-user-profile-header">
                             <div style={{
                                 width: 42, height: 42, borderRadius: 12,
-                                background: 'linear-gradient(135deg, rgba(123,159,239,0.15), rgba(90,127,212,0.08))',
-                                border: '2px solid rgba(123,159,239,0.2)',
+                                background: 'linear-gradient(135deg, rgba(37,99,235,0.12), rgba(37,99,235,0.06))',
+                                border: '2px solid rgba(37,99,235,0.18)',
                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 flexShrink: 0,
                                 boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
@@ -362,14 +376,23 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 🏠
                             </div>
                             <div style={{ flex: 1 }}>
-                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: 'white' }}>{selectedRoom.name}</h3>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#6b7280' }}>
-                                    <span className="status-dot" style={{
-                                        ...(selectedRoom.status?.toUpperCase() !== 'CLOSED'
-                                            ? { background: '#22c55e', boxShadow: '0 0 6px rgba(34,197,94,0.5)' }
-                                            : { background: '#6b7280' }),
-                                    }} />
-                                    <span style={{ fontSize: 10 }}>{selectedRoom.status?.toUpperCase() === 'CLOSED' ? 'Kapalı' : 'Aktif'}</span>
+                                <h3 style={{ margin: '0 0 2px', fontSize: 14, fontWeight: 800, color: '#1e293b' }}>{selectedRoom.name}</h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11, color: '#334155' }}>
+                                    {(() => {
+                                        const online = selectedRoom._count?.participants ?? 0;
+                                        const isClosed = selectedRoom.status?.toUpperCase() === 'CLOSED';
+                                        let dotColor = '#94a3b8';
+                                        let dotShadow = 'none';
+                                        let label = 'Boş';
+                                        if (isClosed) { label = 'Kapalı'; dotColor = '#6b7280'; }
+                                        else if (online > 0) { label = `Aktif (${online} kişi)`; dotColor = '#22c55e'; dotShadow = '0 0 6px rgba(34,197,94,0.5)'; }
+                                        return (
+                                            <>
+                                                <span className="status-dot" style={{ background: dotColor, boxShadow: dotShadow }} />
+                                                <span style={{ fontSize: 12 }}>{label}</span>
+                                            </>
+                                        );
+                                    })()}
                                 </div>
                             </div>
                         </div>
@@ -404,11 +427,11 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 rows={3}
                                 style={{
                                     width: '100%',
-                                    background: 'rgba(255,255,255,0.04)',
-                                    border: '1px solid rgba(123,159,239,0.08)',
+                                    background: 'rgba(148,163,184,0.12)',
+                                    border: '1px solid rgba(37,99,235,0.1)',
                                     borderRadius: 8,
                                     padding: '8px 12px',
-                                    color: '#e0e0e0',
+                                    color: '#0f172a',
                                     fontSize: 12,
                                     outline: 'none',
                                     resize: 'vertical',
@@ -462,14 +485,14 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
 
                             {/* Oda Düğme Rengi */}
                             <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
-                                <label style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Düğme Rengi</label>
+                                <label style={{ fontSize: 11, color: '#475569', fontWeight: 600 }}>Düğme Rengi</label>
                                 <input
                                     type="color"
                                     value={formButtonColor || '#6366f1'}
                                     onChange={e => setFormButtonColor(e.target.value)}
                                     style={{
                                         width: 32, height: 24,
-                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        border: '1px solid rgba(100,116,139,0.2)',
                                         borderRadius: 6,
                                         background: 'transparent',
                                         cursor: 'pointer',
@@ -508,11 +531,11 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                                 borderRadius: 8,
                                                 cursor: 'pointer',
                                                 border: formTheme === t.id
-                                                    ? '1.5px solid rgba(123,159,239,0.4)'
-                                                    : '1px solid rgba(255,255,255,0.06)',
+                                                    ? '1.5px solid rgba(37,99,235,0.35)'
+                                                    : '1px solid rgba(148,163,184,0.15)',
                                                 background: formTheme === t.id
-                                                    ? 'rgba(123,159,239,0.08)'
-                                                    : 'rgba(255,255,255,0.03)',
+                                                    ? 'rgba(37,99,235,0.1)'
+                                                    : 'rgba(226,232,240,0.4)',
                                                 transition: 'all 0.2s',
                                             }}
                                         >
@@ -520,7 +543,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                             <span style={{
                                                 fontSize: 11,
                                                 fontWeight: formTheme === t.id ? 700 : 500,
-                                                color: formTheme === t.id ? '#a3bfff' : 'rgba(255,255,255,0.6)',
+                                                color: formTheme === t.id ? '#a3bfff' : 'rgba(30,41,59,0.6)',
                                             }}>
                                                 {t.label}
                                             </span>
@@ -542,10 +565,41 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={() => setConfirmDelete(null)}>İptal</button>
                             </div>
                         ) : (
-                            <div style={{ display: 'flex', gap: 10, marginTop: 4 }}>
+                            <div style={{ display: 'flex', gap: 10, marginTop: 4, flexWrap: 'wrap' }}>
                                 <button className="admin-btn admin-btn-success" onClick={handleSave} disabled={saving}>
                                     <Save style={{ width: 13, height: 13 }} />
                                     {saving ? 'Kaydediliyor...' : 'Değiştir'}
+                                </button>
+                                <button
+                                    className={`admin-btn ${selectedRoom.status?.toUpperCase() === 'CLOSED' ? 'admin-btn-primary' : 'admin-btn-ghost'}`}
+                                    disabled={saving}
+                                    onClick={async () => {
+                                        setSaving(true);
+                                        try {
+                                            const isClosed = selectedRoom.status?.toUpperCase() === 'CLOSED';
+                                            if (isClosed) {
+                                                // Odayı aç — status WAITING, isLocked false
+                                                await adminApi.updateRoom(selectedRoom.id, { status: 'WAITING', isLocked: false });
+                                                showStatus('success', `"${selectedRoom.name}" odası açıldı.`);
+                                            } else {
+                                                // Odayı kapat — status CLOSED, isLocked true
+                                                await adminApi.updateRoom(selectedRoom.id, { status: 'CLOSED', isLocked: true });
+                                                showStatus('success', `"${selectedRoom.name}" odası kapatıldı.`);
+                                            }
+                                            loadRooms();
+                                        } catch (e: any) {
+                                            showStatus('error', e.message);
+                                        } finally {
+                                            setSaving(false);
+                                        }
+                                    }}
+                                    style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+                                >
+                                    {selectedRoom.status?.toUpperCase() === 'CLOSED' ? (
+                                        <><Unlock style={{ width: 13, height: 13 }} /> Odayı Aç</>
+                                    ) : (
+                                        <><Lock style={{ width: 13, height: 13 }} /> Odayı Kapat</>
+                                    )}
                                 </button>
                                 {isGodMaster && (
                                     <button className="admin-btn admin-btn-danger" onClick={() => setConfirmDelete(selectedRoom.id)}>

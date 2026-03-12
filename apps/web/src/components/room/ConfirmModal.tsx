@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { useDraggable } from '@/hooks/useDraggable';
 
 interface ConfirmModalProps {
@@ -45,17 +46,17 @@ const variantConfig = {
     },
     info: {
         icon: (
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#6366f1" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" />
                 <line x1="12" y1="16" x2="12" y2="12" />
                 <line x1="12" y1="8" x2="12.01" y2="8" />
             </svg>
         ),
-        iconBg: 'bg-amber-600/15',
-        iconRing: 'ring-amber-600/30',
-        buttonBg: 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-[#7b9fef] shadow-lg shadow-indigo-900/30',
-        accentColor: '#6366f1',
-        glowColor: 'rgba(99, 102, 241, 0.15)',
+        iconBg: 'bg-sky-500/15',
+        iconRing: 'ring-sky-500/30',
+        buttonBg: 'bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 shadow-lg shadow-sky-900/30',
+        accentColor: '#38bdf8',
+        glowColor: 'rgba(56, 189, 248, 0.15)',
     },
 };
 
@@ -81,12 +82,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
     useEffect(() => {
         if (isOpen) {
             document.addEventListener('keydown', handleKeyDown);
-            // Prevent body scroll
-            document.body.style.overflow = 'hidden';
         }
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
-            document.body.style.overflow = '';
         };
     }, [isOpen, handleKeyDown]);
 
@@ -94,20 +92,24 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
 
     const config = variantConfig[variant];
 
-    return (
-        <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4">
+    return createPortal(
+        <div className="fixed inset-0 z-[10001] flex items-start justify-center p-4" style={{ paddingTop: '15vh' }}>
             {/* Backdrop */}
             <div
-                className="absolute inset-0 bg-black/50 animate-pure-fade"
+                className="absolute inset-0 animate-pure-fade"
+                style={{ background: 'rgba(0,0,0,0.25)' }}
                 onClick={onCancel}
             />
 
             {/* Modal */}
             <div
-                className="relative w-full max-w-[420px] rounded-2xl border border-white/10 overflow-hidden animate-pure-fade cursor-grab active:cursor-grabbing"
+                className="relative w-full max-w-[300px] rounded-2xl overflow-hidden animate-pure-fade cursor-grab active:cursor-grabbing"
                 style={{
-                    background: 'linear-gradient(180deg, rgba(20, 24, 40, 0.98) 0%, rgba(12, 14, 22, 0.98) 100%)',
-                    boxShadow: `0 25px 60px rgba(0, 0, 0, 0.5), 0 0 40px ${config.glowColor}`,
+                    background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
+                    backdropFilter: 'blur(28px) saturate(130%)',
+                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                    border: '1px solid rgba(255,255,255,0.65)',
+                    boxShadow: `0 25px 60px rgba(0,0,0,0.18), 0 0 30px ${config.glowColor}, inset 0 1px 0 rgba(255,255,255,0.8)`,
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
                 onMouseDown={onDragMouseDown}
@@ -119,30 +121,30 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                 />
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-4">
                     {/* Icon + Title */}
-                    <div className="flex items-start gap-4 mb-4">
-                        <div className={`flex-shrink-0 w-12 h-12 rounded-xl ${config.iconBg} ring-1 ${config.iconRing} flex items-center justify-center`}>
+                    <div className="flex items-start gap-3 mb-3">
+                        <div className={`flex-shrink-0 w-9 h-9 rounded-lg ${config.iconBg} ring-1 ${config.iconRing} flex items-center justify-center`}>
                             {config.icon}
                         </div>
-                        <div className="flex-1 min-w-0 pt-1">
-                            <h3 className="text-lg font-bold text-white leading-tight">{title}</h3>
+                        <div className="flex-1 min-w-0 pt-0.5">
+                            <h3 className="text-[15px] font-bold text-gray-800 leading-tight">{title}</h3>
                         </div>
                     </div>
 
                     {/* Message */}
-                    <p className="text-[14px] text-gray-300/90 leading-relaxed ml-16 mb-6">
+                    <p className="text-[12px] text-gray-600 leading-relaxed ml-12 mb-4">
                         {message}
                     </p>
 
                     {/* Divider */}
-                    <div className="h-px bg-white/5 mb-5" />
+                    <div className="h-px mb-3" style={{ background: 'rgba(148,163,184,0.15)' }} />
 
                     {/* Buttons */}
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-end gap-2">
                         <button
                             onClick={onCancel}
-                            className="confirm-btn-cancel px-5 py-2.5 rounded-xl text-sm font-medium text-gray-300 hover:text-white border border-white/10 hover:border-white/20 transition-all duration-200"
+                            className="confirm-btn-cancel px-4 py-2 rounded-lg text-xs font-medium text-gray-500 hover:text-gray-700 border border-gray-200 hover:border-gray-300 transition-all duration-200"
                         >
                             {cancelLabel}
                         </button>
@@ -151,13 +153,14 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
                                 onConfirm();
                                 onCancel();
                             }}
-                            className={`confirm-btn-confirm px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 ${config.buttonBg}`}
+                            className={`confirm-btn-confirm px-5 py-2 rounded-lg text-xs font-semibold text-white transition-all duration-200 ${config.buttonBg}`}
                         >
                             {confirmLabel}
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 };

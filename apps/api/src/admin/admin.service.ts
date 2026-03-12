@@ -1416,8 +1416,12 @@ export class AdminService implements OnModuleInit {
     const rawPassword = data.password || require('crypto').randomBytes(12).toString('base64url');
     const hashedPassword = await bcrypt.hash(rawPassword, 10);
     const avatarUrl =
+<<<<<<< HEAD
       data.avatar ||
       `/avatars/neutral_1.png`;
+=======
+      data.avatar || undefined;
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 
     const user = await this.prisma.user.create({
       data: {
@@ -1475,13 +1479,28 @@ export class AdminService implements OnModuleInit {
   // ═══════════════════════════════════════════════════════════
 
   async getRooms(tenantId: string) {
-    return this.prisma.room.findMany({
+    const rooms = await this.prisma.room.findMany({
       where: { tenantId, isMeetingRoom: false },
-      include: {
-        _count: { select: { participants: { where: { isActive: true } } } },
-      },
       orderBy: { createdAt: 'asc' },
     });
+
+    // ★ In-memory participant Map'ten gerçek çevrimiçi sayısını hesapla
+    // DB _count yerine socket bağlantılarını sayıyoruz — daha güvenilir
+    const participantsMap: Map<string, any> = (this.chatGateway as any).participants;
+    const roomOnlineCounts = new Map<string, number>();
+    if (participantsMap) {
+      for (const [, p] of participantsMap) {
+        const slug = p.roomSlug;
+        if (slug) {
+          roomOnlineCounts.set(slug, (roomOnlineCounts.get(slug) || 0) + 1);
+        }
+      }
+    }
+
+    return rooms.map(room => ({
+      ...room,
+      _count: { participants: roomOnlineCounts.get(room.slug) || 0 },
+    }));
   }
 
   async createRoom(
@@ -1542,6 +1561,7 @@ export class AdminService implements OnModuleInit {
       cameraLimit?: number | null;
       buttonColor?: string | null;
       metadata?: any;
+      status?: string;
     },
     adminIp?: string,
   ) {

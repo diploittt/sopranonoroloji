@@ -293,8 +293,8 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
             {/* ─── Sol Panel: Accordion Menü ─── */}
             <div className="admin-split-left" style={{ maxWidth: 360 }}>
                 <div className="admin-toolbar">
-                    <Settings style={{ width: 13, height: 13, color: '#6b7280' }} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.7)' }}>Tüm Ayarlar</span>
+                    <Settings style={{ width: 13, height: 13, color: '#334155' }} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#1e293b' }}>Tüm Ayarlar</span>
                     <div style={{ flex: 1 }} />
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadSettings} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12 }} />
@@ -332,7 +332,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                             return (
                                                 <div style={{ marginBottom: 12 }}>
                                                     <div style={{
-                                                        fontSize: 9, fontWeight: 700, color: 'rgba(99,102,241,0.6)',
+                                                        fontSize: 11, fontWeight: 700, color: '#475569',
                                                         letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 4,
                                                     }}>🔍 Sol üst logo alanı canlı önizlemesi</div>
                                                 </div>
@@ -344,7 +344,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                             <div style={{ marginBottom: 12 }}>
                                                 {/* Sınıf Seçici */}
                                                 <div style={{ marginBottom: 10 }}>
-                                                    <label style={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', marginBottom: 4, display: 'block' }}>Sınıf</label>
+                                                    <label style={{ fontSize: 11, fontWeight: 600, color: '#475569', marginBottom: 4, display: 'block' }}>Sınıf</label>
                                                     <select
                                                         value={selectedRole}
                                                         onChange={e => setSelectedRole(e.target.value)}
@@ -353,16 +353,16 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                             padding: '7px 10px',
                                                             fontSize: 12,
                                                             fontWeight: 600,
-                                                            background: 'rgba(255,255,255,0.06)',
-                                                            border: '1px solid rgba(255,255,255,0.12)',
+                                                            background: 'rgba(241,245,249,0.9)',
+                                                            border: '1px solid rgba(100,116,139,0.25)',
                                                             borderRadius: 6,
-                                                            color: '#e0e0e0',
+                                                            color: '#0f172a',
                                                             outline: 'none',
                                                             cursor: 'pointer',
                                                         }}
                                                     >
                                                         {ROLE_CLASSES.map(rc => (
-                                                            <option key={rc.value} value={rc.value} style={{ background: '#1f2937' }}>
+                                                            <option key={rc.value} value={rc.value} style={{ background: '#e2e8f0' }}>
                                                                 {rc.label}
                                                             </option>
                                                         ))}
@@ -427,7 +427,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                     <span style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.12)', padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace' }}>{val}px</span>
                                                                 </label>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                    <span style={{ fontSize: 9, color: '#6b7280', width: 28, textAlign: 'right' }}>{min}</span>
+                                                                    <span style={{ fontSize: 11, color: '#334155', width: 28, textAlign: 'right' }}>{min}</span>
                                                                     <input
                                                                         type="range"
                                                                         min={min}
@@ -441,16 +441,16 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                             cursor: 'pointer',
                                                                         }}
                                                                     />
-                                                                    <span style={{ fontSize: 9, color: '#6b7280', width: 28 }}>{max}</span>
+                                                                    <span style={{ fontSize: 11, color: '#334155', width: 28 }}>{max}</span>
                                                                     <button
                                                                         type="button"
                                                                         onClick={() => updateSetting(setting.key, isSize ? 112 : 0)}
                                                                         style={{
-                                                                            background: 'rgba(255,255,255,0.06)',
-                                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                                            background: 'rgba(226,232,240,0.6)',
+                                                                            border: '1px solid rgba(100,116,139,0.2)',
                                                                             borderRadius: 4,
-                                                                            color: '#9ca3af',
-                                                                            fontSize: 9,
+                                                                            color: '#475569',
+                                                                            fontSize: 11,
                                                                             padding: '3px 6px',
                                                                             cursor: 'pointer',
                                                                         }}
@@ -473,11 +473,11 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                     rows={3}
                                                                     style={{
                                                                         width: '100%',
-                                                                        background: 'rgba(255,255,255,0.04)',
-                                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                                        background: 'rgba(241,245,249,0.85)',
+                                                                        border: '1px solid rgba(100,116,139,0.22)',
                                                                         borderRadius: 8,
                                                                         padding: '8px 12px',
-                                                                        color: '#e0e0e0',
+                                                                        color: '#0f172a',
                                                                         fontSize: 12,
                                                                         outline: 'none',
                                                                         resize: 'vertical',
@@ -501,9 +501,9 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                         style={{
                                                                             width: 40,
                                                                             height: 32,
-                                                                            border: '1px solid rgba(255,255,255,0.15)',
+                                                                            border: '1px solid rgba(100,116,139,0.25)',
                                                                             borderRadius: 6,
-                                                                            background: 'transparent',
+                                                                            background: 'rgba(241,245,249,0.5)',
                                                                             cursor: 'pointer',
                                                                             padding: 2,
                                                                         }}
@@ -515,11 +515,11 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                         placeholder="#a3bfff"
                                                                         style={{
                                                                             flex: 1,
-                                                                            background: 'rgba(255,255,255,0.04)',
-                                                                            border: '1px solid rgba(255,255,255,0.1)',
+                                                                            background: 'rgba(241,245,249,0.85)',
+                                                                            border: '1px solid rgba(100,116,139,0.22)',
                                                                             borderRadius: 6,
                                                                             padding: '6px 10px',
-                                                                            color: '#e0e0e0',
+                                                                            color: '#0f172a',
                                                                             fontSize: 12,
                                                                             outline: 'none',
                                                                         }}
@@ -565,8 +565,8 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                     <img src={settings.logoUrl} alt="Logo" style={{
                                                                         height: 40, width: 'auto', maxWidth: 80,
                                                                         objectFit: 'contain', borderRadius: 6,
-                                                                        border: '1px solid rgba(255,255,255,0.1)',
-                                                                        background: 'rgba(0,0,0,0.3)',
+                                                                        border: '1px solid rgba(100,116,139,0.2)',
+                                                                        background: 'rgba(226,232,240,0.5)',
                                                                     }} />
                                                                 )}
                                                                 <input
@@ -580,9 +580,9 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                         reader.readAsDataURL(file);
                                                                     }}
                                                                     style={{
-                                                                        flex: 1, fontSize: 11, color: '#9ca3af',
-                                                                        background: 'rgba(255,255,255,0.04)',
-                                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                                        flex: 1, fontSize: 11, color: '#475569',
+                                                                        background: 'rgba(148,163,184,0.12)',
+                                                                        border: '1px solid rgba(148,163,184,0.12)',
                                                                         borderRadius: 6, padding: '6px 8px',
                                                                     }}
                                                                 />
@@ -616,9 +616,9 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                             style={{
                                                                 width: '100%', padding: '8px 12px',
                                                                 fontSize: 11, fontWeight: 600,
-                                                                background: 'rgba(239,68,68,0.08)',
-                                                                border: '1px solid rgba(239,68,68,0.2)',
-                                                                borderRadius: 8, color: '#fca5a5',
+                                                                background: 'rgba(220,38,38,0.06)',
+                                                                border: '1px solid rgba(220,38,38,0.15)',
+                                                                borderRadius: 8, color: '#dc2626',
                                                                 cursor: 'pointer', transition: 'all 0.2s',
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                                             }}
@@ -676,35 +676,35 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                             {activeSection.settings.map(setting => (
                                 <div key={setting.key} style={{
                                     padding: '10px 14px',
-                                    borderBottom: '1px solid rgba(255,255,255,0.03)',
+                                    borderBottom: '1px solid rgba(100,116,139,0.1)',
                                     display: 'flex',
                                     alignItems: 'flex-start',
                                     gap: 10,
                                 }}>
                                     <div style={{
                                         width: 6, height: 6, borderRadius: '50%',
-                                        background: settings[setting.key] ? '#6366f1' : '#374151',
+                                        background: settings[setting.key] ? '#2563eb' : '#cbd5e1',
                                         marginTop: 5, flexShrink: 0,
                                     }} />
                                     <div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: '#d1d5db', marginBottom: 2 }}>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 2 }}>
                                             {setting.label}
                                             {setting.type === 'checkbox' && (
                                                 <span style={{
                                                     marginLeft: 8,
-                                                    fontSize: 9,
+                                                    fontSize: 11,
                                                     padding: '2px 6px',
                                                     borderRadius: 4,
                                                     fontWeight: 700,
-                                                    background: settings[setting.key] ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.1)',
-                                                    color: settings[setting.key] ? '#86efac' : '#fca5a5',
-                                                    border: `1px solid ${settings[setting.key] ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.15)'}`,
+                                                    background: settings[setting.key] ? 'rgba(22,163,74,0.1)' : 'rgba(220,38,38,0.08)',
+                                                    color: settings[setting.key] ? '#16a34a' : '#dc2626',
+                                                    border: `1px solid ${settings[setting.key] ? 'rgba(22,163,74,0.2)' : 'rgba(220,38,38,0.15)'}`,
                                                 }}>
                                                     {settings[setting.key] ? 'AKTİF' : 'KAPALI'}
                                                 </span>
                                             )}
                                         </div>
-                                        <div style={{ fontSize: 11, color: '#6b7280', lineHeight: 1.5 }}>{setting.desc}</div>
+                                        <div style={{ fontSize: 11, color: '#334155', lineHeight: 1.5 }}>{setting.desc}</div>
                                     </div>
                                 </div>
                             ))}

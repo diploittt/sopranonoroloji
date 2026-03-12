@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 
 interface ChangeNameModalProps {
     isOpen: boolean;
@@ -79,45 +80,46 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
         ? {}
         : { position: 'fixed', left: position.x, top: position.y, margin: 0, transform: 'none' };
 
-    return (
+    return createPortal(
         <>
-            <div className="fixed inset-0 z-[10000] bg-black/40" onClick={onClose} />
-            <div className="fixed inset-0 z-[10001] flex items-center justify-center p-4" style={centered ? {} : { display: 'block' }}>
+            <div className="fixed inset-0 z-[10000]" onClick={onClose} style={{ background: 'rgba(0,0,0,0.25)' }} />
+            <div className="fixed inset-0 z-[10001] flex items-start justify-center p-4" style={centered ? { paddingTop: '15vh' } : { display: 'block' }}>
                 <div
                     ref={modalRef}
-                    className="w-full max-w-md p-6 animate-pure-fade"
+                    className="w-full max-w-xs animate-pure-fade"
                     style={{
                         ...modalStyle,
-                        background: 'linear-gradient(160deg, #14161f 0%, #0d0f17 100%)',
-                        border: '1px solid rgba(99, 102, 241, 0.15)',
-                        borderRadius: '18px',
-                        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,0,0,0.3)',
+                        background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
+                        backdropFilter: 'blur(28px) saturate(130%)',
+                        WebkitBackdropFilter: 'blur(28px) saturate(130%)',
+                        border: '1px solid rgba(255,255,255,0.65)',
+                        borderRadius: 14,
+                        boxShadow: '0 20px 50px rgba(0,0,0,0.18), 0 6px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
-                    {/* Accent */}
-                    <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7, borderRadius: '18px 18px 0 0', marginTop: '-1px' }} />
-
-                    {/* Header - Draggable */}
+                    {/* Header — koyu tema */}
                     <div
-                        className="flex items-center justify-between mb-6 mt-4 px-1"
+                        className="flex items-center justify-between px-3.5 py-1.5"
                         onMouseDown={handleMouseDown}
-                        style={{ cursor: 'move', userSelect: 'none' }}
+                        style={{ cursor: 'move', userSelect: 'none', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
                     >
-                        <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                            <span className="text-xl">✏️</span>
-                            İsim Değiştir
+                        <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 5, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                            <span style={{ fontSize: 13 }}>✏️</span> İsim Değiştir
                         </h2>
-                        <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10">✕</button>
+                        <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, transition: 'all 0.2s' }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+                        >✕</button>
                     </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} style={{ padding: '8px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-2">Mevcut İsim</label>
-                            <div className="text-sm text-gray-300 bg-white/5 rounded-xl px-4 py-3 border border-white/5">{currentName}</div>
+                            <label style={{ fontSize: 10, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 600 }}>Mevcut İsim</label>
+                            <div style={{ fontSize: 12, color: '#475569', background: 'rgba(255,255,255,0.4)', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(100,116,139,0.1)' }}>{currentName}</div>
                         </div>
                         <div>
-                            <label className="block text-xs font-medium text-gray-400 mb-2">Yeni İsim</label>
+                            <label style={{ fontSize: 10, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 600 }}>Yeni İsim</label>
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -125,23 +127,35 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                                 onChange={(e) => { setName(e.target.value); if (error) setError(''); }}
                                 maxLength={20}
                                 placeholder="Yeni isminizi yazın..."
-                                className="w-full text-white text-sm rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none transition-colors placeholder:text-gray-600"
-                                style={{ background: '#10121b' }}
+                                style={{
+                                    width: '100%', fontSize: 12, color: '#1e293b', borderRadius: 10,
+                                    padding: '8px 12px', border: '1px solid rgba(100,116,139,0.2)', background: 'rgba(255,255,255,0.6)', outline: 'none',
+                                }}
                             />
-                            <div className="flex justify-between mt-1">
-                                {error && <span className="text-xs text-red-400">{error}</span>}
-                                <span className={`text-xs ml-auto ${name.trim().length > 18 ? 'text-amber-400' : 'text-gray-500'}`}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                                {error && <span style={{ fontSize: 10, color: '#ef4444' }}>{error}</span>}
+                                <span style={{ fontSize: 9, color: name.trim().length > 18 ? '#0f172a' : '#94a3b8', marginLeft: 'auto' }}>
                                     {name.trim().length}/20
                                 </span>
                             </div>
                         </div>
-                        <div className="flex gap-3 pt-2">
-                            <button type="button" onClick={onClose} className="flex-1 px-4 py-3 text-sm font-medium text-gray-300 bg-white/5 hover:bg-white/10 rounded-xl border border-white/5 transition-colors">İptal</button>
-                            <button type="submit" className="flex-1 px-4 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 rounded-xl transition-all shadow-lg shadow-amber-600/20">Değiştir</button>
+                        <div style={{ display: 'flex', gap: 8, paddingTop: 2 }}>
+                            <button type="button" onClick={onClose} style={{
+                                flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 600, color: '#475569',
+                                background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(100,116,139,0.15)',
+                                borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s',
+                            }}>İptal</button>
+                            <button type="submit" style={{
+                                flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 700, color: '#fff',
+                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                border: 'none', borderRadius: 10, cursor: 'pointer',
+                                boxShadow: '0 2px 12px rgba(30,58,95,0.2)',
+                            }}>Değiştir</button>
                         </div>
                     </form>
                 </div>
             </div>
-        </>
+        </>,
+        document.body
     );
 }

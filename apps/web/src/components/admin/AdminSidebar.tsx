@@ -31,9 +31,9 @@ export default function AdminSidebar() {
 
                 <a
                     href="#"
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-amber-600/10 text-white border border-amber-600/20 font-medium"
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl bg-rose-500/10 text-white border border-rose-500/20 font-medium"
                 >
-                    <LayoutDashboard className="w-5 h-5 text-[#7b9fef]" />
+                    <LayoutDashboard className="w-5 h-5 text-rose-400" />
                     Dashboard
                 </a>
 
@@ -76,14 +76,13 @@ export default function AdminSidebar() {
 
             <div className="p-6 border-t border-white/5 bg-[#08090c]/40">
                 <div className="flex items-center gap-3">
-                    <img
-                        src="https://i.pravatar.cc/150?img=11"
-                        className="w-10 h-10 rounded-full border-2 border-amber-500/50"
-                        alt="Admin Avatar"
-                    />
+                    <div
+                        className="w-10 h-10 rounded-full border-2 border-rose-500/50 flex items-center justify-center"
+                        style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 16, fontWeight: 900, color: 'rgba(244,63,94,0.8)' }}
+                    >S</div>
                     <div>
                         <div className="text-sm font-bold text-white">Soprano Owner</div>
-                        <div className="text-[10px] text-amber-500">
+                        <div className="text-[10px] text-rose-400">
                             Root Administrator
                         </div>
                     </div>

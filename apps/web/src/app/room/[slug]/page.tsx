@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import { use, useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react';
 import { SidebarLeft } from '@/components/roomUI/SidebarLeft';
 import { HeaderRooms } from '@/components/roomUI/HeaderRooms';
@@ -2905,4 +2906,14 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             <BonusPopup bonus={bonusQueue.current} onClose={bonusQueue.dismiss} />
         </LanguageProvider >
     );
+=======
+import { use } from 'react';
+import dynamic from 'next/dynamic';
+
+const HomePage = dynamic(() => import('@/app/home/HomePage'), { ssr: false });
+
+export default function RoomPage({ params }: { params: Promise<{ slug: string }> }) {
+    const { slug } = use(params);
+    return <HomePage initialRoomsMode={true} initialSlug={slug} />;
+>>>>>>> 2a4b46592931e0071e1280158602315f3c375626
 }
