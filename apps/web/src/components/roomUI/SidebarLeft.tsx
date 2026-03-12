@@ -1049,13 +1049,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                                 <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" strokeWidth="3" strokeLinecap="round" />
                                                             </svg>
                                                         )}
-                                                        {/* Blinking Hand Icon for Queue */}
-                                                        {!isMeetingRoom && queueIndex !== -1 && !isSpeaker && (
-                                                            <span className="inline-flex items-center gap-0.5 ml-1" title={`${t.micQueue}: ${queueIndex + 1}`}>
-                                                                <Hand className="w-4 h-4 text-[#f59e0b] animate-pulse inline-block" strokeWidth={2.5} />
-                                                                <span className="text-[9px] font-bold text-amber-400 bg-amber-500/20 px-1 rounded">{queueIndex + 1}</span>
-                                                            </span>
-                                                        )}
+                                                        {/* Blinking Hand Icon for Queue (REMOVED - now on the right side) */}
                                                         {/* Meeting Room: Mic icon for speaking users */}
                                                         {isMeetingRoom && speakingUsers && speakingUsers[user.userId || ''] && (
                                                             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full ml-1" style={{

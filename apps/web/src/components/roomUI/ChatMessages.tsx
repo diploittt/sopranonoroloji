@@ -247,7 +247,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                 message={toastState.message}
             />
 
-            <div className="w-full max-w-3xl space-y-1">
+            <div className="w-full max-w-5xl space-y-1">
                 {/* ═══ Compact Welcome Banner ═══ */}
                 <div className="flex justify-end mb-3" style={{ perspective: 800 }}>
                     <div className="welcome-banner-3d" style={{

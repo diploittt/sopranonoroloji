@@ -2096,10 +2096,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     }
                                     /* Sopranonoro ANA İÇERİK (SOL ALAN) — esnek */
                                     .room-container main.flex-1 {
-                                        flex: 1 1 65% !important;
-                                        min-width: 280px !important;
-                                        min-height: 780px !important;
-                                        max-height: 780px !important;
+                                        flex: 1 1 70% !important;
+                                        min-width: 320px !important;
+                                        min-height: 720px !important;
+                                        max-height: 720px !important;
                                         margin-top: -20px !important;
                                         gap: 16px !important;
                                     }
@@ -2379,8 +2379,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         background: 'transparent',
                                         backdropFilter: 'none',
                                         WebkitBackdropFilter: 'none',
-                                        border: 'none',
-                                        boxShadow: 'none',
+                                        borderLeft: '14px solid rgba(255,255,255,0.85)',
+                                        borderRight: '14px solid rgba(255,255,255,0.85)',
+                                        borderBottom: '14px solid rgba(255,255,255,0.85)',
+                                        boxShadow: '0 0 30px rgba(0,0,0,0.25), 0 0 60px rgba(0,0,0,0.12), -4px 0 15px rgba(0,0,0,0.18), 4px 0 15px rgba(0,0,0,0.18)',
                                         borderRadius: 0,
                                         gap: '8px',
                                         padding: '8px',

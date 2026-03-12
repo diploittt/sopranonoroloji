@@ -180,7 +180,7 @@ export function BottomToolbar({
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
-        <div className="bottom-toolbar py-2 px-4 bg-transparent border-t border-white/5 backdrop-blur-sm z-20 flex flex-col gap-2">
+        <div className="bottom-toolbar pt-6 pb-5 px-4 bg-transparent border-t border-white/5 backdrop-blur-sm z-20 flex flex-col gap-1.5 min-h-[100px] mt-4">
             {/* Anchors */}
             <AnchorPopover
                 targetRef={exitBtnRef}
@@ -405,9 +405,9 @@ export function BottomToolbar({
             /> */}
 
             {/* TOP ROW: ICONS */}
-            <div className="w-full max-w-5xl mx-auto flex items-center justify-between">
+            <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
 
-                <div className="flex items-center gap-3 p-2 bg-white/[0.025] rounded-2xl border border-white/5">
+                <div className="flex items-center gap-2 p-1 bg-white/[0.025] rounded-xl border border-white/5">
                     {/* Hand (Queue) OR Meeting Mic Toggle */}
                     {isMeetingRoom ? (
                         <button
@@ -568,7 +568,7 @@ export function BottomToolbar({
                     </button>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex gap-2">
 
                     <button
                         ref={settingsBtnRef}
@@ -591,7 +591,7 @@ export function BottomToolbar({
             </div>
 
             {/* BOTTOM ROW: INPUT & SEND */}
-            <form onSubmit={handleSubmit} className="w-full max-w-5xl mx-auto h-11 flex gap-3">
+            <form onSubmit={handleSubmit} className="w-full max-w-7xl mx-auto h-9 flex gap-2">
                 <div className="flex-1 relative group">
                     <div className="absolute -inset-0.5 rounded-xl" style={{ opacity: 0, pointerEvents: 'none' }}></div>
                     <input

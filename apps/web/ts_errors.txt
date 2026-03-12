@@ -1,0 +1,27 @@
+﻿src/app/home/HomePage.tsx(1846,53): error TS2322: Type '{ onSendMessage: any; onRequestMic: any; onReleaseMic: any; onJoinQueue: any; onLeaveQueue: any; onToggleCamera: any; onLeaveRoom: () => void; onToggleSettings: () => any; onRegisterSettingsRef: (ref: any) => any; ... 18 more ...; systemSettings: any; }' is not assignable to type 'IntrinsicAttributes & BottomToolbarProps'.
+  Property 'banInfo' does not exist on type 'IntrinsicAttributes & BottomToolbarProps'.
+src/app/room/[slug]/page.tsx(1502,38): error TS2786: 'ContextMenu' cannot be used as a JSX component.
+  Its type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not a valid JSX element type.
+    Type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'HTMLElement' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+        Type 'HTMLElement' is missing the following properties from type 'ReactPortal': type, props, key
+src/app/room/[slug]/page.tsx(2889,34): error TS2786: 'ContextMenu' cannot be used as a JSX component.
+  Its type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not a valid JSX element type.
+    Type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'HTMLElement' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+        Type 'HTMLElement' is missing the following properties from type 'ReactPortal': type, props, key
+src/components/room/DemoChatRoom.tsx(681,18): error TS2786: 'ContextMenu' cannot be used as a JSX component.
+  Its type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not a valid JSX element type.
+    Type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'HTMLElement' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+        Type 'HTMLElement' is missing the following properties from type 'ReactPortal': type, props, key
+src/components/room/ProfileModal.tsx(171,24): error TS2304: Cannot find name 'modalStyle'.
+src/components/room/RoomMonitorModal.tsx(476,18): error TS2786: 'ContextMenu' cannot be used as a JSX component.
+  Its type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not a valid JSX element type.
+    Type '({ items, x, y, onClose, onItemClick, title, titleIcon, targetUser, }: ContextMenuProps) => HTMLElement' is not assignable to type '(props: any) => ReactNode | Promise<ReactNode>'.
+      Type 'HTMLElement' is not assignable to type 'ReactNode | Promise<ReactNode>'.
+        Type 'HTMLElement' is missing the following properties from type 'ReactPortal': type, props, key
+src/components/roomUI/BottomToolbar.tsx(624,93): error TS2304: Cannot find name 'isHasbihal'.
+src/components/roomUI/BottomToolbar.tsx(624,215): error TS2304: Cannot find name 'isHasbihal'.
+src/components/roomUI/HeaderRooms.tsx(66,19): error TS2304: Cannot find name 'useTranslation'.
+src/components/roomUI/HeaderRooms.tsx(235,47): error TS2339: Property 'buttonColor' does not exist on type '{ id: string; name: any; slug: string; status: string; isLocked: boolean; isVipRoom: boolean; isMeetingRoom: boolean; participantCount: number; }'.
