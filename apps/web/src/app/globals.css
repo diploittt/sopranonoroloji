@@ -665,6 +665,427 @@ body {
     background: #f0f7ff !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   GLOSSY PANEL — Homepage2 Hesap Paneli tasarımı
+   Sidebar profil paneli ve tenant giriş sayfası ortak stiller
+   ═══════════════════════════════════════════════════════════════ */
+
+.glossy-panel {
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+        linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(255,255,255,0.15) !important;
+    border-top: 1px solid rgba(255,255,255,0.35) !important;
+    border-left: 1px solid rgba(255,255,255,0.2) !important;
+    box-shadow:
+        0 8px 32px rgba(0,0,0,0.4),
+        0 2px 8px rgba(0,0,0,0.3),
+        inset 0 1px 0 rgba(255,255,255,0.06) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+}
+
+.input-inset {
+    background: rgba(0,0,0,0.2) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+    border-top: 1px solid rgba(0,0,0,0.4) !important;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.3) !important;
+    border-radius: 10px !important;
+    color: #fff !important;
+    transition: all 0.2s ease !important;
+    font-family: inherit !important;
+}
+.input-inset:focus {
+    outline: none !important;
+    background: rgba(0,0,0,0.3) !important;
+    border-color: #38bdf8 !important;
+    box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56,189,248,0.2) !important;
+}
+.input-inset::placeholder {
+    color: rgba(255,255,255,0.3) !important;
+}
+
+.btn-3d {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: none !important;
+    outline: none !important;
+    cursor: pointer !important;
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    transition: all 0.3s ease !important;
+    overflow: hidden !important;
+    font-family: inherit !important;
+}
+.btn-3d-blue {
+    background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%) !important;
+    color: #bae6fd !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05) !important;
+}
+.btn-3d-blue:hover {
+    background: linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(2,132,199,0.45) 100%) !important;
+    box-shadow: 0 6px 24px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.2) !important;
+    transform: translateY(-1px) !important;
+}
+.btn-3d-blue:active {
+    transform: translateY(1px) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFIL PANELİ — Sidebar Hesap Paneli Styles (eski — uyumluluk)
+   Tüm stiller !important ile — Turbopack inline style sorunu çözümü
+   ═══════════════════════════════════════════════════════════════ */
+
+.profile-panel-root {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow-y: auto !important;
+    padding: 10px 12px !important;
+    background: rgb(10, 14, 26) !important;
+    scrollbar-width: thin !important;
+    scrollbar-color: rgba(56,189,248,0.2) transparent !important;
+}
+.profile-panel-root::-webkit-scrollbar { width: 4px !important; }
+.profile-panel-root::-webkit-scrollbar-track { background: transparent !important; }
+.profile-panel-root::-webkit-scrollbar-thumb { background: rgba(56,189,248,0.15) !important; border-radius: 10px !important; }
+
+.profile-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+}
+.profile-back-btn {
+    width: 28px !important;
+    height: 28px !important;
+    border-radius: 8px !important;
+    background: rgb(22, 30, 55) !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+    color: #94a3b8 !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 13px !important;
+}
+.profile-back-btn:hover {
+    background: rgb(30, 40, 70) !important;
+    color: #e2e8f0 !important;
+}
+.profile-title {
+    font-size: 11px !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+}
+
+.profile-avatar-card {
+    text-align: center !important;
+    margin-bottom: 10px !important;
+    padding: 14px 0 !important;
+    background: rgb(16, 22, 40) !important;
+    border-radius: 12px !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+}
+.profile-avatar-ring {
+    width: 64px !important;
+    height: 64px !important;
+    border-radius: 50% !important;
+    background: rgb(10, 14, 26) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow: hidden !important;
+    margin: 0 auto 6px !important;
+}
+.profile-avatar-ring img {
+    width: 100% !important;
+    height: 100% !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+}
+.profile-username {
+    font-size: 16px !important;
+    font-weight: 900 !important;
+    color: #fff !important;
+    margin: 0 0 3px 0 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+.profile-role {
+    font-size: 9px !important;
+    font-weight: 800 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2.5px !important;
+    margin: 0 !important;
+}
+
+.profile-tabs {
+    display: flex !important;
+    gap: 3px !important;
+    margin-bottom: 10px !important;
+    padding: 3px !important;
+    background: rgb(16, 22, 40) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+}
+.profile-tab {
+    flex: 1 !important;
+    padding: 7px 0 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    background: transparent !important;
+    color: #64748b !important;
+}
+.profile-tab.active {
+    background: rgb(30, 58, 90) !important;
+    color: #38bdf8 !important;
+    box-shadow: inset 0 0 0 1px rgba(56,189,248,0.25) !important;
+}
+.profile-tab:hover:not(.active) {
+    color: #94a3b8 !important;
+}
+
+.profile-card {
+    background: rgb(16, 22, 40) !important;
+    border-radius: 10px !important;
+    padding: 10px !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+}
+
+.profile-label {
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    color: #94a3b8 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 2px !important;
+    display: block !important;
+    margin-bottom: 6px !important;
+}
+.profile-sublabel {
+    font-size: 8px !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1.5px !important;
+    display: block !important;
+    margin-bottom: 4px !important;
+}
+
+.profile-input {
+    width: 100% !important;
+    padding: 8px 12px !important;
+    font-size: 12px !important;
+    background: rgb(12, 17, 32) !important;
+    color: #e2e8f0 !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+    border-radius: 8px !important;
+    outline: none !important;
+    box-sizing: border-box !important;
+    font-family: inherit !important;
+}
+.profile-input:focus {
+    border-color: rgb(56, 120, 200) !important;
+    box-shadow: 0 0 0 2px rgba(56,189,248,0.15) !important;
+}
+.profile-input::placeholder {
+    color: #475569 !important;
+}
+
+.profile-btn {
+    width: 100% !important;
+    padding: 9px 0 !important;
+    font-size: 10px !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    border-radius: 8px !important;
+    border: none !important;
+    cursor: pointer !important;
+    background: linear-gradient(135deg, #3b82f6, #2563eb) !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.1) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    letter-spacing: 0.5px !important;
+    text-transform: uppercase !important;
+    transition: all 0.2s ease !important;
+}
+.profile-btn:hover {
+    background: linear-gradient(135deg, #60a5fa, #3b82f6) !important;
+    box-shadow: 0 4px 16px rgba(59,130,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+    transform: translateY(-1px) !important;
+}
+.profile-btn:active {
+    transform: translateY(0px) !important;
+    box-shadow: 0 1px 4px rgba(59,130,246,0.2), inset 0 2px 4px rgba(0,0,0,0.2) !important;
+}
+
+.profile-avatar-toggle {
+    width: 100% !important;
+    padding: 8px 0 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1.5px !important;
+    text-transform: uppercase !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    background: rgb(22, 30, 55) !important;
+    color: #94a3b8 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+}
+.profile-avatar-toggle:hover {
+    background: rgb(30, 38, 65) !important;
+    color: #c4b5fd !important;
+    border-color: rgb(80, 50, 160) !important;
+}
+.profile-avatar-toggle.open {
+    background: rgb(30, 20, 60) !important;
+    color: #c4b5fd !important;
+    border-color: rgb(100, 60, 200) !important;
+}
+
+.profile-avatar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 6px !important;
+    padding: 8px !important;
+    background: rgb(16, 22, 40) !important;
+    border-radius: 10px !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+}
+.profile-avatar-item {
+    padding: 3px !important;
+    border: 2px solid rgb(35, 45, 70) !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    background: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.15s ease !important;
+}
+.profile-avatar-item:hover {
+    border-color: #38bdf8 !important;
+    background: rgb(20, 40, 65) !important;
+}
+.profile-avatar-item.selected {
+    border-color: #38bdf8 !important;
+    background: rgb(20, 40, 65) !important;
+    box-shadow: 0 0 8px rgba(56,189,248,0.3) !important;
+}
+.profile-avatar-item img {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 50% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+.profile-color-grid {
+    display: grid !important;
+    grid-template-columns: repeat(6, 1fr) !important;
+    gap: 5px !important;
+    justify-items: center !important;
+    margin-bottom: 8px !important;
+}
+.profile-color-dot {
+    width: 24px !important;
+    height: 24px !important;
+    border-radius: 50% !important;
+    cursor: pointer !important;
+    border: 2px solid rgb(35, 45, 70) !important;
+    transition: all 0.15s ease !important;
+}
+.profile-color-dot:hover {
+    transform: scale(1.15) !important;
+}
+.profile-color-dot.selected {
+    border: 3px solid #fff !important;
+    transform: scale(1.2) !important;
+}
+
+.profile-color-preview {
+    text-align: center !important;
+    padding: 8px 0 !important;
+    margin-bottom: 8px !important;
+    border-radius: 8px !important;
+    background: rgb(10, 14, 26) !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+}
+
+.profile-back-bottom {
+    width: 100% !important;
+    padding: 8px 0 !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    letter-spacing: 1px !important;
+    text-transform: uppercase !important;
+    border: 1px solid rgb(35, 45, 70) !important;
+    border-radius: 8px !important;
+    cursor: pointer !important;
+    margin-top: auto !important;
+    background: rgb(22, 30, 55) !important;
+    color: #94a3b8 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    transition: all 0.2s ease !important;
+}
+.profile-back-bottom:hover {
+    background: rgb(30, 38, 65) !important;
+    color: #e2e8f0 !important;
+}
+
+.profile-success {
+    font-size: 10px !important;
+    color: #34d399 !important;
+    text-align: center !important;
+    padding: 5px 8px !important;
+    margin-bottom: 6px !important;
+    font-weight: 700 !important;
+    background: rgb(10, 35, 25) !important;
+    border-radius: 6px !important;
+    border: 1px solid rgb(20, 60, 40) !important;
+}
+.profile-error {
+    font-size: 10px !important;
+    color: #ef4444 !important;
+    text-align: center !important;
+    padding: 5px 8px !important;
+    margin-bottom: 6px !important;
+    font-weight: 700 !important;
+    background: rgb(40, 12, 12) !important;
+    border-radius: 6px !important;
+    border: 1px solid rgb(70, 20, 20) !important;
+}
+
 /* --- MİKROFON BUTONU (Premium Gold Style) --- */
 .mic-reactor {
     position: relative;

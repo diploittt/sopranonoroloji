@@ -24,11 +24,18 @@ interface SidebarLeftProps {
     isAudioTestOpen?: boolean;
     onCloseAudioTest?: () => void;
     ignoredUsers?: Set<string>;
+    // Profile panel
+    isProfileOpen?: boolean;
+    onCloseProfile?: () => void;
+    onChangeName?: (name: string) => void;
+    onChangeAvatar?: (avatar: string) => void;
+    onChangeNameColor?: (color: string) => void;
+    onChangePassword?: (oldPass: string, newPass: string) => void;
     // Optional compatibility props
     [key: string]: any;
 }
 
-export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers, isMeetingRoom, speakingUsers, isEmbed }: SidebarLeftProps) {
+export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmptyContextMenu, isAudioTestOpen, onCloseAudioTest, mobileSidebarOpen, onCloseMobileSidebar, ignoredUsers, isMeetingRoom, speakingUsers, isEmbed, isProfileOpen, onCloseProfile, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword }: SidebarLeftProps) {
     const { t } = useTranslation();
     const currentTheme = useCurrentTheme();
     const isHasbihal = currentTheme === 'hasbihal-islamic';
@@ -277,7 +284,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
 
     return (
         <aside
-            className={`sidebar-left ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden`}
+            className={`sidebar-left ${isProfileOpen ? 'profile-mode' : ''} ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden`}
             onContextMenu={onEmptyContextMenu}
         >
 
@@ -290,6 +297,11 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 toastType={toastState.type}
                 message={toastState.message}
             />
+
+            {/* ═══ COLLAPSE WRAPPER — hides sidebar content when profile opens ═══ */}
+            <div style={{
+                display: isProfileOpen ? 'none' : 'contents',
+            }}>
 
             {/* HEADER */}
             <div
@@ -488,7 +500,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 </div>
             </div>
 
-            {/* AUDIO TEST (replaces user list) or USER LIST */}
+            {/* AUDIO TEST or USER LIST — inside collapse wrapper */}
             {isAudioTestOpen && onCloseAudioTest ? (
                 <AudioTestPanel onClose={onCloseAudioTest} />
             ) : (
@@ -1618,6 +1630,427 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     </button>
                 </>}
 
+            </div>{/* end collapse wrapper */}
+
+            {/* ═══ HESAP PANELİ — visible when profile is open ═══ */}
+            {isProfileOpen && (
+            <div style={{
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column' as const,
+                minHeight: 0,
+            }}>
+                <SidebarProfilePanel
+                    currentUser={currentUser}
+                    onClose={() => onCloseProfile?.()}
+                    onChangeName={onChangeName}
+                    onChangeAvatar={onChangeAvatar}
+                    onChangeNameColor={onChangeNameColor}
+                    onChangePassword={onChangePassword}
+                />
+            </div>
+            )}
+
         </aside >
     );
 }
+
+// ═══════════════════════════════════════════════════════
+// SIDEBAR PROFILE PANEL — Hesap Paneli style
+// ═══════════════════════════════════════════════════════
+const ALL_AVATARS = [
+    '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+    '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+    '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+];
+const NAME_COLORS = [
+    '#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6',
+    '#8b5cf6', '#ec4899', '#ffffff', '#94a3b8', '#fbbf24', '#34d399',
+];
+
+const getRoleBadge = (role?: string) => {
+    switch (role?.toLowerCase()) {
+        case 'godmaster': return '🔱 GodMaster';
+        case 'owner': return '👑 Owner';
+        case 'super_admin': case 'superadmin': return '⚡ Süper Admin';
+        case 'admin': return '🛡️ Admin';
+        case 'moderator': return '🔧 Moderatör';
+        case 'operator': return '🎯 Operatör';
+        case 'vip': return '💎 VIP';
+        case 'member': return '✦ Üye';
+        default: return '👤 Misafir';
+    }
+};
+const getRoleBadgeColor = (role?: string) => {
+    switch (role?.toLowerCase()) {
+        case 'godmaster': return '#d946ef';
+        case 'owner': return '#fbbf24';
+        case 'super_admin': case 'superadmin': return '#7b9fef';
+        case 'admin': return '#60a5fa';
+        case 'moderator': return '#34d399';
+        case 'operator': return '#22d3ee';
+        case 'vip': return '#fde047';
+        case 'member': return '#38bdf8';
+        default: return '#94a3b8';
+    }
+};
+
+function SidebarProfilePanel({ currentUser, onClose, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword }: {
+    currentUser: any;
+    onClose: () => void;
+    onChangeName?: (name: string) => void;
+    onChangeAvatar?: (avatar: string) => void;
+    onChangeNameColor?: (color: string) => void;
+    onChangePassword?: (oldPass: string, newPass: string) => void;
+}) {
+    const [activeTab, setActiveTab] = useState<'profil' | 'ayarlar'>('profil');
+    const [showAvatarPicker, setShowAvatarPicker] = useState(false);
+    const [selectedAvatar, setSelectedAvatar] = useState<string | null>(null);
+    const [newName, setNewName] = useState(currentUser?.username || '');
+    const [selectedColor, setSelectedColor] = useState(currentUser?.nameColor || '#ffffff');
+    const [oldPass, setOldPass] = useState('');
+    const [newPass, setNewPass] = useState('');
+    const [confirmPass, setConfirmPass] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [isClosing, setIsClosing] = useState(false);
+
+    const roleColor = getRoleBadgeColor(currentUser?.role);
+    const isMember = currentUser?.isMember || ['member', 'vip', 'operator', 'moderator', 'admin', 'super_admin', 'superadmin', 'owner', 'godmaster'].includes(currentUser?.role?.toLowerCase() || '');
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => onClose(), 350);
+    };
+
+    return (
+        <div style={{
+            flex: 1, display: 'flex', flexDirection: 'column',
+            overflowY: 'auto', padding: '12px',
+            animation: isClosing
+                ? 'profileBlurOut 0.4s cubic-bezier(0.4, 0, 1, 1) both'
+                : 'profileSlideIn 0.5s cubic-bezier(0.22, 0.61, 0.36, 1) both',
+        }}>
+            <style>{`
+                @keyframes profileSlideIn {
+                    0% { opacity: 0; transform: translateY(30px) scale(0.97); filter: blur(8px); }
+                    100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+                }
+                @keyframes profileBlurOut {
+                    0% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
+                    100% { opacity: 0; transform: translateY(20px) scale(0.95); filter: blur(12px); }
+                }
+                .profile-glossy {
+                    background:
+                        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                        linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                    backdrop-filter: blur(24px);
+                    -webkit-backdrop-filter: blur(24px);
+                    border: 1px solid rgba(255,255,255,0.15);
+                    border-top: 1px solid rgba(255,255,255,0.35);
+                    border-left: 1px solid rgba(255,255,255,0.2);
+                    box-shadow:
+                        0 4px 16px rgba(0,0,0,0.15),
+                        inset 0 1px 0 rgba(255,255,255,0.06);
+                    border-radius: 22px;
+                    overflow: visible;
+                }
+                .profile-glossy .profile-input-inset {
+                    background: rgba(0,0,0,0.2);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-top: 1px solid rgba(0,0,0,0.4);
+                    box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
+                    border-radius: 10px;
+                    color: #fff;
+                    transition: all 0.2s ease;
+                    font-family: inherit;
+                    outline: none;
+                }
+                .profile-glossy .profile-input-inset:focus {
+                    background: rgba(0,0,0,0.3);
+                    border-color: #38bdf8;
+                    box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56,189,248,0.2);
+                }
+                .profile-glossy .profile-input-inset::placeholder {
+                    color: rgba(255,255,255,0.3);
+                }
+                .profile-glossy .profile-action-btn {
+                    position: relative;
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    border: none;
+                    outline: none;
+                    cursor: pointer;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    font-size: 11px;
+                    text-transform: uppercase;
+                    letter-spacing: 1px;
+                    transition: all 0.3s ease;
+                    overflow: hidden;
+                    font-family: inherit;
+                    background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%);
+                    color: #bae6fd;
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05);
+                }
+                .profile-glossy .profile-action-btn:hover {
+                    background: linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(2,132,199,0.45) 100%);
+                    box-shadow: 0 6px 24px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.2);
+                    transform: translateY(-1px);
+                }
+                .profile-glossy .profile-action-btn:active {
+                    transform: translateY(1px);
+                }
+            `}</style>
+
+            {/* profile-glossy wrapper — HomePage hesap paneli kartı */}
+            <div className="profile-glossy" style={{
+                padding: '12px 14px', position: 'relative', zIndex: 10,
+                display: 'flex', flexDirection: 'column', flex: 1,
+            }}>
+                {/* Başlık */}
+                <h3 style={{
+                    fontSize: 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase',
+                    letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8,
+                    textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+                }}>
+                    <button onClick={handleClose} style={{
+                        width: 26, height: 26, borderRadius: 8, border: '1px solid rgba(255,255,255,0.1)',
+                        background: 'rgba(0,0,0,0.25)', color: '#94a3b8', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12,
+                        transition: 'all 0.2s',
+                    }}>←</button>
+                    <span style={{ color: '#fbbf24', fontSize: 16 }}>👤</span> Hesap Paneli
+                </h3>
+
+                {/* Avatar Kartı — HomePage tarzı */}
+                <div style={{
+                    textAlign: 'center', marginBottom: 12, padding: '14px 0',
+                }}>
+                    <div style={{
+                        width: 66, height: 66, borderRadius: '50%', margin: '0 auto 8px',
+                        border: '2px solid rgba(56,189,248,0.4)',
+                        boxShadow: '0 0 14px rgba(56,189,248,0.15), 0 8px 20px rgba(0,0,0,0.4)',
+                        background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        overflow: 'hidden',
+                    }}>
+                        <img
+                            src={(() => {
+                            const av = selectedAvatar || currentUser?.avatar || '/avatars/neutral_1.png';
+                            return av.startsWith('animated:') || av.startsWith('gifnick::') ? '/avatars/neutral_1.png' : av;
+                        })()}
+                            alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                        />
+                    </div>
+                    <h4 style={{ fontSize: 18, fontWeight: 900, color: '#fff', margin: '0 0 4px', textShadow: '0 2px 4px rgba(0,0,0,0.5)' }}>
+                        {currentUser?.displayName || currentUser?.username || 'Kullanıcı'}
+                    </h4>
+                    <p style={{
+                        fontSize: 11, fontWeight: 700,
+                        color: isMember ? '#fbbf24' : '#38bdf8',
+                        textTransform: 'uppercase', letterSpacing: 2, margin: 0,
+                    }}>
+                        {isMember ? (currentUser?.role === 'owner' ? '👑 Owner' : currentUser?.role === 'admin' ? '🛡️ Admin' : '✦ Üye') : '👤 Misafir'}
+                    </p>
+                </div>
+
+                {/* Sekmeler — HomePage tarzı (pill container) */}
+                <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '3px', background: 'rgba(0,0,0,0.25)', borderRadius: 10 }}>
+                    {([['profil', '👤 Profil'], ['ayarlar', '⚙️ Ayarlar']] as const).map(([tab, label]) => (
+                        <button key={tab} onClick={() => { setActiveTab(tab); setError(''); setSuccess(''); }}
+                            style={{
+                                flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none',
+                                borderRadius: 8, cursor: 'pointer', textTransform: 'uppercase',
+                                letterSpacing: 1, transition: 'all 0.25s ease',
+                                background: activeTab === tab ? 'rgba(56,189,248,0.2)' : 'transparent',
+                                color: activeTab === tab ? '#7dd3fc' : 'rgba(255,255,255,0.4)',
+                            }}
+                        >{label}</button>
+                    ))}
+                </div>
+
+                {/* Mesajlar */}
+                {success && <p style={{ fontSize: 12, color: '#34d399', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>✅ {success}</p>}
+                {error && <p style={{ fontSize: 12, color: '#ef4444', fontWeight: 600, textAlign: 'center', marginBottom: 8 }}>⚠ {error}</p>}
+
+                {/* ═══ PROFİL TAB ═══ */}
+                {activeTab === 'profil' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+
+                        {/* Avatar Değiştir */}
+                        <button type="button" onClick={() => setShowAvatarPicker(!showAvatarPicker)} style={{
+                            width: '100%', padding: '8px 0', fontSize: 9, fontWeight: 700, letterSpacing: 1.5,
+                            textTransform: 'uppercase', border: '1px solid rgba(139,92,246,0.3)', borderRadius: 8,
+                            cursor: 'pointer',
+                            background: showAvatarPicker ? 'rgba(139,92,246,0.2)' : 'rgba(0,0,0,0.2)',
+                            color: showAvatarPicker ? '#c4b5fd' : 'rgba(255,255,255,0.4)',
+                            transition: 'all 0.3s ease',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                        }}>
+                            🎨 {showAvatarPicker ? 'Kapat' : 'Avatar Değiştir'}
+                        </button>
+
+                        {/* Avatar Grid — animasyonlu açılır */}
+                        <div style={{
+                            maxHeight: showAvatarPicker ? 220 : 0, opacity: showAvatarPicker ? 1 : 0,
+                            overflow: 'hidden', transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}>
+                            <style>{`
+                                .profile-avatar-scroll::-webkit-scrollbar { width: 3px; }
+                                .profile-avatar-scroll::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); border-radius: 3px; }
+                                .profile-avatar-scroll::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.25); border-radius: 3px; }
+                                .profile-avatar-scroll::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.4); }
+                                .profile-avatar-scroll { scrollbar-width: thin; scrollbar-color: rgba(148,163,184,0.25) transparent; }
+                            `}</style>
+                            <div className="profile-avatar-scroll" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 8, maxHeight: 160, overflowY: 'auto', paddingRight: 4 }}>
+                                {ALL_AVATARS.map((av) => (
+                                    <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{
+                                        padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
+                                        background: 'transparent', transition: 'all 0.25s ease',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                        transform: (selectedAvatar || currentUser?.avatar) === av ? 'scale(1.1)' : 'scale(1)',
+                                        opacity: (selectedAvatar || currentUser?.avatar) !== av ? 0.5 : 1,
+                                        boxShadow: selectedAvatar === av ? '0 0 0 2px #38bdf8' : 'none',
+                                    }}>
+                                        <img src={av} alt="" style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', display: 'block' }} />
+                                    </button>
+                                ))}
+                            </div>
+                            {selectedAvatar && selectedAvatar !== currentUser?.avatar && (
+                                <button className="profile-action-btn" onClick={() => {
+                                    onChangeAvatar?.(selectedAvatar);
+                                    setSuccess('Avatar güncellendi!');
+                                    setSelectedAvatar(null);
+                                    setTimeout(() => setSuccess(''), 2000);
+                                }} style={{ width: '100%', padding: '6px 0', fontSize: 10, gap: 4 }}>
+                                    💾 Avatarı Kaydet
+                                </button>
+                            )}
+                        </div>
+
+                        {/* İsim Değiştir */}
+                        <div>
+                            <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>
+                                İsim Değiştir
+                            </label>
+                            <input
+                                value={newName}
+                                onChange={(e) => { setNewName(e.target.value); setError(''); }}
+                                maxLength={20}
+                                placeholder="Yeni isminizi yazın..."
+                                style={{
+                                    width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box',
+                                    background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)',
+                                    borderTop: '1px solid rgba(0,0,0,0.4)',
+                                    boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.3)',
+                                    borderRadius: 10, color: '#fff', outline: 'none', fontFamily: 'inherit',
+                                }}
+                            />
+                            <button onClick={() => {
+                                if (!newName.trim() || newName.trim().length < 2) { setError('En az 2 karakter gerekli'); return; }
+                                onChangeName?.(newName.trim());
+                                setSuccess('İsim güncellendi!');
+                                setTimeout(() => setSuccess(''), 2000);
+                            }} className="profile-action-btn" style={{ width: '100%', padding: '6px 0', fontSize: 10, gap: 4, marginTop: 6 }}>
+                                ✏️ İsmi Kaydet
+                            </button>
+                        </div>
+
+                        {/* Renk Değiştir */}
+                        {isMember && (
+                            <div>
+                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>
+                                    İsim Rengi
+                                </label>
+                                <div style={{
+                                    textAlign: 'center', padding: '10px 0', marginBottom: 8, borderRadius: 8,
+                                    background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.06)',
+                                }}>
+                                    <span style={{ fontSize: 16, fontWeight: 800, color: selectedColor }}>
+                                        {currentUser?.username || 'Kullanıcı'}
+                                    </span>
+                                </div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4, justifyItems: 'center', marginBottom: 8 }}>
+                                    {NAME_COLORS.map(c => (
+                                        <button key={c} onClick={() => setSelectedColor(c)} style={{
+                                            width: 22, height: 22, borderRadius: '50%', cursor: 'pointer',
+                                            background: c, border: 'none',
+                                            transform: selectedColor === c ? 'scale(1.2)' : 'scale(1)',
+                                            boxShadow: selectedColor === c ? `0 0 12px ${c}, 0 0 4px ${c}` : 'none',
+                                            transition: 'all 0.2s ease',
+                                            opacity: selectedColor && selectedColor !== c ? 0.5 : 1,
+                                        }} />
+                                    ))}
+                                </div>
+                                <button onClick={() => {
+                                    onChangeNameColor?.(selectedColor);
+                                    setSuccess('Renk güncellendi!');
+                                    setTimeout(() => setSuccess(''), 2000);
+                                }} className="profile-action-btn" style={{ width: '100%', padding: '6px 0', fontSize: 10, gap: 4 }}>
+                                    🎨 Rengi Kaydet
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {/* ═══ AYARLAR TAB ═══ */}
+                {activeTab === 'ayarlar' && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+                        <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 0, marginLeft: 2 }}>
+                            Şifre Değiştir
+                        </label>
+                        {[
+                            { label: 'Mevcut Şifre', value: oldPass, set: setOldPass },
+                            { label: 'Yeni Şifre', value: newPass, set: setNewPass },
+                            { label: 'Şifre Tekrar', value: confirmPass, set: setConfirmPass },
+                        ].map((f, i) => (
+                            <div key={i}>
+                                <label style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, display: 'block', marginBottom: 6, marginLeft: 2 }}>
+                                    {f.label}
+                                </label>
+                                <input
+                                    type="password"
+                                    value={f.value}
+                                    onChange={(e) => f.set(e.target.value)}
+                                    autoComplete="one-time-code"
+                                    style={{
+                                        width: '100%', padding: '12px 14px', fontSize: 13, boxSizing: 'border-box',
+                                        background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)',
+                                        borderTop: '1px solid rgba(0,0,0,0.4)',
+                                        boxShadow: 'inset 0 3px 6px rgba(0,0,0,0.3)',
+                                        borderRadius: 10, color: '#fff', outline: 'none', fontFamily: 'inherit',
+                                    }}
+                                />
+                            </div>
+                        ))}
+                        <button onClick={() => {
+                            if (!oldPass || !newPass) { setError('Tüm alanları doldurun'); return; }
+                            if (newPass.length < 4) { setError('Şifre en az 4 karakter'); return; }
+                            if (newPass !== confirmPass) { setError('Şifreler eşleşmiyor'); return; }
+                            onChangePassword?.(oldPass, newPass);
+                            setSuccess('Şifre güncellendi!');
+                            setOldPass(''); setNewPass(''); setConfirmPass('');
+                            setTimeout(() => setSuccess(''), 2000);
+                        }} className="profile-action-btn" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }}>
+                            🔒 Şifreyi Değiştir
+                        </button>
+                    </div>
+                )}
+
+                <button onClick={handleClose} style={{
+                    width: '100%', padding: '8px 0', marginTop: 'auto', paddingTop: 12,
+                    fontSize: 9, fontWeight: 700, letterSpacing: 1.5, textTransform: 'uppercase',
+                    border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, cursor: 'pointer',
+                    background: 'rgba(0,0,0,0.2)', color: 'rgba(255,255,255,0.4)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                    transition: 'all 0.2s ease',
+                }}>← Kullanıcı Listesine Dön</button>
+            </div>
+        </div>
+    );
+}
+

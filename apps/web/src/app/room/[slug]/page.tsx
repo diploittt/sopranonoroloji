@@ -27,7 +27,7 @@ import { ROLE_HIERARCHY, ALL_PERMISSIONS, getMenuForUser, getRoleLevel, RoomMenu
 type ContextMenuItem = RoomMenuItem;
 import { ChangeNameModal } from '@/components/room/ChangeNameModal';
 import { BanOverlay } from '@/components/room/BanOverlay';
-import { ProfileModal } from '@/components/room/ProfileModal';
+// ProfileModal removed — profile settings now integrated into SidebarLeft
 import { GodMasterProfileModal } from '@/components/room/GodMasterProfileModal';
 import { One2OneRoomView } from '@/components/roomUI/One2OneRoomView';
 import { UserInfoModal } from '@/components/room/UserInfoModal';
@@ -1709,36 +1709,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 }}
                             />
 
-                            {/* Profile Modal */}
-                            <ProfileModal
-                                isOpen={isProfileOpen}
-                                onClose={() => setIsProfileOpen(false)}
-                                currentUser={room.state.currentUser}
-                                onChangeName={(newName) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-name', { newName });
-                                        addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
-                                    }
-                                }}
-                                onChangeAvatar={(avatarUrl) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-avatar', { avatar: avatarUrl });
-                                        addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
-                                    }
-                                }}
-                                onChangeNameColor={(color) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-name-color', { color });
-                                        addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
-                                    }
-                                }}
-                                onChangePassword={(oldPass, newPass) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-password', { oldPassword: oldPass, newPassword: newPass });
-                                        addToast('success', 'Şifre Değiştirildi', 'Şifreniz güncellendi.');
-                                    }
-                                }}
-                            />
+
 
                             {/* GodMaster Profile Modal */}
                             <GodMasterProfileModal
@@ -1858,6 +1829,32 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                 ignoredUsers={ignoredUsers}
                                                 isMeetingRoom={isMeetingRoom}
                                                 speakingUsers={room.state.speakingUsers}
+                                                isProfileOpen={isProfileOpen}
+                                                onCloseProfile={() => setIsProfileOpen(false)}
+                                                onChangeName={(newName) => {
+                                                    if (room.socket) {
+                                                        room.socket.emit('status:change-name', { newName });
+                                                        addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
+                                                    }
+                                                }}
+                                                onChangeAvatar={(avatarUrl) => {
+                                                    if (room.socket) {
+                                                        room.socket.emit('status:change-avatar', { avatar: avatarUrl });
+                                                        addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
+                                                    }
+                                                }}
+                                                onChangeNameColor={(color) => {
+                                                    if (room.socket) {
+                                                        room.socket.emit('status:change-name-color', { color });
+                                                        addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
+                                                    }
+                                                }}
+                                                onChangePassword={(oldPass, newPass) => {
+                                                    if (room.socket) {
+                                                        room.socket.emit('status:change-password', { oldPassword: oldPass, newPassword: newPass });
+                                                        addToast('success', 'Şifre Değiştirildi', 'Şifreniz güncellendi.');
+                                                    }
+                                                }}
                                             />
                                         </div>
                                     </div>
@@ -1962,6 +1959,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     .room-container main.flex-1 > .chat-area {
                                         position: relative !important;
                                         overflow: visible !important;
+                                        border: none !important;
+                                        border-color: transparent !important;
+                                    }
+                                    .room-container .chat-area > *,
+                                    .room-container .chat-messages-container {
+                                        border-color: transparent !important;
                                     }
                                     /* 3 raptiye — sol, orta, sağ */
                                     .room-raptiye-left,
@@ -2261,8 +2264,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         border-radius: 22px !important;
                                         overflow: hidden;
                                     }
-                                    /* Sol sütun — tüm iç elemanları şeffaf yap */
-                                    .room-container .sidebar-left *:not(svg):not(img):not(canvas):not(video) {
+                                    /* Sol sütun — tüm iç elemanları şeffaf yap (profil modu HARİÇ) */
+                                    .room-container .sidebar-left:not(.profile-mode) *:not(svg):not(img):not(canvas):not(video) {
                                         background: transparent !important;
                                         background-color: transparent !important;
                                         background-image: none !important;
@@ -2271,7 +2274,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         backdrop-filter: none !important;
                                         -webkit-backdrop-filter: none !important;
                                     }
-                                    .room-container .sidebar-left .mic-reactor {
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor {
                                         height: 64px !important;
                                         padding: 0 16px !important;
                                         border-radius: 14px !important;
@@ -2289,20 +2292,20 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         backdrop-filter: none !important;
                                         -webkit-backdrop-filter: none !important;
                                     }
-                                    .room-container .sidebar-left .mic-reactor span {
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor span {
                                         font-size: 11px !important;
                                         font-weight: 800 !important;
                                         letter-spacing: 1.5px !important;
                                         text-transform: uppercase !important;
                                         color: #cbd5e1 !important;
                                     }
-                                    .room-container .sidebar-left .mic-reactor svg {
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor svg {
                                         width: 15px !important;
                                         height: 15px !important;
                                         color: #94a3b8 !important;
                                     }
                                     /* === SLIM PREMIUM OVERRIDE — glossy-panel BRIGHT === */
-                                    .room-container .sidebar-left .slim-controls {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-controls {
                                         background:
                                             radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.14) 0%, transparent 60%),
                                             linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 25%, transparent 55%),
@@ -2316,24 +2319,24 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         -webkit-backdrop-filter: blur(24px) !important;
                                         overflow: visible !important;
                                     }
-                                    .room-container .sidebar-left .slim-status-pill {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-status-pill {
                                         background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%) !important;
                                         border-color: rgba(255,255,255,0.08) !important;
                                         box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2) !important;
                                     }
-                                    .room-container .sidebar-left .slim-status-pill:hover {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-status-pill:hover {
                                         background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%) !important;
                                         border-color: rgba(255,255,255,0.15) !important;
                                     }
-                                    .room-container .sidebar-left .slim-announce-row {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-announce-row {
                                         background: transparent !important;
                                         border-color: transparent !important;
                                         box-shadow: none !important;
                                     }
-                                    .room-container .sidebar-left .slim-announce-row.has-new {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-announce-row.has-new {
                                         background: rgba(251,191,36,0.06) !important;
                                     }
-                                    .room-container .sidebar-left .slim-radio-card {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-radio-card {
                                         background:
                                             radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.07) 0%, transparent 65%),
                                             rgba(0,0,0,0.2) !important;
@@ -2342,7 +2345,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         box-shadow: inset 0 3px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.04) !important;
                                         overflow: visible !important;
                                     }
-                                    .room-container .sidebar-left .slim-radio-display {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-radio-display {
                                         background:
                                             radial-gradient(ellipse at 50% -10%, rgba(79,177,179,0.08) 0%, transparent 70%),
                                             rgba(0,0,0,0.3) !important;
@@ -2350,52 +2353,53 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         border-top: 1px solid rgba(79,177,179,0.08) !important;
                                         box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
                                     }
-                                    .room-container .sidebar-left .slim-btn-skip {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-btn-skip {
                                         background: rgba(255,255,255,0.04) !important;
                                         border-color: rgba(255,255,255,0.1) !important;
                                     }
-                                    .room-container .sidebar-left .slim-btn-play {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-btn-play {
                                         background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%) !important;
                                         border: none !important;
                                         box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05) !important;
                                     }
-                                    .room-container .sidebar-left .slim-btn-play.active {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-btn-play.active {
                                         background: linear-gradient(180deg, rgba(52,211,153,0.3) 0%, rgba(5,150,105,0.4) 100%) !important;
                                         box-shadow: 0 4px 16px rgba(52,211,153,0.2), inset 0 1px 0 rgba(255,255,255,0.15) !important;
                                     }
-                                    .room-container .sidebar-left .slim-volume-track {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-volume-track {
                                         background: rgba(0,0,0,0.2) !important;
                                         border: 1px solid rgba(255,255,255,0.04) !important;
                                         box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
                                     }
-                                    .room-container .sidebar-left .slim-volume-fill {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-volume-fill {
                                         background: linear-gradient(90deg, rgba(56,189,248,0.6), rgba(56,189,248,0.8)) !important;
                                     }
-                                    .room-container .sidebar-left .slim-volume-knob {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-volume-knob {
                                         background: linear-gradient(180deg, #fff 0%, #94a3b8 100%) !important;
                                         border-color: rgba(15,23,42,0.6) !important;
                                         box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important;
                                     }
-                                    .room-container .sidebar-left .slim-channels-btn {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-channels-btn {
                                         background: transparent !important;
                                         border-color: transparent !important;
                                     }
-                                    .room-container .sidebar-left .slim-dropdown {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-dropdown {
                                         background: #ffffff !important;
                                         border: 1px solid #e2e8f0 !important;
                                         box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06) !important;
                                         backdrop-filter: none !important;
                                         -webkit-backdrop-filter: none !important;
                                     }
-                                    .room-container .sidebar-left .slim-dropdown * {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-dropdown * {
                                         background: transparent !important;
                                         border-color: transparent !important;
                                         box-shadow: none !important;
                                     }
-                                    .room-container .sidebar-left .slim-dropdown button:hover {
+                                    .room-container .sidebar-left:not(.profile-mode) .slim-dropdown button:hover {
                                         background: #f1f5f9 !important;
                                     }
                                 `}</style>
+
 
 
 
@@ -2483,8 +2487,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 <div className="absolute top-0 left-0 right-0 h-[96px] z-20 pointer-events-none rounded-t-[28px]" style={{ background: 'linear-gradient(180deg, rgba(180,40,50,0.12) 0%, rgba(140,30,40,0.06) 40%, transparent 100%)' }}>
                                     {/* Top edge highlight */}
                                     <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[28px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(220,80,80,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(220,80,80,0.25) 75%, transparent 95%)' }} />
-                                    {/* Bottom accent glow line */}
-                                    <div className="absolute bottom-0 left-0 right-0 h-[1px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(200,60,60,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(200,60,60,0.25) 75%, transparent 95%)', boxShadow: '0 1px 10px rgba(200,60,60,0.10)' }} />
                                 </div>
 
                                 {/* 1. LEFT SIDEBAR — desktop only, hidden on mobile */}
@@ -2501,6 +2503,32 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     ignoredUsers={ignoredUsers}
                                     isMeetingRoom={isMeetingRoom}
                                     speakingUsers={room.state.speakingUsers}
+                                    isProfileOpen={isProfileOpen}
+                                    onCloseProfile={() => setIsProfileOpen(false)}
+                                    onChangeName={(newName) => {
+                                        if (room.socket) {
+                                            room.socket.emit('status:change-name', { newName });
+                                            addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
+                                        }
+                                    }}
+                                    onChangeAvatar={(avatarUrl) => {
+                                        if (room.socket) {
+                                            room.socket.emit('status:change-avatar', { avatar: avatarUrl });
+                                            addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
+                                        }
+                                    }}
+                                    onChangeNameColor={(color) => {
+                                        if (room.socket) {
+                                            room.socket.emit('status:change-name-color', { color });
+                                            addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
+                                        }
+                                    }}
+                                    onChangePassword={(oldPass, newPass) => {
+                                        if (room.socket) {
+                                            room.socket.emit('status:change-password', { oldPassword: oldPass, newPassword: newPass });
+                                            addToast('success', 'Şifre Değiştirildi', 'Şifreniz güncellendi.');
+                                        }
+                                    }}
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
@@ -2774,7 +2802,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             />
 
                                             {/* Chat messages — visible even for soft-banned users */}
-                                            <div className="chat-area" style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+                                            <div className="chat-area" style={{ position: 'relative', flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', border: 'none' }}>
                                                 {/* ── Raptiyeler (pushpins) ── */}
                                                 <div className="room-raptiye-left">
                                                     <svg width="20" height="24" viewBox="0 0 20 24" fill="none" xmlns="http://www.w3.org/2000/svg">
