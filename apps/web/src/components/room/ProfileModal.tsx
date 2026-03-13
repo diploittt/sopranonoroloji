@@ -35,20 +35,6 @@ const NAME_COLORS = [
     '#ffffff', '#94a3b8', '#64748b', '#fbbf24', '#34d399', '#60a5fa',
 ];
 
-// ── Admin panel renk sistemi ──
-const MODAL_BG = '#ffffff';
-const MODAL_BORDER = '1px solid #e2e8f0';
-const MODAL_SHADOW = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)';
-const TEXT_PRIMARY = '#1e293b';
-const TEXT_SECONDARY = '#475569';
-const TEXT_MUTED = '#94a3b8';
-const INPUT_BG = '#f8fafc';
-const INPUT_BORDER = '1px solid #e2e8f0';
-const TAB_ACTIVE_BG = '#dbeafe';
-const TAB_ACTIVE_COLOR = '#2563eb';
-const TAB_ACTIVE_BORDER = '1px solid #93c5fd';
-const BTN_BG = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
-
 export function ProfileModal({
     isOpen, onClose, currentUser, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword
 }: ProfileModalProps) {
@@ -60,7 +46,6 @@ export function ProfileModal({
     const [newPass, setNewPass] = useState('');
     const [confirmPass, setConfirmPass] = useState('');
     const [error, setError] = useState('');
-    const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set(['ERKEK', 'KADIN']));
 
     const currentAvatar = currentUser?.avatar || '';
     const hasAnimatedNick = (() => {
@@ -82,17 +67,6 @@ export function ProfileModal({
             (tab.id !== 'look' || showLookTab)
         ), [userLevel, showLookTab]
     );
-
-    // ── Cinsiyet bazlı avatar filtreleme ──
-    const userGender = (currentUser?.gender || '').toLowerCase();
-    const avatarCategories = useMemo(() => {
-        const male = { label: '👨 Erkek', avatars: ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] };
-        const female = { label: '👩 Kadın', avatars: ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] };
-        const neutral = { label: '🌟 Nötr', avatars: ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] };
-        if (userGender === 'erkek' || userGender === 'male') return [male, neutral];
-        if (userGender === 'kadın' || userGender === 'kadin' || userGender === 'female') return [female, neutral];
-        return [male, female, neutral];
-    }, [userGender]);
 
     // Draggable
     const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -149,62 +123,104 @@ export function ProfileModal({
 
     if (!isOpen) return null;
 
-    const avatarUrl = selectedAvatarUrl;
-    const inputStyle: React.CSSProperties = {
-        width: '100%', fontSize: 11, color: TEXT_PRIMARY, borderRadius: 8,
-        padding: '6px 10px', border: INPUT_BORDER, background: INPUT_BG, outline: 'none',
-    };
-    const btnStyle: React.CSSProperties = {
-        width: '100%', padding: '6px 0', fontSize: 11, fontWeight: 700, color: '#fff',
-        borderRadius: 8, border: 'none', cursor: 'pointer', background: BTN_BG,
-        boxShadow: '0 2px 8px rgba(30,58,95,0.15)',
-    };
+    const modalStyle: React.CSSProperties = centered
+        ? { position: 'relative' }
+        : { position: 'fixed', left: position.x, top: position.y, zIndex: 10001 };
 
     const content = (
-        <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4" onClick={onClose} style={centered ? { paddingTop: '15vh' } : { display: 'block' }}>
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.12)' }} />
+        <div className="fixed inset-0 z-[10000] flex items-start justify-center" onClick={onClose}
+            style={centered ? { paddingTop: '18vh' } : { display: 'block' }}
+        >
+            {/* Backdrop */}
+            <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', backdropFilter: 'blur(2px)' }} />
+
+            {/* Modal */}
             <div
                 ref={modalRef}
-                className="relative w-full max-w-[280px] animate-pure-fade"
+                className="animate-pure-fade"
                 onClick={(e) => e.stopPropagation()}
                 style={{
-                    background: MODAL_BG,
-                    border: MODAL_BORDER, borderRadius: 12, boxShadow: MODAL_SHADOW, overflow: 'hidden',
+                    ...modalStyle,
+                    width: 300,
+                    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                    borderRadius: 14,
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05), inset 0 1px 0 rgba(255,255,255,0.08)',
+                    overflow: 'hidden',
                 }}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between px-3 py-1.5"
+                {/* ── Header ── */}
+                <div
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none', background: '#1e293b', borderRadius: '12px 12px 0 0' }}
+                    style={{
+                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                        padding: '8px 12px',
+                        cursor: 'move', userSelect: 'none',
+                        background: 'linear-gradient(90deg, rgba(59,130,246,0.15) 0%, rgba(147,51,234,0.1) 100%)',
+                        borderBottom: '1px solid rgba(255,255,255,0.06)',
+                    }}
                 >
-                    <h2 style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: '0.04em', textTransform: 'uppercase' as any }}>
-                        <span style={{ fontSize: 11 }}>👤</span> Profil
-                    </h2>
-                    <button onClick={onClose} style={{ width: 20, height: 20, borderRadius: 5, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, transition: 'all 0.2s' }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        {/* Current avatar mini */}
+                        <img
+                            src={currentUser?.avatar?.startsWith('animated:') || currentUser?.avatar?.startsWith('gifnick::')
+                                ? '/avatars/neutral_1.png'
+                                : (currentUser?.avatar || '/avatars/neutral_1.png')
+                            }
+                            alt=""
+                            style={{ width: 28, height: 28, borderRadius: 8, objectFit: 'cover', border: '1.5px solid rgba(255,255,255,0.2)' }}
+                        />
+                        <div>
+                            <div style={{ fontSize: 11, fontWeight: 800, color: '#e2e8f0', letterSpacing: '0.03em' }}>
+                                {currentUser?.displayName || currentUser?.username || 'Profil'}
+                            </div>
+                            <div style={{ fontSize: 8, color: '#64748b', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.1em' }}>
+                                {currentUser?.role || 'guest'}
+                            </div>
+                        </div>
+                    </div>
+                    <button onClick={onClose} style={{
+                        width: 22, height: 22, borderRadius: 6,
+                        background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+                        color: 'rgba(255,255,255,0.4)', cursor: 'pointer',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10,
+                        transition: 'all 0.2s',
+                    }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(239,68,68,0.2)'; e.currentTarget.style.color = '#f87171'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = 'rgba(255,255,255,0.4)'; }}
                     >✕</button>
                 </div>
 
-                {/* Tabs */}
-                <div style={{ display: 'flex', gap: 2, padding: '4px 10px 3px' }}>
-                    {TABS.map(tab => (
-                        <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }}
-                            style={{
-                                flex: 1, padding: '4px 0', fontSize: 9, fontWeight: 600, borderRadius: 6, transition: 'all 0.2s', cursor: 'pointer',
-                                background: activeTab === tab.id ? TAB_ACTIVE_BG : 'transparent',
-                                color: activeTab === tab.id ? TAB_ACTIVE_COLOR : TEXT_MUTED,
-                                border: activeTab === tab.id ? TAB_ACTIVE_BORDER : '1px solid transparent',
-                            }}
-                        >{tab.icon} {tab.label}</button>
-                    ))}
+                {/* ── Tabs ── */}
+                <div style={{
+                    display: 'flex', gap: 1, padding: '6px 8px 0',
+                    borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                    {TABS.map(tab => {
+                        const isActive = activeTab === tab.id;
+                        return (
+                            <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }}
+                                style={{
+                                    flex: 1, padding: '5px 0 6px', fontSize: 9, fontWeight: 700, cursor: 'pointer',
+                                    transition: 'all 0.2s',
+                                    color: isActive ? '#60a5fa' : '#64748b',
+                                    background: 'transparent',
+                                    borderBottom: isActive ? '2px solid #3b82f6' : '2px solid transparent',
+                                    border: 'none', borderTop: 'none', borderLeft: 'none', borderRight: 'none',
+                                    letterSpacing: '0.04em',
+                                }}
+                            >{tab.icon} {tab.label}</button>
+                        );
+                    })}
                 </div>
 
-                {/* Content */}
-                <div style={{ padding: '6px 10px 10px', minHeight: 140 }}>
+                {/* ── Content ── */}
+                <div style={{ padding: '10px 12px 12px' }}>
+
+                    {/* ═══ LOOK TAB ═══ */}
                     {activeTab === 'look' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <p style={{ fontSize: 10, color: TEXT_SECONDARY, textAlign: 'center', margin: 0 }}>Yönetici tarafından size hareketli bir nick atanmış.</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            <p style={{ fontSize: 10, color: '#94a3b8', textAlign: 'center', margin: 0 }}>Yönetici tarafından size hareketli bir nick atanmış.</p>
                             {(() => {
                                 const animNick = (hasAnimatedNick ? currentAvatar : savedAnimatedNick) || '';
                                 const isAnimType = animNick.startsWith('animated:');
@@ -212,22 +228,22 @@ export function ProfileModal({
                                 if (isAnimType) {
                                     const parts = animNick.split(':'); const cls = parts[1] || 'shimmer-gold'; const fontSize = parseInt(parts[2]) || 13;
                                     const text = parts.slice(4).join(':') || currentUser?.username || 'Kullanıcı';
-                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0', borderRadius: 10, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(100,116,139,0.1)' }}><span className={`animated-nick ${cls}`} style={{ fontSize }}>{text}</span></div>);
+                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}><span className={`animated-nick ${cls}`} style={{ fontSize }}>{text}</span></div>);
                                 } else if (isGifType) {
                                     const parts = animNick.split('::'); const gifUrl = parts[1] || '';
                                     if (!gifUrl) return null;
-                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0', borderRadius: 10, background: 'rgba(0,0,0,0.04)', border: '1px solid rgba(100,116,139,0.1)' }}><img src={gifUrl} alt="GIF Nick" style={{ maxHeight: 36, objectFit: 'contain' }} /></div>);
+                                    return (<div style={{ display: 'flex', justifyContent: 'center', padding: '6px 0', borderRadius: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}><img src={gifUrl} alt="GIF Nick" style={{ maxHeight: 32, objectFit: 'contain' }} /></div>);
                                 }
                                 return null;
                             })()}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                                {[{ on: true, label: '✨ Hareketli Nick' }, { on: false, label: '👤 Normal İsim' }].map(opt => (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6 }}>
+                                {[{ on: true, label: '✨ Hareketli' }, { on: false, label: '👤 Normal' }].map(opt => (
                                     <button key={opt.label} onClick={() => setUseAnimatedNick(opt.on)}
                                         style={{
-                                            padding: '10px 0', borderRadius: 10, fontSize: 11, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
-                                            background: useAnimatedNick === opt.on ? TAB_ACTIVE_BG : 'rgba(255,255,255,0.4)',
-                                            border: useAnimatedNick === opt.on ? '1.5px solid rgba(30,58,95,0.3)' : '1.5px solid rgba(100,116,139,0.15)',
-                                            color: useAnimatedNick === opt.on ? TAB_ACTIVE_COLOR : TEXT_MUTED,
+                                            padding: '7px 0', borderRadius: 8, fontSize: 10, fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s',
+                                            background: useAnimatedNick === opt.on ? 'rgba(59,130,246,0.15)' : 'rgba(255,255,255,0.03)',
+                                            border: useAnimatedNick === opt.on ? '1px solid rgba(59,130,246,0.4)' : '1px solid rgba(255,255,255,0.08)',
+                                            color: useAnimatedNick === opt.on ? '#60a5fa' : '#64748b',
                                         }}
                                     >{opt.label}</button>
                                 ))}
@@ -235,53 +251,60 @@ export function ProfileModal({
                             <button
                                 onClick={() => {
                                     const animNick = currentAvatar?.startsWith('animated:') || currentAvatar?.startsWith('gifnick::')
-                                        ? currentAvatar
-                                        : (savedAnimatedNick || '');
+                                        ? currentAvatar : (savedAnimatedNick || '');
                                     if (useAnimatedNick && animNick) {
-                                        // Switch to animated nick
                                         onChangeAvatar(animNick);
                                         try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { }
                                     } else {
-                                        // Switch to normal avatar — save animated nick for future use before switching
-                                        if (animNick) {
-                                            try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { }
-                                        }
-                                        const defaultAvatar = '/avatars/neutral_1.png';
-                                        onChangeAvatar(defaultAvatar);
+                                        if (animNick) { try { localStorage.setItem('soprano_animated_nick', animNick); } catch (e) { } }
+                                        onChangeAvatar('/avatars/neutral_1.png');
                                     }
                                     onClose();
                                 }}
-                                className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 transition-all"
-                            >
-                                Görünümü Kaydet
-                            </button>
+                                style={{
+                                    width: '100%', padding: '7px 0', fontSize: 10, fontWeight: 700,
+                                    color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                    background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                    boxShadow: '0 2px 10px rgba(59,130,246,0.3)',
+                                }}
+                            >Kaydet</button>
                         </div>
                     )}
 
+                    {/* ═══ AVATAR TAB ═══ */}
                     {activeTab === 'avatar' && (
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-center">
-                                <img src={selectedAvatarUrl} alt="Avatar" className="w-14 h-14 rounded-xl border-2 border-blue-200" style={{ background: '#f1f5f9', objectFit: 'cover' }} />
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {/* Current preview */}
+                            <div style={{ display: 'flex', justifyContent: 'center' }}>
+                                <div style={{
+                                    width: 52, height: 52, borderRadius: 12, overflow: 'hidden',
+                                    border: '2px solid rgba(59,130,246,0.4)',
+                                    boxShadow: '0 0 20px rgba(59,130,246,0.15)',
+                                }}>
+                                    <img src={selectedAvatarUrl} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </div>
                             </div>
-                            <div>
-                                <label style={{ fontSize: 9, color: '#64748b', marginBottom: 2, display: 'block', fontWeight: 600 }}>Avatar Seç</label>
-                                <div className="grid grid-cols-4 gap-2">
-                                    {ALL_AVATARS.map(av => (
-                                        <button
-                                            key={av}
-                                            onClick={() => setSelectedAvatarUrl(av)}
-                                            className="rounded-xl transition-all hover:scale-105"
+                            {/* Avatar grid */}
+                            <div style={{
+                                display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 4,
+                                padding: 4, borderRadius: 8,
+                                background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
+                            }}>
+                                {ALL_AVATARS.map(av => {
+                                    const isSelected = selectedAvatarUrl === av;
+                                    return (
+                                        <button key={av} onClick={() => setSelectedAvatarUrl(av)}
                                             style={{
-                                                padding: 3,
-                                                background: selectedAvatarUrl === av ? '#dbeafe' : '#f8fafc',
-                                                border: selectedAvatarUrl === av ? '2px solid #2563eb' : '2px solid #e2e8f0',
-                                                boxShadow: selectedAvatarUrl === av ? '0 0 8px rgba(37,99,235,0.2)' : 'none',
+                                                padding: 2, borderRadius: 8, cursor: 'pointer', transition: 'all 0.15s',
+                                                background: isSelected ? 'rgba(59,130,246,0.15)' : 'transparent',
+                                                border: isSelected ? '1.5px solid rgba(59,130,246,0.5)' : '1.5px solid transparent',
+                                                transform: isSelected ? 'scale(1.08)' : 'scale(1)',
                                             }}
                                         >
-                                            <img src={av} alt="" className="w-full aspect-square rounded-lg" style={{ objectFit: 'cover' }} />
+                                            <img src={av} alt="" style={{ width: '100%', aspectRatio: '1', borderRadius: 6, objectFit: 'cover' }} />
                                         </button>
-                                    ))}
-                                </div>
+                                    );
+                                })}
                             </div>
                             <button onClick={() => {
                                 const currentAv = currentUser?.avatar || '';
@@ -293,71 +316,118 @@ export function ProfileModal({
                                     onChangeAvatar(selectedAvatarUrl);
                                     onClose();
                                 }
-                            }} style={btnStyle}>
-                                Avatarı Kaydet
-                            </button>
+                            }} style={{
+                                width: '100%', padding: '7px 0', fontSize: 10, fontWeight: 700,
+                                color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                boxShadow: '0 2px 10px rgba(59,130,246,0.3)',
+                            }}>Avatarı Kaydet</button>
                         </div>
                     )}
 
+                    {/* ═══ NAME TAB ═══ */}
                     {activeTab === 'name' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                             <div>
-                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Mevcut İsim</label>
-                                <div style={{ fontSize: 12, color: TEXT_SECONDARY, background: 'rgba(255,255,255,0.4)', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(100,116,139,0.1)' }}>{currentUser?.username || '—'}</div>
+                                <label style={{ fontSize: 9, color: '#64748b', display: 'block', marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Mevcut İsim</label>
+                                <div style={{
+                                    fontSize: 12, color: '#e2e8f0', fontWeight: 600,
+                                    background: 'rgba(255,255,255,0.04)', borderRadius: 8,
+                                    padding: '6px 10px', border: '1px solid rgba(255,255,255,0.08)',
+                                }}>{currentUser?.username || '—'}</div>
                             </div>
                             <div>
-                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Yeni İsim</label>
-                                <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }} maxLength={20} placeholder="Yeni isminizi yazın..." style={inputStyle} />
-                                {error && <span style={{ fontSize: 10, color: '#ef4444', display: 'block', marginTop: 2 }}>{error}</span>}
+                                <label style={{ fontSize: 9, color: '#64748b', display: 'block', marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>Yeni İsim</label>
+                                <input value={newName} onChange={(e) => { setNewName(e.target.value); setError(''); }}
+                                    maxLength={20} placeholder="Yeni isminizi yazın..."
+                                    style={{
+                                        width: '100%', fontSize: 11, color: '#e2e8f0', borderRadius: 8,
+                                        padding: '6px 10px',
+                                        border: '1px solid rgba(255,255,255,0.1)',
+                                        background: 'rgba(255,255,255,0.04)', outline: 'none',
+                                    }}
+                                />
+                                {error && <span style={{ fontSize: 9, color: '#ef4444', display: 'block', marginTop: 3 }}>{error}</span>}
                             </div>
                             <button onClick={() => {
                                 if (!newName.trim() || newName.trim().length < 2) { setError('En az 2 karakter'); return; }
                                 onChangeName(newName.trim()); onClose();
-                            }} style={btnStyle}>İsmi Değiştir</button>
+                            }} style={{
+                                width: '100%', padding: '7px 0', fontSize: 10, fontWeight: 700,
+                                color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                boxShadow: '0 2px 10px rgba(59,130,246,0.3)',
+                            }}>İsmi Değiştir</button>
                         </div>
                     )}
 
+                    {/* ═══ COLOR TAB ═══ */}
                     {activeTab === 'color' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                            <div style={{ textAlign: 'center' }}>
-                                <span style={{ fontSize: 14, fontWeight: 700, color: selectedColor, textShadow: '0 1px 3px rgba(0,0,0,0.15)' }}>{currentUser?.username || 'Kullanıcı'}</span>
-                                <p style={{ fontSize: 9, color: TEXT_MUTED, margin: '2px 0 0' }}>Önizleme</p>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                            {/* Preview */}
+                            <div style={{
+                                textAlign: 'center', padding: '8px 0',
+                                borderRadius: 8, background: 'rgba(255,255,255,0.03)',
+                                border: '1px solid rgba(255,255,255,0.06)',
+                            }}>
+                                <span style={{ fontSize: 15, fontWeight: 800, color: selectedColor, textShadow: `0 0 12px ${selectedColor}40` }}>
+                                    {currentUser?.username || 'Kullanıcı'}
+                                </span>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 6, justifyItems: 'center' }}>
+                            {/* Color grid */}
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(6, 1fr)', gap: 5, justifyItems: 'center' }}>
                                 {NAME_COLORS.map(c => (
                                     <button key={c} onClick={() => setSelectedColor(c)} style={{
-                                        width: 28, height: 28, borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s',
-                                        background: c, border: selectedColor === c ? '2px solid #1e293b' : '2px solid rgba(100,116,139,0.15)',
-                                        boxShadow: selectedColor === c ? `0 0 10px ${c}40` : 'none',
+                                        width: 26, height: 26, borderRadius: 7, cursor: 'pointer', transition: 'all 0.2s',
+                                        background: c,
+                                        border: selectedColor === c ? '2px solid #fff' : '2px solid rgba(255,255,255,0.1)',
+                                        boxShadow: selectedColor === c ? `0 0 12px ${c}60, 0 0 4px rgba(255,255,255,0.3)` : 'none',
                                         transform: selectedColor === c ? 'scale(1.15)' : 'scale(1)',
                                     }} />
                                 ))}
                             </div>
-                            <button onClick={() => { onChangeNameColor(selectedColor); onClose(); }} style={btnStyle}>Rengi Kaydet</button>
+                            <button onClick={() => { onChangeNameColor(selectedColor); onClose(); }} style={{
+                                width: '100%', padding: '7px 0', fontSize: 10, fontWeight: 700,
+                                color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                boxShadow: '0 2px 10px rgba(59,130,246,0.3)',
+                            }}>Rengi Kaydet</button>
                         </div>
                     )}
 
+                    {/* ═══ PASSWORD TAB ═══ */}
                     {activeTab === 'password' && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                            <div>
-                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Mevcut Şifre</label>
-                                <input type="password" value={oldPass} onChange={(e) => setOldPass(e.target.value)} autoComplete="one-time-code" name="otp1" style={inputStyle} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Yeni Şifre</label>
-                                <input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} autoComplete="one-time-code" name="otp2" style={inputStyle} />
-                            </div>
-                            <div>
-                                <label style={{ fontSize: 10, color: TEXT_MUTED, display: 'block', marginBottom: 4 }}>Şifre Tekrar</label>
-                                <input type="password" value={confirmPass} onChange={(e) => setConfirmPass(e.target.value)} autoComplete="one-time-code" name="otp3" style={inputStyle} />
-                            </div>
-                            {error && <span style={{ fontSize: 10, color: '#ef4444' }}>{error}</span>}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                            {[
+                                { label: 'Mevcut Şifre', value: oldPass, set: setOldPass, name: 'otp1' },
+                                { label: 'Yeni Şifre', value: newPass, set: setNewPass, name: 'otp2' },
+                                { label: 'Şifre Tekrar', value: confirmPass, set: setConfirmPass, name: 'otp3' },
+                            ].map(f => (
+                                <div key={f.name}>
+                                    <label style={{ fontSize: 9, color: '#64748b', display: 'block', marginBottom: 3, fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{f.label}</label>
+                                    <input type="password" value={f.value} onChange={(e) => f.set(e.target.value)}
+                                        autoComplete="one-time-code" name={f.name}
+                                        style={{
+                                            width: '100%', fontSize: 11, color: '#e2e8f0', borderRadius: 8,
+                                            padding: '6px 10px',
+                                            border: '1px solid rgba(255,255,255,0.1)',
+                                            background: 'rgba(255,255,255,0.04)', outline: 'none',
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                            {error && <span style={{ fontSize: 9, color: '#ef4444' }}>{error}</span>}
                             <button onClick={() => {
                                 if (!oldPass || !newPass) { setError('Tüm alanları doldurun'); return; }
                                 if (newPass.length < 4) { setError('Şifre en az 4 karakter'); return; }
                                 if (newPass !== confirmPass) { setError('Şifreler eşleşmiyor'); return; }
                                 onChangePassword(oldPass, newPass); onClose();
-                            }} style={btnStyle}>Şifreyi Değiştir</button>
+                            }} style={{
+                                width: '100%', padding: '7px 0', fontSize: 10, fontWeight: 700,
+                                color: '#fff', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                boxShadow: '0 2px 10px rgba(59,130,246,0.3)',
+                            }}>Şifreyi Değiştir</button>
                         </div>
                     )}
                 </div>
