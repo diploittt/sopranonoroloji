@@ -57,7 +57,6 @@ const EMPTY_AREA_ITEMS: ContextMenuItem[] = [
     { id: 'mic-free', label: 'Mikrofonu Serbest Bırak', icon: '🎤', action: 'freeMicrophone', description: 'Mikrofonu serbest bırak' },
     { id: 'mic-take', label: 'Mikrofonu Al', icon: '🎙️', action: 'takeMicrophone', description: 'Mikrofonu al' },
     { id: 'talk-test', label: 'Mikrofon Testi', icon: '🎙️', action: 'testUserAudio', description: 'Mikrofonun çalışıp çalışmadığını test et' },
-    { id: 'my-profile', label: 'Profilim', icon: '👤', action: 'openMyProfile', description: 'Kendi profilim' },
 ];
 
 // ─── USER CONTEXT MENU ITEMS (dynamic based on target state) ────────
@@ -128,7 +127,6 @@ function getUserMenuItems(targetUser?: any): ContextMenuItem[] {
         { id: 'ignore', label: 'Yoksay', icon: '🙈', action: 'ignoreUser' },
         { id: 'unignore', label: 'Yoksayı Kaldır', icon: '👁️', action: 'unignoreUser' },
         { id: 'talk-test', label: 'Ses Testi', icon: '🔊', action: 'testUserAudio' },
-        { id: 'my-profile', label: 'Profilim', icon: '👤', action: 'openMyProfile' },
     ];
 }
 
@@ -143,15 +141,6 @@ const CHAT_AREA_ITEMS: ContextMenuItem[] = [
     { id: 'stop-text-local', label: 'Yazıları Durdur (Yerel)', icon: '⏸️', action: 'stopMessagesLocal', scope: 'local' },
     { id: 'clear-text-global', label: 'Yazıları Temizle', icon: '🗑️', action: 'clearMessagesGlobal', scope: 'global', confirm: true, confirmMessage: 'Tüm yazılar temizlenecek. Emin misiniz?' },
     { id: 'clear-text-local', label: 'Yazıları Temizle (Yerel)', icon: '🗑️', action: 'clearMessagesLocal', scope: 'local' },
-    {
-        id: 'my-profile', label: 'Profilim', icon: '👤', type: 'submenu' as const,
-        submenu: [
-            { id: 'change-avatar', label: 'Avatar Değiştir', action: 'changeAvatar' },
-            { id: 'change-name-profile', label: 'İsim Değiştir', action: 'changeName' },
-            { id: 'change-password', label: 'Şifre Değiştir', action: 'changePassword' },
-            { id: 'name-color', label: 'İsme Renk Ver', action: 'changeNameColor' },
-        ]
-    },
     { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'showAllUsers', description: 'Tüm kullanıcılar' },
     { id: 'room-monitor', label: 'Odaları Gözetle', icon: '🏠', action: 'openRoomMonitor', description: 'Kim nerede, hangi odada' },
 ];
@@ -1431,7 +1420,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             {room.state.banInfo && room.state.banInfo.banLevel === 'soft' && (
                                 <div className="fixed top-0 left-0 right-0 z-[99998]" style={{
                                     background: 'linear-gradient(135deg, #991b1b, #7f1d1d)',
-                                    borderBottom: '2px solid #ef4444',
+                                    borderBottom: 'none',
                                     padding: '10px 20px',
                                     textAlign: 'center',
                                     animation: 'softBanPulse 2s ease-in-out infinite',
@@ -2880,6 +2869,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onToggleCamera={room.actions.toggleCamera}
                                                     onLeaveRoom={room.actions.leaveRoom}
                                                     onToggleSettings={() => setIsSettingsOpen(prev => !prev)}
+                                                    onToggleProfile={() => setIsProfileOpen(prev => !prev)}
                                                     onRegisterSettingsRef={(ref: any) => setSettingsAnchor(ref)}
                                                     isCameraOn={room.state.isCameraOn}
                                                     isMicOn={room.state.isMicOn}

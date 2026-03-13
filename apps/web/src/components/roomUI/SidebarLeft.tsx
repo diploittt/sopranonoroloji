@@ -183,7 +183,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             case 'outside': return t.statusOutside;
             case 'phone': return t.statusOnPhone;
             case 'stealth': return t.statusInvisible;
-            default: return t.statusOnline;
+            default: return 'Aktif';
         }
     };
 
@@ -726,7 +726,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                 ? ''
                                                 : isSelf
                                                     ? 'border border-cyan-400/40 shadow-[0_0_14px_rgba(34,211,238,0.15)]'
-                                                    : 'border border-transparent hover:bg-white/[0.04]'}
+                                                    : 'border border-white/[0.06] shadow-[0_1px_6px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.04]'}
                                     ${isInvisible ? 'grayscale opacity-40 saturate-0' : ''}
                                     ${!isGodMasterSpecialMode && user.isMuted && isSelf ? '!border-red-500/30 !bg-red-500/[0.04]' : ''}
                                     ${!isGodMasterSpecialMode && user.isGagged && isSelf ? '!border-orange-500/30 !bg-orange-500/[0.04]' : ''}

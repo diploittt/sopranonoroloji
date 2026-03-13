@@ -1,6 +1,6 @@
 "use client";
 
-import { Hand, Video, Volume2, VolumeX, Smile, Sticker, Settings2, Power, SendHorizontal, Clapperboard, Mic, MicOff } from 'lucide-react';
+import { Hand, Video, Volume2, VolumeX, Smile, Sticker, Settings2, Power, SendHorizontal, Clapperboard, Mic, MicOff, User } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { AnchorPopover } from '@/components/ui/AnchorPopover';
 import { EmojiPicker } from './EmojiPicker';
@@ -18,6 +18,7 @@ export interface BottomToolbarProps {
     onToggleCamera: () => void;
     onLeaveRoom: () => void;
     onToggleSettings: () => void;
+    onToggleProfile?: () => void;
     onRegisterSettingsRef: (ref: React.RefObject<HTMLButtonElement | null>) => void;
     isCameraOn: boolean;
     isMicOn: boolean;
@@ -72,6 +73,7 @@ export function BottomToolbar({
     onToggleCamera,
     onLeaveRoom,
     onToggleSettings,
+    onToggleProfile,
     onRegisterSettingsRef,
     isCameraOn,
     isMicOn,
@@ -203,143 +205,91 @@ export function BottomToolbar({
                 variant="panel"
                 title={`🔊 ${t.volumeLevel}`}
             >
-                <div className="w-64 space-y-4 p-2">
-                    {/* Header with Visualizer */}
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">🎤 {t.speakerVolume}</span>
-                    </div>
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-3">
+                <div className="w-52 p-2" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {/* Speaker Volume */}
+                    <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>🎤 {t.speakerVolume}</span>
+                            <span style={{ fontSize: 9, fontWeight: 700, color: isRemoteMuted ? '#ef4444' : '#2563eb', fontFamily: 'monospace' }}>
+                                {isRemoteMuted ? 'MUTE' : `${localVolume}%`}
+                            </span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <button
-                                onClick={() => {
-                                    if (onToggleRemoteVolume) onToggleRemoteVolume();
+                                onClick={() => { if (onToggleRemoteVolume) onToggleRemoteVolume(); }}
+                                style={{
+                                    width: 28, height: 28, borderRadius: 6, border: '1px solid #e2e8f0',
+                                    background: isRemoteMuted ? '#fef2f2' : '#f0f7ff',
+                                    color: isRemoteMuted ? '#ef4444' : '#2563eb',
+                                    cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                                 }}
-                                className={`p-2.5 rounded-xl transition-all duration-300 ${isRemoteMuted
-                                    ? 'bg-red-500/20 text-red-500 shadow-[0_0_15px_rgba(239,68,68,0.2)]'
-                                    : 'bg-[#7b9fef]/20 text-[#7b9fef] shadow-[0_0_15px_rgba(123,159,239,0.2)]'
-                                    }`}
                                 title={isRemoteMuted ? t.unmute : t.mute}
                             >
-                                {isRemoteMuted ? <VolumeX className="w-5 h-5" /> : <Volume2 className="w-5 h-5" />}
+                                {isRemoteMuted ? <VolumeX style={{ width: 14, height: 14 }} /> : <Volume2 style={{ width: 14, height: 14 }} />}
                             </button>
-                            <div className="flex flex-col">
-                                <span className={`text-xs font-bold tracking-widest ${isRemoteMuted ? 'text-red-400' : 'text-[#7b9fef]'}`}>
-                                    {isRemoteMuted ? t.soundOff : t.soundOn}
-                                </span>
-                                <span className="text-[10px] text-gray-500 font-mono mt-0.5">
-                                    {isRemoteMuted ? '--' : `%${localVolume}`}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Mini Sound Wave Animation */}
-                        {!isRemoteMuted && localVolume > 0 && (
-                            <div className="flex items-end gap-1 h-6 px-2">
-                                <div className="w-1 bg-[#7b9fef] rounded-full animate-[music-bar_1s_ease-in-out_infinite]" style={{ animationDelay: '0.0s' }}></div>
-                                <div className="w-1 bg-[#a3bfff] rounded-full animate-[music-bar_1s_ease-in-out_infinite]" style={{ animationDelay: '0.2s' }}></div>
-                                <div className="w-1 bg-[#5a7fd4] rounded-full animate-[music-bar_1s_ease-in-out_infinite]" style={{ animationDelay: '0.4s' }}></div>
-                                <div className="w-1 bg-[#7b9fef] rounded-full animate-[music-bar_1s_ease-in-out_infinite]" style={{ animationDelay: '0.1s' }}></div>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Gradient Slider */}
-                    <div className="relative h-6 flex items-center group">
-                        <input
-                            type="range"
-                            min={0}
-                            max={100}
-                            value={localVolume}
-                            onChange={(e) => {
-                                const val = Number(e.target.value) / 100;
-                                if (onVolumeChange) onVolumeChange(val);
-                                if (isRemoteMuted && val > 0 && onToggleRemoteVolume) onToggleRemoteVolume();
-                            }}
-                            className="w-full h-2 rounded-full appearance-none bg-[#1a1d26] cursor-pointer relative z-10
-                            [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                            [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#7b9fef]
-                            [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(123,159,239,0.5)] [&::-webkit-slider-thumb]:transition-transform
-                            [&::-webkit-slider-thumb]:hover:scale-125 focus:outline-none"
-                        />
-                        {/* Custom Track Fill */}
-                        <div
-                            className="absolute h-2 rounded-full bg-gradient-to-r from-[#5a7fd4] via-[#7b9fef] to-[#a3bfff] pointer-events-none transition-all duration-150 top-1/2 -translate-y-1/2"
-                            style={{ width: `${localVolume}%` }}
-                        ></div>
-                    </div>
-
-                    {/* Quick Select Buttons */}
-                    <div className="flex justify-between gap-1 pt-1">
-                        {[0, 25, 50, 75, 100].map((val) => (
-                            <button
-                                key={val}
-                                onClick={() => {
-                                    const v = val / 100;
-                                    if (onVolumeChange) onVolumeChange(v);
-                                    if (isRemoteMuted && v > 0 && onToggleRemoteVolume) onToggleRemoteVolume();
+                            <input
+                                type="range" min={0} max={100} value={localVolume}
+                                onChange={(e) => {
+                                    const val = Number(e.target.value) / 100;
+                                    if (onVolumeChange) onVolumeChange(val);
+                                    if (isRemoteMuted && val > 0 && onToggleRemoteVolume) onToggleRemoteVolume();
                                 }}
-                                className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all border
-                                ${localVolume === val
-                                        ? 'bg-[#7b9fef] text-[#070B14] border-[#7b9fef] shadow-[0_0_10px_rgba(123,159,239,0.4)]'
-                                        : 'bg-white/5 text-gray-500 border-white/5 hover:bg-white/10 hover:text-white'
-                                    }`}
-                            >
-                                {val === 0 ? 'MUTE' : `${val}%`}
-                            </button>
-                        ))}
+                                style={{ flex: 1, height: 4, accentColor: '#2563eb', cursor: 'pointer' }}
+                            />
+                        </div>
+                        <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
+                            {[0, 25, 50, 75, 100].map((val) => (
+                                <button
+                                    key={val}
+                                    onClick={() => {
+                                        const v = val / 100;
+                                        if (onVolumeChange) onVolumeChange(v);
+                                        if (isRemoteMuted && v > 0 && onToggleRemoteVolume) onToggleRemoteVolume();
+                                    }}
+                                    style={{
+                                        flex: 1, padding: '3px 0', borderRadius: 4, fontSize: 9, fontWeight: 700,
+                                        cursor: 'pointer', transition: 'all 0.15s',
+                                        background: localVolume === val ? '#dbeafe' : '#f8fafc',
+                                        color: localVolume === val ? '#2563eb' : '#64748b',
+                                        border: localVolume === val ? '1px solid #93c5fd' : '1px solid #e2e8f0',
+                                    }}
+                                >
+                                    {val === 0 ? 'MUTE' : `${val}%`}
+                                </button>
+                            ))}
+                        </div>
                     </div>
 
-                    {/* ── TV Sesi ── */}
+                    {/* TV Volume */}
                     {hasTvStream && (
-                        <>
-                            <div className="w-full h-px bg-white/10 my-3" />
-                            <div className="flex items-center justify-between mb-2">
-                                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">📺 {t.tvVolume}</span>
-                                <span className="text-[10px] text-gray-500 font-mono">%{localTvVolume}</span>
+                        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em' }}>📺 {t.tvVolume}</span>
+                                <span style={{ fontSize: 9, fontWeight: 700, color: '#dc2626', fontFamily: 'monospace' }}>{localTvVolume}%</span>
                             </div>
-
-                            {/* TV Slider */}
-                            <div className="relative h-6 flex items-center group">
-                                <input
-                                    type="range"
-                                    min={0}
-                                    max={100}
-                                    value={localTvVolume}
-                                    onChange={(e) => {
-                                        const val = Number(e.target.value) / 100;
-                                        if (onTvVolumeChange) onTvVolumeChange(val);
-                                    }}
-                                    className="w-full h-2 rounded-full appearance-none bg-[#1a1d26] cursor-pointer relative z-10
-                                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5
-                                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-red-400
-                                    [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(239,68,68,0.5)] [&::-webkit-slider-thumb]:transition-transform
-                                    [&::-webkit-slider-thumb]:hover:scale-125 focus:outline-none"
-                                />
-                                <div
-                                    className="absolute h-2 rounded-full bg-gradient-to-r from-red-600 via-red-400 to-orange-400 pointer-events-none transition-all duration-150 top-1/2 -translate-y-1/2"
-                                    style={{ width: `${localTvVolume}%` }}
-                                ></div>
-                            </div>
-
-                            {/* TV Quick Select */}
-                            <div className="flex justify-between gap-1 pt-1">
+                            <input
+                                type="range" min={0} max={100} value={localTvVolume}
+                                onChange={(e) => { if (onTvVolumeChange) onTvVolumeChange(Number(e.target.value) / 100); }}
+                                style={{ width: '100%', height: 4, accentColor: '#dc2626', cursor: 'pointer' }}
+                            />
+                            <div style={{ display: 'flex', gap: 3, marginTop: 6 }}>
                                 {[0, 25, 50, 75, 100].map((val) => (
                                     <button
                                         key={`tv-${val}`}
-                                        onClick={() => {
-                                            if (onTvVolumeChange) onTvVolumeChange(val / 100);
+                                        onClick={() => { if (onTvVolumeChange) onTvVolumeChange(val / 100); }}
+                                        style={{
+                                            flex: 1, padding: '3px 0', borderRadius: 4, fontSize: 9, fontWeight: 700,
+                                            cursor: 'pointer', transition: 'all 0.15s',
+                                            background: localTvVolume === val ? '#fef2f2' : '#f8fafc',
+                                            color: localTvVolume === val ? '#dc2626' : '#64748b',
+                                            border: localTvVolume === val ? '1px solid #fca5a5' : '1px solid #e2e8f0',
                                         }}
-                                        className={`px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all border
-                                        ${localTvVolume === val
-                                                ? 'bg-red-500 text-white border-red-500 shadow-[0_0_10px_rgba(239,68,68,0.4)]'
-                                                : 'bg-white/5 text-gray-500 border-white/5 hover:bg-white/10 hover:text-white'
-                                            }`}
                                     >
                                         {val === 0 ? 'MUTE' : `${val}%`}
                                     </button>
                                 ))}
                             </div>
-                        </>
+                        </div>
                     )}
                 </div>
             </AnchorPopover >
@@ -577,6 +527,13 @@ export function BottomToolbar({
                         title={t.settings}
                     >
                         <Settings2 className="w-4 h-4 transition-transform group-hover:rotate-90" />
+                    </button>
+                    <button
+                        onClick={() => onToggleProfile?.()}
+                        className="relative group w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all duration-300 shadow-lg"
+                        title="Profilim"
+                    >
+                        <User className="w-4 h-4 transition-transform group-hover:scale-110" />
                     </button>
                     <button
                         ref={exitBtnRef}

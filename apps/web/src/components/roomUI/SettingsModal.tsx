@@ -202,17 +202,17 @@ export function SettingsModal({
 
     // ─── Shared Styles ─────────────────────────────────
     const sectionStyle: React.CSSProperties = {
-        padding: '8px 10px',
-        borderRadius: 8,
+        padding: '5px 8px',
+        borderRadius: 6,
         background: '#f8fafc',
         border: '1px solid #e2e8f0',
     };
 
     const labelStyle: React.CSSProperties = {
-        display: 'flex', alignItems: 'center', gap: 6,
-        fontSize: 10, fontWeight: 700, color: '#64748b',
+        display: 'flex', alignItems: 'center', gap: 5,
+        fontSize: 9, fontWeight: 700, color: '#64748b',
         textTransform: 'uppercase', letterSpacing: '0.06em',
-        marginBottom: 6,
+        marginBottom: 4,
     };
 
     const selectWrapStyle: React.CSSProperties = {
@@ -223,10 +223,10 @@ export function SettingsModal({
         width: '100%',
         background: '#ffffff',
         color: '#1e293b',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 500,
-        borderRadius: 8,
-        padding: '8px 32px 8px 32px',
+        borderRadius: 6,
+        padding: '5px 28px 5px 28px',
         border: '1px solid #e2e8f0',
         outline: 'none',
         appearance: 'none' as any,
@@ -248,12 +248,12 @@ export function SettingsModal({
     };
 
     const tabStyle = (active: boolean): React.CSSProperties => ({
-        flex: 1, padding: '6px 0', borderRadius: 6,
-        fontSize: 11, fontWeight: 700, cursor: 'pointer',
+        flex: 1, padding: '4px 0', borderRadius: 5,
+        fontSize: 10, fontWeight: 700, cursor: 'pointer',
         background: active ? '#dbeafe' : 'transparent',
         color: active ? '#2563eb' : '#6b7280',
         border: active ? '1px solid #93c5fd' : '1px solid transparent',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
         transition: 'all 0.25s',
         textTransform: 'uppercase', letterSpacing: '0.04em',
     });
@@ -268,7 +268,7 @@ export function SettingsModal({
         >
             <div className="w-full flex flex-col overflow-hidden" style={{ minWidth: 260, maxWidth: 300 }}>
                 {/* ─── Tabs ─── */}
-                <div style={{ display: 'flex', gap: 4, padding: '0 14px 8px', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ display: 'flex', gap: 3, padding: '0 10px 5px', borderBottom: '1px solid #e2e8f0' }}>
                     <button style={tabStyle(activeTab === 'devices')} onClick={() => setActiveTab('devices')}>
                         <Video style={{ width: 12, height: 12 }} /> Cihazlar
                     </button>
@@ -277,7 +277,7 @@ export function SettingsModal({
                     </button>
                 </div>
 
-                <div style={{ padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', maxHeight: 320 }}>
+                <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
 
                     {activeTab === 'devices' && (
                         <>
@@ -443,9 +443,9 @@ export function SettingsModal({
                                             onClick={() => updateChatText('fontWeight', opt.value)}
                                             style={{
                                                 flex: 1,
-                                                padding: '5px 0',
-                                                borderRadius: 6,
-                                                fontSize: 10,
+                                                padding: '3px 0',
+                                                borderRadius: 5,
+                                                fontSize: 9,
                                                 fontWeight: Number(opt.value) as any,
                                                 cursor: 'pointer',
                                                 background: chatText.fontWeight === opt.value ? '#dbeafe' : '#f8fafc',
@@ -472,7 +472,7 @@ export function SettingsModal({
                                             key={c}
                                             onClick={() => updateChatText('textColor', c)}
                                             style={{
-                                                width: 26, height: 26, borderRadius: 6,
+                                                width: 22, height: 22, borderRadius: 5,
                                                 background: c,
                                                 border: chatText.textColor === c ? '2px solid #2563eb' : '2px solid #e2e8f0',
                                                 cursor: 'pointer',
@@ -488,7 +488,7 @@ export function SettingsModal({
                                             value={chatText.textColor.startsWith('rgba') ? '#ffffff' : chatText.textColor}
                                             onChange={e => updateChatText('textColor', e.target.value)}
                                             style={{
-                                                width: 26, height: 26, borderRadius: 6,
+                                                width: 22, height: 22, borderRadius: 5,
                                                 border: '2px dashed #93c5fd',
                                                 background: '#f8fafc',
                                                 cursor: 'pointer', padding: 0,
@@ -509,8 +509,8 @@ export function SettingsModal({
                                     ÖN İZLEME
                                 </div>
                                 <div style={{
-                                    padding: '8px 12px',
-                                    borderRadius: 8,
+                                    padding: '5px 8px',
+                                    borderRadius: 6,
                                     background: 'rgba(123,159,239,0.05)',
                                     border: '1px solid rgba(123,159,239,0.08)',
                                 }}>
@@ -530,7 +530,7 @@ export function SettingsModal({
 
                 {/* Footer */}
                 <div style={{
-                    padding: '8px 14px',
+                    padding: '5px 10px',
                     borderTop: '1px solid #e2e8f0',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>

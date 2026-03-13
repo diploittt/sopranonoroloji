@@ -390,8 +390,8 @@ body {
 .slim-controls {
     display: flex !important;
     flex-direction: column !important;
-    gap: 4px !important;
-    padding: 8px 8px !important;
+    gap: 3px !important;
+    padding: 5px 6px !important;
     margin-top: auto !important;
     border-radius: 18px !important;
     /* === glossy-panel triple gradient — BRIGHT === */
