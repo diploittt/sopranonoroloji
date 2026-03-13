@@ -183,7 +183,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             case 'outside': return t.statusOutside;
             case 'phone': return t.statusOnPhone;
             case 'stealth': return t.statusInvisible;
-            default: return 'Aktif';
+            default: return 'Durumum';
         }
     };
 
@@ -1258,14 +1258,15 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             className="slim-status-pill"
                             onClick={() => setShowStatusMenu(!showStatusMenu)}
                         >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span style={{ fontSize: 12, lineHeight: 1 }}>{getStatusEmoji(currentUser?.status as string)}</span>
                                 <div style={{
-                                    width: 8, height: 8, borderRadius: '50%',
+                                    width: 6, height: 6, borderRadius: '50%',
                                     background: currentUser?.status === 'busy' ? '#ef4444'
                                         : currentUser?.status === 'away' || currentUser?.status === 'outside' ? '#f59e0b'
                                             : currentUser?.status === 'phone' ? '#22d3ee'
                                                 : '#22c55e',
-                                    boxShadow: `0 0 8px ${currentUser?.status === 'busy' ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}, inset 0 0 2px rgba(0,0,0,0.5)`,
+                                    boxShadow: `0 0 6px ${currentUser?.status === 'busy' ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
                                 }} />
                                 <span style={{ fontSize: 10, fontWeight: 900, color: '#e2e8f0', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
                                     {getStatusLabel(currentUser?.status as string)}
