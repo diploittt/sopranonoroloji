@@ -36,18 +36,18 @@ const NAME_COLORS = [
 ];
 
 // ── Admin panel renk sistemi ──
-const MODAL_BG = 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)';
-const MODAL_BORDER = '1px solid rgba(255,255,255,0.65)';
-const MODAL_SHADOW = '0 20px 50px rgba(0,0,0,0.18), 0 6px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)';
+const MODAL_BG = '#ffffff';
+const MODAL_BORDER = '1px solid #e2e8f0';
+const MODAL_SHADOW = '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)';
 const TEXT_PRIMARY = '#1e293b';
 const TEXT_SECONDARY = '#475569';
 const TEXT_MUTED = '#94a3b8';
-const INPUT_BG = 'rgba(255,255,255,0.6)';
-const INPUT_BORDER = '1px solid rgba(100,116,139,0.2)';
-const TAB_ACTIVE_BG = 'rgba(30,58,95,0.1)';
-const TAB_ACTIVE_COLOR = '#0f172a';
-const TAB_ACTIVE_BORDER = '1px solid rgba(15,23,42,0.2)';
-const BTN_BG = 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)';
+const INPUT_BG = '#f8fafc';
+const INPUT_BORDER = '1px solid #e2e8f0';
+const TAB_ACTIVE_BG = '#dbeafe';
+const TAB_ACTIVE_COLOR = '#2563eb';
+const TAB_ACTIVE_BORDER = '1px solid #93c5fd';
+const BTN_BG = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
 
 export function ProfileModal({
     isOpen, onClose, currentUser, onChangeName, onChangeAvatar, onChangeNameColor, onChangePassword
@@ -151,45 +151,43 @@ export function ProfileModal({
 
     const avatarUrl = selectedAvatarUrl;
     const inputStyle: React.CSSProperties = {
-        width: '100%', fontSize: 12, color: TEXT_PRIMARY, borderRadius: 10,
-        padding: '8px 12px', border: INPUT_BORDER, background: INPUT_BG, outline: 'none',
+        width: '100%', fontSize: 11, color: TEXT_PRIMARY, borderRadius: 8,
+        padding: '6px 10px', border: INPUT_BORDER, background: INPUT_BG, outline: 'none',
     };
     const btnStyle: React.CSSProperties = {
-        width: '100%', padding: '8px 0', fontSize: 12, fontWeight: 700, color: '#fff',
-        borderRadius: 10, border: 'none', cursor: 'pointer', background: BTN_BG,
-        boxShadow: '0 2px 12px rgba(30,58,95,0.2)',
+        width: '100%', padding: '6px 0', fontSize: 11, fontWeight: 700, color: '#fff',
+        borderRadius: 8, border: 'none', cursor: 'pointer', background: BTN_BG,
+        boxShadow: '0 2px 8px rgba(30,58,95,0.15)',
     };
 
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4" onClick={onClose} style={centered ? { paddingTop: '15vh' } : { display: 'block' }}>
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)' }} />
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.12)' }} />
             <div
                 ref={modalRef}
-                className="relative w-full max-w-sm animate-pure-fade"
+                className="relative w-full max-w-[280px] animate-pure-fade"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     background: MODAL_BG,
-                    backdropFilter: 'blur(28px) saturate(130%)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                    border: MODAL_BORDER, borderRadius: 14, boxShadow: MODAL_SHADOW, overflow: 'hidden',
+                    border: MODAL_BORDER, borderRadius: 12, boxShadow: MODAL_SHADOW, overflow: 'hidden',
                 }}
             >
-                {/* Header — koyu tema */}
-                <div className="flex items-center justify-between px-4 py-2"
+                {/* Header */}
+                <div className="flex items-center justify-between px-3 py-1.5"
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
+                    style={{ cursor: 'move', userSelect: 'none', background: '#1e293b', borderRadius: '12px 12px 0 0' }}
                 >
-                    <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 6, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
-                        <span style={{ fontSize: 13 }}>👤</span> Profil Ayarları
+                    <h2 style={{ fontSize: 10, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: '0.04em', textTransform: 'uppercase' as any }}>
+                        <span style={{ fontSize: 11 }}>👤</span> Profil
                     </h2>
-                    <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, transition: 'all 0.2s' }}
+                    <button onClick={onClose} style={{ width: 20, height: 20, borderRadius: 5, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, transition: 'all 0.2s' }}
                         onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; e.currentTarget.style.color = '#fff'; }}
                         onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'rgba(255,255,255,0.6)'; }}
                     >✕</button>
                 </div>
 
                 {/* Tabs */}
-                <div style={{ display: 'flex', gap: 2, padding: '6px 14px 4px' }}>
+                <div style={{ display: 'flex', gap: 2, padding: '4px 10px 3px' }}>
                     {TABS.map(tab => (
                         <button key={tab.id} onClick={() => { setActiveTab(tab.id); setError(''); }}
                             style={{
@@ -203,7 +201,7 @@ export function ProfileModal({
                 </div>
 
                 {/* Content */}
-                <div style={{ padding: '8px 14px 12px', minHeight: 180 }}>
+                <div style={{ padding: '6px 10px 10px', minHeight: 140 }}>
                     {activeTab === 'look' && (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                             <p style={{ fontSize: 10, color: TEXT_SECONDARY, textAlign: 'center', margin: 0 }}>Yönetici tarafından size hareketli bir nick atanmış.</p>
@@ -263,11 +261,11 @@ export function ProfileModal({
                     {activeTab === 'avatar' && (
                         <div className="space-y-4">
                             <div className="flex items-center justify-center">
-                                <img src={selectedAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-2xl border-2 border-amber-600/20" style={{ background: '#10121b', objectFit: 'cover' }} />
+                                <img src={selectedAvatarUrl} alt="Avatar" className="w-14 h-14 rounded-xl border-2 border-blue-200" style={{ background: '#f1f5f9', objectFit: 'cover' }} />
                             </div>
                             <div>
-                                <label className="text-xs text-gray-400 mb-2 block">Avatar Seç</label>
-                                <div className="grid grid-cols-4 gap-3">
+                                <label style={{ fontSize: 9, color: '#64748b', marginBottom: 2, display: 'block', fontWeight: 600 }}>Avatar Seç</label>
+                                <div className="grid grid-cols-4 gap-2">
                                     {ALL_AVATARS.map(av => (
                                         <button
                                             key={av}
@@ -275,9 +273,9 @@ export function ProfileModal({
                                             className="rounded-xl transition-all hover:scale-105"
                                             style={{
                                                 padding: 3,
-                                                background: selectedAvatarUrl === av ? 'rgba(99,102,241,0.2)' : 'rgba(255,255,255,0.03)',
-                                                border: selectedAvatarUrl === av ? '2px solid rgba(99,102,241,0.5)' : '2px solid rgba(255,255,255,0.06)',
-                                                boxShadow: selectedAvatarUrl === av ? '0 0 12px rgba(99,102,241,0.2)' : 'none',
+                                                background: selectedAvatarUrl === av ? '#dbeafe' : '#f8fafc',
+                                                border: selectedAvatarUrl === av ? '2px solid #2563eb' : '2px solid #e2e8f0',
+                                                boxShadow: selectedAvatarUrl === av ? '0 0 8px rgba(37,99,235,0.2)' : 'none',
                                             }}
                                         >
                                             <img src={av} alt="" className="w-full aspect-square rounded-lg" style={{ objectFit: 'cover' }} />
@@ -295,7 +293,7 @@ export function ProfileModal({
                                     onChangeAvatar(selectedAvatarUrl);
                                     onClose();
                                 }
-                            }} className="w-full py-3 text-sm font-bold text-white rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 transition-all">
+                            }} style={btnStyle}>
                                 Avatarı Kaydet
                             </button>
                         </div>

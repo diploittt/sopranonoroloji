@@ -25,19 +25,17 @@ export function UserInfoModal({ user, onClose }: UserInfoModalProps) {
                 position: 'fixed', inset: 0, zIndex: 99999,
                 display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
                 paddingTop: '15vh',
-                background: 'rgba(0,0,0,0.25)',
+                background: 'rgba(0,0,0,0.12)',
             }}
             onClick={onClose}
         >
             <div
                 style={{
                     width: '280px', maxHeight: '90vh',
-                    background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                    backdropFilter: 'blur(28px) saturate(130%)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                    border: '1px solid rgba(255,255,255,0.65)',
-                    borderRadius: '16px',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                     overflow: 'hidden',
                     animation: 'modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                 }}

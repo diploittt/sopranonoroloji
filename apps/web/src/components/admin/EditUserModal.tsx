@@ -70,30 +70,30 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
 
     return (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-md" onClick={onClose} />
+            <div className="absolute inset-0 bg-black/15" onClick={onClose} />
 
-            <div className="relative w-full max-w-md bg-[#0f111a] border border-white/10 rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}>
+            <div className="relative w-full max-w-md bg-white border border-[#e2e8f0] rounded-xl shadow-[0_4px_6px_-1px_rgb(0_0_0/0.1)] animate-in zoom-in-95 duration-200" style={{ transform: `translate(${offset.x}px, ${offset.y}px)` }}>
                 {/* Header */}
-                <div className="p-5 border-b border-white/5 flex items-center justify-between bg-gradient-to-r from-amber-600/5 to-amber-700/5 rounded-t-2xl cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
-                    <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber-600 to-amber-800 flex items-center justify-center text-sm font-bold text-white shadow-lg shadow-amber-600/20">
+                <div className="px-4 py-2.5 border-b border-[#e2e8f0] flex items-center justify-between bg-[#1e293b] rounded-t-xl cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
+                    <div className="flex items-center gap-2">
+                        <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center text-[10px] font-bold text-white">
                             {(user.displayName || '??').substring(0, 2).toUpperCase()}
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-white">Üye Düzenle</h2>
-                            <p className="text-[11px] text-gray-500">{user.displayName || user.username}</p>
+                            <h2 className="text-xs font-bold text-white">Üye Düzenle</h2>
+                            <p className="text-[10px] text-gray-400">{user.displayName || user.username}</p>
                         </div>
                     </div>
-                    <button onClick={onClose} className="p-2 bg-white/5 hover:bg-white/10 rounded-lg text-gray-400 hover:text-white transition">
-                        <X className="w-4 h-4" />
+                    <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition">
+                        <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
 
                 {/* Form */}
-                <div className="p-5 space-y-4">
+                <div className="p-4 space-y-3">
                     {/* Kullanıcı Adı */}
                     <div className="space-y-1.5">
-                        <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1.5">
+                        <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1.5">
                             <User className="w-3.5 h-3.5" /> Kullanıcı Adı
                         </label>
                         <input
@@ -101,7 +101,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
                             value={displayName}
                             onChange={e => setDisplayName(e.target.value)}
                             placeholder="Kullanıcı adı"
-                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-600 outline-none transition"
+                            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-slate-800 text-sm focus:border-blue-500 outline-none transition"
                         />
                     </div>
 
@@ -115,7 +115,7 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
                             value={email}
                             onChange={e => setEmail(e.target.value)}
                             placeholder="ornek@mail.com"
-                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-600 outline-none transition"
+                            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-slate-800 text-sm focus:border-blue-500 outline-none transition"
                         />
                     </div>
 
@@ -129,9 +129,9 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             placeholder="Değiştirmek için yeni şifre girin"
-                            className="w-full bg-[#050505] border border-white/10 rounded-xl px-4 py-2.5 text-white text-sm focus:border-amber-600 outline-none transition"
+                            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg px-3 py-2 text-slate-800 text-sm focus:border-blue-500 outline-none transition"
                         />
-                        <p className="text-[10px] text-gray-600 ml-1">Boş bırakırsanız mevcut şifre korunur</p>
+                        <p className="text-[10px] text-slate-400 ml-1">Boş bırakırsanız mevcut şifre korunur</p>
                     </div>
 
                     {/* Sınıf / Rol */}
@@ -146,8 +146,8 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
                                     type="button"
                                     onClick={() => setRole(opt.value)}
                                     className={`px-2 py-2 rounded-lg text-[11px] font-bold border transition ${role === opt.value
-                                        ? `${opt.color} bg-white/10 border-white/20 shadow-sm`
-                                        : 'text-gray-500 bg-[#050505] border-white/5 hover:border-white/10 hover:text-gray-400'
+                                        ? `${opt.color} bg-blue-50 border-blue-200 shadow-sm`
+                                        : 'text-slate-500 bg-[#f8fafc] border-[#e2e8f0] hover:border-slate-300 hover:text-slate-600'
                                         }`}
                                 >
                                     {opt.label}
@@ -158,17 +158,17 @@ export default function EditUserModal({ isOpen, onClose, user, onSave }: EditUse
                 </div>
 
                 {/* Footer */}
-                <div className="p-4 border-t border-white/5 flex justify-end gap-2 bg-[#0a0a0c] rounded-b-2xl">
+                <div className="p-3 border-t border-[#e2e8f0] flex justify-end gap-2 bg-[#f8fafc] rounded-b-xl">
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 rounded-xl text-gray-400 hover:bg-white/5 hover:text-white transition text-sm font-medium"
+                        className="px-4 py-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition text-sm font-medium"
                     >
                         İptal
                     </button>
                     <button
                         onClick={handleSave}
                         disabled={loading}
-                        className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-700 to-amber-800 hover:from-amber-600 hover:to-amber-700 text-white text-sm font-bold shadow-lg shadow-amber-600/20 transition active:scale-95 flex items-center gap-2"
+                        className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold shadow-sm transition active:scale-95 flex items-center gap-2"
                     >
                         {loading ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Save className="w-4 h-4" />}
                         Kaydet

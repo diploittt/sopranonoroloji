@@ -172,10 +172,10 @@ export default function ContextMenu({
                     maxHeight: '360px',
                     display: 'flex',
                     flexDirection: 'column',
-                    background: 'linear-gradient(160deg, rgba(12, 17, 30, 0.97) 0%, rgba(8, 12, 22, 0.99) 100%)',
-                    border: '1px solid rgba(123, 159, 239, 0.12)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
                     borderRadius: '12px',
-                    boxShadow: '0 16px 56px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(0,0,0,0.4), 0 0 24px rgba(123, 159, 239, 0.03)',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                     animation: 'ctxMenuIn 0.14s cubic-bezier(0.16, 1, 0.3, 1)',
                     overflow: 'hidden',
                 }}
@@ -184,8 +184,8 @@ export default function ContextMenu({
             >
                 {/* Top accent */}
                 <div style={{
-                    height: '1.5px',
-                    background: 'linear-gradient(90deg, transparent 5%, rgba(123, 159, 239, 0.5) 50%, transparent 95%)',
+                    height: '1px',
+                    background: '#e2e8f0',
                     flexShrink: 0,
                 }} />
 
@@ -204,7 +204,7 @@ export default function ContextMenu({
                                     key={idx}
                                     style={{
                                         height: '1px',
-                                        background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent)',
+                                        background: 'linear-gradient(90deg, transparent, #e2e8f0, transparent)',
                                         margin: '3px 10px',
                                     }}
                                 />
@@ -234,7 +234,7 @@ export default function ContextMenu({
                                         border: 'none',
                                         borderRadius: '7px',
                                         background: 'transparent',
-                                        color: danger ? '#f87171' : '#bcc3ce',
+                                        color: danger ? '#f87171' : '#1e293b',
                                         fontSize: '12px',
                                         fontWeight: 500,
                                         cursor: 'pointer',
@@ -259,7 +259,7 @@ export default function ContextMenu({
                                     </span>
                                     {isSubmenu && (
                                         <span style={{
-                                            color: 'rgba(123,159,239,0.4)',
+                                            color: 'rgba(100,116,139,0.5)',
                                             fontSize: '9px',
                                             marginLeft: 'auto',
                                             transition: 'transform 0.15s ease',
@@ -278,8 +278,8 @@ export default function ContextMenu({
                                             fontSize: '9px',
                                             padding: '1px 5px',
                                             borderRadius: '4px',
-                                            background: 'rgba(123,159,239,0.12)',
-                                            color: '#7b9fef',
+                                            background: '#dbeafe',
+                                            color: '#2563eb',
                                             fontWeight: 600,
                                             letterSpacing: '0.3px',
                                         }}>{item.badge}</span>
@@ -295,7 +295,7 @@ export default function ContextMenu({
                                             marginRight: '4px',
                                             marginTop: '1px',
                                             marginBottom: '2px',
-                                            borderLeft: '1.5px solid rgba(123, 159, 239, 0.15)',
+                                            borderLeft: '1.5px solid #dbeafe',
                                             paddingLeft: '6px',
                                             animation: 'ctxSubIn 0.12s ease-out',
                                         }}
@@ -321,7 +321,7 @@ export default function ContextMenu({
                                                         border: 'none',
                                                         borderRadius: '6px',
                                                         background: 'transparent',
-                                                        color: subDanger ? '#f87171' : '#9ca3af',
+                                                        color: subDanger ? '#f87171' : '#64748b',
                                                         fontSize: '11px',
                                                         fontWeight: 500,
                                                         cursor: 'pointer',
@@ -363,7 +363,7 @@ export default function ContextMenu({
                     <div style={{
                         padding: '6px 14px', background: 'rgba(0,0,0,0.04)',
                         fontSize: 9, textAlign: 'center', color: '#94a3b8', fontStyle: 'italic',
-                        borderTop: '1px solid rgba(148,163,184,0.12)',
+                        borderTop: '1px solid #f1f5f9',
                     }}>
                         ID: {targetUser.userId.slice(0, 8)}
                     </div>
@@ -381,17 +381,17 @@ export default function ContextMenu({
                     to { opacity: 1; max-height: 400px; }
                 }
                 .ctx-item:hover {
-                    background: rgba(123, 159, 239, 0.07) !important;
-                    color: #d4daf0 !important;
+                    background: #dbeafe !important;
+                    color: #1e293b !important;
                 }
                 .ctx-item[data-danger="true"]:hover {
-                    background: rgba(239, 68, 68, 0.08) !important;
-                    color: #fca5a5 !important;
+                    background: rgba(220, 38, 38, 0.06) !important;
+                    color: #dc2626 !important;
                 }
                 .ctx-scrollable::-webkit-scrollbar { width: 4px; }
-                .ctx-scrollable::-webkit-scrollbar-track { background: transparent; }
-                .ctx-scrollable::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 10px; }
-                .ctx-scrollable::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.35); }
+                .ctx-scrollable::-webkit-scrollbar-track { background: #f1f5f9; }
+                .ctx-scrollable::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+                .ctx-scrollable::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
             `}</style>
         </>,
         document.body

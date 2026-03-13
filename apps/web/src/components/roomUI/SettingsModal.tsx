@@ -202,15 +202,15 @@ export function SettingsModal({
 
     // ─── Shared Styles ─────────────────────────────────
     const sectionStyle: React.CSSProperties = {
-        padding: '10px 14px',
-        borderRadius: 10,
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(123,159,239,0.06)',
+        padding: '8px 10px',
+        borderRadius: 8,
+        background: '#f8fafc',
+        border: '1px solid #e2e8f0',
     };
 
     const labelStyle: React.CSSProperties = {
         display: 'flex', alignItems: 'center', gap: 6,
-        fontSize: 10, fontWeight: 700, color: '#a3bfff',
+        fontSize: 10, fontWeight: 700, color: '#64748b',
         textTransform: 'uppercase', letterSpacing: '0.06em',
         marginBottom: 6,
     };
@@ -221,13 +221,13 @@ export function SettingsModal({
 
     const selectStyle: React.CSSProperties = {
         width: '100%',
-        background: 'rgba(30,41,59,0.5)',
-        color: '#e8dcc8',
+        background: '#ffffff',
+        color: '#1e293b',
         fontSize: 12,
         fontWeight: 500,
         borderRadius: 8,
         padding: '8px 32px 8px 32px',
-        border: '1px solid rgba(255,255,255,0.1)',
+        border: '1px solid #e2e8f0',
         outline: 'none',
         appearance: 'none' as any,
         cursor: 'pointer',
@@ -250,9 +250,9 @@ export function SettingsModal({
     const tabStyle = (active: boolean): React.CSSProperties => ({
         flex: 1, padding: '6px 0', borderRadius: 6,
         fontSize: 11, fontWeight: 700, cursor: 'pointer',
-        background: active ? 'rgba(123,159,239,0.15)' : 'transparent',
-        color: active ? '#a3bfff' : '#6b7280',
-        border: active ? '1px solid rgba(123,159,239,0.2)' : '1px solid transparent',
+        background: active ? '#dbeafe' : 'transparent',
+        color: active ? '#2563eb' : '#6b7280',
+        border: active ? '1px solid #93c5fd' : '1px solid transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
         transition: 'all 0.25s',
         textTransform: 'uppercase', letterSpacing: '0.04em',
@@ -266,9 +266,9 @@ export function SettingsModal({
             variant="panel"
             title={t.settings}
         >
-            <div className="w-full flex flex-col overflow-hidden" style={{ minWidth: 310, maxWidth: 380 }}>
+            <div className="w-full flex flex-col overflow-hidden" style={{ minWidth: 260, maxWidth: 300 }}>
                 {/* ─── Tabs ─── */}
-                <div style={{ display: 'flex', gap: 4, padding: '0 14px 8px', borderBottom: '1px solid rgba(123,159,239,0.06)' }}>
+                <div style={{ display: 'flex', gap: 4, padding: '0 14px 8px', borderBottom: '1px solid #e2e8f0' }}>
                     <button style={tabStyle(activeTab === 'devices')} onClick={() => setActiveTab('devices')}>
                         <Video style={{ width: 12, height: 12 }} /> Cihazlar
                     </button>
@@ -277,7 +277,7 @@ export function SettingsModal({
                     </button>
                 </div>
 
-                <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 8, overflowY: 'auto', maxHeight: 520 }}>
+                <div style={{ padding: '6px 10px', display: 'flex', flexDirection: 'column', gap: 5, overflowY: 'auto', maxHeight: 320 }}>
 
                     {activeTab === 'devices' && (
                         <>
@@ -328,7 +328,7 @@ export function SettingsModal({
                                     <ChevronDown style={chevStyle} />
                                 </div>
                                 {/* Mic Meter */}
-                                <div style={{ marginTop: 8, height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+                                <div style={{ marginTop: 6, height: 3, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden' }}>
                                     <div ref={audioMeterRef} style={{ height: '100%', width: 0, background: 'linear-gradient(90deg, #5a7fd4, #7b9fef, #a3bfff)', borderRadius: 4, transition: 'width 75ms ease-out' }} />
                                 </div>
                             </div>
@@ -368,9 +368,9 @@ export function SettingsModal({
                                         onClick={testSpeaker}
                                         style={{
                                             padding: '0 12px', borderRadius: 8,
-                                            background: 'rgba(123,159,239,0.08)',
-                                            border: '1px solid rgba(123,159,239,0.12)',
-                                            color: '#a3bfff', cursor: 'pointer',
+                                            background: '#dbeafe',
+                                            border: '1px solid #93c5fd',
+                                            color: '#2563eb', cursor: 'pointer',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             transition: 'all 0.25s',
                                         }}
@@ -383,7 +383,7 @@ export function SettingsModal({
 
                             {/* ═══ Language ═══ */}
                             <div style={sectionStyle}>
-                                <div style={{ ...labelStyle, color: '#4ade80' }}>
+                                <div style={{ ...labelStyle, color: '#64748b' }}>
                                     <Globe style={{ width: 13, height: 13 }} />
                                     Language / Dil
                                 </div>
@@ -394,7 +394,7 @@ export function SettingsModal({
                                             setLanguage(e.target.value);
                                             onLanguageChange?.(e.target.value);
                                         }}
-                                        style={{ ...selectStyle, borderColor: 'rgba(74,222,128,0.15)' }}
+                                        style={{ ...selectStyle, borderColor: '#e2e8f0' }}
                                     >
                                         {LANGUAGE_OPTIONS.map((opt) => (
                                             <option key={opt.value} value={opt.value}>
@@ -402,7 +402,7 @@ export function SettingsModal({
                                             </option>
                                         ))}
                                     </select>
-                                    <Globe style={{ ...chevStyle, left: 10, right: 'auto', width: 13, height: 13, color: '#4ade80' }} />
+                                    <Globe style={{ ...chevStyle, left: 10, right: 'auto', width: 13, height: 13, color: '#2563eb' }} />
                                     <ChevronDown style={chevStyle} />
                                 </div>
                             </div>
@@ -448,9 +448,9 @@ export function SettingsModal({
                                                 fontSize: 10,
                                                 fontWeight: Number(opt.value) as any,
                                                 cursor: 'pointer',
-                                                background: chatText.fontWeight === opt.value ? 'rgba(123,159,239,0.15)' : 'rgba(255,255,255,0.03)',
-                                                color: chatText.fontWeight === opt.value ? '#a3bfff' : '#9ca3af',
-                                                border: chatText.fontWeight === opt.value ? '1px solid rgba(123,159,239,0.25)' : '1px solid rgba(255,255,255,0.06)',
+                                                background: chatText.fontWeight === opt.value ? '#dbeafe' : '#f8fafc',
+                                                color: chatText.fontWeight === opt.value ? '#2563eb' : '#64748b',
+                                                border: chatText.fontWeight === opt.value ? '1px solid #93c5fd' : '1px solid #e2e8f0',
                                                 transition: 'all 0.2s',
                                             }}
                                         >
@@ -474,7 +474,7 @@ export function SettingsModal({
                                             style={{
                                                 width: 26, height: 26, borderRadius: 6,
                                                 background: c,
-                                                border: chatText.textColor === c ? '2px solid #a3bfff' : '2px solid rgba(255,255,255,0.08)',
+                                                border: chatText.textColor === c ? '2px solid #2563eb' : '2px solid #e2e8f0',
                                                 cursor: 'pointer',
                                                 transition: 'all 0.2s',
                                                 boxShadow: chatText.textColor === c ? '0 0 8px rgba(123,159,239,0.4)' : 'none',
@@ -489,8 +489,8 @@ export function SettingsModal({
                                             onChange={e => updateChatText('textColor', e.target.value)}
                                             style={{
                                                 width: 26, height: 26, borderRadius: 6,
-                                                border: '2px dashed rgba(123,159,239,0.3)',
-                                                background: 'rgba(255,255,255,0.03)',
+                                                border: '2px dashed #93c5fd',
+                                                background: '#f8fafc',
                                                 cursor: 'pointer', padding: 0,
                                             }}
                                             title="Özel renk"
@@ -502,8 +502,8 @@ export function SettingsModal({
                             {/* ═══ Live Preview ═══ */}
                             <div style={{
                                 ...sectionStyle,
-                                background: 'rgba(30,41,59,0.4)',
-                                border: '1px solid rgba(255,255,255,0.08)',
+                                background: '#f1f5f9',
+                                border: '1px solid #e2e8f0',
                             }}>
                                 <div style={{ ...labelStyle, color: '#6b7280', fontSize: 9 }}>
                                     ÖN İZLEME
@@ -531,7 +531,7 @@ export function SettingsModal({
                 {/* Footer */}
                 <div style={{
                     padding: '8px 14px',
-                    borderTop: '1px solid rgba(123,159,239,0.04)',
+                    borderTop: '1px solid #e2e8f0',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                     <button

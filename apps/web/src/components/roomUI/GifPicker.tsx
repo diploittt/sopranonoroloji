@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { TrendingUp, Loader2, ImageOff } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { TrendingUp, Loader2, ImageOff, Search } from 'lucide-react';
 
 interface GifPickerProps {
     onGifSelect?: (gifUrl: string) => void;
@@ -27,6 +27,9 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activeTag, setActiveTag] = useState<string | null>(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
 
     const fetchGifs = useCallback(async (query: string) => {
         setLoading(true);
@@ -56,20 +59,31 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
     const handleTagClick = (tag: string) => {
         if (activeTag === tag) {
             setActiveTag(null);
+            setSearchQuery('');
             fetchGifs('');
         } else {
             setActiveTag(tag);
+            setSearchQuery('');
             fetchGifs(tag);
         }
     };
 
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value);
+        setActiveTag(null);
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = setTimeout(() => {
+            fetchGifs(value.trim() || '');
+        }, 400);
+    };
+
     return (
-        <div className="flex select-none" style={{ width: 480, height: 280 }}>
+        <div className="flex select-none" style={{ width: 380, height: 220 }}>
             {/* Sol: Etiketler (dikey şerit) */}
-            <div className="flex flex-col gap-1 py-2 px-1.5 overflow-y-auto no-scrollbar" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', width: 80 }}>
-                <div className="flex items-center gap-1 px-1 pb-1 mb-0.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                    <TrendingUp className="w-3 h-3 text-sky-400" />
-                    <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider">Etiket</span>
+            <div className="flex flex-col gap-1 py-2 px-1.5 overflow-y-auto no-scrollbar" style={{ borderRight: '1px solid #e2e8f0', width: 80 }}>
+                <div className="flex items-center gap-1 px-1 pb-1 mb-0.5" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <TrendingUp className="w-3 h-3 text-blue-500" />
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-wider">Etiket</span>
                 </div>
                 {TRENDING_TAGS.map((tag) => {
                     const isActive = activeTag === tag;
@@ -78,11 +92,11 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
                             key={tag}
                             onClick={() => handleTagClick(tag)}
                             className={`text-[10px] font-semibold px-2 py-1 rounded-lg text-left transition-all duration-200 ${isActive
-                                ? 'text-sky-300'
-                                : 'text-gray-500 hover:text-gray-300'
+                                ? 'text-blue-600'
+                                : 'text-gray-500 hover:text-gray-700'
                                 }`}
                             style={{
-                                background: isActive ? 'rgba(56,189,248,0.1)' : 'transparent',
+                                background: isActive ? '#dbeafe' : 'transparent',
                             }}
                         >
                             #{tag}
@@ -93,13 +107,29 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
 
             {/* Sağ: GIF Grid */}
             <div className="flex-1 flex flex-col overflow-hidden">
-                {/* Başlık */}
-                <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <TrendingUp className="w-3 h-3 text-sky-400" />
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
-                        {activeTag ? activeTag : 'Trend GIF'}
-                    </span>
-                    <span className="text-[9px] text-sky-400/60 ml-auto font-bold tracking-wider">GIPHY</span>
+                {/* Search + Başlık */}
+                <div className="px-2 pt-1.5 pb-1" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <div className="flex items-center gap-1.5 mb-1.5" style={{
+                        background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 6, padding: '4px 8px',
+                    }}>
+                        <Search className="w-3 h-3 text-slate-400 flex-shrink-0" />
+                        <input
+                            ref={searchInputRef}
+                            type="text"
+                            value={searchQuery}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            placeholder="GIF ara..."
+                            className="flex-1 text-[10px] bg-transparent outline-none text-slate-700 placeholder:text-slate-400"
+                            style={{ border: 'none', padding: 0, minWidth: 0 }}
+                        />
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                        <TrendingUp className="w-3 h-3 text-blue-500" />
+                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            {searchQuery ? `"${searchQuery}"` : activeTag ? activeTag : 'Trend GIF'}
+                        </span>
+                        <span className="text-[9px] text-slate-400 ml-auto font-bold tracking-wider">GIPHY</span>
+                    </div>
                 </div>
 
                 {/* Grid */}
@@ -107,7 +137,7 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
                     {/* Yükleniyor */}
                     {loading && gifs.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-12 text-gray-500 gap-3">
-                            <Loader2 className="w-7 h-7 animate-spin text-sky-400/50" />
+                            <Loader2 className="w-7 h-7 animate-spin text-blue-400" />
                             <span className="text-[10px] font-medium">GIF&apos;ler yükleniyor...</span>
                         </div>
                     )}
@@ -139,11 +169,11 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
                                     <button
                                         key={gif.id}
                                         onClick={() => onGifSelect?.(fullUrl || thumbUrl)}
-                                        className="rounded-lg overflow-hidden relative group transition-all duration-200 hover:ring-1 ring-sky-500/40"
+                                        className="rounded-lg overflow-hidden relative group transition-all duration-200 hover:ring-1 ring-blue-300"
                                         style={{
                                             aspectRatio: '1',
-                                            border: '1px solid rgba(255,255,255,0.04)',
-                                            background: 'rgba(255,255,255,0.02)',
+                                            border: '1px solid #e2e8f0',
+                                            background: '#f8fafc',
                                         }}
                                     >
                                         <img

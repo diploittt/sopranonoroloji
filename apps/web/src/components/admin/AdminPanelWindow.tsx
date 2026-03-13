@@ -184,12 +184,10 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                 transform: `translate(${posRef.current.x}px, ${posRef.current.y}px)`,
                 width: sizeRef.current.width,
                 height: sizeRef.current.height,
-                background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                backdropFilter: 'blur(28px) saturate(130%)',
-                WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                boxShadow: '0 40px 80px -15px rgba(0,0,0,0.25), 0 16px 32px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+                background: '#ffffff',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 willChange: 'transform',
-                border: '1px solid rgba(255,255,255,0.65)',
+                border: '1px solid #e2e8f0',
             }}
             onMouseDown={handleDragStart}
             onContextMenu={(e) => {
@@ -243,8 +241,8 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                 {/* ── Premium Sidebar ── */}
                 <div className="w-[200px] flex flex-col py-4 px-3 gap-1 overflow-y-auto shrink-0 relative"
                     style={{
-                        background: 'rgba(218,225,235,0.5)',
-                        borderRight: '1px solid rgba(100,116,139,0.18)',
+                        background: '#f8fafc',
+                        borderRight: '1px solid #e2e8f0',
                     }}
                 >
                     {/* Right edge glow line */}

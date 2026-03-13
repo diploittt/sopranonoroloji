@@ -104,9 +104,9 @@ export function StickerPicker({ onStickerSelect }: StickerPickerProps) {
     const stickers = STICKER_DATA[activeCategory] || [];
 
     return (
-        <div className="flex select-none" style={{ width: 440, height: 260 }}>
+        <div className="flex select-none" style={{ width: 360, height: 210 }}>
             {/* Sol: Kategori Tab'ları (dikey şerit) */}
-            <div className="flex flex-col items-center gap-0.5 py-2 px-1" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', width: 42 }}>
+            <div className="flex flex-col items-center gap-0.5 py-2 px-1" style={{ borderRight: '1px solid #e2e8f0', width: 42 }}>
                 {CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     const isActive = activeCategory === cat.id;
@@ -115,8 +115,8 @@ export function StickerPicker({ onStickerSelect }: StickerPickerProps) {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 ${isActive
-                                ? 'bg-pink-500/10 text-pink-400'
-                                : 'text-gray-600 hover:text-gray-400 hover:bg-white/[0.04]'
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                 }`}
                             title={cat.label}
                         >
@@ -129,11 +129,11 @@ export function StickerPicker({ onStickerSelect }: StickerPickerProps) {
             {/* Sağ: Sticker Grid */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Kategori başlığı */}
-                <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         {CATEGORIES.find(c => c.id === activeCategory)?.label || ''}
                     </span>
-                    <span className="text-[9px] text-pink-400/60 ml-auto font-bold">{stickers.length} sticker</span>
+                    <span className="text-[9px] text-slate-400 ml-auto font-bold">{stickers.length} sticker</span>
                 </div>
 
                 {/* Grid */}
@@ -145,16 +145,16 @@ export function StickerPicker({ onStickerSelect }: StickerPickerProps) {
                                 onClick={() => onStickerSelect?.(sticker.emoji)}
                                 className="group relative flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-xl transition-all duration-200 hover:scale-[1.08] active:scale-95"
                                 style={{
-                                    background: 'rgba(255,255,255,0.02)',
-                                    border: '1px solid rgba(255,255,255,0.04)',
+                                    background: '#f8fafc',
+                                    border: '1px solid #e2e8f0',
                                 }}
-                                onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(236,72,153,0.06)'; e.currentTarget.style.borderColor = 'rgba(236,72,153,0.2)'; }}
-                                onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; }}
+                                onMouseOver={(e) => { e.currentTarget.style.background = '#dbeafe'; e.currentTarget.style.borderColor = '#93c5fd'; }}
+                                onMouseOut={(e) => { e.currentTarget.style.background = '#f8fafc'; e.currentTarget.style.borderColor = '#e2e8f0'; }}
                             >
                                 <span className="text-[28px] leading-none group-hover:scale-110 transition-transform duration-300">
                                     {sticker.emoji}
                                 </span>
-                                <span className="text-[8px] font-semibold text-gray-600 group-hover:text-gray-400 transition-colors truncate max-w-full">
+                                <span className="text-[8px] font-semibold text-slate-400 group-hover:text-slate-600 transition-colors truncate max-w-full">
                                     {sticker.label}
                                 </span>
                             </button>

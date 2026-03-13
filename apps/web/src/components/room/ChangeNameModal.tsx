@@ -82,29 +82,27 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
 
     return createPortal(
         <>
-            <div className="fixed inset-0 z-[10000]" onClick={onClose} style={{ background: 'rgba(0,0,0,0.25)' }} />
+            <div className="fixed inset-0 z-[10000]" onClick={onClose} style={{ background: 'rgba(0,0,0,0.12)' }} />
             <div className="fixed inset-0 z-[10001] flex items-start justify-center p-4" style={centered ? { paddingTop: '15vh' } : { display: 'block' }}>
                 <div
                     ref={modalRef}
-                    className="w-full max-w-xs animate-pure-fade"
+                    className="w-full max-w-[260px] animate-pure-fade"
                     style={{
                         ...modalStyle,
-                        background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                        backdropFilter: 'blur(28px) saturate(130%)',
-                        WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                        border: '1px solid rgba(255,255,255,0.65)',
-                        borderRadius: 14,
-                        boxShadow: '0 20px 50px rgba(0,0,0,0.18), 0 6px 20px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+                        background: '#ffffff',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 12,
+                        boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                     }}
                     onClick={(e) => e.stopPropagation()}
                 >
                     {/* Header — koyu tema */}
                     <div
-                        className="flex items-center justify-between px-3.5 py-1.5"
+                        className="flex items-center justify-between px-3 py-1.5"
                         onMouseDown={handleMouseDown}
-                        style={{ cursor: 'move', userSelect: 'none', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
+                        style={{ cursor: 'move', userSelect: 'none', background: '#1e293b' }}
                     >
-                        <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 5, textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}>
+                        <h2 style={{ fontSize: 11, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 5, letterSpacing: '0.04em', textTransform: 'uppercase' as any }}>
                             <span style={{ fontSize: 13 }}>✏️</span> İsim Değiştir
                         </h2>
                         <button onClick={onClose} style={{ width: 22, height: 22, borderRadius: 6, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10, transition: 'all 0.2s' }}
@@ -113,13 +111,13 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                         >✕</button>
                     </div>
 
-                    <form onSubmit={handleSubmit} style={{ padding: '8px 14px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <form onSubmit={handleSubmit} style={{ padding: '6px 10px 10px', display: 'flex', flexDirection: 'column', gap: 6 }}>
                         <div>
-                            <label style={{ fontSize: 10, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 600 }}>Mevcut İsim</label>
-                            <div style={{ fontSize: 12, color: '#475569', background: 'rgba(255,255,255,0.4)', borderRadius: 10, padding: '8px 12px', border: '1px solid rgba(100,116,139,0.1)' }}>{currentName}</div>
+                            <label style={{ fontSize: 9, color: '#64748b', display: 'block', marginBottom: 3, fontWeight: 600 }}>Mevcut İsim</label>
+                            <div style={{ fontSize: 11, color: '#475569', background: '#f8fafc', borderRadius: 8, padding: '5px 10px', border: '1px solid #e2e8f0' }}>{currentName}</div>
                         </div>
                         <div>
-                            <label style={{ fontSize: 10, color: '#94a3b8', display: 'block', marginBottom: 4, fontWeight: 600 }}>Yeni İsim</label>
+                            <label style={{ fontSize: 9, color: '#64748b', display: 'block', marginBottom: 3, fontWeight: 600 }}>Yeni İsim</label>
                             <input
                                 ref={inputRef}
                                 type="text"
@@ -128,8 +126,8 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                                 maxLength={20}
                                 placeholder="Yeni isminizi yazın..."
                                 style={{
-                                    width: '100%', fontSize: 12, color: '#1e293b', borderRadius: 10,
-                                    padding: '8px 12px', border: '1px solid rgba(100,116,139,0.2)', background: 'rgba(255,255,255,0.6)', outline: 'none',
+                                    width: '100%', fontSize: 11, color: '#1e293b', borderRadius: 8,
+                                    padding: '5px 10px', border: '1px solid #e2e8f0', background: '#f8fafc', outline: 'none',
                                 }}
                             />
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
@@ -141,15 +139,15 @@ export function ChangeNameModal({ isOpen, currentName, onClose, onSubmit }: Chan
                         </div>
                         <div style={{ display: 'flex', gap: 8, paddingTop: 2 }}>
                             <button type="button" onClick={onClose} style={{
-                                flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 600, color: '#475569',
-                                background: 'rgba(255,255,255,0.4)', border: '1px solid rgba(100,116,139,0.15)',
-                                borderRadius: 10, cursor: 'pointer', transition: 'all 0.2s',
+                                flex: 1, padding: '5px 0', fontSize: 11, fontWeight: 600, color: '#475569',
+                                background: '#f1f5f9', border: '1px solid #e2e8f0',
+                                borderRadius: 8, cursor: 'pointer', transition: 'all 0.2s',
                             }}>İptal</button>
                             <button type="submit" style={{
-                                flex: 1, padding: '8px 0', fontSize: 12, fontWeight: 700, color: '#fff',
-                                background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                                border: 'none', borderRadius: 10, cursor: 'pointer',
-                                boxShadow: '0 2px 12px rgba(30,58,95,0.2)',
+                                flex: 1, padding: '5px 0', fontSize: 11, fontWeight: 700, color: '#fff',
+                                background: 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)',
+                                border: 'none', borderRadius: 8, cursor: 'pointer',
+                                boxShadow: '0 2px 8px rgba(30,58,95,0.15)',
                             }}>Değiştir</button>
                         </div>
                     </form>

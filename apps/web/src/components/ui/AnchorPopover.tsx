@@ -143,7 +143,7 @@ export function AnchorPopover({
             {/* Backdrop Overlay for panels */}
             {variant === 'panel' && (
                 <div
-                    className="fixed inset-0 z-[9998] bg-black/30 backdrop-blur-[2px]"
+                    className="fixed inset-0 z-[9998] bg-black/15"
                     style={{
                         opacity: animateIn ? 1 : 0,
                         transition: 'opacity 0.2s ease-out',
@@ -169,42 +169,39 @@ export function AnchorPopover({
                 {/* ═══ TOAST VARIANT ═══ */}
                 {variant === 'toast' && (
                     <div className={`
-                        relative overflow-hidden rounded-xl border backdrop-blur-xl shadow-2xl ring-1 ring-white/10
-                        bg-[#0f111a]/95 pl-4 pr-5 py-3 border-l-4
-                        ${toastType === 'error' ? 'border-l-red-500 border-white/5' : ''}
-                        ${toastType === 'success' ? 'border-l-emerald-500 border-white/5' : ''}
-                        ${toastType === 'info' ? 'border-l-indigo-500 border-white/5' : ''}
+                        relative overflow-hidden rounded-xl border shadow-lg
+                        pl-4 pr-5 py-3 border-l-[3px] bg-white
+                        ${toastType === 'error' ? 'border-l-red-500 border-gray-200' : ''}
+                        ${toastType === 'success' ? 'border-l-green-500 border-gray-200' : ''}
+                        ${toastType === 'info' ? 'border-l-blue-500 border-gray-200' : ''}
                     `}>
                         <div className="flex items-center gap-3 whitespace-nowrap">
-                            {toastType === 'error' && <AlertTriangle className="w-4 h-4 text-red-400" />}
-                            {toastType === 'success' && <Check className="w-4 h-4 text-emerald-400" />}
-                            {toastType === 'info' && <Info className="w-4 h-4 text-indigo-400" />}
-                            <span className="text-sm font-medium text-white">{message || children}</span>
+                            {toastType === 'error' && <AlertTriangle className="w-4 h-4 text-red-500" />}
+                            {toastType === 'success' && <Check className="w-4 h-4 text-green-500" />}
+                            {toastType === 'info' && <Info className="w-4 h-4 text-blue-500" />}
+                            <span className="text-sm font-medium text-slate-700">{message || children}</span>
                         </div>
                     </div>
                 )}
 
                 {/* ═══ CONFIRM VARIANT ═══ */}
                 {variant === 'confirm' && (
-                    <div className="relative overflow-hidden rounded-2xl border border-white/10 backdrop-blur-2xl shadow-2xl ring-1 ring-white/5 bg-[#0c0e17]/95 p-5 min-w-[300px]">
-                        {/* Decorative gradient top line */}
-                        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-red-500 via-orange-400 to-red-500 opacity-60" />
-
+                    <div className="relative overflow-hidden rounded-xl border border-gray-200 shadow-lg bg-white p-5 min-w-[280px]">
                         <div className="space-y-4">
                             <div className="flex flex-col gap-1.5">
-                                <h4 className="text-sm font-bold text-white">{title || 'Onaylıyor musunuz?'}</h4>
-                                {children && <p className="text-xs text-gray-400 leading-relaxed">{children}</p>}
+                                <h4 className="text-sm font-bold text-slate-800">{title || 'Onaylıyor musunuz?'}</h4>
+                                {children && <p className="text-xs text-slate-500 leading-relaxed">{children}</p>}
                             </div>
-                            <div className="flex items-center gap-3 pt-3 border-t border-white/5">
+                            <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
                                 <button
                                     onClick={onClose}
-                                    className="flex-1 px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-semibold text-gray-300 transition-all duration-200 border border-white/5 hover:border-white/10"
+                                    className="flex-1 px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-xs font-semibold text-slate-600 transition-all duration-200 border border-gray-200"
                                 >
                                     {cancelText}
                                 </button>
                                 <button
                                     onClick={() => { onConfirm?.(); onClose(); }}
-                                    className="flex-1 px-4 py-2 rounded-xl bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-xs font-bold text-white transition-all duration-200 shadow-lg shadow-red-500/25 hover:shadow-red-500/40"
+                                    className="flex-1 px-4 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-xs font-bold text-white transition-all duration-200 shadow-lg shadow-red-500/20"
                                 >
                                     {confirmText}
                                 </button>
@@ -215,27 +212,17 @@ export function AnchorPopover({
 
                 {/* ═══ PANEL VARIANT — Premium Glassmorphism ═══ */}
                 {variant === 'panel' && (
-                    <div className="relative overflow-hidden rounded-2xl shadow-[0_25px_60px_-12px_rgba(0,0,0,0.4),0_0_30px_rgba(56,189,248,0.05)] min-w-[240px]" style={{ border: '1px solid rgba(255,255,255,0.15)', background: 'linear-gradient(135deg, rgba(51,65,85,0.93), rgba(30,41,59,0.95))', backdropFilter: 'blur(28px)' }}>
-                        {/* Glass Background */}
-                        <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 40%, transparent 100%)' }} />
-
-                        {/* Decorative top accent — gradient line */}
-                        <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: 'linear-gradient(90deg, transparent, rgba(56,189,248,0.5), rgba(125,211,252,0.3), transparent)' }} />
-
-                        {/* Corner glows */}
-                        <div className="absolute -top-16 -right-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(56,189,248,0.04)' }} />
-                        <div className="absolute -bottom-16 -left-16 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(125,211,252,0.03)' }} />
-
-                        <div className="relative z-10 flex flex-col max-h-[600px]">
+                    <div className="relative overflow-hidden rounded-xl min-w-[240px]" style={{ border: '1px solid #e2e8f0', background: '#ffffff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
+                        <div className="relative z-10 flex flex-col max-h-[420px]">
                             {/* Header */}
                             {title && (
-                                <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-white/[0.05]">
-                                    <h3 className="text-[13px] font-extrabold text-white/90 tracking-wide" style={{ textShadow: '0 0 20px rgba(123,159,239,0.15)' }}>{title}</h3>
+                                <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: '1px solid #f1f5f9', background: '#1e293b', borderRadius: '12px 12px 0 0' }}>
+                                    <h3 className="text-[11px] font-bold text-white tracking-wide uppercase">{title}</h3>
                                     <button
                                         onClick={onClose}
-                                        className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/[0.04] hover:bg-red-500/10 text-gray-500 hover:text-red-400 transition-all duration-200 group"
+                                        className="w-5 h-5 flex items-center justify-center rounded-md hover:bg-white/10 text-gray-400 hover:text-white transition-all duration-200 group"
                                     >
-                                        <X className="w-3.5 h-3.5 group-hover:rotate-90 transition-transform duration-300" />
+                                        <X className="w-3 h-3 group-hover:rotate-90 transition-transform duration-300" />
                                     </button>
                                 </div>
                             )}

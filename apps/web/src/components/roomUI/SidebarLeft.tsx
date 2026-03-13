@@ -1,7 +1,7 @@
 import { User } from '@/types';
 import { generateGenderAvatar } from '@/lib/avatar';
 import { ThreeDTextBanner, deserialize3DParams } from '@/components/room/ThreeDTextBanner';
-import { Hand, Mic, MicOff, Phone, ChevronUp, Crown, Shield, ShieldCheck, Music, Gem, User as UserIcon, MessageSquareX, Ban, CameraOff, Camera } from 'lucide-react';
+import { Hand, Mic, MicOff, Phone, ChevronUp, ChevronDown, Crown, Shield, ShieldCheck, Music, Gem, User as UserIcon, MessageSquareX, Ban, CameraOff, Camera } from 'lucide-react';
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 
 import { ContextMenu } from '@/components/ui/ContextMenu';
@@ -1249,334 +1249,301 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 </div>
             )}
 
-            {/* BOTTOM CONTROLS */}
-            <div className="p-3 relative" style={{
-                background: 'linear-gradient(180deg, rgba(10,15,28,0.95) 0%, rgba(7,11,20,0.98) 100%)',
-                backdropFilter: 'blur(24px)',
-                borderRadius: '14px',
-                margin: '6px 6px 6px 6px',
-                border: '1px solid rgba(255,255,255,0.08)',
-                boxShadow: '0 -4px 20px rgba(0,0,0,0.3), 0 2px 10px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.04)',
-            }}>
-                {/* STATUS TRIGGER BUTTON */}
-                <div className="relative" ref={statusMenuRef}>
-                    <button
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl transition-all duration-200 cursor-pointer group"
-                        style={{
-                            background: showStatusMenu ? 'rgba(123,159,239,0.12)' : 'rgba(255,255,255,0.04)',
-                            border: `1px solid ${showStatusMenu ? 'rgba(123,159,239,0.25)' : 'rgba(255,255,255,0.06)'}`,
-                        }}
-                        onClick={() => setShowStatusMenu(!showStatusMenu)}
-                    >
-                        <div className="flex items-center gap-2.5">
-                            <div className="relative">
-                                <div className="w-2.5 h-2.5 rounded-full" style={{
+            {/* BOTTOM CONTROLS — Slim Premium */}
+            <div className="slim-controls">
+
+                    {/* 1. DURUM SEÇİCİ */}
+                    <div className="relative" ref={statusMenuRef}>
+                        <button
+                            className="slim-status-pill"
+                            onClick={() => setShowStatusMenu(!showStatusMenu)}
+                        >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <div style={{
+                                    width: 8, height: 8, borderRadius: '50%',
                                     background: currentUser?.status === 'busy' ? '#ef4444'
                                         : currentUser?.status === 'away' || currentUser?.status === 'outside' ? '#f59e0b'
                                             : currentUser?.status === 'phone' ? '#22d3ee'
                                                 : '#22c55e',
-                                    boxShadow: `0 0 6px ${currentUser?.status === 'busy' ? 'rgba(239,68,68,0.4)' : 'rgba(34,197,94,0.4)'}`,
+                                    boxShadow: `0 0 8px ${currentUser?.status === 'busy' ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}, inset 0 0 2px rgba(0,0,0,0.5)`,
                                 }} />
+                                <span style={{ fontSize: 10, fontWeight: 900, color: '#e2e8f0', letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                                    {getStatusLabel(currentUser?.status as string)}
+                                </span>
                             </div>
-                            <span className="text-xs font-bold text-gray-300 group-hover:text-white transition-colors">
-                                {`${t.statusPrefix}: ${getStatusLabel(currentUser?.status as string)}`}
-                            </span>
-                        </div>
-                        <ChevronUp className={`w-4 h-4 text-gray-500 transition-transform ${showStatusMenu ? 'rotate-180' : ''}`} />
-                    </button>
+                            <ChevronDown style={{
+                                width: 14, height: 14, color: '#94a3b8',
+                                transition: 'transform 0.2s',
+                                transform: showStatusMenu ? 'rotate(180deg)' : 'none',
+                            }} />
+                        </button>
 
-                    {/* STATUS DROPDOWN MENU */}
-                    {showStatusMenu && (
-                        <div className="absolute bottom-full left-0 w-full mb-1.5 rounded-xl overflow-hidden z-50" style={{
-                            background: 'rgba(8,12,22,0.96)',
-                            backdropFilter: 'blur(20px)',
-                            border: '1px solid rgba(123,159,239,0.12)',
-                            boxShadow: '0 -12px 40px rgba(0,0,0,0.8), 0 -4px 16px rgba(0,0,0,0.4)',
-                        }}>
-                            {/* Header */}
-                            <div className="px-3.5 py-2 border-b border-white/5">
-                                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-[0.15em]">Durumunu Değiştir</span>
-                            </div>
+                        {/* STATUS DROPDOWN MENU */}
+                        {showStatusMenu && (
+                            <div className="slim-dropdown" style={{
+                                position: 'absolute', bottom: '100%', left: 0, right: 0, marginBottom: 6, zIndex: 100,
+                                animation: 'contentFadeIn 0.2s ease both',
+                            }}>
+                                <div style={{ padding: '5px 10px', borderBottom: '1px solid #e2e8f0' }}>
+                                    <span style={{ fontSize: 8, fontWeight: 800, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.15em' }}>Durumunu Değiştir</span>
+                                </div>
 
-                            {/* ═══ TEMEL DURUMLAR — Herkes görebilir ═══ */}
-                            {([
-                                { key: 'online', emoji: '🟢', label: t.statusOnline, color: 'emerald' },
-                                { key: 'busy', emoji: '🔴', label: t.statusBusy, color: 'red' },
-                                { key: 'away', emoji: '🟡', label: t.statusWillReturn, color: 'amber' },
-                            ] as const).map(({ key, emoji, label, color }) => {
-                                const isActive = currentUser?.status === key && !currentUser?.isStealth;
-                                return (
-                                    <div
-                                        key={key}
-                                        className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${isActive ? `bg-${color}-500/10` : ''}`}
-                                        onClick={() => {
-                                            room.actions.changeStatus(key);
-                                            if (currentUser?.isStealth) room.actions.toggleStealth();
-                                            if (isGodMaster && currentUser?.visibilityMode !== 'visible') room.actions.setGodmasterVisibility('visible');
-                                            setShowStatusMenu(false);
-                                        }}
-                                    >
-                                        <span className="text-[13px] w-5 text-center">{emoji}</span>
-                                        <span className={`text-[11px] font-medium ${isActive ? `text-${color}-400 font-bold` : 'text-gray-400'}`}>{label}</span>
-                                        {isActive && <span className={`ml-auto text-[9px] text-${color}-400 bg-${color}-500/15 px-1.5 py-0.5 rounded font-bold`}>●</span>}
-                                    </div>
-                                );
-                            })}
+                                {/* TEMEL DURUMLAR */}
+                                {([
+                                    { key: 'online', emoji: '🟢', label: t.statusOnline, color: '#22c55e' },
+                                    { key: 'busy', emoji: '🔴', label: t.statusBusy, color: '#ef4444' },
+                                    { key: 'away', emoji: '🟡', label: t.statusWillReturn, color: '#f59e0b' },
+                                ] as const).map(({ key, emoji, label, color }) => {
+                                    const isActive = currentUser?.status === key && !currentUser?.isStealth;
+                                    return (
+                                        <button
+                                            key={key}
+                                            style={{
+                                                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                                                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                                                background: isActive ? '#f0f7ff' : 'transparent',
+                                                borderBottom: '1px solid #f1f5f9',
+                                                transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                                            onClick={() => {
+                                                room.actions.changeStatus(key);
+                                                if (currentUser?.isStealth) room.actions.toggleStealth();
+                                                if (isGodMaster && currentUser?.visibilityMode !== 'visible') room.actions.setGodmasterVisibility('visible');
+                                                setShowStatusMenu(false);
+                                            }}
+                                        >
+                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{emoji}</span>
+                                            <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
+                                            {isActive && <span style={{ marginLeft: 'auto', fontSize: 8, color, fontWeight: 900 }}>●</span>}
+                                        </button>
+                                    );
+                                })}
 
-                            {/* ═══ GELİŞMİŞ DURUMLAR — VIP+ roller ═══ */}
-                            {getRoleLevel(currentUser?.role) >= 3 && (
-                                <>
-                                    <div className="border-t border-white/5" />
-                                    {([
-                                        { key: 'outside', emoji: '🚶', label: t.statusOutside, color: 'amber' },
-                                        { key: 'phone', emoji: '📞', label: t.statusOnPhone, color: 'cyan' },
-                                    ] as const).map(({ key, emoji, label, color }) => {
-                                        const isActive = currentUser?.status === key;
-                                        return (
-                                            <div
-                                                key={key}
-                                                className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${isActive ? `bg-${color}-500/10` : ''}`}
-                                                onClick={() => {
-                                                    room.actions.changeStatus(key);
-                                                    setShowStatusMenu(false);
-                                                }}
-                                            >
-                                                <span className="text-[13px] w-5 text-center">{emoji}</span>
-                                                <span className={`text-[11px] font-medium ${isActive ? `text-${color}-400 font-bold` : 'text-gray-400'}`}>{label}</span>
-                                                {isActive && <span className={`ml-auto text-[9px] text-${color}-400 bg-${color}-500/15 px-1.5 py-0.5 rounded font-bold`}>●</span>}
-                                            </div>
-                                        );
-                                    })}
-                                </>
-                            )}
+                                {/* GELİŞMİŞ DURUMLAR */}
+                                {getRoleLevel(currentUser?.role) >= 3 && (
+                                    <>
+                                        <div style={{ borderTop: '1px solid #e2e8f0' }} />
+                                        {([
+                                            { key: 'outside', emoji: '🚶', label: t.statusOutside, color: '#f59e0b' },
+                                            { key: 'phone', emoji: '📞', label: t.statusOnPhone, color: '#22d3ee' },
+                                        ] as const).map(({ key, emoji, label, color }) => {
+                                            const isActive = currentUser?.status === key;
+                                            return (
+                                                <button
+                                                    key={key}
+                                                    style={{
+                                                        width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+                                                        padding: '8px 14px', border: 'none', cursor: 'pointer',
+                                                        background: isActive ? '#f0f7ff' : 'transparent',
+                                                        borderBottom: '1px solid #f1f5f9',
+                                                        transition: 'background 0.15s',
+                                                    }}
+                                                    onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                                    onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                                                    onClick={() => { room.actions.changeStatus(key); setShowStatusMenu(false); }}
+                                                >
+                                                    <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{emoji}</span>
+                                                    <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
+                                                    {isActive && <span style={{ marginLeft: 'auto', fontSize: 8, color, fontWeight: 900 }}>●</span>}
+                                                </button>
+                                            );
+                                        })}
+                                    </>
+                                )}
 
-                            {/* ═══ GÖRÜNMEZLİK — VIP+ roller (GodMaster hariç) ═══ */}
-                            {canStealth && (
-                                <>
-                                    <div className="border-t border-white/5" />
-                                    <div
-                                        className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${currentUser?.isStealth ? 'bg-gray-500/10' : ''}`}
-                                        onClick={() => {
-                                            room.actions.toggleStealth();
-                                            setShowStatusMenu(false);
-                                        }}
-                                    >
-                                        <span className="text-[13px] w-5 text-center">👻</span>
-                                        <span className={`text-[11px] font-medium ${currentUser?.isStealth ? 'text-gray-300 font-bold' : 'text-gray-400'}`}>{t.statusInvisible}</span>
-                                        {currentUser?.isStealth && <span className="ml-auto text-[9px] text-gray-400 bg-white/10 px-1.5 py-0.5 rounded font-bold">●</span>}
-                                    </div>
-                                </>
-                            )}
+                                {/* GÖRÜNMEZLİK */}
+                                {canStealth && (
+                                    <>
+                                        <div style={{ borderTop: '1px solid #e2e8f0' }} />
+                                        <button
+                                            style={{
+                                                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                                                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                                                background: currentUser?.isStealth ? '#f0f7ff' : 'transparent',
+                                                borderBottom: '1px solid #f1f5f9',
+                                                transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={e => { if (!currentUser?.isStealth) e.currentTarget.style.background = 'transparent'; }}
+                                            onClick={() => { room.actions.toggleStealth(); setShowStatusMenu(false); }}
+                                        >
+                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>👻</span>
+                                            <span style={{ fontSize: 10, fontWeight: currentUser?.isStealth ? 800 : 600, color: currentUser?.isStealth ? '#1e293b' : '#475569' }}>{t.statusInvisible}</span>
+                                            {currentUser?.isStealth && <span style={{ marginLeft: 'auto', fontSize: 8, color: '#1e293b', fontWeight: 900 }}>●</span>}
+                                        </button>
+                                    </>
+                                )}
 
-                            {/* ═══ GODMASTER ÖZEL MODLAR ═══ */}
-                            {isGodMaster && (
-                                <>
-                                    <div className="border-t border-white/5 mt-0.5" />
-                                    <div className="px-3.5 py-1.5">
-                                        <span className="text-[9px] font-bold uppercase tracking-[0.15em]" style={{ color: 'rgba(192,132,252,0.6)' }}>🔱 GodMaster Modu</span>
-                                    </div>
-
-                                    {/* GodMaster olarak görünür */}
-                                    <div
-                                        className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${currentUser?.visibilityMode === 'visible' ? 'bg-fuchsia-500/10' : ''}`}
-                                        onClick={() => {
-                                            room.actions.setGodmasterVisibility('visible');
-                                            setShowStatusMenu(false);
-                                            setShowDisguiseInput(false);
-                                        }}
-                                    >
-                                        <span className="text-[13px] w-5 text-center">🔱</span>
-                                        <span className={`text-[11px] font-medium ${currentUser?.visibilityMode === 'visible' ? 'text-fuchsia-400 font-bold' : 'text-gray-400'}`}>Görünür (GodMaster)</span>
-                                        {currentUser?.visibilityMode === 'visible' && <span className="ml-auto text-[9px] text-fuchsia-400 bg-fuchsia-500/15 px-1.5 py-0.5 rounded font-bold">●</span>}
-                                    </div>
-
-                                    {/* Kılık değiştir */}
-                                    <div
-                                        className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${currentUser?.visibilityMode === 'disguised' ? 'bg-blue-500/10' : ''}`}
-                                        onClick={() => {
-                                            if (currentUser?.visibilityMode === 'disguised') {
-                                                room.actions.setGodmasterVisibility('hidden');
-                                                setShowDisguiseInput(false);
-                                            } else {
-                                                setShowDisguiseInput(true);
-                                            }
-                                        }}
-                                    >
-                                        <span className="text-[13px] w-5 text-center">👤</span>
-                                        <span className={`text-[11px] font-medium ${currentUser?.visibilityMode === 'disguised' ? 'text-blue-400 font-bold' : 'text-gray-400'}`}>{t.disguiseAsGuest}</span>
-                                        {currentUser?.visibilityMode === 'disguised' && <span className="ml-auto text-[9px] text-blue-400 bg-blue-500/15 px-1.5 py-0.5 rounded font-bold">●</span>}
-                                    </div>
-
-                                    {/* İsim giriş alanı */}
-                                    {showDisguiseInput && (
-                                        <div className="px-3.5 py-2 flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={disguiseName}
-                                                onChange={(e) => setDisguiseName(e.target.value)}
-                                                placeholder={t.disguisePlaceholder}
-                                                className="flex-1 px-2.5 py-1.5 bg-white/5 border border-white/10 rounded-lg text-[11px] text-white placeholder-gray-500 focus:outline-none focus:border-blue-500/40"
-                                                autoFocus
-                                                onKeyDown={(e) => {
-                                                    if (e.key === 'Enter' && disguiseName.trim()) {
-                                                        room.actions.setGodmasterVisibility('disguised', disguiseName.trim());
-                                                        setShowStatusMenu(false);
-                                                        setShowDisguiseInput(false);
-                                                        setDisguiseName('');
-                                                    }
-                                                }}
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    if (disguiseName.trim()) {
-                                                        room.actions.setGodmasterVisibility('disguised', disguiseName.trim());
-                                                        setShowStatusMenu(false);
-                                                        setShowDisguiseInput(false);
-                                                        setDisguiseName('');
-                                                    }
-                                                }}
-                                                className="px-2.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-[10px] rounded-lg font-bold transition-colors"
-                                            >
-                                                {t.confirm}
-                                            </button>
+                                {/* GODMASTER MODLARI */}
+                                {isGodMaster && (
+                                    <>
+                                        <div style={{ borderTop: '1px solid #e2e8f0', marginTop: 2 }} />
+                                        <div style={{ padding: '4px 10px' }}>
+                                            <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(192,132,252,0.6)' }}>🔱 GodMaster Modu</span>
                                         </div>
-                                    )}
 
-                                    {/* Gizli mod */}
-                                    <div
-                                        className={`flex items-center gap-3 px-3.5 py-2 hover:bg-white/[0.06] cursor-pointer transition-colors ${(!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? 'bg-gray-500/10' : ''}`}
-                                        onClick={() => {
-                                            room.actions.setGodmasterVisibility('hidden');
-                                            setShowStatusMenu(false);
-                                            setShowDisguiseInput(false);
-                                        }}
-                                    >
-                                        <span className="text-[13px] w-5 text-center">👻</span>
-                                        <span className={`text-[11px] font-medium ${(!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? 'text-gray-300 font-bold' : 'text-gray-400'}`}>{t.statusInvisible}</span>
-                                        {(!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') && <span className="ml-auto text-[9px] text-gray-400 bg-white/10 px-1.5 py-0.5 rounded font-bold">●</span>}
-                                    </div>
-                                </>
-                            )}
-                        </div>
-                    )}
-                </div>
+                                        <button
+                                            style={{
+                                                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                                                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                                                background: currentUser?.visibilityMode === 'visible' ? 'rgba(192,132,252,0.08)' : 'transparent',
+                                                borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={e => { if (currentUser?.visibilityMode !== 'visible') e.currentTarget.style.background = 'transparent'; }}
+                                            onClick={() => { room.actions.setGodmasterVisibility('visible'); setShowStatusMenu(false); setShowDisguiseInput(false); }}
+                                        >
+                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>🔱</span>
+                                            <span style={{ fontSize: 10, fontWeight: currentUser?.visibilityMode === 'visible' ? 800 : 600, color: currentUser?.visibilityMode === 'visible' ? '#9333ea' : '#475569' }}>Görünür (GodMaster)</span>
+                                            {currentUser?.visibilityMode === 'visible' && <span style={{ marginLeft: 'auto', fontSize: 8, color: '#c084fc', fontWeight: 900 }}>●</span>}
+                                        </button>
 
-                {/* 📢 DUYURU BİLDİRİM KUTUSU — sadece owner/admin/superadmin */}
-                {['owner', 'admin', 'superadmin'].includes(currentUser?.role || '') && (
-                    <div className="relative">
-                        <button
-                            onClick={() => {
-                                if (room.state.announcement) {
-                                    if (showAnnouncementPanel) {
-                                        setShowAnnouncementPanel(false);
-                                    } else {
-                                        setShowAnnouncementPanel(true);
-                                        room.actions.markAnnouncementSeen();
+                                        <button
+                                            style={{
+                                                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                                                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                                                background: currentUser?.visibilityMode === 'disguised' ? 'rgba(59,130,246,0.08)' : 'transparent',
+                                                borderBottom: '1px solid #f1f5f9', transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={e => { if (currentUser?.visibilityMode !== 'disguised') e.currentTarget.style.background = 'transparent'; }}
+                                            onClick={() => {
+                                                if (currentUser?.visibilityMode === 'disguised') {
+                                                    room.actions.setGodmasterVisibility('hidden');
+                                                    setShowDisguiseInput(false);
+                                                } else {
+                                                    setShowDisguiseInput(true);
+                                                }
+                                            }}
+                                        >
+                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>👤</span>
+                                            <span style={{ fontSize: 10, fontWeight: currentUser?.visibilityMode === 'disguised' ? 800 : 600, color: currentUser?.visibilityMode === 'disguised' ? '#3b82f6' : '#475569' }}>{t.disguiseAsGuest}</span>
+                                            {currentUser?.visibilityMode === 'disguised' && <span style={{ marginLeft: 'auto', fontSize: 8, color: '#60a5fa', fontWeight: 900 }}>●</span>}
+                                        </button>
+
+                                        {showDisguiseInput && (
+                                            <div style={{ padding: '4px 10px', display: 'flex', gap: 5 }}>
+                                                <input
+                                                    type="text" value={disguiseName}
+                                                    onChange={(e) => setDisguiseName(e.target.value)}
+                                                    placeholder={t.disguisePlaceholder}
+                                                    className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[11px] text-slate-800 placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                                                    autoFocus
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter' && disguiseName.trim()) {
+                                                            room.actions.setGodmasterVisibility('disguised', disguiseName.trim());
+                                                            setShowStatusMenu(false); setShowDisguiseInput(false); setDisguiseName('');
+                                                        }
+                                                    }}
+                                                />
+                                                <button
+                                                    onClick={() => {
+                                                        if (disguiseName.trim()) {
+                                                            room.actions.setGodmasterVisibility('disguised', disguiseName.trim());
+                                                            setShowStatusMenu(false); setShowDisguiseInput(false); setDisguiseName('');
+                                                        }
+                                                    }}
+                                                    className="px-2.5 py-1.5 bg-blue-500 hover:bg-blue-600 text-white text-[10px] rounded-lg font-bold transition-colors"
+                                                >{t.confirm}</button>
+                                            </div>
+                                        )}
+
+                                        <button
+                                            style={{
+                                                width: '100%', display: 'flex', alignItems: 'center', gap: 7,
+                                                padding: '5px 10px', border: 'none', cursor: 'pointer',
+                                                background: (!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? '#f0f7ff' : 'transparent',
+                                                transition: 'background 0.15s',
+                                            }}
+                                            onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
+                                            onMouseLeave={e => { if (currentUser?.visibilityMode && currentUser?.visibilityMode !== 'hidden') e.currentTarget.style.background = 'transparent'; }}
+                                            onClick={() => { room.actions.setGodmasterVisibility('hidden'); setShowStatusMenu(false); setShowDisguiseInput(false); }}
+                                        >
+                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>👻</span>
+                                            <span style={{ fontSize: 10, fontWeight: (!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? 800 : 600, color: (!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') ? '#1e293b' : '#475569' }}>{t.statusInvisible}</span>
+                                            {(!currentUser?.visibilityMode || currentUser?.visibilityMode === 'hidden') && <span style={{ marginLeft: 'auto', fontSize: 8, color: '#1e293b', fontWeight: 900 }}>●</span>}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* 2. DUYURU BİLDİRİM — Metalik Stil */}
+                    {['owner', 'admin', 'superadmin'].includes(currentUser?.role || '') && (
+                        <div className="relative">
+                            <button
+                                className={`slim-announce-row ${room.state.hasNewAnnouncement ? 'has-new' : ''}`}
+                                onClick={() => {
+                                    if (room.state.announcement) {
+                                        if (showAnnouncementPanel) {
+                                            setShowAnnouncementPanel(false);
+                                        } else {
+                                            setShowAnnouncementPanel(true);
+                                            room.actions.markAnnouncementSeen();
+                                        }
                                     }
-                                }
-                            }}
-                            className={`
-                                w-full flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer
-                                ${room.state.hasNewAnnouncement
-                                    ? ''
-                                    : room.state.announcement
-                                        ? 'bg-white/5 border-white/10 hover:bg-white/10'
-                                        : 'bg-white/[0.03] border-white/[0.06] opacity-50 cursor-default'
-                                }
-                                ${room.state.hasNewAnnouncement ? 'animate-announcement-shake' : ''}
-                            `}
-                            style={room.state.hasNewAnnouncement ? {
-                                background: 'linear-gradient(135deg, rgba(251,191,36,0.12) 0%, rgba(239,68,68,0.08) 100%)',
-                                border: '1px solid rgba(251,191,36,0.35)',
-                                boxShadow: '0 0 16px rgba(251,191,36,0.2), 0 0 30px rgba(239,68,68,0.08)',
-                            } : undefined}
-                        >
-                            <div className={`
-                                w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0
-                                ${room.state.hasNewAnnouncement
-                                    ? ''
-                                    : 'bg-white/10 border border-white/10'
-                                }
-                                ${room.state.hasNewAnnouncement ? 'animate-pulse' : ''}
-                            `}
-                                style={room.state.hasNewAnnouncement ? {
-                                    background: 'rgba(251,191,36,0.2)',
-                                    border: '1px solid rgba(251,191,36,0.4)',
-                                    boxShadow: '0 0 12px rgba(251,191,36,0.3), 0 0 4px rgba(239,68,68,0.2)',
-                                } : undefined}
+                                }}
+                                style={{ opacity: room.state.announcement ? 1 : 0.5 }}
                             >
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
-                                    stroke={room.state.hasNewAnnouncement ? '#fbbf24' : '#9ca3af'}
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                                    stroke={room.state.hasNewAnnouncement ? '#fbbf24' : '#94a3b8'}
                                     strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                                    style={room.state.hasNewAnnouncement ? {
-                                        filter: 'drop-shadow(0 0 6px rgba(251,191,36,0.6)) drop-shadow(0 0 12px rgba(239,68,68,0.3))',
-                                    } : undefined}
                                 >
                                     <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
                                     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                                 </svg>
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <span className={`text-xs font-bold ${room.state.hasNewAnnouncement ? '' : 'text-gray-400'}`}
-                                    style={room.state.hasNewAnnouncement ? { color: '#fcd34d' } : undefined}
-                                >
+                                <span style={{
+                                    fontSize: 10, fontWeight: 800,
+                                    color: room.state.hasNewAnnouncement ? '#fcd34d' : '#94a3b8',
+                                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                                }}>
                                     {t.announcements}
                                 </span>
                                 {room.state.hasNewAnnouncement && (
-                                    <span className="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold animate-pulse"
-                                        style={{
-                                            background: 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(239,68,68,0.15))',
-                                            color: '#fcd34d',
-                                            border: '1px solid rgba(251,191,36,0.3)',
-                                            textShadow: '0 0 6px rgba(239,68,68,0.4)',
-                                        }}
-                                    >
-                                        YENİ
-                                    </span>
+                                    <span style={{
+                                        marginLeft: 'auto', fontSize: 7, fontWeight: 900, color: '#fcd34d',
+                                        padding: '1px 5px', borderRadius: 3,
+                                        background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.3)',
+                                        animation: 'pulse 2s ease-in-out infinite',
+                                    }}>YENİ</span>
                                 )}
-                            </div>
-                            {room.state.hasNewAnnouncement && (
-                                <div className="w-2.5 h-2.5 rounded-full animate-pulse flex-shrink-0"
-                                    style={{
-                                        background: 'linear-gradient(135deg, #fbbf24, #ef4444)',
-                                        boxShadow: '0 0 8px rgba(251,191,36,0.5), 0 0 16px rgba(239,68,68,0.3)',
-                                    }}
-                                />
-                            )}
-                        </button>
+                            </button>
 
-                        {/* Duyuru Panel — açılabilir */}
-                        {showAnnouncementPanel && room.state.announcement && (
-                            <div className="mt-2 p-3 rounded-xl animate-in fade-in slide-in-from-top-2 duration-200"
-                                style={{
-                                    background: 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(239,68,68,0.05))',
-                                    border: '1px solid rgba(251,191,36,0.18)',
-                                }}
-                            >
-                                <div className="flex items-start justify-between gap-2 mb-2">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider"
-                                        style={{ color: '#fcd34d', textShadow: '0 0 8px rgba(239,68,68,0.3)' }}
-                                    >📢 {t.announcement}</span>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); setShowAnnouncementPanel(false); }}
-                                        className="text-gray-500 hover:text-white transition-colors"
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                                        </svg>
-                                    </button>
+                            {showAnnouncementPanel && room.state.announcement && (
+                                <div style={{
+                                    marginTop: 6, padding: 10, borderRadius: 12,
+                                    background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)',
+                                }}>
+                                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
+                                        <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#fcd34d' }}>📢 {t.announcement}</span>
+                                        <button onClick={(e) => { e.stopPropagation(); setShowAnnouncementPanel(false); }}
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 0 }}>
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <p style={{ fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, margin: 0 }}>{room.state.announcement.message}</p>
+                                    <p style={{ fontSize: 8, color: '#64748b', marginTop: 6, margin: '6px 0 0' }}>{new Date(room.state.announcement.createdAt).toLocaleString('tr-TR')}</p>
                                 </div>
-                                <p className="text-xs text-white leading-relaxed">{room.state.announcement.message}</p>
-                                <p className="text-[9px] text-gray-500 mt-2">
-                                    {new Date(room.state.announcement.createdAt).toLocaleString('tr-TR')}
-                                </p>
-                            </div>
-                        )}
-                    </div>
-                )}
+                            )}
+                        </div>
+                    )}
 
-                {/* RADIO WIDGET */}
-                <RadioPlayer />
+                    {/* 3. RADYO WIDGET */}
+                    <RadioPlayer />
+
+            </div>
+
+            <style>{`
+                @keyframes contentFadeIn {
+                    from { opacity: 0; transform: translateY(4px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+            `}</style>
 
                 {/* MIC REQUEST BUTTON — toplantı odasında gizle (toolbar'da mic toggle var) */}
                 {!isMeetingRoom && <>
@@ -1650,7 +1617,6 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     </button>
                 </>}
 
-            </div>
         </aside >
     );
 }

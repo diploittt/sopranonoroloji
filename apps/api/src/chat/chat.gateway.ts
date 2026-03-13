@@ -4382,13 +4382,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() data: { roomId: string; userId: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const { userId } = data;
     const user = client.data.user;
     const participant = this.participants.get(client.id);
 
-    if (!user || user.sub !== userId || !participant) {
+    if (!user || !participant) {
       return;
     }
+
+    // Use authenticated user.sub (JWT) — ignore client-sent userId which may mismatch
+    const userId = user.sub;
 
     // ★ BAN CHECK — Banlı kullanıcılar mikrofon alamaz
     if (participant.isBanned) {

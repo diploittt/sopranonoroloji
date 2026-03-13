@@ -25,7 +25,7 @@ export default function PromoModal({ isOpen, onClose }: PromoModalProps) {
     if (!visible) return null;
 
     return (
-        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100 backdrop-blur-md bg-black/80' : 'opacity-0 backdrop-blur-none bg-transparent pointer-events-none'}`}>
+        <div className={`fixed inset-0 z-[100] flex items-center justify-center p-4 transition-all duration-300 ${isOpen ? 'opacity-100 bg-black/40' : 'opacity-0 bg-transparent pointer-events-none'}`}>
 
             {/* Click outside to close */}
             <div className="absolute inset-0" onClick={onClose}></div>

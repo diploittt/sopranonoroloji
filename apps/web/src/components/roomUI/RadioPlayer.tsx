@@ -173,141 +173,146 @@ export function RadioPlayer() {
         }
     }, [isMuted, volume]);
 
-    return (
-        <div style={{
-            position: 'relative', overflow: 'visible', borderRadius: 16,
-            border: '1px solid rgba(255,255,255,0.08)',
-            background: 'linear-gradient(180deg, rgba(30,41,59,0.6) 0%, rgba(15,23,42,0.8) 100%)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)',
-        }}>
-            {/* Üst kısım — İstasyon bilgisi */}
-            <div style={{ padding: '12px 14px 8px', display: 'flex', alignItems: 'center', gap: 12 }}>
-                {/* Play/Pause butonu */}
-                <button
-                    onClick={togglePlay}
-                    className="radio-play-btn"
-                    style={{
-                        width: 44, height: 44, borderRadius: 12, border: 'none', cursor: 'pointer',
-                        background: 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)',
-                        borderTop: '1px solid rgba(120,130,150,0.35)',
-                        borderBottom: '1px solid rgba(0,0,0,0.3)',
-                        boxShadow: '0 3px 12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        flexShrink: 0, transition: 'all 0.2s',
-                    }}
-                >
-                    {isLoading ? (
-                        <Loader2 style={{ width: 18, height: 18, color: '#94a3b8', animation: 'spin 1s linear infinite' }} />
-                    ) : isPlaying ? (
-                        <Pause style={{ width: 18, height: 18, color: '#cbd5e1', fill: '#cbd5e1' }} />
-                    ) : (
-                        <Play style={{ width: 18, height: 18, color: '#cbd5e1', fill: '#cbd5e1', marginLeft: 2 }} />
-                    )}
-                </button>
+    // Sonraki/Önceki istasyon
+    const switchStation = useCallback((direction: 1 | -1) => {
+        const idx = RADIO_STATIONS.findIndex(s => s.id === currentStation.id);
+        const nextIdx = (idx + direction + RADIO_STATIONS.length) % RADIO_STATIONS.length;
+        playStation(RADIO_STATIONS[nextIdx]);
+    }, [currentStation, playStation]);
 
-                {/* İstasyon bilgisi */}
-                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
-                        <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: 0.3, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {currentStation.icon} {currentStation.name}
+    const chatTeal = "#4fb1b3";
+    const effectiveVolume = isMuted ? 0 : volume;
+
+    return (
+        <div style={{ position: 'relative', overflow: 'visible' }}>
+            {/* Compact Radio Card */}
+            <div className="slim-radio-card">
+
+                {/* Station Display */}
+                <div className="slim-radio-display">
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 3, marginBottom: 1 }}>
+                        <span style={{ fontSize: 10 }}>{currentStation.icon}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#e2e8f0', letterSpacing: 0.3 }}>
+                            {currentStation.name}
                         </span>
                         {isPlaying && (
                             <span style={{
-                                fontSize: 7, fontWeight: 800, color: '#fff', padding: '2px 6px', borderRadius: 4,
-                                textTransform: 'uppercase', letterSpacing: 1.5, animation: 'pulse 2s ease-in-out infinite',
-                                background: '#dc2626', boxShadow: '0 0 8px rgba(220,38,38,0.5)',
-                                flexShrink: 0, marginLeft: 6,
-                            }}>
-                                CANLI
-                            </span>
+                                fontSize: 5, fontWeight: 800, color: '#fff', padding: '1px 3px', borderRadius: 2,
+                                background: chatTeal, marginLeft: 2,
+                                animation: 'pulse 2s ease-in-out infinite',
+                            }}>CANLI</span>
                         )}
                     </div>
-                    <div style={{ width: '100%', overflow: 'hidden', position: 'relative', height: 14 }}>
-                        <div style={{
-                            position: 'absolute', whiteSpace: 'nowrap', fontSize: 10, color: '#64748b', fontWeight: 500,
-                            animation: isPlaying ? 'marquee 15s linear infinite' : 'none',
-                        }}>
-                            {currentStation.genre} • {currentStation.name} Canlı Yayın
+                    <p style={{
+                        fontSize: 8, fontWeight: 700, textTransform: 'uppercase',
+                        letterSpacing: 0.5, color: 'rgba(79,177,179,0.7)', margin: 0,
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                        {currentStation.genre}
+                    </p>
+                </div>
+
+                {/* Controls Row */}
+                <div className="slim-radio-controls">
+                    <button className="slim-btn-skip" onClick={() => switchStation(-1)}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20 18V6l-8 6 8 6zm-2 0V6H6v12h12zM4 6H2v12h2V6z" /></svg>
+                    </button>
+
+                    <button className={`slim-btn-play ${isPlaying ? 'active' : ''}`} onClick={togglePlay}>
+                        {isLoading ? (
+                            <Loader2 style={{ width: 14, height: 14, animation: 'spin 1s linear infinite' }} />
+                        ) : isPlaying ? (
+                            <Pause style={{ width: 14, height: 14, fill: 'currentColor' }} />
+                        ) : (
+                            <Play style={{ width: 14, height: 14, fill: 'currentColor', marginLeft: 1 }} />
+                        )}
+                    </button>
+
+                    <button className="slim-btn-skip" onClick={() => switchStation(1)}>
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M4 18V6l8 6-8 6zm2 0V6h12v12H6zm16-12h-2v12h2V6z" /></svg>
+                    </button>
+                </div>
+
+                {/* Volume Slider */}
+                <div style={{ padding: '0 4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                            onClick={toggleMute}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, display: 'flex' }}
+                        >
+                            {isMuted || volume === 0 ? (
+                                <VolumeX style={{ width: 12, height: 12, color: '#475569' }} />
+                            ) : (
+                                <Volume2 style={{ width: 12, height: 12, color: 'rgba(79,177,179,0.6)' }} />
+                            )}
+                        </button>
+                        <div
+                            className="slim-volume-track"
+                            onClick={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                const x = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+                                setVolume(x);
+                                setIsMuted(x === 0);
+                                localStorage.setItem('soprano_radio_volume', x.toString());
+                            }}
+                        >
+                            <div className="slim-volume-fill" style={{ width: `${effectiveVolume * 100}%` }} />
+                            <div className="slim-volume-knob" style={{ left: `${effectiveVolume * 100}%` }} />
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Alt kontroller */}
-            <div style={{
-                padding: '6px 14px 12px', display: 'flex', alignItems: 'center', gap: 8,
-                borderTop: '1px solid rgba(255,255,255,0.04)', marginTop: 2,
-            }}>
-                {/* İstasyon Listesi toggle */}
-                <div style={{ position: 'relative', flex: 1 }} ref={stationListRef}>
+                {/* Channels Button */}
+                <div style={{ position: 'relative' }} ref={stationListRef}>
                     <button
+                        className="slim-channels-btn"
                         onClick={() => { setShowStationList(!showStationList); setShowVolumeSlider(false); }}
-                        style={{
-                            width: '100%', height: 32, borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)',
-                            background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            gap: 6, color: '#94a3b8', fontSize: 11, fontWeight: 600, cursor: 'pointer',
-                            transition: 'all 0.2s',
-                        }}
                     >
-                        <Radio style={{ width: 12, height: 12 }} />
-                        Kanallar
-                        {showStationList
-                            ? <ChevronDown style={{ width: 12, height: 12 }} />
-                            : <ChevronUp style={{ width: 12, height: 12 }} />}
+                        <Radio style={{ width: 10, height: 10 }} />
+                        KANALLAR
                     </button>
 
-                    {/* İstasyon Listesi Dropdown */}
+                    {/* Station List Dropdown */}
                     {showStationList && (
-                        <div style={{
-                            position: 'absolute', bottom: '100%', left: 0, width: 220, marginBottom: 8, zIndex: 100,
-                            background: 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(30,41,59,0.95) 100%)',
-                            backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-                            overflow: 'hidden', animation: 'contentFadeIn 0.2s ease both',
+                        <div className="slim-dropdown" style={{
+                            position: 'absolute', bottom: '100%', left: 0, width: '100%', marginBottom: 6,
+                            animation: 'contentFadeIn 0.2s ease both',
                         }}>
                             <div style={{
-                                padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)',
-                                display: 'flex', alignItems: 'center', gap: 8,
+                                padding: '8px 12px', borderBottom: '1px solid #e2e8f0',
+                                display: 'flex', alignItems: 'center', gap: 6,
                             }}>
-                                <Radio style={{ width: 11, height: 11, color: '#94a3b8' }} />
-                                <span style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5 }}>Radyo Kanalları</span>
-                                <span style={{ marginLeft: 'auto', fontSize: 8, color: '#475569' }}>{RADIO_STATIONS.length} kanal</span>
+                                <Radio style={{ width: 10, height: 10, color: '#3b82f6' }} />
+                                <span style={{ fontSize: 8, fontWeight: 800, color: '#3b82f6', textTransform: 'uppercase', letterSpacing: 1.5 }}>Radyo Kanalları</span>
+                                <span style={{ marginLeft: 'auto', fontSize: 7, color: '#94a3b8' }}>{RADIO_STATIONS.length}</span>
                             </div>
                             <div style={{ maxHeight: 200, overflowY: 'auto' }}>
                                 {RADIO_STATIONS.map((station) => (
                                     <button
                                         key={station.id}
+                                        className={`slim-dropdown-item ${currentStation.id === station.id ? 'active' : ''}`}
                                         onClick={() => handleStationSelect(station)}
                                         style={{
-                                            width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                                            padding: '7px 10px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                                            background: currentStation.id === station.id ? 'rgba(148,163,184,0.08)' : 'transparent',
-                                            borderBottom: '1px solid rgba(255,255,255,0.02)',
-                                            borderLeft: currentStation.id === station.id ? '2px solid #94a3b8' : '2px solid transparent',
-                                            transition: 'all 0.15s',
+                                            textAlign: 'left',
+                                            borderLeft: currentStation.id === station.id ? `2px solid ${chatTeal}` : '2px solid transparent',
                                         }}
-                                        onMouseEnter={e => { if (currentStation.id !== station.id) e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; }}
-                                        onMouseLeave={e => { if (currentStation.id !== station.id) e.currentTarget.style.background = 'transparent'; }}
                                     >
-                                        <span style={{ fontSize: 13, width: 18, textAlign: 'center', flexShrink: 0 }}>{station.icon}</span>
+                                        <span style={{ fontSize: 12, width: 16, textAlign: 'center', flexShrink: 0 }}>{station.icon}</span>
                                         <div style={{ flex: 1, minWidth: 0 }}>
                                             <div style={{
                                                 fontSize: 10, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                                                color: currentStation.id === station.id ? '#e2e8f0' : '#cbd5e1',
-                                            }}>
-                                                {station.name}
-                                            </div>
-                                            <div style={{ fontSize: 9, color: '#475569', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                                color: currentStation.id === station.id ? '#1e293b' : '#475569',
+                                            }}>{station.name}</div>
+                                            <div style={{ fontSize: 8, color: '#94a3b8', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                                 {station.genre}
                                             </div>
                                         </div>
                                         {currentStation.id === station.id && isPlaying && (
-                                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 12, flexShrink: 0 }}>
-                                                {[5, 10, 7].map((h, i) => (
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', gap: 1.5, height: 10, flexShrink: 0 }}>
+                                                {[4, 8, 6].map((h, i) => (
                                                     <span key={i} style={{
                                                         width: 2, height: h, borderRadius: 1,
-                                                        background: '#94a3b8',
+                                                        background: chatTeal,
                                                         animation: `musicBar 0.8s ease-in-out ${i * 0.15}s infinite alternate`,
                                                     }} />
                                                 ))}
@@ -319,67 +324,20 @@ export function RadioPlayer() {
                         </div>
                     )}
                 </div>
-
-                {/* Ses Kontrolü */}
-                <div style={{ position: 'relative' }} ref={volumeRef}>
-                    <button
-                        onClick={() => { setShowVolumeSlider(!showVolumeSlider); setShowStationList(false); }}
-                        onDoubleClick={toggleMute}
-                        style={{
-                            height: 32, width: 38, borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)',
-                            background: 'rgba(255,255,255,0.03)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: isMuted || volume === 0 ? '#ef4444' : '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
-                        }}
-                        title="Ses (çift tıklayarak sessize al)"
-                    >
-                        {isMuted || volume === 0
-                            ? <VolumeX style={{ width: 14, height: 14 }} />
-                            : <Volume2 style={{ width: 14, height: 14 }} />}
-                    </button>
-
-                    {/* Volume Slider */}
-                    {showVolumeSlider && (
-                        <div style={{
-                            position: 'absolute', bottom: '100%', right: 0, marginBottom: 8, zIndex: 100,
-                            background: 'linear-gradient(180deg, rgba(15,23,42,0.98) 0%, rgba(30,41,59,0.95) 100%)',
-                            backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 14,
-                            boxShadow: '0 12px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
-                            padding: '14px 16px', animation: 'contentFadeIn 0.2s ease both',
-                        }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                                <VolumeX
-                                    style={{ width: 12, height: 12, color: '#475569', flexShrink: 0, cursor: 'pointer' }}
-                                    onClick={toggleMute}
-                                />
-                                <input
-                                    type="range" min="0" max="1" step="0.01"
-                                    value={isMuted ? 0 : volume}
-                                    onChange={handleVolumeChange}
-                                    style={{ width: 96, height: 6, cursor: 'pointer', accentColor: '#94a3b8' }}
-                                />
-                                <Volume2 style={{ width: 12, height: 12, color: '#475569', flexShrink: 0 }} />
-                            </div>
-                            <div style={{ textAlign: 'center', marginTop: 6 }}>
-                                <span style={{ fontSize: 9, color: '#475569', fontFamily: 'monospace' }}>
-                                    {Math.round((isMuted ? 0 : volume) * 100)}%
-                                </span>
-                            </div>
-                        </div>
-                    )}
-                </div>
             </div>
 
-            {/* Keyframe: musicBar animation */}
+            {/* Keyframe animations */}
             <style>{`
                 @keyframes musicBar {
                     0% { height: 3px; }
                     100% { height: 12px; }
                 }
-                @keyframes marquee {
-                    0% { transform: translateX(100%); }
-                    100% { transform: translateX(-100%); }
+                @keyframes contentFadeIn {
+                    from { opacity: 0; transform: translateY(4px); }
+                    to { opacity: 1; transform: translateY(0); }
                 }
             `}</style>
         </div>
     );
 }
+

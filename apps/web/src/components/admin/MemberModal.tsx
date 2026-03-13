@@ -245,61 +245,44 @@ export default function MemberModal({ isOpen, onClose, tenantId, tenantName }: M
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/15" onClick={onClose}></div>
             <div className="relative flex flex-col w-full max-w-6xl max-h-[92vh] animate-in zoom-in-95 fade-in duration-300" style={{
-                background: 'linear-gradient(145deg, rgba(15,17,30,0.97) 0%, rgba(20,15,40,0.97) 100%)',
-                borderRadius: 20,
-                border: '1px solid rgba(99,102,241,0.2)',
-                boxShadow: '0 0 60px rgba(99,102,241,0.15), 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                background: '#ffffff',
+                borderRadius: 12,
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 overflow: 'hidden',
                 transform: `translate(${offset.x}px, ${offset.y}px)`,
             }}>
-                {/* Neon glow line */}
-                <div style={{
-                    position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                    width: '70%', height: 1,
-                    background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.6), transparent)',
-                }} />
+
 
                 {/* Header */}
-                <div style={{ padding: '24px 28px 0' }}>
-                    <div className="flex items-center justify-between cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
-                        <div className="flex items-center gap-3">
-                            <div style={{
-                                width: 44, height: 44, borderRadius: 14,
-                                background: 'linear-gradient(135deg, rgba(99,102,241,0.2), rgba(139,92,246,0.2))',
-                                border: '1px solid rgba(99,102,241,0.3)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: '0 0 20px rgba(99,102,241,0.2)',
-                            }}>
-                                <User className="w-5 h-5 text-[#7b9fef]" style={{ filter: 'drop-shadow(0 0 6px rgba(99,102,241,0.5))' }} />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-white" style={{ letterSpacing: '-0.01em' }}>
-                                    {tenantName ? `${tenantName} — Kayıtlı Üyeler` : 'Admin & Yardımcılar'}
-                                </h2>
-                                <p className="text-[11px] text-gray-500">Toplam {total} kayıtlı üye • Rol hiyerarşisine göre sıralı</p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => loadMembers(page, search)} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all" title="Yenile">
-                                <RefreshCw className="w-4 h-4" />
-                            </button>
-                            <button onClick={onClose} className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
+                <div className="px-4 py-2.5 bg-[#1e293b] flex items-center justify-between cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
+                    <div className="flex items-center gap-2">
+                        <User className="w-4 h-4 text-white" />
+                        <h2 className="text-xs font-bold text-white">
+                            {tenantName ? `${tenantName} — Kayıtlı Üyeler` : 'Admin & Yardımcılar'}
+                        </h2>
+                        <span className="text-[10px] text-gray-400 ml-1">({total})</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button onClick={() => loadMembers(page, search)} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition-all" title="Yenile">
+                            <RefreshCw className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition-all">
+                            <X className="w-3.5 h-3.5" />
+                        </button>
                     </div>
                 </div>
 
                 {/* Search */}
-                <div className="px-5 py-3 border-b border-white/5 bg-[#0a0a0c]">
+                <div className="px-4 py-2 border-b border-[#e2e8f0] bg-[#f8fafc]">
                     <div className="relative">
                         <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
                         <input
                             type="text"
+                            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-lg pl-10 pr-4 py-2 text-slate-800 outline-none focus:border-blue-500 transition text-sm"
                             placeholder="İsim, e-posta veya rol ara..."
-                            className="w-full bg-[#050505] border border-white/10 rounded-xl pl-10 pr-4 py-2.5 text-white outline-none focus:border-amber-600 transition text-sm"
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                         />

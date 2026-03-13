@@ -111,48 +111,27 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/15" onClick={onClose}></div>
 
             {/* Modal */}
             <div className="relative w-full max-w-5xl max-h-[90vh] animate-in zoom-in-95 fade-in duration-300 flex flex-col" style={{
-                background: 'linear-gradient(145deg, rgba(15,17,30,0.97) 0%, rgba(20,15,40,0.97) 100%)',
-                borderRadius: 20,
-                border: '1px solid rgba(99,102,241,0.2)',
-                boxShadow: '0 0 60px rgba(99,102,241,0.15), 0 25px 50px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+                background: '#ffffff',
+                borderRadius: 12,
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 overflow: 'hidden',
             }}>
-                {/* Üst neon glow */}
-                <div style={{
-                    position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                    width: '70%', height: 1,
-                    background: 'linear-gradient(90deg, transparent, rgba(129,140,248,0.6), transparent)',
-                }} />
+
 
                 {/* Header */}
-                <div style={{ padding: '24px 28px 0' }}>
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div style={{
-                                width: 44, height: 44, borderRadius: 14,
-                                background: 'linear-gradient(135deg, rgba(225,29,72,0.2), rgba(244,63,94,0.2))',
-                                border: '1px solid rgba(225,29,72,0.3)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                boxShadow: '0 0 20px rgba(225,29,72,0.2)',
-                            }}>
-                                <UserPlus className="w-5 h-5 text-rose-400" style={{ filter: 'drop-shadow(0 0 6px rgba(225,29,72,0.5))' }} />
-                            </div>
-                            <div>
-                                <h2 className="text-lg font-bold text-white" style={{ letterSpacing: '-0.01em' }}>Yeni Müşteri Ekle</h2>
-                                <p className="text-[11px] text-gray-500">Müşteri hesabı ve oda kurulumu</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={onClose}
-                            className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                <div className="px-4 py-2.5 bg-[#1e293b] flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <UserPlus className="w-4 h-4 text-white" />
+                        <h2 className="text-xs font-bold text-white">Yeni Müşteri Ekle</h2>
                     </div>
+                    <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition-all">
+                        <X className="w-3.5 h-3.5" />
+                    </button>
                 </div>
 
                 {/* Body */}

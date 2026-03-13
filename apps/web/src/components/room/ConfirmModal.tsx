@@ -97,7 +97,7 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             {/* Backdrop */}
             <div
                 className="absolute inset-0 animate-pure-fade"
-                style={{ background: 'rgba(0,0,0,0.25)' }}
+                style={{ background: 'rgba(0,0,0,0.12)' }}
                 onClick={onCancel}
             />
 
@@ -105,11 +105,9 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
             <div
                 className="relative w-full max-w-[300px] rounded-2xl overflow-hidden animate-pure-fade cursor-grab active:cursor-grabbing"
                 style={{
-                    background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                    backdropFilter: 'blur(28px) saturate(130%)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                    border: '1px solid rgba(255,255,255,0.65)',
-                    boxShadow: `0 25px 60px rgba(0,0,0,0.18), 0 0 30px ${config.glowColor}, inset 0 1px 0 rgba(255,255,255,0.8)`,
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: `0 4px 6px -1px rgb(0 0 0 / 0.1), 0 0 20px ${config.glowColor}`,
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
                 onMouseDown={onDragMouseDown}

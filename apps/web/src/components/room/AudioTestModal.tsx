@@ -136,7 +136,7 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
 
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={() => { stopMicTest(); onClose(); }} style={centered ? {} : { display: 'block' }}>
-            <div className="absolute inset-0 bg-black/40" />
+            <div className="absolute inset-0 bg-black/15" />
 
             <div
                 ref={modalRef}
@@ -144,37 +144,34 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
                 onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderTop: '1px solid rgba(255,255,255,0.30)',
-                    borderRadius: '18px',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
             >
-                <div style={{ height: '2px', background: 'linear-gradient(90deg, transparent, #6366f1, #a855f7, transparent)', opacity: 0.7 }} />
+
 
                 <div
                     className="flex items-center justify-between p-5 pb-3"
                     onMouseDown={handleMouseDown}
                     style={{ cursor: 'move', userSelect: 'none' }}
                 >
-                    <h2 className="text-lg font-bold text-white flex items-center gap-2">
+                    <h2 className="text-sm font-bold text-slate-800 flex items-center gap-2">
                         <span>🎤</span> Ses Testi
                     </h2>
-                    <button onClick={() => { stopMicTest(); onClose(); }} className="text-gray-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 transition-colors">✕</button>
+                    <button onClick={() => { stopMicTest(); onClose(); }} className="text-gray-400 hover:text-gray-600 w-7 h-7 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors">✕</button>
                 </div>
 
                 <div className="px-5 pb-5 space-y-4">
                     {/* Mic select */}
                     <div>
-                        <label className="text-xs text-gray-400 mb-2 block">Mikrofon</label>
+                        <label className="text-xs text-slate-500 mb-2 block">Mikrofon</label>
                         <select
                             value={selectedMic}
                             onChange={(e) => { setSelectedMic(e.target.value); if (isTesting) { stopMicTest(); } }}
-                            className="w-full text-sm text-white rounded-xl px-4 py-3 border border-white/10 focus:border-amber-600/40 focus:outline-none appearance-none"
-                            style={{ background: 'rgba(15,23,42,0.6)' }}
+                            className="w-full text-sm text-slate-800 rounded-xl px-4 py-3 border border-gray-200 focus:border-blue-400 focus:outline-none appearance-none"
+                            style={{ background: '#f8fafc' }}
                         >
                             <option value="">Varsayılan Mikrofon</option>
                             {audioDevices.map(d => (
@@ -185,8 +182,8 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
 
                     {/* VU Meter */}
                     <div>
-                        <label className="text-xs text-gray-400 mb-2 block">Mikrofon Seviyesi</label>
-                        <div className="h-6 rounded-lg overflow-hidden" style={{ background: 'rgba(15,23,42,0.6)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <label className="text-xs text-slate-500 mb-2 block">Mikrofon Seviyesi</label>
+                        <div className="h-6 rounded-lg overflow-hidden" style={{ background: '#f1f5f9', border: '1px solid #e2e8f0' }}>
                             <div
                                 className="h-full transition-all duration-75 rounded-lg"
                                 style={{
@@ -229,7 +226,7 @@ export function AudioTestModal({ isOpen, onClose }: AudioTestModalProps) {
                         </button>
                     </div>
 
-                    <p className="text-[11px] text-gray-500 text-center">Mikrofon testinde sesinizi duyamazsanız, tarayıcı izinlerini kontrol edin.</p>
+                    <p className="text-[11px] text-slate-400 text-center">Mikrofon testinde sesinizi duyamazsanız, tarayıcı izinlerini kontrol edin.</p>
                 </div>
             </div>
         </div>

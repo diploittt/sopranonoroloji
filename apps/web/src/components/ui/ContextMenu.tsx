@@ -100,20 +100,18 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
             style={{
                 position: 'fixed',
                 zIndex: 9999,
-                minWidth: 220,
+                minWidth: 200,
                 top: position.y,
                 left: position.x,
                 opacity: isVisible ? 1 : 0,
                 visibility: isVisible ? 'visible' : 'hidden',
-                background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                backdropFilter: 'blur(28px) saturate(130%)',
-                WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                border: '1px solid rgba(255,255,255,0.65)',
-                borderRadius: 14,
-                boxShadow: '0 16px 48px -8px rgba(0,0,0,0.22), 0 6px 18px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: 12,
+                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 padding: '5px',
                 overflow: 'hidden',
-                animation: isVisible ? 'ctxUiMenuIn 0.18s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
+                animation: isVisible ? 'ctxUiMenuIn 0.14s cubic-bezier(0.16, 1, 0.3, 1)' : 'none',
             }}
             onContextMenu={(e) => e.preventDefault()}
         >
@@ -121,8 +119,8 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
                 if (item.divider) {
                     return <div key={`sep-${idx}`} style={{
                         height: 1,
-                        margin: '4px 10px',
-                        background: 'linear-gradient(90deg, transparent 5%, rgba(148,163,184,0.25) 50%, transparent 95%)',
+                        margin: '3px 10px',
+                        background: 'linear-gradient(90deg, transparent 5%, #e2e8f0 50%, transparent 95%)',
                     }} />;
                 }
 
@@ -141,26 +139,26 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
                         style={{
                             width: '100%',
                             textAlign: 'left',
-                            padding: '8px 12px',
+                            padding: '6px 10px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 10,
+                            gap: 8,
                             border: 'none',
                             borderRadius: 8,
                             background: 'transparent',
-                            fontSize: 12.5,
-                            fontWeight: 600,
+                            fontSize: 12,
+                            fontWeight: 500,
                             color: item.danger ? '#dc2626' : '#1e293b',
                             cursor: item.disabled ? 'not-allowed' : 'pointer',
-                            opacity: item.disabled ? 0.45 : 1,
-                            transition: 'background 0.12s ease',
-                            lineHeight: 1.4,
+                            opacity: item.disabled ? 0.4 : 1,
+                            transition: 'background 0.1s ease',
+                            lineHeight: 1.3,
                         }}
                         onMouseOver={(e) => {
                             if (!item.disabled) {
                                 (e.currentTarget as HTMLElement).style.background = item.danger
-                                    ? 'rgba(220,38,38,0.08)'
-                                    : 'rgba(37,99,235,0.08)';
+                                    ? 'rgba(220,38,38,0.06)'
+                                    : '#dbeafe';
                             }
                         }}
                         onMouseOut={(e) => {
@@ -168,9 +166,9 @@ export function ContextMenu({ items, anchorPoint, onClose, onAction }: ContextMe
                         }}
                     >
                         {Icon && <Icon style={{
-                            width: 16,
-                            height: 16,
-                            color: item.danger ? '#dc2626' : '#475569',
+                            width: 15,
+                            height: 15,
+                            color: item.danger ? '#dc2626' : '#64748b',
                             flexShrink: 0,
                         }} />}
                         <span style={{ flex: 1 }}>{item.label}</span>

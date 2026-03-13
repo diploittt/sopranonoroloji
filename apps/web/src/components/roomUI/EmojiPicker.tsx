@@ -8,16 +8,16 @@ interface EmojiPickerProps {
 }
 
 const CATEGORIES = [
-    { id: 'recent', icon: Clock, label: 'Son Kullanılanlar', color: 'text-amber-400' },
-    { id: 'smileys', icon: Smile, label: 'İfadeler', color: 'text-yellow-400' },
-    { id: 'love', icon: Heart, label: 'Aşk & Kalp', color: 'text-pink-400' },
-    { id: 'people', icon: Cat, label: 'İnsanlar & Hayvanlar', color: 'text-orange-400' },
-    { id: 'food', icon: Coffee, label: 'Yiyecek & İçecek', color: 'text-emerald-400' },
-    { id: 'activity', icon: Trophy, label: 'Aktivite & Spor', color: 'text-cyan-400' },
-    { id: 'travel', icon: Car, label: 'Seyahat', color: 'text-blue-400' },
-    { id: 'objects', icon: Lightbulb, label: 'Nesneler', color: 'text-violet-400' },
-    { id: 'symbols', icon: Music, label: 'Semboller', color: 'text-[#7b9fef]' },
-    { id: 'flags', icon: Flag, label: 'Bayraklar', color: 'text-red-400' },
+    { id: 'recent', icon: Clock, label: 'Son Kullanılanlar' },
+    { id: 'smileys', icon: Smile, label: 'İfadeler' },
+    { id: 'love', icon: Heart, label: 'Aşk & Kalp' },
+    { id: 'people', icon: Cat, label: 'İnsanlar & Hayvanlar' },
+    { id: 'food', icon: Coffee, label: 'Yiyecek & İçecek' },
+    { id: 'activity', icon: Trophy, label: 'Aktivite & Spor' },
+    { id: 'travel', icon: Car, label: 'Seyahat' },
+    { id: 'objects', icon: Lightbulb, label: 'Nesneler' },
+    { id: 'symbols', icon: Music, label: 'Semboller' },
+    { id: 'flags', icon: Flag, label: 'Bayraklar' },
 ];
 
 const EMOJI_DATA: Record<string, string[]> = {
@@ -124,9 +124,9 @@ export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
     const displayEmojis = activeCategory === 'recent' ? recentEmojis : (EMOJI_DATA[activeCategory] || []);
 
     return (
-        <div className="flex select-none" style={{ width: 420, height: 260 }}>
+        <div className="flex select-none" style={{ width: 340, height: 210 }}>
             {/* Sol: Kategori Tab'ları (dikey şerit) */}
-            <div className="flex flex-col items-center gap-0.5 py-2 px-1.5 overflow-y-auto no-scrollbar" style={{ borderRight: '1px solid rgba(255,255,255,0.06)', width: 40 }}>
+            <div className="flex flex-col items-center gap-0.5 py-2 px-1.5 overflow-y-auto no-scrollbar" style={{ borderRight: '1px solid #e2e8f0', width: 40 }}>
                 {CATEGORIES.map((cat) => {
                     const Icon = cat.icon;
                     const isActive = activeCategory === cat.id;
@@ -135,8 +135,8 @@ export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
                             key={cat.id}
                             onClick={() => setActiveCategory(cat.id)}
                             className={`flex-shrink-0 p-1.5 rounded-lg transition-all duration-200 ${isActive
-                                ? `bg-white/[0.08] ${cat.color}`
-                                : 'text-gray-600 hover:text-gray-400 hover:bg-white/[0.04]'
+                                ? 'bg-blue-100 text-blue-600'
+                                : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                                 }`}
                             title={cat.label}
                         >
@@ -149,17 +149,17 @@ export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
             {/* Sağ: Emoji Grid */}
             <div className="flex-1 flex flex-col overflow-hidden">
                 {/* Kategori başlığı */}
-                <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <div className="px-3 py-1.5 flex items-center gap-1.5" style={{ borderBottom: '1px solid #f1f5f9' }}>
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                         {CATEGORIES.find(c => c.id === activeCategory)?.label || ''}
                     </span>
-                    <span className="text-[9px] text-gray-600 ml-auto">{displayEmojis.length}</span>
+                    <span className="text-[9px] text-slate-400 ml-auto">{displayEmojis.length}</span>
                 </div>
 
                 {/* Grid */}
                 <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-1.5">
                     {displayEmojis.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center h-full text-gray-500 gap-2">
+                        <div className="flex flex-col items-center justify-center h-full text-slate-400 gap-2">
                             <span className="text-2xl">🔍</span>
                             <span className="text-[10px] font-medium">
                                 {activeCategory === 'recent' ? 'Henüz kullanılan emoji yok' : 'Emoji bulunamadı'}
@@ -171,8 +171,8 @@ export function EmojiPicker({ onEmojiSelect }: EmojiPickerProps) {
                                 <button
                                     key={`${emoji}-${idx}`}
                                     onClick={() => handleSelect(emoji)}
-                                    className="flex items-center justify-center text-[16px] rounded-md hover:bg-white/[0.08] transition-all duration-150 hover:scale-[1.2] active:scale-90"
-                                    style={{ width: 28, height: 28 }}
+                                    className="flex items-center justify-center text-[16px] rounded-md hover:bg-blue-50 transition-all duration-150 hover:scale-[1.2] active:scale-90"
+                                    style={{ width: 24, height: 24 }}
                                 >
                                     {emoji}
                                 </button>

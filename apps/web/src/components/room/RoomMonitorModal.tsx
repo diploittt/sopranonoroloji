@@ -228,7 +228,7 @@ export function RoomMonitorModal({
 
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-start justify-center p-4" onClick={onClose} style={centered ? { paddingTop: '10vh' } : { display: 'block' }}>
-            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.25)' }} />
+            <div className="absolute inset-0" style={{ background: 'rgba(0,0,0,0.12)' }} />
 
             <div
                 ref={modalRef}
@@ -239,18 +239,16 @@ export function RoomMonitorModal({
                     borderRadius: 16,
                     padding: 0,
                     overflow: 'hidden',
-                    background: 'linear-gradient(165deg, rgba(226,232,240,0.96) 0%, rgba(218,225,235,0.95) 50%, rgba(210,218,230,0.94) 100%)',
-                    backdropFilter: 'blur(28px) saturate(130%)',
-                    WebkitBackdropFilter: 'blur(28px) saturate(130%)',
-                    border: '1px solid rgba(255,255,255,0.65)',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.18), 0 8px 24px rgba(0,0,0,0.1), inset 0 1px 0 rgba(255,255,255,0.8)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
             >
                 {/* Header — kompakt */}
                 <div
                     className="flex items-center justify-between px-4 py-2.5"
                     onMouseDown={handleMouseDown}
-                    style={{ cursor: 'move', userSelect: 'none', borderBottom: '1px solid rgba(148,163,184,0.15)', background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)' }}
+                    style={{ cursor: 'move', userSelect: 'none', borderBottom: '1px solid #e2e8f0', background: '#1e293b' }}
                 >
                     <div className="flex items-center gap-2.5">
                         <span style={{ fontSize: 16 }}>📡</span>
@@ -479,7 +477,7 @@ export function RoomMonitorModal({
             {/* Inline Confirm */}
             {inlineConfirm && (
                 <div className="fixed inset-0 z-[10002] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-black/40" onClick={() => setInlineConfirm(null)} />
+                    <div className="absolute inset-0 bg-black/15" onClick={() => setInlineConfirm(null)} />
                     <div className="glossy-panel relative w-full max-w-xs overflow-hidden" style={{ borderRadius: 14, padding: 0, animation: 'inlineConfirmIn 0.15s ease-out' }} onClick={(e) => e.stopPropagation()}>
                         <div style={{ height: 2, background: 'linear-gradient(90deg, transparent, #ef4444, transparent)' }} />
                         <div style={{ padding: '16px 18px' }}>

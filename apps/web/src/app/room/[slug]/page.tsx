@@ -2312,6 +2312,100 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         height: 15px !important;
                                         color: #94a3b8 !important;
                                     }
+                                    /* === SLIM PREMIUM OVERRIDE — glossy-panel BRIGHT === */
+                                    .room-container .sidebar-left .slim-controls {
+                                        background:
+                                            radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.14) 0%, transparent 60%),
+                                            linear-gradient(180deg, rgba(255,255,255,0.09) 0%, rgba(255,255,255,0.03) 25%, transparent 55%),
+                                            linear-gradient(180deg, rgba(40,50,70,0.88) 0%, rgba(20,28,50,0.65) 100%) !important;
+                                        border: 1px solid rgba(255,255,255,0.2) !important;
+                                        border-top: 1px solid rgba(255,255,255,0.4) !important;
+                                        border-bottom: 1px solid rgba(255,255,255,0.28) !important;
+                                        border-left: 1px solid rgba(255,255,255,0.25) !important;
+                                        box-shadow: 0 8px 32px rgba(0,0,0,0.35), 0 2px 8px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.1), inset 0 -1px 0 rgba(255,255,255,0.06), 0 -4px 16px rgba(255,255,255,0.03) !important;
+                                        backdrop-filter: blur(24px) !important;
+                                        -webkit-backdrop-filter: blur(24px) !important;
+                                        overflow: visible !important;
+                                    }
+                                    .room-container .sidebar-left .slim-status-pill {
+                                        background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%) !important;
+                                        border-color: rgba(255,255,255,0.08) !important;
+                                        box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 8px rgba(0,0,0,0.2) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-status-pill:hover {
+                                        background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%) !important;
+                                        border-color: rgba(255,255,255,0.15) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-announce-row {
+                                        background: transparent !important;
+                                        border-color: transparent !important;
+                                        box-shadow: none !important;
+                                    }
+                                    .room-container .sidebar-left .slim-announce-row.has-new {
+                                        background: rgba(251,191,36,0.06) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-radio-card {
+                                        background:
+                                            radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.07) 0%, transparent 65%),
+                                            rgba(0,0,0,0.2) !important;
+                                        border: 1px solid rgba(255,255,255,0.1) !important;
+                                        border-top: 1px solid rgba(255,255,255,0.12) !important;
+                                        box-shadow: inset 0 3px 6px rgba(0,0,0,0.3), inset 0 -1px 0 rgba(255,255,255,0.04) !important;
+                                        overflow: visible !important;
+                                    }
+                                    .room-container .sidebar-left .slim-radio-display {
+                                        background:
+                                            radial-gradient(ellipse at 50% -10%, rgba(79,177,179,0.08) 0%, transparent 70%),
+                                            rgba(0,0,0,0.3) !important;
+                                        border-color: rgba(255,255,255,0.04) !important;
+                                        border-top: 1px solid rgba(79,177,179,0.08) !important;
+                                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-btn-skip {
+                                        background: rgba(255,255,255,0.04) !important;
+                                        border-color: rgba(255,255,255,0.1) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-btn-play {
+                                        background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%) !important;
+                                        border: none !important;
+                                        box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-btn-play.active {
+                                        background: linear-gradient(180deg, rgba(52,211,153,0.3) 0%, rgba(5,150,105,0.4) 100%) !important;
+                                        box-shadow: 0 4px 16px rgba(52,211,153,0.2), inset 0 1px 0 rgba(255,255,255,0.15) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-volume-track {
+                                        background: rgba(0,0,0,0.2) !important;
+                                        border: 1px solid rgba(255,255,255,0.04) !important;
+                                        box-shadow: inset 0 2px 4px rgba(0,0,0,0.3) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-volume-fill {
+                                        background: linear-gradient(90deg, rgba(56,189,248,0.6), rgba(56,189,248,0.8)) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-volume-knob {
+                                        background: linear-gradient(180deg, #fff 0%, #94a3b8 100%) !important;
+                                        border-color: rgba(15,23,42,0.6) !important;
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.5) !important;
+                                    }
+                                    .room-container .sidebar-left .slim-channels-btn {
+                                        background: transparent !important;
+                                        border-color: transparent !important;
+                                    }
+                                    .room-container .sidebar-left .slim-dropdown {
+                                        background: #ffffff !important;
+                                        border: 1px solid #e2e8f0 !important;
+                                        box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 1px 3px rgba(0,0,0,0.06) !important;
+                                        backdrop-filter: none !important;
+                                        -webkit-backdrop-filter: none !important;
+                                    }
+                                    .room-container .sidebar-left .slim-dropdown * {
+                                        background: transparent !important;
+                                        border-color: transparent !important;
+                                        box-shadow: none !important;
+                                    }
+                                    .room-container .sidebar-left .slim-dropdown button:hover {
+                                        background: #f1f5f9 !important;
+                                    }
                                 `}</style>
 
 

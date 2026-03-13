@@ -29,27 +29,24 @@ export default function Modal({ isOpen, onClose, title, children }: ModalProps) 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/15 animate-in fade-in duration-200">
             <div
-                className="rounded-2xl w-full max-w-md shadow-2xl animate-pure-fade"
+                className="rounded-xl w-full max-w-sm shadow-lg animate-pure-fade"
                 style={{
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
-                    backdropFilter: 'blur(24px)',
-                    WebkitBackdropFilter: 'blur(24px)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderTop: '1px solid rgba(255,255,255,0.30)',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.1)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="flex items-center justify-between p-4 border-b border-white/[0.08] cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
-                    <h3 className="text-lg font-bold text-white">{title}</h3>
+                <div className="flex items-center justify-between px-4 py-2.5 cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown} style={{ borderBottom: '1px solid #f1f5f9', background: '#1e293b', borderRadius: '12px 12px 0 0' }}>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wide">{title}</h3>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition"
+                        className="p-1 rounded-md hover:bg-white/10 text-gray-400 hover:text-white transition"
                     >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                     </button>
                 </div>
                 <div className="p-4">

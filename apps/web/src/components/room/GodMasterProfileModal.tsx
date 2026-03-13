@@ -250,29 +250,25 @@ export function GodMasterProfileModal({
 
     const content = (
         <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4" onClick={onClose} style={centered ? {} : { display: 'block' }}>
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+            <div className="absolute inset-0 bg-black/15" />
             <div ref={modalRef} className="relative w-full max-w-lg animate-pure-fade" onClick={(e) => e.stopPropagation()}
                 style={{
                     ...modalStyle,
-                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.92) 100%)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    borderTop: '1px solid rgba(255,255,255,0.30)',
-                    borderRadius: '16px',
-                    boxShadow: '0 25px 60px rgba(0,0,0,0.5), 0 0 1px rgba(168,85,247,0.2), inset 0 1px 0 rgba(255,255,255,0.1)',
-                    backdropFilter: 'blur(24px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(24px) saturate(150%)',
+                    background: '#ffffff',
+                    border: '1px solid #e2e8f0',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
                 }}>
-                <div style={{ height: '1px', background: 'linear-gradient(90deg, transparent 10%, rgba(168,85,247,0.35) 40%, rgba(217,70,239,0.3) 60%, transparent 90%)', borderRadius: '16px 16px 0 0' }} />
 
                 {/* Header */}
-                <div className="flex items-center justify-between px-5 pt-3 pb-0" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none' }}>
-                    <h2 style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: 15 }}>🔱</span>
-                        <span style={{ background: 'linear-gradient(90deg, #e879f9, #7b9fef)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>GodMaster Profil</span>
+                <div className="flex items-center justify-between px-4 py-2" onMouseDown={handleMouseDown} style={{ cursor: 'move', userSelect: 'none', background: '#1e293b', borderRadius: '12px 12px 0 0' }}>
+                    <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>🔱</span>
+                        GodMaster Profil
                     </h2>
-                    <button onClick={onClose} style={{ width: 26, height: 26, borderRadius: 8, background: 'transparent', border: 'none', color: '#475569', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
-                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.color = '#94a3b8'; }}
-                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#475569'; }}
+                    <button onClick={onClose} style={{ width: 24, height: 24, borderRadius: 6, background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, transition: 'all 0.2s' }}
+                        onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = '#fff'; }}
+                        onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#94a3b8'; }}
                     >✕</button>
                 </div>
 
