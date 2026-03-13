@@ -536,10 +536,10 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                         fontWeight: Number(chatTextSettings.fontWeight),
                                                         color: chatTextSettings.textColor,
                                                         background: isMe
-                                                            ? 'rgba(180,190,220,0.12)'
-                                                            : 'rgba(180,190,220,0.10)',
-                                                        border: '1px solid rgba(255,255,255,0.08)',
-                                                        boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                                                            ? 'linear-gradient(160deg, rgba(140,160,200,0.18) 0%, rgba(120,140,180,0.12) 100%)'
+                                                            : 'linear-gradient(160deg, rgba(140,160,200,0.14) 0%, rgba(120,140,180,0.08) 100%)',
+                                                        border: '1px solid rgba(255,255,255,0.12)',
+                                                        boxShadow: '0 1px 4px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.06)',
                                                     }}>
                                                     {msg.message}
                                                 </div>

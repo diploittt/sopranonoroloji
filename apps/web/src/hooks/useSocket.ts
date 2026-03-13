@@ -284,37 +284,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             });
         });
 
-        // ★ Real-time status updates — instant status reflection without waiting for broadcastParticipants debounce
-        socket.on('user-status-changed', (data: { userId: string; status: string; isInvisible: boolean }) => {
-            console.log('[user-status-changed] ★ RECEIVED:', JSON.stringify(data));
-            setParticipants(prev => {
-                // If user went invisible and it's NOT self → remove from list immediately
-                if (data.isInvisible && data.userId !== (JSON.parse(localStorage.getItem('soprano_auth_user') || '{}')?.sub)) {
-                    const filtered = prev.filter(p => p.userId !== data.userId);
-                    console.log('[user-status-changed] INVISIBLE — removed from list. Remaining:', filtered.map((p: any) => p.displayName).join(', '));
-                    return filtered;
-                }
-                const updated = prev.map(p =>
-                    p.userId === data.userId ? { ...p, status: data.status, isStealth: data.isInvisible } : p
-                );
-                console.log('[user-status-changed] Updated participants:', updated.map((p: any) => `${p.displayName}:${p.status}`).join(', '));
-                return updated;
-            });
-        });
-
-        // ★ Real-time ban/unban updates for ALL users in the room (instant sidebar update)
-        socket.on('room:user-banned', (data: { userId: string }) => {
-            console.log('[room:user-banned] userId:', data.userId);
-            setParticipants(prev => prev.map(p =>
-                p.userId === data.userId ? { ...p, isBanned: true } : p
-            ));
-        });
-        socket.on('room:user-unbanned', (data: { userId: string }) => {
-            console.log('[room:user-unbanned] userId:', data.userId);
-            setParticipants(prev => prev.map(p =>
-                p.userId === data.userId ? { ...p, isBanned: false } : p
-            ));
-        });
+        // ★ NOTE: user-status-changed, room:user-banned, room:user-unbanned are handled
+        // exclusively in useRoomRealtime.ts to avoid duplicate setParticipants calls.
 
         socket.on('room:participant-left', (payload: { userId: string, socketId: string }) => {
             setParticipants((prev) => prev.filter(p => p.userId !== payload.userId));

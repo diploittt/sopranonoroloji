@@ -1959,12 +1959,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     .room-container main.flex-1 > .chat-area {
                                         position: relative !important;
                                         overflow: visible !important;
-                                        border: none !important;
-                                        border-color: transparent !important;
-                                    }
-                                    .room-container .chat-area > *,
-                                    .room-container .chat-messages-container {
-                                        border-color: transparent !important;
                                     }
                                     /* 3 raptiye — sol, orta, sağ */
                                     .room-raptiye-left,
@@ -2912,9 +2906,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     isChatLocked={room.state.isChatLocked}
                                                     isCurrentUserMuted={room.state.isCurrentUserMuted}
                                                     isCurrentUserGagged={room.state.isCurrentUserGagged}
-                                                    onEmojiClick={() => addToast('info', 'Yakında', 'Emoji özelliği yakında eklenecek. 😊')}
-                                                    onStickerClick={() => addToast('info', 'Yakında', 'Sticker özelliği yakında eklenecek. 🎨')}
-                                                    onGifClick={() => addToast('info', 'Yakında', 'GIF özelliği yakında eklenecek. 🎬')}
                                                     onVolumeChange={room.actions.setRemoteVolume}
                                                     tvVolume={tvVolume}
                                                     onTvVolumeChange={setTvVolume}

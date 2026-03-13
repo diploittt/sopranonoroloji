@@ -43,10 +43,6 @@ export interface BottomToolbarProps {
     isCurrentUserGagged?: boolean;
     banInfo?: any;
 
-    // Toolbar placeholder callbacks
-    onEmojiClick?: () => void;
-    onStickerClick?: () => void;
-    onGifClick?: () => void;
 
     // Volume Slider
     onVolumeChange?: (volume: number) => void;
@@ -88,9 +84,6 @@ export function BottomToolbar({
     isChatLocked = false,
     isCurrentUserMuted = false,
     isCurrentUserGagged = false,
-    onEmojiClick,
-    onStickerClick,
-    onGifClick,
     onVolumeChange,
     tvVolume = 0.7,
     onTvVolumeChange,
@@ -344,15 +337,6 @@ export function BottomToolbar({
                 }} />
             </AnchorPopover>
 
-            {/* Placeholder Popover (REMOVED - replaced by real pickers) */}
-            {/* <AnchorPopover
-                targetRef={placeholderPopover.anchorRef || emojiBtnRef}
-                isOpen={placeholderPopover.isOpen}
-                onClose={() => setPlaceholderPopover(prev => ({ ...prev, isOpen: false }))}
-                variant="toast"
-                toastType="info"
-                message={placeholderPopover.message}
-            /> */}
 
             {/* TOP ROW: ICONS */}
             <div className="w-full max-w-7xl mx-auto flex items-center justify-between">
@@ -462,7 +446,6 @@ export function BottomToolbar({
 
                     <div className="w-px h-6 bg-white/10 mx-2"></div>
 
-                    {/* Fun Icons */}
                     {/* Fun Icons */}
                     <button
                         ref={emojiBtnRef}

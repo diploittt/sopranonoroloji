@@ -93,6 +93,10 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     const [availableDevices, setAvailableDevices] = useState<any>({ videoInputs: [], audioInputs: [], audioOutputs: [] });
     const [selectedVideoDeviceId, setSelectedVideoDeviceId] = useState<string | null>(null);
     const [selectedAudioDeviceId, setSelectedAudioDeviceId] = useState<string | null>(null);
+    const selectedAudioDeviceIdRef = useRef(selectedAudioDeviceId);
+    selectedAudioDeviceIdRef.current = selectedAudioDeviceId;
+    const currentUserRef = useRef(currentUser);
+    currentUserRef.current = currentUser;
 
     // Speaker / Mic State (SERVER-DRIVEN)
     const [currentSpeaker, setCurrentSpeaker] = useState<SpeakerInfo | null>(null);
@@ -104,7 +108,6 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     // Chat State
     const [isChatLocked, setIsChatLocked] = useState(false);
     const [isLocalChatStopped, setIsLocalChatStopped] = useState(false); // Stop Text Local
-    const [blockedUsers, setBlockedUsers] = useState<string[]>([]); // Locally blocked users (unused yet)
     const [isCurrentUserMuted, setIsCurrentUserMuted] = useState(false);
     const [isCurrentUserGagged, setIsCurrentUserGagged] = useState(false);
 
@@ -149,6 +152,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         setMicTimeLeft(0);
     }, []);
 
+    // Cleanup mic stream helper (must be defined BEFORE the socket listener useEffect)
+    const cleanupMicStream = useCallback(() => {
+        if (micStreamRef.current) {
+            micStreamRef.current.getTracks().forEach(t => t.stop());
+            micStreamRef.current = null;
+        }
+    }, []);
+
     // ─── Socket Listeners for Mic Events ─────────────────
     useEffect(() => {
         if (!socket) return;
@@ -165,14 +176,13 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 startCountdown(data.duration, data.startedAt);
             }
 
-            // If it's us, activate mic and produce audio via mediasoup
             const authUser = getAuthUser();
             if (authUser && data.userId === authUser.userId) {
                 setIsMicOn(true);
                 try {
                     const constraints: MediaStreamConstraints = {
-                        audio: selectedAudioDeviceId
-                            ? { deviceId: { exact: selectedAudioDeviceId } }
+                        audio: selectedAudioDeviceIdRef.current
+                            ? { deviceId: { exact: selectedAudioDeviceIdRef.current } }
                             : true,
                     };
                     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -180,7 +190,6 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     const audioTrack = stream.getAudioTracks()[0];
                     if (audioTrack) {
                         await produceAudio(audioTrack);
-                        console.log('[Mic] Audio track produced via mediasoup');
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio:', err);
@@ -247,9 +256,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
         const onMicGranted = async (data: { grantedBy: string }) => {
             setToastMessage({ type: 'success', title: 'Mikrofon Verildi', message: `${data.grantedBy} size mikrofon verdi. Bağlanıyor...` });
-
-            // Audio is now handled by LiveKit
-            console.log('Mic granted — audio handled by LiveKit');
+            // TODO: LiveKit entegrasyonu burada audio capture başlatmalı
         };
 
         const onQueueUpdated = (newQueue: string[]) => {
@@ -322,8 +329,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             if (data.action === 'mute') {
                 if (data.isMuted) {
                     setIsCurrentUserMuted(true);
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isMuted: true });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isMuted: true });
                     }
                     setToastMessage({ type: 'error', title: '🔇 Susturuldunuz', message: 'Yönetici tarafından mikrofon yetkiniz kaldırıldı.' });
                     if (isMicOnRef.current) {
@@ -333,30 +340,30 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     }
                 } else {
                     setIsCurrentUserMuted(false);
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isMuted: false });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isMuted: false });
                     }
                     setToastMessage({ type: 'success', title: '🔊 Susturma Kaldırıldı', message: 'Artık tekrar mikrofon kullanabilirsiniz.' });
                 }
             } else if (data.action === 'gag') {
                 if (data.isGagged) {
                     setIsCurrentUserGagged(true);
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isGagged: true });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isGagged: true });
                     }
                     setToastMessage({ type: 'error', title: '🤐 Yazı Yasağı', message: 'Yönetici tarafından yazma yetkiniz kaldırıldı.' });
                 } else {
                     setIsCurrentUserGagged(false);
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isGagged: false });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isGagged: false });
                     }
                     setToastMessage({ type: 'success', title: '✏️ Yazı Yasağı Kaldırıldı', message: 'Artık tekrar yazabilirsiniz.' });
                 }
             } else if (data.action === 'cam_block') {
                 if (data.isCamBlocked) {
                     // Participant verisini güncelle — toggleCamera kontrolü burayı okur
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isCamBlocked: true });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isCamBlocked: true });
                     }
                     setToastMessage({ type: 'error', title: '📷 Kamera Engellendi', message: 'Kameranız yönetici tarafından kapatıldı.' });
                     if (isCameraOnRef.current) {
@@ -368,8 +375,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                         setIsCameraOn(false);
                     }
                 } else {
-                    if (currentUser?.userId) {
-                        updateParticipantLocally(currentUser.userId, { isCamBlocked: false });
+                    if (currentUserRef.current?.userId) {
+                        updateParticipantLocally(currentUserRef.current.userId, { isCamBlocked: false });
                     }
                     setToastMessage({ type: 'success', title: '📷 Kamera İzni Verildi', message: 'Artık kameranızı açabilirsiniz.' });
                 }
@@ -404,8 +411,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 setToastMessage({ type: 'success', title: '🎤 Mikrofon Alındı', message: 'Mikrofon sizde.' });
                 try {
                     const constraints: MediaStreamConstraints = {
-                        audio: selectedAudioDeviceId
-                            ? { deviceId: { exact: selectedAudioDeviceId } }
+                        audio: selectedAudioDeviceIdRef.current
+                            ? { deviceId: { exact: selectedAudioDeviceIdRef.current } }
                             : true,
                     };
                     const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -413,7 +420,6 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     const audioTrack = stream.getAudioTracks()[0];
                     if (audioTrack) {
                         await produceAudio(audioTrack);
-                        console.log('[Mic] Audio track produced via mediasoup (take_mic)');
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio (take_mic):', err);
@@ -492,13 +498,18 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         socket.on('room:moveToMeeting', onMoveToMeeting);
 
         const onUserStatusChanged = (data: { userId: string; status: string; isInvisible: boolean }) => {
-            console.log('[Status Change]', data);
-
-            // Update in participants list so sidebar reflects immediately
-            updateParticipantLocally(data.userId, { status: data.status, isStealth: data.isInvisible } as any);
+            // If user went invisible and it's NOT self → remove from list
+            const authUser = getAuthUser();
+            if (data.isInvisible && data.userId !== authUser?.userId) {
+                // Remove from participants (they are invisible to us)
+                updateParticipantLocally(data.userId, { isStealth: true, status: data.status } as any);
+            } else {
+                // Update in participants list so sidebar reflects immediately
+                updateParticipantLocally(data.userId, { status: data.status, isStealth: data.isInvisible } as any);
+            }
 
             // Update Local User State if it is me
-            if (currentUser && data.userId === currentUser.userId) {
+            if (currentUserRef.current && data.userId === currentUserRef.current.userId) {
                 setCurrentUser((prev: any) => ({
                     ...prev,
                     status: data.status,
@@ -593,20 +604,15 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             socket.off('room:user-unbanned', onUserUnbanned);
             socket.off('disconnect', onDisconnect);
         };
-    }, [socket, startCountdown, stopCountdown]); // Removed isCameraOn/isMicOn — now accessed via refs
+    }, [socket, startCountdown, stopCountdown, cleanupMicStream]); // cleanupMicStream is stable (useCallback with []).
 
     // Filter Logic States
     const [clearedUserIds, setClearedUserIds] = useState<Map<string, number>>(new Map());
     const [forceClearTimestamp, setForceClearTimestamp] = useState<number>(0);
     const [stopChatTimestamp, setStopChatTimestamp] = useState<number>(0); // For local stop
 
-    // Cleanup mic stream helper
-    const cleanupMicStream = useCallback(() => {
-        if (micStreamRef.current) {
-            micStreamRef.current.getTracks().forEach(t => t.stop());
-            micStreamRef.current = null;
-        }
-    }, []);
+
+    // Note: cleanupMicStream is now defined ABOVE the main useEffect (line ~152).
 
     // 3. User & Message Mapping
     const users: User[] = useMemo(() => {
@@ -1174,7 +1180,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             currentUser: mergedCurrentUser,
             localStream,
             remoteStreams,
-            activeStream: null,
+            activeStream: null, // Legacy — kept for API compatibility
             isCameraOn,
             isMicOn,
             availableDevices,

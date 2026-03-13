@@ -2506,6 +2506,36 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     if (!target) {
+      // ★ SPECIAL CASE: Unban can work even if the user is disconnected (hard-banned users are kicked)
+      if (payload.action === 'unban') {
+        try {
+          await this.adminService.removeAllActiveBansForUser(
+            actor.userId,
+            payload.targetUserId,
+            actor.tenantId,
+            client.handshake.address,
+          );
+          // Broadcast to room so sidebar updates
+          this.server.to(actor.roomId).emit('room:user-unbanned', {
+            userId: payload.targetUserId,
+          });
+          this.server.to(actor.roomId).emit('room:notification', {
+            type: 'info',
+            message: 'Yasak kaldırıldı.',
+          });
+          client.emit('room:toast', {
+            type: 'success',
+            title: 'Yasak Kaldırıldı',
+            message: 'Kullanıcının yasağı başarıyla kaldırıldı.',
+          });
+          this.logger.log(`[UNBAN-OFFLINE] ${actor.displayName} unbanned offline user ${payload.targetUserId}`);
+          this._doBroadcastParticipants(actor.roomId);
+        } catch (e) {
+          this.logger.error(`Failed to unban offline user: ${e.message}`);
+          client.emit('room:error', { message: 'Yasak kaldırma başarısız oldu.' });
+        }
+        return;
+      }
       client.emit('room:error', { message: 'Target user not found' });
       return;
     }

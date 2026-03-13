@@ -1844,9 +1844,6 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     isCurrentUserMuted={demoRoomRef.current.state.isCurrentUserMuted}
                                                     isCurrentUserGagged={demoRoomRef.current.state.isCurrentUserGagged}
                                                     banInfo={demoRoomRef.current.state.banInfo}
-                                                    onEmojiClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'Emoji özelliği yakında eklenecek. 😊')}
-                                                    onStickerClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'Sticker özelliği yakında eklenecek. 🎨')}
-                                                    onGifClick={() => demoRoomRef.current?.demoAddToast?.('info', 'Yakında', 'GIF özelliği yakında eklenecek. 🎬')}
                                                     onVolumeChange={demoRoomRef.current.actions.setRemoteVolume}
                                                     systemSettings={demoRoomRef.current.state.systemSettings}
                                                 />
