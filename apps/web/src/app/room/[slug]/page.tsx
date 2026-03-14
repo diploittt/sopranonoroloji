@@ -2059,7 +2059,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     .room-raptiye-right {
                                         position: absolute;
                                         top: -10px;
-                                        z-index: 20;
+                                        z-index: 60;
                                         pointer-events: none;
                                         filter: drop-shadow(0 2px 3px rgba(0,0,0,0.4));
                                         width: 20px;
