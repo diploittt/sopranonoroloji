@@ -2251,7 +2251,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         content: '';
                                         position: absolute;
                                         top: -36px;
-                                        left: 35%;
+                                        left: 22%;
                                         transform: translateX(-50%);
                                         width: 220px;
                                         height: 36px;
