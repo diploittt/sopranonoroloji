@@ -1080,6 +1080,50 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     return result;
   }
 
+  /** ★ roomSlug bazlı katılımcı listesi — tenantId uyumsuzluğunda bile aynı odadaki herkes görünür */
+  private getRoomParticipantsMultiTenant(
+    roomSlug: string,
+    viewerId: string,
+    viewerRole?: string,
+  ): InMemoryParticipant[] {
+    const result: InMemoryParticipant[] = [];
+    const isViewerGodMaster = viewerRole?.toLowerCase() === 'godmaster';
+
+    this.participants.forEach((p) => {
+      if (p.roomSlug !== roomSlug) return;
+
+      // Always include self
+      if (p.userId === viewerId) {
+        result.push(p);
+        return;
+      }
+
+      // ★ GODMASTER BYPASS
+      if (isViewerGodMaster) {
+        result.push(p);
+        return;
+      }
+
+      // GodMaster visibility
+      if (p.role?.toLowerCase() === 'godmaster') {
+        const mode = p.visibilityMode || 'visible';
+        if (mode === 'hidden') return;
+        result.push(p);
+        return;
+      }
+
+      // Stealth filter
+      if (p.isStealth) {
+        if (!viewerRole) return;
+        const viewerLevel = getRoleLevel(viewerRole);
+        const targetLevel = getRoleLevel(p.role);
+        if (viewerLevel < targetLevel) return;
+      }
+      result.push(p);
+    });
+    return result;
+  }
+
   @SubscribeMessage('room:join')
   async handleRoomJoin(
     @ConnectedSocket() client: Socket,
@@ -1268,6 +1312,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Join the Socket.IO room (tenant-scoped to isolate tenants)
     const tenantId = user.tenantId || 'default';
     const scopedRoom = scopeRoomId(tenantId, roomId);
+
+    // ★ DEBUG: Mevcut tüm katılımcıların roomId'lerini logla — tenantId uyumsuzluğunu tespit
+    const allRoomIds = new Set<string>();
+    this.participants.forEach(p => { if (p.roomSlug === roomId) allRoomIds.add(p.roomId); });
+    this.logger.log(`[JOIN DEBUG] user=${user.username} tenantId=${tenantId} scopedRoom=${scopedRoom} existingRoomIds=[${[...allRoomIds].join(', ')}] totalParticipants=${this.participants.size}`);
+
     client.join(scopedRoom);
 
     // Store participant in memory
@@ -1504,6 +1554,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       );
     }
 
+    // ★ ZOMBIE CLEANUP — Aynı userId'li eski socket'leri temizle (F5/refresh durumu)
+    const currentUserId = participant.userId || participant.guestId;
+    if (currentUserId) {
+      const staleEntries: string[] = [];
+      this.participants.forEach((p, sid) => {
+        if (sid !== client.id && (p.userId === currentUserId || p.guestId === currentUserId) && p.roomId === scopedRoom) {
+          staleEntries.push(sid);
+        }
+      });
+      for (const staleSid of staleEntries) {
+        // Release mic if zombie was speaking
+        this.autoReleaseSpeaker(scopedRoom, staleSid);
+        // Disconnect old socket
+        const staleSocket = this.server.sockets.sockets.get(staleSid);
+        if (staleSocket) {
+          staleSocket.leave(scopedRoom);
+          staleSocket.disconnect(true);
+        }
+        this.participants.delete(staleSid);
+        this.logger.log(`[ZOMBIE CLEANUP] Removed stale socket ${staleSid} for user ${currentUserId}`);
+      }
+    }
+
     this.participants.set(client.id, participant);
 
     // ★ SOFT BAN — mark participant as banned if soft ban applies
@@ -1543,9 +1616,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       });
     }
 
-    // Get participants (filtered for this viewer's role)
-    const roomParticipants = this.getRoomParticipants(
-      scopedRoom,
+    // Get participants (filtered for this viewer's role) — roomSlug bazlı, tenantId uyumsuzluğuna dayanıklı
+    const roomParticipants = this.getRoomParticipantsMultiTenant(
+      roomId,
       participant.userId,
       participant.role,
     );
@@ -1661,6 +1734,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ★ BROADCAST: Yeni katılan dahil tüm odadaki kullanıcılara güncel listeyi gönder
     this._doBroadcastParticipants(scopedRoom);
 
+    // ★ GÜNLÜK GİRİŞ TAKİBİ — lastLoginAt güncelle (bonus 3. bölümde verilir)
+    if (participant.userId && !participant.userId.startsWith('guest_')) {
+      try {
+        await this.prisma.user.update({
+          where: { id: participant.userId },
+          data: { lastLoginAt: new Date() },
+        });
+      } catch (e) {
+        this.logger.warn(`[LOGIN TRACK] Error for ${participant.userId}: ${e.message}`);
+      }
+    }
+
     // ★ FIRE-AND-FORGET: DB profil güncellemesi (join'i bloklamaz)
     deferredDbRefresh();
 
@@ -1674,15 +1759,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ★ SPEAKER SYNC — Aktif konuşmacı varsa yeni katılana gönder
     const activeSpeaker = this.roomSpeakers.get(scopedRoom);
     if (activeSpeaker) {
-      client.emit('mic:acquired', {
-        userId: activeSpeaker.userId,
-        displayName: activeSpeaker.displayName,
-        socketId: activeSpeaker.socketId,
-        role: activeSpeaker.role,
-        startedAt: activeSpeaker.startedAt,
-        duration: activeSpeaker.duration,
-      });
-      this.logger.log(`🎤 Speaker synced to ${participant.displayName}: ${activeSpeaker.displayName}`);
+      // ★ F5 FIX — Eğer yeni bağlanan kullanıcı KENDİSİ speaker ise, release et.
+      // F5 = yeni socket = eski audio stream kayıp. Tekrar mic vermek zombi konuşmacı yaratır.
+      if (activeSpeaker.userId === participant.userId) {
+        this.logger.log(`🎤 F5 detected: ${participant.displayName} was speaker, releasing mic`);
+        this.releaseSpeaker(scopedRoom, 'disconnected');
+      } else {
+        client.emit('mic:acquired', {
+          userId: activeSpeaker.userId,
+          displayName: activeSpeaker.displayName,
+          socketId: activeSpeaker.socketId,
+          role: activeSpeaker.role,
+          startedAt: activeSpeaker.startedAt,
+          duration: activeSpeaker.duration,
+        });
+        this.logger.log(`🎤 Speaker synced to ${participant.displayName}: ${activeSpeaker.displayName}`);
+      }
     }
 
     // ★ MIC QUEUE SYNC — Mevcut sıra varsa yeni katılana gönder
@@ -1711,45 +1803,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     //   });
     // }
 
-    // ─── ODA GİRİŞ PUANI (Room Entry Points) ──────────────────
-    // Her odaya girişte +5 puan, 15 dakika cooldown ile
-    if (user.sub && !user.sub.startsWith('guest_')) {
-      try {
-        const now = Date.now();
-        const COOLDOWN_MS = 15 * 60 * 1000; // 15 dakika
-        const ENTRY_POINTS = 5;
-        const lastBonus = this.roomEntryBonusCooldowns.get(user.sub) || 0;
-
-        if (now - lastBonus >= COOLDOWN_MS) {
-          this.roomEntryBonusCooldowns.set(user.sub, now);
-
-          await this.prisma.user.update({
-            where: { id: user.sub },
-            data: { points: { increment: ENTRY_POINTS } },
-          });
-
-          const updatedUserPts = await this.prisma.user.findUnique({
-            where: { id: user.sub },
-            select: { balance: true, points: true },
-          });
-
-          client.emit('gift:balance', {
-            balance: Number(updatedUserPts?.balance || 0),
-            points: updatedUserPts?.points || 0,
-          });
-
-          client.emit('dailyBonus:received', {
-            amount: ENTRY_POINTS,
-            type: 'roomEntry',
-            message: `🎁 Odaya giriş bonusu: +${ENTRY_POINTS} puan kazandınız!`,
-          });
-
-          this.logger.log(`[ROOM ENTRY BONUS] ${participant.displayName}: +${ENTRY_POINTS} puan`);
-        }
-      } catch (e) {
-        this.logger.warn(`[ROOM ENTRY BONUS] Error for ${user.sub}: ${e.message}`);
-      }
-    }
+    // (Oda giriş bonusu kaldırıldı — günlük bonus tek noktadan yönetiliyor)
 
     // ★ DUEL SYNC — Aktif düello varsa yeni katılana gönder (pending hariç)
     const activeDuel = this.activeDuels.get(scopedRoom);
@@ -2515,6 +2569,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             actor.tenantId,
             client.handshake.address,
           );
+          // ★ Kullanıcı odadaysa (farklı socketId ile) isBanned flag'ini temizle
+          for (const [, p] of this.participants) {
+            if (p.userId === payload.targetUserId) {
+              p.isBanned = false;
+            }
+          }
+          // ★ room:ban-lifted — hedef kullanıcının TÜM aktif socket'lerine gönder
+          for (const [sid, p] of this.participants) {
+            if (p.userId === payload.targetUserId) {
+              this.server.to(sid).emit('room:ban-lifted', {
+                message: 'Yasağınız kaldırıldı.',
+              });
+            }
+          }
           // Broadcast to room so sidebar updates
           this.server.to(actor.roomId).emit('room:user-unbanned', {
             userId: payload.targetUserId,
@@ -2528,10 +2596,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             title: 'Yasak Kaldırıldı',
             message: 'Kullanıcının yasağı başarıyla kaldırıldı.',
           });
-          this.logger.log(`[UNBAN-OFFLINE] ${actor.displayName} unbanned offline user ${payload.targetUserId}`);
+          this.logger.log(`[UNBAN-OFFLINE] ${actor.displayName} unbanned user ${payload.targetUserId}`);
           this._doBroadcastParticipants(actor.roomId);
         } catch (e) {
-          this.logger.error(`Failed to unban offline user: ${e.message}`);
+          this.logger.error(`Failed to unban user: ${e.message}`);
           client.emit('room:error', { message: 'Yasak kaldırma başarısız oldu.' });
         }
         return;
@@ -2595,13 +2663,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         this.server
           .to(target.socketId)
           .emit('room:kicked', { reason: 'kick' });
+        // ★ Önce in-memory sil, sonra broadcast — anlık yansıma
+        this.participants.delete(target.socketId);
+        this.server.to(target.roomId).emit('room:participant-left', {
+          userId: target.userId,
+          socketId: target.socketId,
+        });
+        this._doBroadcastParticipants(target.roomId);
         const targetSocketKick = this.server.sockets.sockets.get(target.socketId);
         if (targetSocketKick) {
           targetSocketKick.leave(target.roomId);
           targetSocketKick.disconnect(true);
         }
-        this.participants.delete(target.socketId);
-        this._doBroadcastParticipants(target.roomId);
         // ★ Oda genelinde bildirim — herkes görsün
         this.server.to(target.roomId).emit('room:action-notify', {
           type: 'warning',
@@ -2642,13 +2715,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           .emit('room:hard-kicked', {
             reason: 'Zorla atıldınız.',
           });
+        // ★ Önce in-memory sil, sonra broadcast — anlık yansıma
+        this.participants.delete(target.socketId);
+        this.server.to(target.roomId).emit('room:participant-left', {
+          userId: target.userId,
+          socketId: target.socketId,
+        });
+        this._doBroadcastParticipants(target.roomId);
         const targetSocketHardKick = this.server.sockets.sockets.get(target.socketId);
         if (targetSocketHardKick) {
           targetSocketHardKick.leave(target.roomId);
           targetSocketHardKick.disconnect(true);
         }
-        this.participants.delete(target.socketId);
-        this._doBroadcastParticipants(target.roomId);
         // ★ Oda genelinde bildirim
         this.server.to(target.roomId).emit('room:action-notify', {
           type: 'danger',
@@ -2994,7 +3072,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           }
 
           if (isHardBan) {
-            // ★ HARD BAN — ≥ 1 hafta veya kalıcı → disconnect
+            // ★ HARD BAN — kalıcı → disconnect
             this.server
               .to(target.socketId)
               .emit('room:banned', {
@@ -3002,8 +3080,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 expiresAt,
                 banLevel: 'hard',
               });
-            this.server.in(target.socketId).disconnectSockets(true);
+            // ★ Önce in-memory sil, anlık broadcast, sonra disconnect
             this.participants.delete(target.socketId);
+            this.server.to(target.roomId).emit('room:participant-left', {
+              userId: target.userId,
+              socketId: target.socketId,
+            });
+            this.server.in(target.socketId).disconnectSockets(true);
           } else {
             // ★ SOFT BAN — < 1 hafta → kısıtlı mod, bağlantı korunur
             target.isBanned = true;
@@ -3028,7 +3111,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             banLevel: isHardBan ? 'hard' : 'soft',
           });
 
-          this.broadcastParticipants(target.roomId);
+          this._doBroadcastParticipants(target.roomId);
         } catch (e) {
           this.logger.error(
             `Failed to ban user ${target.userId}: ${e.message}`,
@@ -3047,13 +3130,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             client.handshake.address,
           );
 
-          // Update in-memory state
+          // Update in-memory state — TÜM socket'lerdeki isBanned flag'ini temizle
           target.isBanned = false;
+          for (const [, p] of this.participants) {
+            if (p.userId === target.userId) {
+              p.isBanned = false;
+            }
+          }
 
           // ★ Notify unbanned user to remove ban overlay immediately
-          this.server.to(target.socketId).emit('room:ban-lifted', {
-            message: 'Yasağınız kaldırıldı.',
-          });
+          // Hedef kullanıcının TÜM aktif socket'lerine gönder (reconnect sonrası farklı socketId olabilir)
+          for (const [sid, p] of this.participants) {
+            if (p.userId === target.userId) {
+              this.server.to(sid).emit('room:ban-lifted', {
+                message: 'Yasağınız kaldırıldı.',
+              });
+            }
+          }
 
           this.server.to(target.roomId).emit('room:notification', {
             type: 'info',
@@ -3372,9 +3465,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         const targetSocket = this.server.sockets.sockets.get(target.socketId);
         if (targetSocket) {
           targetSocket.emit('room:kicked', { reason: `${actor.displayName} tarafından atıldınız.` });
+        }
+        // ★ Önce in-memory sil, sonra broadcast — anlık yansıma
+        this.participants.delete(target.socketId);
+        this.server.to(targetRoomId).emit('room:participant-left', {
+          userId: target.userId,
+          socketId: target.socketId,
+        });
+        this._doBroadcastParticipants(targetRoomId);
+        if (targetSocket) {
           targetSocket.leave(targetRoomId);
-          this.participants.delete(target.socketId);
-          this.broadcastParticipants(targetRoomId);
+          targetSocket.disconnect(true);
         }
         client.emit('admin:remoteActionResult', { success: true, message: `${target.displayName} odadan atıldı.` });
         break;
@@ -3406,9 +3507,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               reason: `${actor.displayName} tarafından yasaklandınız.`,
               expiresAt: expiresAt || null,
             });
+          }
+          // ★ Önce in-memory sil, sonra broadcast — anlık yansıma
+          this.participants.delete(target.socketId);
+          this.server.to(targetRoomId).emit('room:participant-left', {
+            userId: target.userId,
+            socketId: target.socketId,
+          });
+          this._doBroadcastParticipants(targetRoomId);
+          if (targetSocket) {
             targetSocket.leave(targetRoomId);
-            this.participants.delete(target.socketId);
-            this.broadcastParticipants(targetRoomId);
+            targetSocket.disconnect(true);
           }
           client.emit('admin:remoteActionResult', { success: true, message: `${target.displayName} yasaklandı (${dur}).` });
         } catch (e) {
@@ -4280,6 +4389,26 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (p.roomId === roomId) socketIds.add(sid);
     });
 
+    // ★ Source 3: roomSlug fallback — farklı tenantId'lerle aynı odada olan kullanıcıları yakala
+    // Bu, tenantId uyumsuzluğu durumunda bile tüm katılımcılara broadcast yapılmasını sağlar
+    const roomSlug = roomId.includes(':') ? roomId.split(':').slice(1).join(':') : roomId;
+    if (socketIds.size === 0) {
+      this.participants.forEach((p, sid) => {
+        if (p.roomSlug === roomSlug) socketIds.add(sid);
+      });
+      if (socketIds.size > 0) {
+        this.logger.warn(`[broadcastParticipants] SLUG FALLBACK: roomId=${roomId} had 0 sockets, found ${socketIds.size} via roomSlug=${roomSlug}`);
+      }
+    } else {
+      // Scoped roomId ile bulunanların yanına, aynı slug'daki farklı tenant kullananları da ekle
+      this.participants.forEach((p, sid) => {
+        if (p.roomSlug === roomSlug && !socketIds.has(sid)) {
+          socketIds.add(sid);
+          this.logger.warn(`[broadcastParticipants] CROSS-TENANT: Added ${p.displayName} (roomId=${p.roomId}) to broadcast for ${roomId}`);
+        }
+      });
+    }
+
     this.logger.log(`[broadcastParticipants] roomId=${roomId} | sockets=${socketIds.size} | adapter=${adapterRoom?.size || 0}`);
     if (socketIds.size === 0) return;
 
@@ -4287,8 +4416,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const viewer = this.participants.get(socketId);
       if (!viewer) continue;
 
-      const filtered = this.getRoomParticipants(
-        roomId,
+      // ★ getRoomParticipants'a viewer'in kendi roomId'sini ver — böylece aynı slug'daki herkes GÖRÜNÜR
+      const viewerRoomId = viewer.roomId;
+      const filtered = this.getRoomParticipantsMultiTenant(
+        roomSlug,
         viewer.userId,
         viewer.role,
       );

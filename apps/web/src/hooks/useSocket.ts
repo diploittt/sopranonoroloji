@@ -161,13 +161,10 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             if (data.messages && data.messages.length > 0) {
                 setMessages(data.messages);
             }
-            // ★ Race condition koruması: room:participants broadcast daha güncel listeyi getirdiyse 
-            // room:joined'ın onu ezmesini önle (daha fazla katılımcı = daha güncel)
+            // ★ room:joined = kesin truth — kullanıcı yeni bağlandığında sunucudan gelen
+            // liste her zaman kabul edilmeli (kick sonrası yeniden girişte stale data'yı önler)
             if (data.participants && data.participants.length > 0) {
-                setParticipants(prev => {
-                    if (prev.length > data.participants.length) return prev; // Daha güncel liste zaten var
-                    return data.participants;
-                });
+                setParticipants(data.participants);
             }
             if (data.rooms) setRooms(data.rooms);
             if (data.roomSettings) {

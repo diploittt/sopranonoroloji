@@ -569,6 +569,16 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
         socket.on('dm:receive', onDmReceive);
 
+        // ★ Backend toast & error event'ları — admin işlem sonuçlarını göster
+        const onRoomToast = (data: { type: string; title: string; message?: string }) => {
+            setToastMessage({ type: data.type as any, title: data.title, message: data.message });
+        };
+        const onRoomError = (data: { message: string }) => {
+            setToastMessage({ type: 'error', title: 'Hata', message: data.message || 'Bir hata oluştu.' });
+        };
+        socket.on('room:toast', onRoomToast);
+        socket.on('room:error', onRoomError);
+
         // Socket disconnect — mic state temizle
         const onDisconnect = () => {
             setIsMicOn(false);
@@ -603,6 +613,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             socket.off('room:user-banned', onUserBanned);
             socket.off('room:user-unbanned', onUserUnbanned);
             socket.off('disconnect', onDisconnect);
+            socket.off('room:toast', onRoomToast);
+            socket.off('room:error', onRoomError);
         };
     }, [socket, startCountdown, stopCountdown, cleanupMicStream]); // cleanupMicStream is stable (useCallback with []).
 

@@ -547,15 +547,15 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         const displayName = speakerUser.displayName || speakerUser.username || '';
 
                         return (
-                            <div className="mb-4">
-                                <div className="text-[10px] font-extrabold uppercase tracking-widest mb-3 flex items-center gap-2 text-red-400/80">
+                            <div className="mb-2">
+                                <div className="text-[10px] font-extrabold uppercase tracking-widest mb-1.5 flex items-center gap-2 text-red-400/80">
                                     <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.6)] animate-pulse"></span>
                                     {t.speaker.toUpperCase()}
                                 </div>
-                                <div className="flex items-center gap-3 px-3 py-3 rounded-xl" style={{
+                                <div className="flex items-center gap-2 px-2 py-2 rounded-xl" style={{
                                     background: 'linear-gradient(135deg, rgba(239,68,68,0.06) 0%, rgba(15,18,28,0.95) 100%)',
-                                    border: '1px solid rgba(239,68,68,0.20)',
-                                    boxShadow: '0 0 20px rgba(239,68,68,0.06), inset 0 0 15px rgba(239,68,68,0.03)',
+                                    border: '1px solid rgba(239,68,68,0.15)',
+                                    boxShadow: '0 0 12px rgba(239,68,68,0.04), inset 0 0 8px rgba(239,68,68,0.02)',
                                 }}>
                                     {(isGifNickMode && gifNickUrl) || isGodMasterGif ? (
                                         /* GIF modu — sadece GIF göster, avatar/isim yok */
@@ -600,19 +600,19 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                         <>
                                             {/* Büyük Avatar + Dalga Efekti */}
                                             <div className="relative flex-shrink-0">
-                                                <div className="absolute inset-[-4px] rounded-full" style={{
-                                                    border: '1.5px solid rgba(239,68,68,0.20)',
+                                                <div className="absolute inset-[-2px] rounded-full" style={{
+                                                    border: '1px solid rgba(239,68,68,0.15)',
                                                     animation: 'speakerRipple 2s ease-out infinite',
                                                 }} />
-                                                <div className="absolute inset-[-4px] rounded-full" style={{
-                                                    border: '1.5px solid rgba(239,68,68,0.15)',
+                                                <div className="absolute inset-[-2px] rounded-full" style={{
+                                                    border: '1px solid rgba(239,68,68,0.10)',
                                                     animation: 'speakerRipple 2s ease-out 0.6s infinite',
                                                 }} />
                                                 <div
                                                     className="w-12 h-12 rounded-full flex items-center justify-center"
                                                     style={{
-                                                        border: '2px solid rgba(239,68,68,0.50)',
-                                                        boxShadow: '0 0 12px rgba(239,68,68,0.25), 0 0 24px rgba(239,68,68,0.10)',
+                                                        border: '1px solid rgba(239,68,68,0.35)',
+                                                        boxShadow: '0 0 6px rgba(239,68,68,0.15), 0 0 12px rgba(239,68,68,0.06)',
                                                         animation: 'speakerAvatarPulseRed 2s ease-in-out infinite',
                                                         background: 'linear-gradient(135deg, #1e293b, #0f172a)',
                                                         fontSize: 18, fontWeight: 900, color: 'rgba(239,68,68,0.7)', textTransform: 'uppercase' as const,
@@ -664,8 +664,13 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                 </div>
                                 <style>{`
                                     @keyframes speakerAvatarPulseRed {
-                                        0%, 100% { box-shadow: 0 0 8px rgba(239,68,68,0.20), 0 0 16px rgba(239,68,68,0.10); }
-                                        50% { box-shadow: 0 0 14px rgba(239,68,68,0.35), 0 0 28px rgba(239,68,68,0.15); }
+                                        0% { box-shadow: 0 0 6px rgba(239,68,68,0.3), 0 0 14px rgba(239,68,68,0.15); }
+                                        15% { box-shadow: 0 0 10px rgba(239,68,68,0.5), 0 0 22px rgba(239,68,68,0.25); }
+                                        30% { box-shadow: 0 0 4px rgba(239,68,68,0.15), 0 0 8px rgba(239,68,68,0.08); }
+                                        50% { box-shadow: 0 0 12px rgba(239,68,68,0.5), 0 0 28px rgba(239,68,68,0.3); }
+                                        70% { box-shadow: 0 0 5px rgba(239,68,68,0.2), 0 0 12px rgba(239,68,68,0.1); }
+                                        85% { box-shadow: 0 0 10px rgba(239,68,68,0.45), 0 0 20px rgba(239,68,68,0.2); }
+                                        100% { box-shadow: 0 0 6px rgba(239,68,68,0.3), 0 0 14px rgba(239,68,68,0.15); }
                                     }
                                 `}</style>
                             </div>
@@ -736,9 +741,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                         className={`${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? '' : 'user-card'} flex items-center ${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? 'px-0 py-0' : 'px-1 py-1 rounded-xl'} transition-all duration-300 group cursor-context-menu select-none relative
                                     ${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode
                                                 ? ''
-                                                : isSelf
-                                                    ? 'border border-cyan-400/40 shadow-[0_0_14px_rgba(34,211,238,0.15)]'
-                                                    : 'border border-white/[0.06] shadow-[0_1px_6px_rgba(0,0,0,0.25),inset_0_1px_0_rgba(255,255,255,0.04)] hover:bg-white/[0.04]'}
+                                                : 'hover:bg-white/[0.03]'}
                                     ${isInvisible ? 'grayscale opacity-40 saturate-0' : ''}
                                     ${!isGodMasterSpecialMode && user.isMuted && isSelf ? '!border-red-500/30 !bg-red-500/[0.04]' : ''}
                                     ${!isGodMasterSpecialMode && user.isGagged && isSelf ? '!border-orange-500/30 !bg-orange-500/[0.04]' : ''}
@@ -756,20 +759,21 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             background: isInvisible
                                                 ? 'linear-gradient(135deg, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.4) 50%, rgba(15,23,42,0.5) 100%)'
                                                 : 'linear-gradient(135deg, rgba(34,211,238,0.06) 0%, rgba(56,189,248,0.03) 50%, rgba(15,23,42,0.95) 100%)',
-                                            border: isInvisible ? '1.5px solid rgba(100,116,139,0.12)' : '1.5px solid rgba(34,211,238,0.25)',
                                             borderRadius: '12px',
                                             overflow: 'hidden',
                                             marginBottom: 2,
+                                            borderBottom: '1px solid rgba(34,211,238,0.12)',
+                                            paddingBottom: 4,
                                             ...(isInvisible ? { filter: 'grayscale(1) brightness(0.45)', opacity: 0.35 } : {}),
                                         } : isInvisible ? {
                                             filter: 'grayscale(1) brightness(0.6)',
                                             opacity: 0.4,
                                             marginBottom: 2,
-                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            borderBottom: '1px solid rgba(255,255,255,0.04)',
                                             paddingBottom: 4,
                                         } : {
                                             marginBottom: 2,
-                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            borderBottom: '1px solid rgba(255,255,255,0.04)',
                                             paddingBottom: 4,
                                         }}
                                         onContextMenu={(e) => {
@@ -931,35 +935,54 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                 {/* Avatar — baş harf placeholder */}
                                                 <div className="relative flex-shrink-0" style={{ marginLeft: 0 }}>
                                                     <div
-                                                        className={`w-12 h-12 rounded-full border-[1.5px] transition-colors object-cover
-                                            ${user.role?.toLowerCase() === 'godmaster'
-                                                                ? 'border-fuchsia-400/70 shadow-[0_0_8px_rgba(217,70,239,0.3)]'
-                                                                : isOwnerUser ? 'border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.25)]'
-                                                                    : isSelf ? 'border-cyan-400/60 shadow-[0_0_10px_rgba(34,211,238,0.35)]'
-                                                                        : isSpeaker ? 'border-emerald-400/80'
-                                                                            : (() => {
-                                                                                const r = user.role?.toLowerCase();
-                                                                                if (r === 'superadmin') return 'border-indigo-400/50 shadow-[0_0_6px_rgba(99,102,241,0.2)]';
-                                                                                if (r === 'admin') return 'border-blue-400/50 shadow-[0_0_6px_rgba(96,165,250,0.2)]';
-                                                                                if (r === 'moderator') return 'border-emerald-400/40 shadow-[0_0_4px_rgba(52,211,153,0.15)]';
-                                                                                if (r === 'operator') return 'border-cyan-400/40 shadow-[0_0_4px_rgba(34,211,238,0.15)]';
-                                                                                if (r === 'vip') return 'border-yellow-400/50 shadow-[0_0_6px_rgba(250,204,21,0.2)]';
-                                                                                if (r === 'member') return 'border-slate-400/25 group-hover:border-slate-300/40';
-                                                                                return 'border-white/15 group-hover:border-white/25'; // guest
-                                                                            })()}
-                                        `}
-                                                        style={{
-                                                            background: 'linear-gradient(135deg, #1e293b, #0f172a)',
-                                                            fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' as const,
-                                                            ...(isSpeaker && user.role?.toLowerCase() !== 'godmaster' && !isOwnerUser ? {
-                                                                animation: 'speakerAvatarPulse 2s ease-in-out infinite',
-                                                                border: '2px solid transparent',
-                                                                backgroundClip: 'padding-box',
-                                                                boxShadow: '0 0 0 2px rgba(52,211,153,0.35), 0 0 14px rgba(52,211,153,0.40), 0 0 28px rgba(52,211,153,0.15), 0 0 42px rgba(16,185,129,0.06)',
-                                                            } : {}),
-                                                            position: 'relative',
-                                                            zIndex: 1,
-                                                        }}
+                                                        className="neon-avatar w-12 h-12 rounded-full transition-all duration-300 object-cover flex items-center justify-center overflow-hidden"
+                                                        style={(() => {
+                                                            const role = user.role?.toLowerCase();
+                                                            const audioLevel = (user.userId && speakingUsers?.[user.userId]) || 0;
+                                                            const isActive = audioLevel > 0.01;
+                                                            // Scale factor: 0 at silence, 1 at full volume
+                                                            const s = Math.min(1, audioLevel * 2.5);
+                                                            let borderColor = 'rgba(255,255,255,0.15)';
+                                                            let shadow = 'none';
+                                                            if (role === 'godmaster') {
+                                                                borderColor = `rgba(192,132,252,${0.4 + s * 0.6})`;
+                                                                shadow = `0 0 ${4 + s * 8}px rgba(192,132,252,${0.3 + s * 0.4}), 0 0 ${10 + s * 15}px rgba(217,70,239,${0.15 + s * 0.3}), 0 0 ${20 + s * 20}px rgba(168,85,247,${0.05 + s * 0.15})`;
+                                                            } else if (isOwnerUser) {
+                                                                borderColor = `rgba(251,191,36,${0.35 + s * 0.65})`;
+                                                                shadow = `0 0 ${4 + s * 8}px rgba(251,191,36,${0.25 + s * 0.4}), 0 0 ${10 + s * 14}px rgba(245,158,11,${0.12 + s * 0.25}), 0 0 ${18 + s * 16}px rgba(251,191,36,${0.04 + s * 0.12})`;
+                                                            } else if (isSelf) {
+                                                                borderColor = `rgba(34,211,238,${0.4 + s * 0.6})`;
+                                                                shadow = `0 0 ${4 + s * 8}px rgba(34,211,238,${0.25 + s * 0.4}), 0 0 ${10 + s * 14}px rgba(56,189,248,${0.12 + s * 0.25}), 0 0 ${18 + s * 16}px rgba(34,211,238,${0.04 + s * 0.12})`;
+                                                            } else if (role === 'superadmin') {
+                                                                borderColor = `rgba(129,140,248,${0.35 + s * 0.55})`;
+                                                                shadow = `0 0 ${4 + s * 6}px rgba(129,140,248,${0.2 + s * 0.35}), 0 0 ${10 + s * 10}px rgba(99,102,241,${0.1 + s * 0.2})`;
+                                                            } else if (role === 'admin') {
+                                                                borderColor = `rgba(96,165,250,${0.3 + s * 0.5})`;
+                                                                shadow = `0 0 ${4 + s * 6}px rgba(96,165,250,${0.2 + s * 0.3}), 0 0 ${8 + s * 10}px rgba(96,165,250,${0.08 + s * 0.15})`;
+                                                            } else if (role === 'moderator') {
+                                                                borderColor = `rgba(52,211,153,${0.25 + s * 0.45})`;
+                                                                shadow = `0 0 ${3 + s * 5}px rgba(52,211,153,${0.15 + s * 0.3}), 0 0 ${8 + s * 10}px rgba(52,211,153,${0.06 + s * 0.12})`;
+                                                            } else if (role === 'operator') {
+                                                                borderColor = `rgba(34,211,238,${0.2 + s * 0.4})`;
+                                                                shadow = `0 0 ${3 + s * 5}px rgba(34,211,238,${0.12 + s * 0.25}), 0 0 ${7 + s * 8}px rgba(34,211,238,${0.04 + s * 0.1})`;
+                                                            } else if (role === 'vip') {
+                                                                borderColor = `rgba(250,204,21,${0.25 + s * 0.45})`;
+                                                                shadow = `0 0 ${3 + s * 5}px rgba(250,204,21,${0.15 + s * 0.3}), 0 0 ${8 + s * 10}px rgba(250,204,21,${0.06 + s * 0.12})`;
+                                                            } else if (role === 'member') {
+                                                                borderColor = `rgba(148,163,184,${0.15 + s * 0.25})`;
+                                                                shadow = `0 0 ${2 + s * 4}px rgba(148,163,184,${0.06 + s * 0.12})`;
+                                                            }
+                                                            return {
+                                                                border: `2px solid ${borderColor}`,
+                                                                boxShadow: shadow,
+                                                                background: 'linear-gradient(135deg, #1e293b, #0f172a)',
+                                                                fontSize: 14, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' as const,
+                                                                position: 'relative' as const,
+                                                                zIndex: 1,
+                                                                borderRadius: '9999px',
+                                                                transition: 'box-shadow 0.15s ease-out, border-color 0.15s ease-out',
+                                                            };
+                                                        })()}
                                                     >{(() => { const avSrc = user.avatar || generateGenderAvatar(user.displayName || user.username || '?'); return <img src={avSrc} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />; })()}</div>
 
 
@@ -1546,6 +1569,14 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     from { opacity: 0; transform: translateY(4px); }
                     to { opacity: 1; transform: translateY(0); }
                 }
+                @keyframes neonPulseRed {
+                    0%, 100% {
+                        box-shadow: 0 0 10px rgba(255,50,50,0.7), 0 0 25px rgba(255,50,50,0.5), 0 0 50px rgba(255,50,50,0.3), 0 0 80px rgba(255,50,50,0.15), inset 0 1px 0 rgba(255,255,255,0.2);
+                    }
+                    50% {
+                        box-shadow: 0 0 15px rgba(255,50,50,0.9), 0 0 35px rgba(255,50,50,0.7), 0 0 70px rgba(255,50,50,0.4), 0 0 100px rgba(255,50,50,0.2), inset 0 1px 0 rgba(255,255,255,0.3);
+                    }
+                }
             `}</style>
 
                 {/* MIC REQUEST BUTTON — toplantı odasında gizle (toolbar'da mic toggle var) */}
@@ -1567,7 +1598,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                 room.actions.takeMic();
                             }
                         }}
-                        className={`mic-reactor group mt-2 cursor-pointer relative max-md:sticky max-md:bottom-0 max-md:z-50 max-md:bg-[#070b14]/95 max-md:border-t max-md:border-white/5 max-md:backdrop-blur-sm`}
+                        className={`mic-reactor group mt-2 cursor-pointer relative ${isMicOn ? 'speaking' : ''} ${isInQueue ? 'queueing' : ''} max-md:sticky max-md:bottom-0 max-md:z-50 max-md:bg-[#070b14]/95 max-md:border-t max-md:border-white/5 max-md:backdrop-blur-sm`}
                         style={{
                             background: isMicOn
                                 ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 40%, #b91c1c 70%, #dc2626 100%)'
@@ -1576,18 +1607,19 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                     : 'linear-gradient(135deg, rgba(123,159,239,0.22) 0%, rgba(90,127,212,0.14) 50%, rgba(123,159,239,0.08) 100%)',
                             borderRadius: 14,
                             border: isMicOn
-                                ? '1px solid rgba(248,113,113,0.6)'
+                                ? '1px solid rgba(255,80,80,0.8)'
                                 : isInQueue
                                     ? '1px solid rgba(251,191,36,0.30)'
                                     : '1px solid rgba(123,159,239,0.30)',
                             boxShadow: isMicOn
-                                ? '0 4px 20px rgba(239,68,68,0.4), 0 0 30px rgba(239,68,68,0.2), inset 0 1px 0 rgba(255,255,255,0.15)'
+                                ? '0 0 10px rgba(255,50,50,0.7), 0 0 25px rgba(255,50,50,0.5), 0 0 50px rgba(255,50,50,0.3), 0 0 80px rgba(255,50,50,0.15), inset 0 1px 0 rgba(255,255,255,0.2)'
                                 : isInQueue
                                     ? '0 2px 12px rgba(251,191,36,0.12), 0 0 20px rgba(251,191,36,0.05), inset 0 1px 0 rgba(255,255,255,0.06)'
                                     : '0 2px 12px rgba(123,159,239,0.12), 0 0 20px rgba(123,159,239,0.06), inset 0 1px 0 rgba(255,255,255,0.06)',
                             padding: '16px 18px',
                             transition: 'all 0.3s ease',
                             overflow: 'hidden',
+                            animation: isMicOn ? 'neonPulseRed 1.5s ease-in-out infinite' : 'none',
                         }}
                     >
                         <div className={`reactor-core ${isMicOn ? 'speaking' : ''} ${isInQueue ? 'queueing' : ''}`}>

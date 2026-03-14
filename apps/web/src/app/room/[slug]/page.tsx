@@ -508,6 +508,9 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const { toasts, addToast, removeToast } = useToast();
     const bonusQueue = useBonusQueue();
 
+    // ★ Bağlanıyor overlay'i — gerçek socket + backend bağlantı durumuna göre
+    const showConnectingLoader = !room.state.currentUser || !room.socket?.connected;
+
     const router = useRouter();
     const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
     // Tenant-aware URL helper: if we're at /t/[tenant]/room/..., keep the tenant prefix
@@ -1498,9 +1501,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 )
                             }
 
-                            {/* Toast Container */}
-                            <ToastContainer toasts={toasts} removeToast={removeToast} />
-
                             {/* One-to-One Invite Popup */}
                             {
                                 one2oneInvite && (
@@ -1834,18 +1834,55 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                 onChangeName={(newName) => {
                                                     if (room.socket) {
                                                         room.socket.emit('status:change-name', { newName });
+                                                        // ★ localStorage senkronizasyonu
+                                                        try {
+                                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                                const raw = localStorage.getItem(key);
+                                                                if (raw) {
+                                                                    const user = JSON.parse(raw);
+                                                                    user.displayName = newName;
+                                                                    user.username = newName;
+                                                                    localStorage.setItem(key, JSON.stringify(user));
+                                                                }
+                                                            }
+                                                            window.dispatchEvent(new Event('auth-change'));
+                                                        } catch {}
                                                         addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
                                                     }
                                                 }}
                                                 onChangeAvatar={(avatarUrl) => {
                                                     if (room.socket) {
                                                         room.socket.emit('status:change-avatar', { avatar: avatarUrl });
+                                                        // ★ localStorage senkronizasyonu
+                                                        try {
+                                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                                const raw = localStorage.getItem(key);
+                                                                if (raw) {
+                                                                    const user = JSON.parse(raw);
+                                                                    user.avatar = avatarUrl;
+                                                                    localStorage.setItem(key, JSON.stringify(user));
+                                                                }
+                                                            }
+                                                            window.dispatchEvent(new Event('auth-change'));
+                                                        } catch {}
                                                         addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
                                                     }
                                                 }}
                                                 onChangeNameColor={(color) => {
                                                     if (room.socket) {
                                                         room.socket.emit('status:change-name-color', { color });
+                                                        // ★ localStorage senkronizasyonu
+                                                        try {
+                                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                                const raw = localStorage.getItem(key);
+                                                                if (raw) {
+                                                                    const user = JSON.parse(raw);
+                                                                    user.nameColor = color;
+                                                                    localStorage.setItem(key, JSON.stringify(user));
+                                                                }
+                                                            }
+                                                            window.dispatchEvent(new Event('auth-change'));
+                                                        } catch {}
                                                         addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
                                                     }
                                                 }}
@@ -2258,15 +2295,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         border-radius: 22px !important;
                                         overflow: hidden;
                                     }
-                                    /* Sol sütun — tüm iç elemanları şeffaf yap (profil modu HARİÇ) */
+                                    /* Sol sütun — iç elemanların arka planlarını şeffaf yap (profil modu HARİÇ) */
                                     .room-container .sidebar-left:not(.profile-mode) *:not(svg):not(img):not(canvas):not(video) {
                                         background: transparent !important;
                                         background-color: transparent !important;
                                         background-image: none !important;
-                                        border-color: transparent !important;
-                                        box-shadow: none !important;
                                         backdrop-filter: none !important;
                                         -webkit-backdrop-filter: none !important;
+                                    }
+                                    /* ★ neon-avatar arka planını koru */
+                                    .room-container .sidebar-left:not(.profile-mode) .neon-avatar {
+                                        background: linear-gradient(135deg, #1e293b, #0f172a) !important;
                                     }
                                     .room-container .sidebar-left:not(.profile-mode) .mic-reactor {
                                         height: 64px !important;
@@ -2285,6 +2324,33 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         transition: all 0.3s ease !important;
                                         backdrop-filter: none !important;
                                         -webkit-backdrop-filter: none !important;
+                                    }
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor.speaking {
+                                        background: linear-gradient(180deg, rgba(90,50,50,0.9) 0%, rgba(60,30,35,0.85) 15%, rgba(35,18,22,0.9) 50%, rgba(45,22,28,0.9) 75%, rgba(60,35,40,0.85) 100%) !important;
+                                        border-top: 1px solid rgba(239,68,68,0.35) !important;
+                                        border-bottom: 1px solid rgba(100,20,20,0.4) !important;
+                                        border-left: none !important;
+                                        border-right: none !important;
+                                        box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 15px rgba(239,68,68,0.12), inset 0 1px 0 rgba(255,120,120,0.12), inset 0 -1px 0 rgba(255,255,255,0.03) !important;
+                                    }
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor.speaking span {
+                                        color: #fff !important;
+                                    }
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor.speaking svg {
+                                        color: #fff !important;
+                                    }
+                                    .room-container .sidebar-left:not(.profile-mode) .mic-reactor.queueing {
+                                        background: linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 50%, rgba(251,191,36,0.06) 100%) !important;
+                                        border: 1px solid rgba(251,191,36,0.30) !important;
+                                        box-shadow: 0 2px 12px rgba(251,191,36,0.12), 0 0 20px rgba(251,191,36,0.05), inset 0 1px 0 rgba(255,255,255,0.06) !important;
+                                    }
+                                    @keyframes neonPulseRed {
+                                        0%, 100% {
+                                            box-shadow: 0 0 8px rgba(239,68,68,0.25), 0 0 20px rgba(239,68,68,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+                                        }
+                                        50% {
+                                            box-shadow: 0 0 12px rgba(239,68,68,0.35), 0 0 30px rgba(239,68,68,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
+                                        }
                                     }
                                     .room-container .sidebar-left:not(.profile-mode) .mic-reactor span {
                                         font-size: 11px !important;
@@ -2837,57 +2903,37 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         </defs>
                                                     </svg>
                                                 </div>
-                                                {/* ★ SOCKET BAĞLANTI YÜKLENİYOR OVERLAY — currentUser gelene kadar */}
-                                                {!room.state.currentUser && (
+                                                {/* ★ SOCKET BAĞLANTI YÜKLENİYOR OVERLAY — currentUser gelene kadar (min 1.5s) */}
+                                                {showConnectingLoader && (
                                                     <div style={{
                                                         position: 'absolute', inset: 0,
-                                                        background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%)',
-                                                        backdropFilter: 'blur(6px)',
+                                                        background: 'transparent',
                                                         display: 'flex', flexDirection: 'column',
                                                         alignItems: 'center', justifyContent: 'center',
                                                         zIndex: 40,
                                                     }}>
-                                                        {/* Dönen ok SVG ikonu */}
-                                                        <svg
-                                                            width="56" height="56" viewBox="0 0 56 56" fill="none"
-                                                            style={{ animation: 'spinLoader 1.2s linear infinite' }}
-                                                        >
-                                                            {/* Dış halka */}
-                                                            <circle cx="28" cy="28" r="24" stroke="rgba(123,159,239,0.15)" strokeWidth="3" fill="none" />
-                                                            {/* Dönen yay */}
-                                                            <path
-                                                                d="M28 4 A24 24 0 0 1 52 28"
-                                                                stroke="url(#loaderGrad)" strokeWidth="3" strokeLinecap="round" fill="none"
-                                                            />
-                                                            {/* Ok ucu 1 — saat yönünde */}
-                                                            <polygon
-                                                                points="49,22 55,28 49,28"
-                                                                fill="#7b9fef"
-                                                            />
-                                                            {/* İkinci yay — karşı taraf */}
-                                                            <path
-                                                                d="M28 52 A24 24 0 0 1 4 28"
-                                                                stroke="url(#loaderGrad2)" strokeWidth="3" strokeLinecap="round" fill="none"
-                                                            />
-                                                            {/* Ok ucu 2 — karşı yönde */}
-                                                            <polygon
-                                                                points="7,34 1,28 7,28"
-                                                                fill="#a78bfa"
-                                                            />
-                                                            <defs>
-                                                                <linearGradient id="loaderGrad" x1="28" y1="4" x2="52" y2="28" gradientUnits="userSpaceOnUse">
-                                                                    <stop offset="0%" stopColor="#7b9fef" stopOpacity="0.2" />
-                                                                    <stop offset="100%" stopColor="#7b9fef" stopOpacity="1" />
-                                                                </linearGradient>
-                                                                <linearGradient id="loaderGrad2" x1="28" y1="52" x2="4" y2="28" gradientUnits="userSpaceOnUse">
-                                                                    <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.2" />
-                                                                    <stop offset="100%" stopColor="#a78bfa" stopOpacity="1" />
-                                                                </linearGradient>
-                                                            </defs>
-                                                        </svg>
+                                                        {/* WhatsApp tarzı yeşil daire + beyaz ok */}
+                                                        <div style={{
+                                                            width: 52, height: 52,
+                                                            borderRadius: '50%',
+                                                            background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
+                                                            boxShadow: '0 4px 20px rgba(37,211,102,0.4), 0 0 40px rgba(37,211,102,0.15)',
+                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                            animation: 'pulseGlow 2s ease-in-out infinite',
+                                                        }}>
+                                                            <svg
+                                                                width="28" height="28" viewBox="0 0 24 24" fill="none"
+                                                                style={{ animation: 'spinLoader 1s linear infinite' }}
+                                                            >
+                                                                <path
+                                                                    d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.21 3.03 6 6 0 0 1-1.18 6.94A6 6 0 0 1 6 12H4a8 8 0 1 0 8-8z"
+                                                                    fill="white"
+                                                                />
+                                                            </svg>
+                                                        </div>
                                                         <p style={{
                                                             marginTop: 16, fontSize: 13, fontWeight: 600,
-                                                            color: 'rgba(123,159,239,0.8)',
+                                                            color: 'rgba(52,211,153,0.9)',
                                                             letterSpacing: '0.05em',
                                                             animation: 'pulseText 2s ease-in-out infinite',
                                                         }}>
@@ -2902,6 +2948,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                                 0%, 100% { opacity: 0.5; }
                                                                 50% { opacity: 1; }
                                                             }
+                                                            @keyframes pulseGlow {
+                                                                0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4), 0 0 40px rgba(37,211,102,0.15); transform: scale(1); }
+                                                                50% { box-shadow: 0 4px 30px rgba(37,211,102,0.6), 0 0 60px rgba(37,211,102,0.25); transform: scale(1.05); }
+                                                            }
                                                         `}</style>
                                                     </div>
                                                 )}
@@ -2912,6 +2962,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onContextMenu={handleChatContextMenu}
                                                     roomName={room.state.rooms?.find((r: any) => r.slug === activeSlug)?.name}
                                                 />
+                                                {/* Toast — mesaj kartının hemen altında */}
+                                                <div style={{ position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)', zIndex: 100, pointerEvents: 'none' }}>
+                                                    <ToastContainer toasts={toasts} removeToast={removeToast} />
+                                                </div>
                                                 {/* ★ SOFT BAN chat overlay — büyük ban uyarısı */}
                                                 {room.state.banInfo && room.state.banInfo.banLevel === 'soft' && (
                                                     <div style={{

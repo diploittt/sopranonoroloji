@@ -1086,40 +1086,22 @@ body {
     border: 1px solid rgb(70, 20, 20) !important;
 }
 
-/* --- MİKROFON BUTONU (Premium Gold Style) --- */
+/* --- MİKROFON BUTONU — inline style yönetir, CSS sadece layout --- */
 .mic-reactor {
     position: relative;
     width: 100%;
     height: 64px;
-    border-radius: 14px;
-    background: linear-gradient(to right, rgba(124, 58, 237, 0.12), rgba(192, 38, 211, 0.08), rgba(15, 16, 22, 0.95));
-    border: 2px solid rgba(200, 150, 46, 0.35);
     overflow: hidden;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     align-items: center;
     padding: 0 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), 0 0 10px rgba(139, 92, 246, 0.06), inset 0 1px 0 rgba(139, 92, 246, 0.10);
 }
 
 .mic-reactor:hover {
-    border-color: rgba(200, 150, 46, 0.55);
-    background: linear-gradient(to right, rgba(124, 58, 237, 0.20), rgba(192, 38, 211, 0.14), rgba(15, 16, 22, 0.96));
-    box-shadow: 0 0 30px rgba(139, 92, 246, 0.15), 0 0 50px rgba(192, 38, 211, 0.06), 0 8px 25px rgba(0, 0, 0, 0.4);
     transform: translateY(-1px);
-}
-
-.mic-reactor.speaking {
-    border-color: rgba(239, 68, 68, 0.5);
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.12) 0%, rgba(15, 16, 22, 0.9) 100%);
-    box-shadow: 0 0 25px rgba(239, 68, 68, 0.2);
-}
-
-.mic-reactor.requested {
-    border-color: rgba(245, 158, 11, 0.5);
-    background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(15, 16, 22, 0.9) 100%);
-    box-shadow: 0 0 25px rgba(245, 158, 11, 0.15);
+    filter: brightness(1.15);
 }
 
 .reactor-core {
@@ -1266,13 +1248,9 @@ body {
 }
 
 /* --- Mic Button Hover Glow --- */
-.mic-reactor {
-    transition: all 0.3s ease !important;
-}
 .mic-reactor:hover {
     transform: translateY(-1px);
     filter: brightness(1.15);
-    box-shadow: 0 4px 20px rgba(123,159,239,0.18), inset 0 1px 0 rgba(255,255,255,0.10) !important;
 }
 .mic-reactor:active {
     transform: translateY(0px);

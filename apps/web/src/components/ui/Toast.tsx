@@ -19,7 +19,7 @@ interface ToastProps {
 
 export function ToastContainer({ toasts, removeToast }: ToastProps) {
     return (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] flex flex-col gap-2 items-center pointer-events-none">
+        <div className="flex flex-col gap-2 items-center pointer-events-none">
             {toasts.map((toast) => (
                 <ToastItem key={toast.id} toast={toast} onRemove={() => removeToast(toast.id)} />
             ))}
@@ -116,16 +116,17 @@ function ToastItem({ toast, onRemove }: { toast: ToastMessage; onRemove: () => v
             style={{
                 pointerEvents: 'auto',
                 display: 'flex', alignItems: 'center', gap: 10,
-                padding: '10px 16px 10px 12px',
-                borderRadius: 12,
+                padding: '10px 18px 10px 12px',
+                borderRadius: 16,
                 background: s.bg,
-                backdropFilter: 'blur(16px)',
-                border: s.border,
-                boxShadow: s.shadow,
+                backdropFilter: 'blur(24px) saturate(1.5)',
+                WebkitBackdropFilter: 'blur(24px) saturate(1.5)',
+                border: 'none',
+                boxShadow: '0 8px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.08)',
                 color: s.text,
                 transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
                 opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0) scale(1)' : 'translateY(8px) scale(0.95)',
+                transform: visible ? 'translateY(0) scale(1)' : 'translateY(-12px) scale(0.95)',
                 minWidth: 220,
                 maxWidth: 400,
             }}
