@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import type { Socket } from 'socket.io-client';
 
 // ─── Types ─────────────────────────────────────────────────
@@ -43,199 +43,21 @@ type DuelPhase = 'idle' | 'challenge-pending' | 'challenge-sent' | 'active' | 'v
 interface Props {
     socket: Socket | null;
     currentUserId: string;
-    roomSlug?: string; // Used to reset duel state on room switch
+    roomSlug?: string;
 }
 
-// ─── Styles (Premium Blue/Gold Theme) ───────────────────────────────
-const ARENA_STYLES = {
-    container: {
-        position: 'relative' as const,
-        background: 'linear-gradient(135deg, rgba(10,15,30,0.97), rgba(15,22,40,0.97))',
-        border: '1px solid rgba(200,150,46,0.18)',
-        borderRadius: 14,
-        padding: '14px 16px',
-        marginBottom: 8,
-        overflow: 'hidden' as const,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 20px rgba(200,150,46,0.06)',
-    },
-    glowOverlay: {
-        position: 'absolute' as const,
-        top: 0, left: 0, right: 0, bottom: 0,
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(200,150,46,0.08) 0%, transparent 70%)',
-        pointerEvents: 'none' as const,
-    },
-    header: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        marginBottom: 10,
-        position: 'relative' as const,
-        zIndex: 1,
-    },
-    title: {
-        fontSize: 11,
-        fontWeight: 800,
-        letterSpacing: '0.1em',
-        textTransform: 'uppercase' as const,
-        background: 'linear-gradient(90deg, #c8962e, #e8b84a)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
-    },
-    timer: {
-        fontSize: 18,
-        fontWeight: 900,
-        fontFamily: 'monospace',
-        color: '#fff',
-        textShadow: '0 0 12px rgba(200,150,46,0.5)',
-    },
-    vsContainer: {
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 16,
-        padding: '6px 0',
-        position: 'relative' as const,
-        zIndex: 1,
-    },
-    participant: {
-        display: 'flex',
-        flexDirection: 'column' as const,
-        alignItems: 'center',
-        gap: 5,
-        flex: 1,
-    },
-    avatar: {
-        width: 52,
-        height: 52,
-        borderRadius: '50%',
-        border: '2px solid rgba(123,159,239,0.4)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: 24,
-        background: 'linear-gradient(135deg, rgba(123,159,239,0.12), rgba(56,189,248,0.08))',
-        boxShadow: '0 0 12px rgba(123,159,239,0.15)',
-    },
-    name: {
-        fontSize: 12,
-        fontWeight: 700,
-        color: '#e2e8f0',
-        textAlign: 'center' as const,
-        maxWidth: 90,
-        overflow: 'hidden' as const,
-        textOverflow: 'ellipsis' as const,
-        whiteSpace: 'nowrap' as const,
-    },
-    vs: {
-        fontSize: 20,
-        fontWeight: 900,
-        color: '#c8962e',
-        textShadow: '0 0 16px rgba(200,150,46,0.4)',
-        animation: 'duelPulse 1.5s ease-in-out infinite',
-    },
-    progressBar: {
-        width: '100%',
-        height: 3,
-        borderRadius: 4,
-        background: 'rgba(255,255,255,0.06)',
-        overflow: 'hidden' as const,
-        margin: '6px 0',
-        position: 'relative' as const,
-        zIndex: 1,
-    },
-    progressFill: {
-        height: '100%',
-        borderRadius: 4,
-        transition: 'width 1s linear',
-        background: 'linear-gradient(90deg, #7b9fef, #38bdf8, #c8962e)',
-    },
-    reactionsContainer: {
-        display: 'flex',
-        gap: 6,
-        justifyContent: 'center',
-        marginTop: 6,
-        position: 'relative' as const,
-        zIndex: 1,
-    },
-    reactionBtn: (color: string, active: boolean) => ({
-        display: 'flex',
-        flexDirection: 'column' as const,
-        alignItems: 'center',
-        gap: 2,
-        padding: '6px 10px',
-        borderRadius: 10,
-        border: `1px solid ${color}30`,
-        background: active ? `${color}15` : 'rgba(255,255,255,0.03)',
-        cursor: 'pointer',
-        transition: 'all 0.2s',
-        fontSize: 11,
-        fontWeight: 600,
-        color: '#e2e8f0',
-        minWidth: 64,
-    }),
-    reactionEmoji: {
-        fontSize: 16,
-    },
-    reactionCount: {
-        fontSize: 10,
-        opacity: 0.5,
-    },
-    voteBtn: (color: string) => ({
-        flex: 1,
-        padding: '10px 14px',
-        borderRadius: 10,
-        border: 'none',
-        cursor: 'pointer',
-        fontWeight: 700,
-        fontSize: 12,
-        color: '#fff',
-        background: `linear-gradient(135deg, ${color}, ${color}99)`,
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        boxShadow: `0 4px 16px ${color}30, inset 0 1px 0 rgba(255,255,255,0.1)`,
-        textAlign: 'center' as const,
-    }),
-    resultBanner: (isWin: boolean) => ({
-        textAlign: 'center' as const,
-        padding: '12px 0',
-        position: 'relative' as const,
-        zIndex: 1,
-    }),
-    challengeModal: {
-        position: 'fixed' as const,
-        top: '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        background: 'linear-gradient(135deg, rgba(10,15,30,0.98), rgba(15,22,40,0.98))',
-        border: '1px solid rgba(200,150,46,0.25)',
-        borderRadius: 18,
-        padding: 28,
-        zIndex: 9999,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(200,150,46,0.08)',
-        textAlign: 'center' as const,
-        minWidth: 320,
-    },
-    backdrop: {
-        position: 'fixed' as const,
-        top: 0, left: 0, right: 0, bottom: 0,
-        background: 'rgba(0,0,0,0.6)',
-        zIndex: 9998,
-    },
-};
-
-const CSS_ANIMATIONS = `
-@keyframes duelPulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.15); opacity: 0.85; }
+// ─── Helpers ─────────────────────────────────────────────────
+function generateSparkles(count: number) {
+    return Array.from({ length: count }, (_, i) => ({
+        id: i,
+        x: 10 + Math.random() * 80,
+        y: 10 + Math.random() * 80,
+        size: 2 + Math.random() * 3,
+        delay: Math.random() * 3,
+        dur: 1.5 + Math.random() * 2,
+        color: ['#c8962e', '#e8b84a', '#7b9fef', '#38bdf8', '#fff'][Math.floor(Math.random() * 5)],
+    }));
 }
-@keyframes confettiDrop {
-  0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(40px) rotate(360deg); opacity: 0; }
-}
-@keyframes slideInUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-`;
 
 // ─── Component ──────────────────────────────────────────────
 export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
@@ -250,12 +72,12 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
     const [votingRemaining, setVotingRemaining] = useState(15);
     const [challengeFrom, setChallengeFrom] = useState<{ duelId: string; challengerName: string; challengerAvatar?: string } | null>(null);
     const votingTimerRef = useRef<ReturnType<typeof setInterval> | undefined>(undefined);
+    const sparkles = useMemo(() => generateSparkles(8), []);
 
     // ─── Socket listeners ───
     useEffect(() => {
         if (!socket) return;
 
-        // Reset all duel state when socket or roomSlug changes (room switch)
         setPhase('idle');
         setDuelData(null);
         setRemaining(0);
@@ -268,13 +90,11 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         setVotingRemaining(15);
         if (votingTimerRef.current) clearInterval(votingTimerRef.current);
 
-        // Meydan okuma alındı (hedef kullanıcıya)
         const onChallengeReceived = (data: { duelId: string; challengerId: string; challengerName: string; challengerAvatar?: string }) => {
             setChallengeFrom({ duelId: data.duelId, challengerName: data.challengerName, challengerAvatar: data.challengerAvatar });
             setPhase('challenge-pending');
         };
 
-        // Düello başladı (odadaki herkese)
         const onStarted = (data: DuelData) => {
             setDuelData(data);
             setRemaining(data.duration);
@@ -290,22 +110,13 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             setPhase('active');
         };
 
-        // Geri sayım tick
-        const onTick = (data: { remaining: number }) => {
-            setRemaining(data.remaining);
-        };
+        const onTick = (data: { remaining: number }) => setRemaining(data.remaining);
+        const onReactionUpdate = (data: { reactions: DuelReactions }) => setReactions(data.reactions);
 
-        // Reaksiyon güncelleme
-        const onReactionUpdate = (data: { reactions: DuelReactions }) => {
-            setReactions(data.reactions);
-        };
-
-        // Oylama fazı
         const onVotingPhase = (data: any) => {
             setPhase('voting');
             setReactions(data.reactions);
             setVotingRemaining(data.votingDuration || 15);
-            // Oylama geri sayımı
             if (votingTimerRef.current) clearInterval(votingTimerRef.current);
             let vr = data.votingDuration || 15;
             votingTimerRef.current = setInterval(() => {
@@ -315,20 +126,17 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             }, 1000);
         };
 
-        // Oy güncelleme
         const onVoteUpdate = (data: { challengerVotes: number; opponentVotes: number }) => {
             setChallengerVotes(data.challengerVotes);
             setOpponentVotes(data.opponentVotes);
         };
 
-        // Sonuç
         const onResult = (data: DuelResultData) => {
             setResult(data);
             setChallengerVotes(data.challengerVotes);
             setOpponentVotes(data.opponentVotes);
             setPhase('result');
             if (votingTimerRef.current) clearInterval(votingTimerRef.current);
-            // 10 saniye sonra temizle
             setTimeout(() => {
                 setPhase('idle');
                 setDuelData(null);
@@ -336,29 +144,17 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             }, 10_000);
         };
 
-        // Düello reddedildi — challenger'a bildirim
         const onRejected = (data?: { opponentName?: string }) => {
-            console.log('[DUEL] Challenge rejected by opponent:', data?.opponentName);
             setChallengeFrom(null);
             setPhase('idle');
-            // Browser notification
             try {
                 const rejName = data?.opponentName || 'Rakip';
-                // Dispatch a custom event so the room page can show a toast
                 window.dispatchEvent(new CustomEvent('soprano:duel-rejected', { detail: { opponentName: rejName } }));
             } catch { }
         };
 
-        // İptal / Timeout
-        const onCancelled = () => {
-            setPhase('idle');
-            setDuelData(null);
-            setChallengeFrom(null);
-        };
-        const onExpired = () => {
-            setChallengeFrom(null);
-            setPhase('idle');
-        };
+        const onCancelled = () => { setPhase('idle'); setDuelData(null); setChallengeFrom(null); };
+        const onExpired = () => { setChallengeFrom(null); setPhase('idle'); };
 
         socket.on('duel:challenge-received', onChallengeReceived);
         socket.on('duel:started', onStarted);
@@ -370,7 +166,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         socket.on('duel:cancelled', onCancelled);
         socket.on('duel:challenge-expired', onExpired);
         socket.on('duel:challenge-rejected', onRejected);
-        socket.on('duel:rejected', onRejected); // fallback event name
+        socket.on('duel:rejected', onRejected);
 
         return () => {
             socket.off('duel:challenge-received', onChallengeReceived);
@@ -386,7 +182,6 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             socket.off('duel:rejected', onRejected);
             if (votingTimerRef.current) clearInterval(votingTimerRef.current);
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [socket, roomSlug]);
 
     // ─── Helpers ───
@@ -408,37 +203,73 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         setHasVoted(true);
     };
 
-    // ─── Challenge Modal ───
+    // ═══════════════════════════════════════════════════════════════
+    // ─── CHALLENGE MODAL ───
+    // ═══════════════════════════════════════════════════════════════
     if (phase === 'challenge-pending' && challengeFrom) {
         return (
             <>
-                <style>{CSS_ANIMATIONS}</style>
-                <div style={ARENA_STYLES.backdrop} onClick={() => { socket?.emit('duel:reject'); setChallengeFrom(null); setPhase('idle'); }} />
-                <div style={ARENA_STYLES.challengeModal}>
-                    <div style={{ fontSize: 48, marginBottom: 12 }}>⚔️</div>
-                    <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Düello Daveti!</h3>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 12, lineHeight: 1.6 }}>
-                    <strong style={{ color: '#c8962e' }}>{challengeFrom.challengerName}</strong> seni düelloya davet ediyor!
-                    </p>
+                <style>{KEYFRAMES}</style>
+                {/* Backdrop */}
+                <div
+                    style={{
+                        position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                        background: 'rgba(0,0,0,0.65)', zIndex: 9998,
+                        animation: 'duelFadeIn 0.3s ease',
+                    }}
+                    onClick={() => { socket?.emit('duel:reject'); setChallengeFrom(null); setPhase('idle'); }}
+                />
+                {/* Modal */}
+                <div style={{
+                    position: 'fixed', top: '50%', left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    background: '#0a0f1e',
+                    border: '1px solid rgba(200,150,46,0.3)',
+                    borderRadius: 16,
+                    padding: '24px 28px',
+                    zIndex: 9999,
+                    boxShadow: '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(200,150,46,0.1)',
+                    textAlign: 'center',
+                    minWidth: 300,
+                    maxWidth: 360,
+                    animation: 'duelModalEnter 0.4s cubic-bezier(0.34,1.56,0.64,1)',
+                }}>
+                    {/* Gold glow top */}
                     <div style={{
-                        background: 'rgba(200,150,46,0.08)', border: '1px solid rgba(200,150,46,0.15)',
-                        borderRadius: 10, padding: '10px 14px', marginBottom: 16, textAlign: 'left' as const,
+                        position: 'absolute', top: -1, left: '10%', right: '10%', height: 1,
+                        background: 'linear-gradient(90deg, transparent, rgba(200,150,46,0.6), transparent)',
+                    }} />
+
+                    <div style={{ fontSize: 40, marginBottom: 10, filter: 'drop-shadow(0 0 16px rgba(200,150,46,0.4))' }}>⚔️</div>
+                    <h3 style={{ color: '#e8b84a', fontSize: 18, fontWeight: 800, marginBottom: 6, letterSpacing: '0.05em' }}>
+                        DÜELLO DAVETİ
+                    </h3>
+                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13, marginBottom: 14, lineHeight: 1.5 }}>
+                        <strong style={{ color: '#7b9fef' }}>{challengeFrom.challengerName}</strong> seni düelloya davet ediyor!
+                    </p>
+
+                    {/* Rules box */}
+                    <div style={{
+                        background: 'rgba(200,150,46,0.06)', border: '1px solid rgba(200,150,46,0.12)',
+                        borderRadius: 10, padding: '10px 12px', marginBottom: 16, textAlign: 'left',
                     }}>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: 0, lineHeight: 1.7 }}>
-                            ⚔️ <strong style={{ color: '#fff' }}>Nasıl Çalışır:</strong><br />
-                            • Kabul edersen <strong>3 dakika boyunca</strong> düello arenası açılır<br />
-                            • Düello süresince <strong>mikrofon kilitlenir</strong> (kimse kullanamaz)<br />
-                            • Dinleyiciler reaksiyon gönderir ve oy kullanır<br />
-                            • Kazanan <strong>+10 puan</strong> alır 🏆
+                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, margin: 0, lineHeight: 1.7 }}>
+                            ⚔️ <strong style={{ color: '#e2e8f0' }}>Nasıl Çalışır:</strong><br />
+                            • <strong>3 dakika</strong> düello arenası açılır<br />
+                            • Mikrofon <strong>kilitlenir</strong><br />
+                            • Dinleyiciler reaksiyon + oy kullanır<br />
+                            • Kazanan <strong style={{ color: '#e8b84a' }}>+10</strong>, kaybeden <strong style={{ color: '#ef4444' }}>-10</strong> puan
                         </p>
                     </div>
-                    <div style={{ display: 'flex', gap: 12 }}>
+
+                    <div style={{ display: 'flex', gap: 10 }}>
                         <button
                             onClick={() => socket?.emit('duel:accept')}
                             style={{
-                                flex: 1, padding: '12px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                                flex: 1, padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                                 background: 'linear-gradient(135deg, #22c55e, #16a34a)', color: '#fff',
-                                fontWeight: 700, fontSize: 14, transition: 'transform 0.2s',
+                                fontWeight: 700, fontSize: 13, transition: 'transform 0.2s',
+                                boxShadow: '0 4px 16px rgba(34,197,94,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                             }}
                         >
                             ✅ Kabul Et
@@ -446,9 +277,10 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                         <button
                             onClick={() => { socket?.emit('duel:reject'); setChallengeFrom(null); setPhase('idle'); }}
                             style={{
-                                flex: 1, padding: '12px 20px', borderRadius: 12, border: 'none', cursor: 'pointer',
+                                flex: 1, padding: '10px 16px', borderRadius: 10, border: 'none', cursor: 'pointer',
                                 background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff',
-                                fontWeight: 700, fontSize: 14, transition: 'transform 0.2s',
+                                fontWeight: 700, fontSize: 13, transition: 'transform 0.2s',
+                                boxShadow: '0 4px 16px rgba(239,68,68,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                             }}
                         >
                             ❌ Reddet
@@ -463,238 +295,444 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
     if (phase === 'idle' || !duelData) return null;
 
     const progressPercent = duelData.duration > 0 ? (remaining / duelData.duration) * 100 : 0;
+    const totalVotes = challengerVotes + opponentVotes;
+    const cPct = totalVotes > 0 ? (challengerVotes / totalVotes) * 100 : 50;
+    const oPct = 100 - cPct;
 
-    // Info mesajı — katılımcılar ve izleyiciler için
-    const renderInfoBanner = () => {
-        if (phase !== 'active') return null;
-        if (isParticipant) {
-            return (
-                <div style={{
-                    background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)',
-                    borderRadius: 8, padding: '6px 10px', margin: '6px 0',
-                    position: 'relative' as const, zIndex: 1,
-                }}>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0, lineHeight: 1.6 }}>
-                        ⚔️ <strong style={{ color: '#22c55e' }}>Düello devam ediyor!</strong> Mikrofon düello süresince kilitli. Dinleyiciler seni değerlendirecek ve oylama yapacak.
-                    </p>
-                    <button
-                        onClick={() => {
-                            console.log('[DUEL] Forfeit button clicked');
-                            socket?.emit('duel:forfeit');
-                        }}
-                        style={{
-                            marginTop: 8, padding: '6px 16px', borderRadius: 8, border: 'none', cursor: 'pointer',
-                            background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff',
-                            fontWeight: 700, fontSize: 12, transition: 'opacity 0.2s', opacity: 0.9,
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
-                        onMouseLeave={e => (e.currentTarget.style.opacity = '0.9')}
-                    >
-                        🏳️ Pes Et
-                    </button>
-                </div>
-            );
-        }
-        return (
-            <div style={{
-                background: 'rgba(123,159,239,0.08)', border: '1px solid rgba(123,159,239,0.15)',
-                borderRadius: 8, padding: '6px 10px', margin: '6px 0',
-                position: 'relative' as const, zIndex: 1,
-            }}>
-                <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0, lineHeight: 1.6 }}>
-                    👂 <strong style={{ color: '#7b9fef' }}>Düello dinleyicisisin!</strong> Aşağıdaki butonlarla reaksiyon gönder (3sn bekleme süresi). Tartışma bitince oy kullanacaksın.
-                </p>
-            </div>
-        );
-    };
-
-    // ─── Reaction buttons (for spectators during active phase) ───
-    const renderReactionButtons = () => {
-        if (isParticipant) return null;
-
-        const buttons = [
-            { type: 'fallacy' as const, emoji: '🎭', label: 'Safsata', color: '#ef4444' },
-            { type: 'logical' as const, emoji: '🧠', label: 'Mantıklı', color: '#22c55e' },
-            { type: 'derailed' as const, emoji: '🔀', label: 'Saptırdı', color: '#f59e0b' },
-        ];
-
-        return (
-            <div style={ARENA_STYLES.reactionsContainer}>
-                {[duelData.challengerId, duelData.opponentId].map(targetId => {
-                    const targetName = targetId === duelData.challengerId ? duelData.challengerName : duelData.opponentName;
-                    const targetReactions = reactions[targetId] || { fallacy: 0, logical: 0, derailed: 0 };
-                    return (
-                        <div key={targetId} style={{ flex: 1 }}>
-                            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 4, fontWeight: 600 }}>
-                                {targetName}
-                            </div>
-                            <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
-                                {buttons.map(btn => (
-                                    <button
-                                        key={btn.type}
-                                        onClick={() => sendReaction(btn.type, targetId)}
-                                        style={{
-                                            ...ARENA_STYLES.reactionBtn(btn.color, false),
-                                            padding: '6px 8px',
-                                            minWidth: 56,
-                                        }}
-                                    >
-                                        <span style={ARENA_STYLES.reactionEmoji}>{btn.emoji}</span>
-                                        <span style={ARENA_STYLES.reactionCount}>{targetReactions[btn.type]}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        );
-    };
-
-    // ─── Voting UI ───
-    const renderVoting = () => {
-        if (isParticipant) {
-            return (
-                <div style={{ textAlign: 'center', padding: '16px 0', position: 'relative', zIndex: 1 }}>
-                    <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Dinleyiciler oy kullanıyor...</p>
-                    <p style={{ color: '#7b9fef', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
-                        {challengerVotes} — {opponentVotes}
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
-                        ⏱ {votingRemaining}s
-                    </p>
-                </div>
-            );
-        }
-
-        if (hasVoted) {
-            return (
-                <div style={{ textAlign: 'center', padding: '16px 0', position: 'relative', zIndex: 1 }}>
-                    <p style={{ color: '#22c55e', fontSize: 14, fontWeight: 600 }}>✅ Oyunuz kaydedildi!</p>
-                    <p style={{ color: '#7b9fef', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
-                        {challengerVotes} — {opponentVotes}
-                    </p>
-                    <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
-                        ⏱ {votingRemaining}s
-                    </p>
-                </div>
-            );
-        }
-
-        return (
-            <div style={{ position: 'relative', zIndex: 1 }}>
-                <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.7)', fontSize: 13, marginBottom: 10, fontWeight: 600 }}>
-                    🗳️ Kimin daha iyi tartıştığını oyla! ({votingRemaining}s)
-                </p>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={() => sendVote(duelData.challengerId)} style={ARENA_STYLES.voteBtn('#3b82f6')}>
-                        {duelData.challengerName}
-                    </button>
-                    <button onClick={() => sendVote(duelData.opponentId)} style={ARENA_STYLES.voteBtn('#c8962e')}>
-                        {duelData.opponentName}
-                    </button>
-                </div>
-            </div>
-        );
-    };
-
-    // ─── Result UI ───
-    const renderResult = () => {
-        if (!result) return null;
-        const confetti = ['🎉', '🏆', '⚔️', '🎊', '✨', '🔥'];
-        return (
-            <div style={{ ...ARENA_STYLES.resultBanner(true), animation: 'slideInUp 0.5s ease-out' }}>
-                <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 12 }}>
-                    {confetti.map((c, i) => (
-                        <span key={i} style={{ fontSize: 22, animation: `confettiDrop 2s ease-out ${i * 0.15}s infinite` }}>{c}</span>
-                    ))}
-                </div>
-                {result.result === 'DRAW' ? (
-                    <>
-                        <div style={{ fontSize: 28, fontWeight: 900, color: '#f59e0b', marginBottom: 4 }}>🤝 BERABERE</div>
-                        <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-                            {result.challengerVotes} — {result.opponentVotes}
-                        </p>
-                    </>
-                ) : (
-                    <>
-                        <div style={{ fontSize: 28, fontWeight: 900, color: '#22c55e', marginBottom: 4 }}>
-                            🏆 {result.winnerName} KAZANDI!
-                        </div>
-                        {result.forfeit ? (
-                            <>
-                                <p style={{ color: '#ef4444', fontSize: 13, fontWeight: 600 }}>
-                                    🏳️ {result.loserName || result.forfeitReason || 'Rakip'} kaybetti! ({result.forfeitReason || 'pes etti'})
-                                </p>
-                            </>
-                        ) : (
-                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
-                                {result.challengerName} {result.challengerVotes} — {result.opponentVotes} {result.opponentName}
-                            </p>
-                        )}
-                        <p style={{ color: '#c8962e', fontSize: 12, marginTop: 4 }}>🏆 +10 puan | 💀 -10 puan</p>
-                    </>
-                )}
-            </div>
-        );
-    };
-
+    // ═══════════════════════════════════════════════════════════════
+    // ─── MAIN ARENA CARD ───
+    // ═══════════════════════════════════════════════════════════════
     return (
         <>
-            <style>{CSS_ANIMATIONS}</style>
-            <div style={ARENA_STYLES.container}>
-                <div style={ARENA_STYLES.glowOverlay} />
+            <style>{KEYFRAMES}</style>
+            <div style={{
+                position: 'relative',
+                background: '#0a0f1e',
+                border: '1px solid rgba(200,150,46,0.2)',
+                borderRadius: 14,
+                padding: '0',
+                marginBottom: 8,
+                overflow: 'hidden',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 16px rgba(200,150,46,0.05)',
+                animation: 'duelFadeIn 0.4s ease',
+            }}>
 
-                {/* Header */}
-                <div style={ARENA_STYLES.header}>
-                    <span style={ARENA_STYLES.title}>⚔️ Eristik Düello</span>
-                    {phase === 'active' && <span style={ARENA_STYLES.timer}>{formatTime(remaining)}</span>}
-                    {phase === 'voting' && <span style={{ ...ARENA_STYLES.timer, color: '#c8962e' }}>🗳️ Oylama</span>}
-                    {phase === 'result' && <span style={{ ...ARENA_STYLES.timer, color: '#22c55e' }}>Sonuç</span>}
+                {/* ─── Gold accent line top ─── */}
+                <div style={{
+                    height: 2,
+                    background: 'linear-gradient(90deg, transparent, #c8962e, #e8b84a, #c8962e, transparent)',
+                    animation: 'duelGoldShimmer 3s ease-in-out infinite',
+                }} />
+
+                {/* ─── Sparkle particles ─── */}
+                {sparkles.map(s => (
+                    <div key={s.id} style={{
+                        position: 'absolute', left: `${s.x}%`, top: `${s.y}%`,
+                        width: s.size, height: s.size, borderRadius: '50%',
+                        background: s.color, boxShadow: `0 0 ${s.size * 3}px ${s.color}`,
+                        animation: `duelSparkle ${s.dur}s ${s.delay}s ease-in-out infinite`,
+                        pointerEvents: 'none', zIndex: 0,
+                    }} />
+                ))}
+
+                {/* ─── Header ─── */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '8px 14px',
+                    background: 'linear-gradient(135deg, rgba(200,150,46,0.06), rgba(123,159,239,0.04))',
+                    borderBottom: '1px solid rgba(200,150,46,0.08)',
+                    position: 'relative', zIndex: 1,
+                }}>
+                    <span style={{
+                        fontSize: 10, fontWeight: 800, letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        background: 'linear-gradient(90deg, #c8962e, #e8b84a)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    }}>
+                        ⚔️ Eristik Düello
+                    </span>
+                    {phase === 'active' && (
+                        <span style={{
+                            fontSize: 16, fontWeight: 900, fontFamily: 'monospace', color: '#fff',
+                            textShadow: remaining <= 30 ? '0 0 12px rgba(239,68,68,0.6)' : '0 0 8px rgba(200,150,46,0.4)',
+                            animation: remaining <= 10 ? 'duelTimerPulse 0.5s ease-in-out infinite' : 'none',
+                            color: remaining <= 30 ? '#f87171' : '#fff',
+                        }}>
+                            {formatTime(remaining)}
+                        </span>
+                    )}
+                    {phase === 'voting' && (
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#e8b84a', letterSpacing: '0.05em' }}>
+                            🗳️ OYLAMA ({votingRemaining}s)
+                        </span>
+                    )}
+                    {phase === 'result' && (
+                        <span style={{ fontSize: 12, fontWeight: 800, color: '#22c55e', letterSpacing: '0.05em' }}>
+                            ✨ SONUÇ
+                        </span>
+                    )}
                 </div>
 
-                {/* VS Display */}
-                <div style={ARENA_STYLES.vsContainer}>
-                    <div style={ARENA_STYLES.participant}>
-                        <div style={ARENA_STYLES.avatar}>
-                            <img src={duelData.challengerAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+                {/* ─── VS Display (Participants) ─── */}
+                <div style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    gap: 0, padding: '12px 8px 8px', position: 'relative', zIndex: 1,
+                }}>
+                    {/* Challenger */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <div style={{
+                            width: 48, height: 48, borderRadius: '50%',
+                            border: '2px solid rgba(123,159,239,0.5)',
+                            overflow: 'hidden', position: 'relative',
+                            boxShadow: '0 0 16px rgba(123,159,239,0.2), inset 0 0 8px rgba(123,159,239,0.1)',
+                            animation: phase === 'active' ? 'duelAvatarGlow 2s ease-in-out infinite' : 'none',
+                        }}>
+                            <img src={duelData.challengerAvatar || `/avatars/neutral_1.png`} alt=""
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-                        <span style={ARENA_STYLES.name}>{duelData.challengerName}</span>
+                        <span style={{
+                            fontSize: 11, fontWeight: 700, color: '#7b9fef',
+                            maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            textShadow: '0 0 8px rgba(123,159,239,0.3)',
+                        }}>
+                            {duelData.challengerName}
+                        </span>
                         {(phase === 'voting' || phase === 'result') && (
-                            <span style={{ fontSize: 16, fontWeight: 900, color: '#3b82f6' }}>{challengerVotes}</span>
+                            <div style={{
+                                fontSize: 18, fontWeight: 900, color: '#7b9fef',
+                                textShadow: '0 0 12px rgba(123,159,239,0.5)',
+                                animation: 'duelScoreIn 0.4s ease-out',
+                            }}>
+                                {challengerVotes}
+                            </div>
                         )}
                     </div>
-                    <span style={ARENA_STYLES.vs}>⚔️</span>
-                    <div style={ARENA_STYLES.participant}>
-                        <div style={{ ...ARENA_STYLES.avatar, borderColor: 'rgba(200,150,46,0.4)' }}>
-                            <img src={duelData.opponentAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
+
+                    {/* VS Badge */}
+                    <div style={{
+                        width: 36, height: 36, borderRadius: '50%',
+                        background: 'linear-gradient(135deg, rgba(200,150,46,0.15), rgba(200,150,46,0.05))',
+                        border: '1px solid rgba(200,150,46,0.3)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 0 20px rgba(200,150,46,0.15)',
+                        animation: 'duelVsPulse 2s ease-in-out infinite',
+                        flexShrink: 0,
+                    }}>
+                        <span style={{ fontSize: 14, filter: 'drop-shadow(0 0 6px rgba(200,150,46,0.5))' }}>⚔️</span>
+                    </div>
+
+                    {/* Opponent */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                        <div style={{
+                            width: 48, height: 48, borderRadius: '50%',
+                            border: '2px solid rgba(200,150,46,0.5)',
+                            overflow: 'hidden', position: 'relative',
+                            boxShadow: '0 0 16px rgba(200,150,46,0.2), inset 0 0 8px rgba(200,150,46,0.1)',
+                            animation: phase === 'active' ? 'duelAvatarGlow2 2s ease-in-out infinite' : 'none',
+                        }}>
+                            <img src={duelData.opponentAvatar || `/avatars/neutral_1.png`} alt=""
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         </div>
-                        <span style={ARENA_STYLES.name}>{duelData.opponentName}</span>
+                        <span style={{
+                            fontSize: 11, fontWeight: 700, color: '#e8b84a',
+                            maxWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            textShadow: '0 0 8px rgba(200,150,46,0.3)',
+                        }}>
+                            {duelData.opponentName}
+                        </span>
                         {(phase === 'voting' || phase === 'result') && (
-                            <span style={{ fontSize: 16, fontWeight: 900, color: '#c8962e' }}>{opponentVotes}</span>
+                            <div style={{
+                                fontSize: 18, fontWeight: 900, color: '#e8b84a',
+                                textShadow: '0 0 12px rgba(200,150,46,0.5)',
+                                animation: 'duelScoreIn 0.4s ease-out',
+                            }}>
+                                {opponentVotes}
+                            </div>
                         )}
                     </div>
                 </div>
 
-                {/* Info Banner */}
-                {renderInfoBanner()}
-
-                {/* Progress Bar (active phase) */}
+                {/* ─── Progress Bar (active) ─── */}
                 {phase === 'active' && (
-                    <div style={ARENA_STYLES.progressBar}>
-                        <div style={{ ...ARENA_STYLES.progressFill, width: `${progressPercent}%` }} />
+                    <div style={{
+                        margin: '0 14px 6px', height: 3, borderRadius: 4,
+                        background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
+                        position: 'relative', zIndex: 1,
+                    }}>
+                        <div style={{
+                            height: '100%', borderRadius: 4,
+                            width: `${progressPercent}%`,
+                            background: remaining <= 30
+                                ? 'linear-gradient(90deg, #ef4444, #f97316)'
+                                : 'linear-gradient(90deg, #7b9fef, #38bdf8, #c8962e)',
+                            boxShadow: remaining <= 30
+                                ? '0 0 8px rgba(239,68,68,0.5)'
+                                : '0 0 6px rgba(200,150,46,0.3)',
+                            transition: 'width 1s linear',
+                        }} />
                     </div>
                 )}
 
-                {/* Reactions (active phase, spectators only) */}
-                {phase === 'active' && renderReactionButtons()}
+                {/* ─── Vote Bar (voting/result) ─── */}
+                {(phase === 'voting' || phase === 'result') && totalVotes > 0 && (
+                    <div style={{
+                        margin: '0 14px 6px', height: 4, borderRadius: 4,
+                        background: 'rgba(255,255,255,0.06)', overflow: 'hidden',
+                        display: 'flex', position: 'relative', zIndex: 1,
+                    }}>
+                        <div style={{
+                            height: '100%', width: `${cPct}%`,
+                            background: 'linear-gradient(90deg, #3b82f6, #7b9fef)',
+                            boxShadow: '0 0 6px rgba(59,130,246,0.4)',
+                            transition: 'width 0.5s ease',
+                        }} />
+                        <div style={{
+                            height: '100%', width: `${oPct}%`,
+                            background: 'linear-gradient(90deg, #c8962e, #e8b84a)',
+                            boxShadow: '0 0 6px rgba(200,150,46,0.4)',
+                            transition: 'width 0.5s ease',
+                        }} />
+                    </div>
+                )}
 
-                {/* Voting (voting phase) */}
-                {phase === 'voting' && renderVoting()}
+                {/* ─── Info / Interaction Zone ─── */}
+                <div style={{ padding: '4px 14px 10px', position: 'relative', zIndex: 1 }}>
 
-                {/* Result */}
-                {phase === 'result' && renderResult()}
+                    {/* Active: Info + Pes Et / Reactions */}
+                    {phase === 'active' && isParticipant && (
+                        <div style={{
+                            background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.12)',
+                            borderRadius: 8, padding: '6px 10px', marginBottom: 6,
+                        }}>
+                            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 11, margin: 0, lineHeight: 1.5 }}>
+                                ⚔️ <strong style={{ color: '#22c55e' }}>Düello devam ediyor!</strong> Mikrofon kilitli.
+                            </p>
+                            <button
+                                onClick={() => socket?.emit('duel:forfeit')}
+                                style={{
+                                    marginTop: 6, padding: '5px 14px', borderRadius: 8, border: 'none', cursor: 'pointer',
+                                    background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff',
+                                    fontWeight: 700, fontSize: 11, opacity: 0.85, transition: 'opacity 0.2s',
+                                    boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                                }}
+                                onMouseEnter={e => (e.currentTarget.style.opacity = '1')}
+                                onMouseLeave={e => (e.currentTarget.style.opacity = '0.85')}
+                            >
+                                🏳️ Pes Et
+                            </button>
+                        </div>
+                    )}
+
+                    {phase === 'active' && !isParticipant && (
+                        <>
+                            <div style={{
+                                background: 'rgba(123,159,239,0.06)', border: '1px solid rgba(123,159,239,0.1)',
+                                borderRadius: 8, padding: '5px 10px', marginBottom: 6,
+                            }}>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11, margin: 0, lineHeight: 1.5 }}>
+                                    👂 <strong style={{ color: '#7b9fef' }}>Dinleyicisin</strong> — reaksiyon gönder, sonra oy kullan
+                                </p>
+                            </div>
+                            {/* Reactions */}
+                            <div style={{ display: 'flex', gap: 4, justifyContent: 'center' }}>
+                                {[duelData.challengerId, duelData.opponentId].map(targetId => {
+                                    const tName = targetId === duelData.challengerId ? duelData.challengerName : duelData.opponentName;
+                                    const tReact = reactions[targetId] || { fallacy: 0, logical: 0, derailed: 0 };
+                                    const tColor = targetId === duelData.challengerId ? '#7b9fef' : '#e8b84a';
+                                    return (
+                                        <div key={targetId} style={{ flex: 1 }}>
+                                            <div style={{
+                                                fontSize: 9, color: tColor, textAlign: 'center',
+                                                marginBottom: 3, fontWeight: 700, opacity: 0.7,
+                                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                                            }}>{tName}</div>
+                                            <div style={{ display: 'flex', gap: 3, justifyContent: 'center' }}>
+                                                {[
+                                                    { type: 'fallacy' as const, emoji: '🎭', color: '#ef4444' },
+                                                    { type: 'logical' as const, emoji: '🧠', color: '#22c55e' },
+                                                    { type: 'derailed' as const, emoji: '🔀', color: '#f59e0b' },
+                                                ].map(btn => (
+                                                    <button
+                                                        key={btn.type}
+                                                        onClick={() => sendReaction(btn.type, targetId)}
+                                                        style={{
+                                                            display: 'flex', flexDirection: 'column', alignItems: 'center',
+                                                            gap: 1, padding: '4px 6px', borderRadius: 8,
+                                                            border: `1px solid ${btn.color}20`,
+                                                            background: 'rgba(255,255,255,0.02)',
+                                                            cursor: 'pointer', transition: 'all 0.15s',
+                                                            fontSize: 10, fontWeight: 600, color: '#e2e8f0', minWidth: 40,
+                                                        }}
+                                                        onMouseOver={e => { e.currentTarget.style.background = `${btn.color}15`; }}
+                                                        onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                                                    >
+                                                        <span style={{ fontSize: 14 }}>{btn.emoji}</span>
+                                                        <span style={{ fontSize: 9, opacity: 0.5 }}>{tReact[btn.type]}</span>
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </>
+                    )}
+
+                    {/* Voting */}
+                    {phase === 'voting' && (
+                        <>
+                            {isParticipant ? (
+                                <div style={{ textAlign: 'center', padding: '6px 0' }}>
+                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Dinleyiciler oy kullanıyor...</p>
+                                </div>
+                            ) : hasVoted ? (
+                                <div style={{ textAlign: 'center', padding: '6px 0' }}>
+                                    <p style={{ color: '#22c55e', fontSize: 12, fontWeight: 600 }}>✅ Oyunuz kaydedildi!</p>
+                                </div>
+                            ) : (
+                                <div>
+                                    <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 11, marginBottom: 6, fontWeight: 600 }}>
+                                        🗳️ Kimin daha iyi tartıştığını oyla!
+                                    </p>
+                                    <div style={{ display: 'flex', gap: 8 }}>
+                                        <button
+                                            onClick={() => sendVote(duelData.challengerId)}
+                                            style={{
+                                                flex: 1, padding: '8px 10px', borderRadius: 10, border: 'none',
+                                                cursor: 'pointer', fontWeight: 700, fontSize: 11, color: '#fff',
+                                                background: 'linear-gradient(135deg, #3b82f6, #2563eb)',
+                                                boxShadow: '0 4px 12px rgba(59,130,246,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                                                transition: 'transform 0.15s',
+                                            }}
+                                            onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
+                                            onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                        >
+                                            {duelData.challengerName}
+                                        </button>
+                                        <button
+                                            onClick={() => sendVote(duelData.opponentId)}
+                                            style={{
+                                                flex: 1, padding: '8px 10px', borderRadius: 10, border: 'none',
+                                                cursor: 'pointer', fontWeight: 700, fontSize: 11, color: '#fff',
+                                                background: 'linear-gradient(135deg, #c8962e, #a67b1e)',
+                                                boxShadow: '0 4px 12px rgba(200,150,46,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                                                transition: 'transform 0.15s',
+                                            }}
+                                            onMouseOver={e => { e.currentTarget.style.transform = 'scale(1.03)'; }}
+                                            onMouseOut={e => { e.currentTarget.style.transform = 'scale(1)'; }}
+                                        >
+                                            {duelData.opponentName}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </>
+                    )}
+
+                    {/* Result */}
+                    {phase === 'result' && result && (
+                        <div style={{ textAlign: 'center', padding: '4px 0', animation: 'duelResultIn 0.5s ease-out' }}>
+                            {/* Confetti */}
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                                {['🎉', '🏆', '⚔️', '🎊', '✨', '🔥'].map((c, i) => (
+                                    <span key={i} style={{
+                                        fontSize: 18,
+                                        animation: `duelConfetti 2s ease-out ${i * 0.12}s infinite`,
+                                    }}>{c}</span>
+                                ))}
+                            </div>
+
+                            {result.result === 'DRAW' ? (
+                                <>
+                                    <div style={{
+                                        fontSize: 22, fontWeight: 900, color: '#e8b84a', marginBottom: 2,
+                                        textShadow: '0 0 16px rgba(200,150,46,0.5)',
+                                    }}>
+                                        🤝 BERABERE
+                                    </div>
+                                    <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+                                        {result.challengerVotes} — {result.opponentVotes}
+                                    </p>
+                                </>
+                            ) : (
+                                <>
+                                    <div style={{
+                                        fontSize: 20, fontWeight: 900, color: '#22c55e', marginBottom: 2,
+                                        textShadow: '0 0 16px rgba(34,197,94,0.5)',
+                                    }}>
+                                        🏆 {result.winnerName} KAZANDI!
+                                    </div>
+                                    {result.forfeit ? (
+                                        <p style={{ color: '#f87171', fontSize: 11, fontWeight: 600 }}>
+                                            🏳️ {result.forfeitReason || 'Rakip pes etti'}
+                                        </p>
+                                    ) : (
+                                        <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
+                                            {result.challengerName} {result.challengerVotes} — {result.opponentVotes} {result.opponentName}
+                                        </p>
+                                    )}
+                                    <p style={{ color: '#e8b84a', fontSize: 10, marginTop: 2 }}>🏆 +10 puan | 💀 -10 puan</p>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                </div>
+
+                {/* ─── Gold accent line bottom ─── */}
+                <div style={{
+                    height: 1,
+                    background: 'linear-gradient(90deg, transparent, rgba(200,150,46,0.2), transparent)',
+                }} />
             </div>
         </>
     );
 }
+
+// ═══════════════════════════════════════════════════════════════
+const KEYFRAMES = `
+@keyframes duelFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes duelModalEnter {
+  from { opacity: 0; transform: translate(-50%, -50%) scale(0.85); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes duelGoldShimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+@keyframes duelSparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 0.8; transform: scale(1.5); }
+}
+@keyframes duelVsPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 20px rgba(200,150,46,0.15); }
+  50% { transform: scale(1.08); box-shadow: 0 0 28px rgba(200,150,46,0.25); }
+}
+@keyframes duelAvatarGlow {
+  0%, 100% { box-shadow: 0 0 16px rgba(123,159,239,0.2), inset 0 0 8px rgba(123,159,239,0.1); }
+  50% { box-shadow: 0 0 24px rgba(123,159,239,0.35), inset 0 0 12px rgba(123,159,239,0.15); }
+}
+@keyframes duelAvatarGlow2 {
+  0%, 100% { box-shadow: 0 0 16px rgba(200,150,46,0.2), inset 0 0 8px rgba(200,150,46,0.1); }
+  50% { box-shadow: 0 0 24px rgba(200,150,46,0.35), inset 0 0 12px rgba(200,150,46,0.15); }
+}
+@keyframes duelTimerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+@keyframes duelScoreIn {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+@keyframes duelConfetti {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-20px) rotate(360deg); opacity: 0; }
+}
+@keyframes duelResultIn {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+`;
