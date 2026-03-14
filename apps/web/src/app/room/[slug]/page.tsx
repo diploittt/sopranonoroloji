@@ -2837,6 +2837,74 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         </defs>
                                                     </svg>
                                                 </div>
+                                                {/* ★ SOCKET BAĞLANTI YÜKLENİYOR OVERLAY — currentUser gelene kadar */}
+                                                {!room.state.currentUser && (
+                                                    <div style={{
+                                                        position: 'absolute', inset: 0,
+                                                        background: 'radial-gradient(ellipse at center, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.85) 100%)',
+                                                        backdropFilter: 'blur(6px)',
+                                                        display: 'flex', flexDirection: 'column',
+                                                        alignItems: 'center', justifyContent: 'center',
+                                                        zIndex: 40,
+                                                    }}>
+                                                        {/* Dönen ok SVG ikonu */}
+                                                        <svg
+                                                            width="56" height="56" viewBox="0 0 56 56" fill="none"
+                                                            style={{ animation: 'spinLoader 1.2s linear infinite' }}
+                                                        >
+                                                            {/* Dış halka */}
+                                                            <circle cx="28" cy="28" r="24" stroke="rgba(123,159,239,0.15)" strokeWidth="3" fill="none" />
+                                                            {/* Dönen yay */}
+                                                            <path
+                                                                d="M28 4 A24 24 0 0 1 52 28"
+                                                                stroke="url(#loaderGrad)" strokeWidth="3" strokeLinecap="round" fill="none"
+                                                            />
+                                                            {/* Ok ucu 1 — saat yönünde */}
+                                                            <polygon
+                                                                points="49,22 55,28 49,28"
+                                                                fill="#7b9fef"
+                                                            />
+                                                            {/* İkinci yay — karşı taraf */}
+                                                            <path
+                                                                d="M28 52 A24 24 0 0 1 4 28"
+                                                                stroke="url(#loaderGrad2)" strokeWidth="3" strokeLinecap="round" fill="none"
+                                                            />
+                                                            {/* Ok ucu 2 — karşı yönde */}
+                                                            <polygon
+                                                                points="7,34 1,28 7,28"
+                                                                fill="#a78bfa"
+                                                            />
+                                                            <defs>
+                                                                <linearGradient id="loaderGrad" x1="28" y1="4" x2="52" y2="28" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#7b9fef" stopOpacity="0.2" />
+                                                                    <stop offset="100%" stopColor="#7b9fef" stopOpacity="1" />
+                                                                </linearGradient>
+                                                                <linearGradient id="loaderGrad2" x1="28" y1="52" x2="4" y2="28" gradientUnits="userSpaceOnUse">
+                                                                    <stop offset="0%" stopColor="#a78bfa" stopOpacity="0.2" />
+                                                                    <stop offset="100%" stopColor="#a78bfa" stopOpacity="1" />
+                                                                </linearGradient>
+                                                            </defs>
+                                                        </svg>
+                                                        <p style={{
+                                                            marginTop: 16, fontSize: 13, fontWeight: 600,
+                                                            color: 'rgba(123,159,239,0.8)',
+                                                            letterSpacing: '0.05em',
+                                                            animation: 'pulseText 2s ease-in-out infinite',
+                                                        }}>
+                                                            Bağlanıyor...
+                                                        </p>
+                                                        <style>{`
+                                                            @keyframes spinLoader {
+                                                                from { transform: rotate(0deg); }
+                                                                to { transform: rotate(360deg); }
+                                                            }
+                                                            @keyframes pulseText {
+                                                                0%, 100% { opacity: 0.5; }
+                                                                50% { opacity: 1; }
+                                                            }
+                                                        `}</style>
+                                                    </div>
+                                                )}
                                                 <ChatMessages
                                                     room={room}
                                                     messages={room.state.messages}

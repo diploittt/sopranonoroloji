@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, ReactNode } from 'react';
+import { useEffect, useRef, useState, useCallback, ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Check, AlertTriangle, Info } from 'lucide-react';
 
@@ -39,6 +39,10 @@ export function AnchorPopover({
     const popoverRef = useRef<HTMLDivElement>(null);
     const [mounted, setMounted] = useState(false);
     const [animateIn, setAnimateIn] = useState(false);
+    // Drag state for panel variant
+    const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
+    const isDraggingRef = useRef(false);
+    const dragStartRef = useRef<{ mouseX: number; mouseY: number; elX: number; elY: number } | null>(null);
 
     useEffect(() => {
         setMounted(true);
@@ -104,6 +108,38 @@ export function AnchorPopover({
         };
     }, [isOpen, targetRef]);
 
+    // Reset drag offset when popover closes
+    useEffect(() => {
+        if (!isOpen) setDragOffset(null);
+    }, [isOpen]);
+
+    // Drag handlers for panel variant
+    const handleDragStart = useCallback((e: React.MouseEvent) => {
+        if (variant !== 'panel' || !popoverRef.current) return;
+        e.preventDefault();
+        const rect = popoverRef.current.getBoundingClientRect();
+        isDraggingRef.current = true;
+        dragStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, elX: rect.left, elY: rect.top };
+
+        const handleMouseMove = (ev: MouseEvent) => {
+            if (!isDraggingRef.current || !dragStartRef.current) return;
+            const dx = ev.clientX - dragStartRef.current.mouseX;
+            const dy = ev.clientY - dragStartRef.current.mouseY;
+            setDragOffset({
+                x: dragStartRef.current.elX + dx,
+                y: dragStartRef.current.elY + dy,
+            });
+        };
+        const handleMouseUp = () => {
+            isDraggingRef.current = false;
+            dragStartRef.current = null;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        };
+        document.addEventListener('mousemove', handleMouseMove);
+        document.addEventListener('mouseup', handleMouseUp);
+    }, [variant]);
+
     // Click Outside
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -156,13 +192,21 @@ export function AnchorPopover({
                 ref={popoverRef}
                 className="fixed z-[9999]"
                 style={{
-                    top: position.top,
-                    left: position.left,
-                    transform: `translate(-50%, ${position.placement === 'top' ? '-100%' : '0'})`,
-                    opacity: animateIn ? 1 : 0,
-                    transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                    ...(animateIn ? {} : {
-                        transform: `translate(-50%, ${position.placement === 'top' ? 'calc(-100% + 12px)' : '-12px'})`,
+                    ...(dragOffset ? {
+                        top: dragOffset.y,
+                        left: dragOffset.x,
+                        transform: 'none',
+                        transition: 'none',
+                        opacity: 1,
+                    } : {
+                        top: position.top,
+                        left: position.left,
+                        transform: `translate(-50%, ${position.placement === 'top' ? '-100%' : '0'})`,
+                        opacity: animateIn ? 1 : 0,
+                        transition: 'opacity 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                        ...(animateIn ? {} : {
+                            transform: `translate(-50%, ${position.placement === 'top' ? 'calc(-100% + 12px)' : '-12px'})`,
+                        }),
                     }),
                 }}
             >
@@ -212,11 +256,11 @@ export function AnchorPopover({
 
                 {/* ═══ PANEL VARIANT — Premium Glassmorphism ═══ */}
                 {variant === 'panel' && (
-                    <div className="relative overflow-hidden rounded-xl min-w-[240px]" style={{ border: '1px solid #e2e8f0', background: '#ffffff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
+                    <div className="relative overflow-hidden rounded-xl min-w-[240px]" style={{ border: 'none', background: '#ffffff', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' }}>
                         <div className="relative z-10 flex flex-col max-h-[420px]">
                             {/* Header */}
                             {title && (
-                                <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: '1px solid #f1f5f9', background: '#1e293b', borderRadius: '12px 12px 0 0' }}>
+                                <div className="flex items-center justify-between px-4 py-2" style={{ borderBottom: '1px solid #f1f5f9', background: '#1e293b', borderRadius: '12px 12px 0 0', cursor: 'move', userSelect: 'none' }} onMouseDown={handleDragStart}>
                                     <h3 className="text-[11px] font-bold text-white tracking-wide uppercase">{title}</h3>
                                     <button
                                         onClick={onClose}

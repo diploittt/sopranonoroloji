@@ -172,13 +172,13 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
     // Status display helpers
     const getStatusEmoji = (status?: string) => {
         switch (status) {
-            case 'busy': return '⛔';
-            case 'away': return '🔙';
-            case 'brb': return '🔙';
+            case 'busy': return '🔴';
+            case 'away': return '🟡';
+            case 'brb': return '🟡';
             case 'outside': return '🚶';
             case 'phone': return '📞';
             case 'stealth': return '👻';
-            default: return '✅';
+            default: return '🟢';
         }
     };
 
@@ -673,11 +673,11 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                     })()}
 
                     <div>
-                        <div className={`admin-card-title text-[10px] font-extrabold uppercase tracking-widest mb-4 flex items-center gap-2 ${isHasbihal ? 'text-[#7b9fef]' : 'text-gold-500'}`} style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif" } : undefined}>
+                        <div className={`admin-card-title text-[10px] font-extrabold uppercase tracking-widest mb-1 flex items-center gap-2 ${isHasbihal ? 'text-[#7b9fef]' : 'text-gold-500'}`} style={isHasbihal ? { fontFamily: "'Aref Ruqaa', serif" } : undefined}>
                             <span className={`w-1 h-1 rounded-full ${isHasbihal ? 'bg-[#7b9fef]' : 'bg-[#7b9fef]'}`}></span> {isHasbihal ? 'MECLİS BAŞKANI' : `${t.online} (${visibleUsers.length})`}
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-0.5">
                             {sortedUsers.filter(u => currentSpeaker?.userId !== u.userId).map((user) => {
                                 const isSpeaker = currentSpeaker?.userId === user.userId;
                                 const queueIndex = queue.indexOf(user.userId || '');
@@ -733,7 +733,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                 return (
                                     <div
                                         key={user.userId || user.socketId}
-                                        className={`${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? '' : 'user-card'} flex items-center ${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? 'px-0 py-0' : 'px-3 py-2 rounded-xl'} transition-all duration-300 group cursor-context-menu select-none relative
+                                        className={`${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? '' : 'user-card'} flex items-center ${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode ? 'px-0 py-0' : 'px-1 py-1 rounded-xl'} transition-all duration-300 group cursor-context-menu select-none relative
                                     ${(isGodMasterSpecialMode && !shouldShowAvatar) || isGifNickMode || isGodMasterGifMode
                                                 ? ''
                                                 : isSelf
@@ -749,6 +749,9 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             border: 'none',
                                             boxShadow: 'none',
                                             outline: 'none',
+                                            marginBottom: 2,
+                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            paddingBottom: 4,
                                         } : isSelf && !isGodMasterSpecialMode ? {
                                             background: isInvisible
                                                 ? 'linear-gradient(135deg, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.4) 50%, rgba(15,23,42,0.5) 100%)'
@@ -756,11 +759,19 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             border: isInvisible ? '1.5px solid rgba(100,116,139,0.12)' : '1.5px solid rgba(34,211,238,0.25)',
                                             borderRadius: '12px',
                                             overflow: 'hidden',
+                                            marginBottom: 2,
                                             ...(isInvisible ? { filter: 'grayscale(1) brightness(0.45)', opacity: 0.35 } : {}),
                                         } : isInvisible ? {
                                             filter: 'grayscale(1) brightness(0.6)',
                                             opacity: 0.4,
-                                        } : undefined}
+                                            marginBottom: 2,
+                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            paddingBottom: 4,
+                                        } : {
+                                            marginBottom: 2,
+                                            borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                            paddingBottom: 4,
+                                        }}
                                         onContextMenu={(e) => {
                                             // ★ BAN CHECK — Banlı kullanıcılar sağ tık menüsü kullanamaz
                                             if (room?.state?.banInfo) {
@@ -918,9 +929,9 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                         ) : (
                                             <>
                                                 {/* Avatar — baş harf placeholder */}
-                                                <div className="relative flex-shrink-0">
+                                                <div className="relative flex-shrink-0" style={{ marginLeft: 0 }}>
                                                     <div
-                                                        className={`w-10 h-10 rounded-full border-[1.5px] transition-colors object-cover
+                                                        className={`w-12 h-12 rounded-full border-[1.5px] transition-colors object-cover
                                             ${user.role?.toLowerCase() === 'godmaster'
                                                                 ? 'border-fuchsia-400/70 shadow-[0_0_8px_rgba(217,70,239,0.3)]'
                                                                 : isOwnerUser ? 'border-amber-400/60 shadow-[0_0_8px_rgba(245,158,11,0.25)]'
@@ -1015,53 +1026,35 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                 </div>
 
                                                 {/* Username & Status Text */}
-                                                <div className="flex-1 min-w-0 ml-3">
+                                                <div className="flex-1 min-w-0 ml-2">
                                                     <div
                                                         className={`text-sm font-bold transition-colors flex items-center gap-1 flex-nowrap
                                         ${!user.nameColor ? (isOwnerUser ? 'text-[#7b9fef]' : isSpeaker ? 'text-[#a3bfff]' : 'text-white group-hover:text-[#7b9fef]') : ''}
                                     `}
                                                         style={{
                                                             ...(user.nameColor ? { color: user.nameColor } : {}),
-                                                            textShadow: '0 1px 3px rgba(0,0,0,0.5)',
+                                                            textShadow: (() => {
+                                                                const r = user.role?.toLowerCase();
+                                                                if (r === 'godmaster') return '0 0 8px rgba(217,70,239,0.7), 0 2px 6px rgba(0,0,0,0.6)';
+                                                                if (r === 'owner' || isOwnerUser) return '0 0 8px rgba(245,158,11,0.6), 0 2px 6px rgba(0,0,0,0.6)';
+                                                                if (r === 'superadmin') return '0 0 8px rgba(99,102,241,0.5), 0 2px 6px rgba(0,0,0,0.5)';
+                                                                if (r === 'admin') return '0 0 8px rgba(96,165,250,0.5), 0 2px 6px rgba(0,0,0,0.5)';
+                                                                if (r === 'moderator') return '0 0 6px rgba(52,211,153,0.4), 0 2px 6px rgba(0,0,0,0.5)';
+                                                                if (r === 'operator') return '0 0 6px rgba(34,211,238,0.4), 0 2px 6px rgba(0,0,0,0.5)';
+                                                                if (r === 'vip') return '0 0 6px rgba(250,204,21,0.4), 0 2px 6px rgba(0,0,0,0.5)';
+                                                                return '0 1px 3px rgba(0,0,0,0.5)';
+                                                            })(),
                                                             overflow: 'visible',
                                                         }}
                                                     >
-                                                        <span className="truncate max-w-[70px]">{user.displayName || 'User'}</span>
+                                                        <span className="truncate max-w-[80px]">{user.displayName || 'User'}</span>
+                                                        {isSelf && <span className="text-[10px] text-cyan-400/80 font-semibold ml-0.5 flex-shrink-0">(SEN)</span>}
                                                         {isIgnored && <span className="text-[10px] text-red-400/60 ml-0.5" title="Yoksayılıyor">🚫</span>}
                                                         {user.platform === 'mobile' && (
                                                             <span className="text-[13px] flex-shrink-0 opacity-80" title={t.mobileUser}>📱</span>
                                                         )}
                                                         {user.role?.toLowerCase() === 'godmaster' ? (user.godmasterIcon || '🔱') : getRoleIcon(user.role || 'guest')}
-                                                        {/* ═══ ENGEL İKONLARI — kullanıcı adı yanında aktif kısıtlamalar ═══ */}
-                                                        {user.isMuted && (
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block ml-0.5 flex-shrink-0">
-                                                                <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" fill="#ef4444" opacity="0.8" />
-                                                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" fill="none" />
-                                                                <line x1="12" y1="19" x2="12" y2="23" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" />
-                                                                <line x1="2" y1="2" x2="22" y2="22" stroke="#fca5a5" strokeWidth="2.5" strokeLinecap="round" />
-                                                            </svg>
-                                                        )}
-                                                        {user.isGagged && (
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block ml-0.5 flex-shrink-0">
-                                                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#f97316" opacity="0.7" />
-                                                                <line x1="8" y1="8" x2="16" y2="16" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                                                                <line x1="16" y1="8" x2="8" y2="16" stroke="white" strokeWidth="2.5" strokeLinecap="round" />
-                                                            </svg>
-                                                        )}
-                                                        {user.isCamBlocked && (
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block ml-0.5 flex-shrink-0">
-                                                                <rect x="2" y="5" width="14" height="14" rx="2" fill="#6b7280" opacity="0.7" />
-                                                                <path d="M16 9l5-3v12l-5-3" fill="#6b7280" opacity="0.5" />
-                                                                <line x1="2" y1="2" x2="22" y2="22" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" />
-                                                            </svg>
-                                                        )}
-                                                        {user.isBanned && (
-                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" className="inline-block ml-0.5 flex-shrink-0">
-                                                                <circle cx="12" cy="12" r="10" fill="#dc2626" opacity="0.8" />
-                                                                <line x1="4.93" y1="4.93" x2="19.07" y2="19.07" stroke="white" strokeWidth="3" strokeLinecap="round" />
-                                                            </svg>
-                                                        )}
-                                                        {/* Blinking Hand Icon for Queue (REMOVED - now on the right side) */}
+                                                        {/* Moderation ikonları sadece avatar overlay'de gösteriliyor (satır 970-1005) */}
                                                         {/* Meeting Room: Mic icon for speaking users */}
                                                         {isMeetingRoom && speakingUsers && speakingUsers[user.userId || ''] && (
                                                             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full ml-1" style={{
@@ -1078,10 +1071,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                         {isMeetingRoom && room.state.isMicOn && user.userId === currentUser?.userId && !(speakingUsers && speakingUsers[user.userId || '']) && (
                                                             <Mic className="w-3.5 h-3.5 text-emerald-400/60 ml-1 inline-block" strokeWidth={2} />
                                                         )}
-                                                        {/* Status Icon next to name */}
-                                                        {!isSpeaker && queueIndex === -1 && user.status && user.status !== 'online' && user.status !== 'stealth' && (
-                                                            <span className="text-[10px] ml-0.5" title={getStatusLabel(user.status)}>{getStatusEmoji(user.status)}</span>
-                                                        )}
+                                                        {/* Status ikonu sadece avatar overlay'de gösteriliyor (satır 1008-1011) */}
                                                         {/* Camera Icon */}
                                                         {(() => {
                                                             const isMyCamera = currentUser?.userId === user.userId && room.state.isCameraOn;

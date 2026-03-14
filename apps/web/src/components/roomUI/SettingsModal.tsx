@@ -266,7 +266,7 @@ export function SettingsModal({
             variant="panel"
             title={t.settings}
         >
-            <div className="w-full flex flex-col overflow-hidden" style={{ minWidth: 260, maxWidth: 300 }}>
+            <div className="w-full flex flex-col overflow-hidden" style={{ minWidth: 520, maxWidth: 600 }}>
                 {/* ─── Tabs ─── */}
                 <div style={{ display: 'flex', gap: 3, padding: '0 10px 5px', borderBottom: '1px solid #e2e8f0' }}>
                     <button style={tabStyle(activeTab === 'devices')} onClick={() => setActiveTab('devices')}>
@@ -277,15 +277,15 @@ export function SettingsModal({
                     </button>
                 </div>
 
-                <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                <div style={{ padding: '4px 8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 4 }}>
 
                     {activeTab === 'devices' && (
                         <>
-                            {/* ═══ Camera ═══ */}
+                            {/* ═══ Video Aygıtı ═══ */}
                             <div style={sectionStyle}>
                                 <div style={labelStyle}>
                                     <Video style={{ width: 13, height: 13 }} />
-                                    {t.cameraDevice}
+                                    Video Aygıtı:
                                 </div>
                                 <div style={selectWrapStyle}>
                                     <select
@@ -293,10 +293,10 @@ export function SettingsModal({
                                         onChange={(e) => onSelectVideoDevice(e.target.value)}
                                         style={selectStyle}
                                     >
-                                        <option value="">{t.cameraDevice}...</option>
+                                        <option value="">Video Aygıtı seçin...</option>
                                         {availableDevices.videoInputs.map((device) => (
                                             <option key={device.deviceId} value={device.deviceId}>
-                                                {device.label || `${t.cameraDevice} ${device.deviceId.substring(0, 5)}...`}
+                                                {device.label || `Kamera ${device.deviceId.substring(0, 5)}...`}
                                             </option>
                                         ))}
                                     </select>
@@ -305,45 +305,17 @@ export function SettingsModal({
                                 </div>
                             </div>
 
-                            {/* ═══ Microphone ═══ */}
-                            <div style={sectionStyle}>
-                                <div style={labelStyle}>
-                                    <Mic style={{ width: 13, height: 13 }} />
-                                    {t.microphone}
-                                </div>
-                                <div style={selectWrapStyle}>
-                                    <select
-                                        value={selectedAudioDeviceId || ''}
-                                        onChange={(e) => onSelectAudioDevice(e.target.value)}
-                                        style={selectStyle}
-                                    >
-                                        <option value="">{t.microphone}...</option>
-                                        {availableDevices.audioInputs.map((device) => (
-                                            <option key={device.deviceId} value={device.deviceId}>
-                                                {device.label || `${t.microphone} ${device.deviceId.substring(0, 5)}...`}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <div style={dotStyle} />
-                                    <ChevronDown style={chevStyle} />
-                                </div>
-                                {/* Mic Meter */}
-                                <div style={{ marginTop: 6, height: 3, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden' }}>
-                                    <div ref={audioMeterRef} style={{ height: '100%', width: 0, background: 'linear-gradient(90deg, #5a7fd4, #7b9fef, #a3bfff)', borderRadius: 4, transition: 'width 75ms ease-out' }} />
-                                </div>
-                            </div>
-
-                            {/* ═══ Speaker ═══ */}
+                            {/* ═══ Ses Çıkış Aygıtı (Hoparlör/Kulaklık) ═══ */}
                             <div style={sectionStyle}>
                                 <div style={labelStyle}>
                                     <Volume2 style={{ width: 13, height: 13 }} />
-                                    {t.speaker}
+                                    Ses Çıkış Aygıtı
                                 </div>
                                 <div style={{ display: 'flex', gap: 6 }}>
                                     <div style={{ ...selectWrapStyle, flex: 1 }}>
                                         {!isSinkSupported ? (
                                             <div style={{ padding: '8px 12px', background: 'rgba(251,146,60,0.1)', color: '#fbbf24', fontSize: 11, borderRadius: 8, border: '1px solid rgba(251,146,60,0.2)' }}>
-                                                Not Supported
+                                                Desteklenmiyor
                                             </div>
                                         ) : (
                                             <>
@@ -352,12 +324,17 @@ export function SettingsModal({
                                                     onChange={(e) => handleOutputSelect(e.target.value)}
                                                     style={selectStyle}
                                                 >
-                                                    <option value="">{t.speaker}...</option>
-                                                    {availableDevices.audioOutputs.map((device) => (
-                                                        <option key={device.deviceId} value={device.deviceId}>
-                                                            {device.label || `${t.speaker} ${device.deviceId.substring(0, 5)}...`}
-                                                        </option>
-                                                    ))}
+                                                    <option value="">Hoparlör seçin...</option>
+                                                    {availableDevices.audioOutputs
+                                                        .filter((device) => {
+                                                            const label = (device.label || '').toLowerCase();
+                                                            return label.includes('speaker') || label.includes('hoparlör') || label.includes('kulaklık') || label.includes('headphone') || label.includes('headset') || label.includes('output') || label.includes('realtek') || label.includes('ses çıkış') || !label.includes('mikrofon');
+                                                        })
+                                                        .map((device) => (
+                                                            <option key={device.deviceId} value={device.deviceId}>
+                                                                {device.label || `Hoparlör ${device.deviceId.substring(0, 5)}...`}
+                                                            </option>
+                                                        ))}
                                                 </select>
                                                 <div style={dotStyle} />
                                                 <ChevronDown style={chevStyle} />
@@ -381,8 +358,69 @@ export function SettingsModal({
                                 </div>
                             </div>
 
-                            {/* ═══ Language ═══ */}
+                            {/* ═══ Ses Giriş Aygıtı (Mikrofon) ═══ */}
                             <div style={sectionStyle}>
+                                <div style={labelStyle}>
+                                    <Mic style={{ width: 13, height: 13 }} />
+                                    Ses Giriş Aygıtı
+                                </div>
+                                <div style={selectWrapStyle}>
+                                    <select
+                                        value={selectedAudioDeviceId || ''}
+                                        onChange={(e) => onSelectAudioDevice(e.target.value)}
+                                        style={selectStyle}
+                                    >
+                                        <option value="">Mikrofon seçin...</option>
+                                        {availableDevices.audioInputs
+                                            .filter((device) => {
+                                                const label = (device.label || '').toLowerCase();
+                                                return label.includes('mikrofon') || label.includes('microphone') || label.includes('mic') || label.includes('kulaklık') || label.includes('headset') || label.includes('input') || !label.includes('stereo');
+                                            })
+                                            .map((device) => (
+                                                <option key={device.deviceId} value={device.deviceId}>
+                                                    {device.label || `Mikrofon ${device.deviceId.substring(0, 5)}...`}
+                                                </option>
+                                            ))}
+                                    </select>
+                                    <div style={dotStyle} />
+                                    <ChevronDown style={chevStyle} />
+                                </div>
+                                {/* Mic Meter */}
+                                <div style={{ marginTop: 6, height: 3, borderRadius: 4, background: '#e2e8f0', overflow: 'hidden' }}>
+                                    <div ref={audioMeterRef} style={{ height: '100%', width: 0, background: 'linear-gradient(90deg, #5a7fd4, #7b9fef, #a3bfff)', borderRadius: 4, transition: 'width 75ms ease-out' }} />
+                                </div>
+                            </div>
+
+                            {/* ═══ Kayıt Aygıtı (Stereo Mix vb.) ═══ */}
+                            <div style={sectionStyle}>
+                                <div style={labelStyle}>
+                                    <Mic style={{ width: 13, height: 13 }} />
+                                    Kayıt Aygıtı
+                                </div>
+                                <div style={selectWrapStyle}>
+                                    <select
+                                        style={selectStyle}
+                                        defaultValue=""
+                                    >
+                                        <option value="">Kayıt aygıtı seçin...</option>
+                                        {availableDevices.audioInputs
+                                            .filter((device) => {
+                                                const label = (device.label || '').toLowerCase();
+                                                return label.includes('stereo') || label.includes('mix') || label.includes('wave') || label.includes('kayıt') || label.includes('what u hear') || label.includes('loopback');
+                                            })
+                                            .map((device) => (
+                                                <option key={device.deviceId} value={device.deviceId}>
+                                                    {device.label || `Kayıt ${device.deviceId.substring(0, 5)}...`}
+                                                </option>
+                                            ))}
+                                    </select>
+                                    <div style={dotStyle} />
+                                    <ChevronDown style={chevStyle} />
+                                </div>
+                            </div>
+
+                            {/* ═══ Language ═══ */}
+                            <div style={{ ...sectionStyle, gridColumn: 'span 2' }}>
                                 <div style={{ ...labelStyle, color: '#64748b' }}>
                                     <Globe style={{ width: 13, height: 13 }} />
                                     Language / Dil
@@ -412,7 +450,7 @@ export function SettingsModal({
                     {activeTab === 'text' && (
                         <>
                             {/* ═══ Font Size ═══ */}
-                            <div style={sectionStyle}>
+                            <div style={{ ...sectionStyle, gridColumn: 'span 2' }}>
                                 <div style={labelStyle}>
                                     <Type style={{ width: 13, height: 13 }} />
                                     Yazı Boyutu
@@ -431,7 +469,7 @@ export function SettingsModal({
                             </div>
 
                             {/* ═══ Font Weight ═══ */}
-                            <div style={sectionStyle}>
+                            <div style={{ ...sectionStyle, gridColumn: 'span 2' }}>
                                 <div style={labelStyle}>
                                     <Type style={{ width: 13, height: 13, strokeWidth: 3 }} />
                                     Yazı Kalınlığı
@@ -461,7 +499,7 @@ export function SettingsModal({
                             </div>
 
                             {/* ═══ Text Color ═══ */}
-                            <div style={sectionStyle}>
+                            <div style={{ ...sectionStyle, gridColumn: 'span 2' }}>
                                 <div style={labelStyle}>
                                     <Palette style={{ width: 13, height: 13 }} />
                                     Yazı Rengi
@@ -502,6 +540,7 @@ export function SettingsModal({
                             {/* ═══ Live Preview ═══ */}
                             <div style={{
                                 ...sectionStyle,
+                                gridColumn: 'span 2',
                                 background: '#f1f5f9',
                                 border: '1px solid #e2e8f0',
                             }}>
