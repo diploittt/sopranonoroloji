@@ -75,7 +75,10 @@ export function DMWindow({
 
     // Drag Logic
     const handleMouseDown = useCallback((e: React.MouseEvent) => {
-        if ((e.target as HTMLElement).closest('.dm-header-drag')) {
+        // Butonlara tıklanıyorsa drag başlatma
+        const target = e.target as HTMLElement;
+        if (target.closest('button')) return;
+        if (target.closest('.dm-header-drag')) {
             e.preventDefault();
             setIsDragging(true);
             setDragOffset({

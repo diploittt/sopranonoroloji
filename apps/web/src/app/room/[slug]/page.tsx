@@ -1117,6 +1117,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     }, [room.socket, dmNudgeDisabled]);
 
     const sendDmNudge = (targetUsername: string) => {
+        console.log('[DM-NUDGE] Sending nudge to:', targetUsername, 'socket:', !!room.socket);
         if (!room.socket) return;
         room.socket.emit('dm:nudge', { targetUsername });
         // Local cooldown 5 saniye
