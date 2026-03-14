@@ -223,7 +223,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                 <div style={{
                     position: 'fixed', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
-                    background: '#0a0f1e',
+                    background: 'rgba(8, 12, 21, 0.92)',
                     border: '1px solid rgba(200,150,46,0.3)',
                     borderRadius: 16,
                     padding: '24px 28px',
@@ -307,13 +307,15 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             <style>{KEYFRAMES}</style>
             <div style={{
                 position: 'relative',
-                background: '#0a0f1e',
-                border: '1px solid rgba(200,150,46,0.2)',
+                background: 'rgba(8, 12, 21, 0.75)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 14,
                 padding: '0',
                 marginBottom: 8,
                 overflow: 'hidden',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.5), 0 0 16px rgba(200,150,46,0.05)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.3)',
                 animation: 'duelFadeIn 0.4s ease',
             }}>
 
@@ -353,7 +355,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                     </span>
                     {phase === 'active' && (
                         <span style={{
-                            fontSize: 16, fontWeight: 900, fontFamily: 'monospace', color: '#fff',
+                            fontSize: 16, fontWeight: 900, fontFamily: 'monospace',
                             textShadow: remaining <= 30 ? '0 0 12px rgba(239,68,68,0.6)' : '0 0 8px rgba(200,150,46,0.4)',
                             animation: remaining <= 10 ? 'duelTimerPulse 0.5s ease-in-out infinite' : 'none',
                             color: remaining <= 30 ? '#f87171' : '#fff',
