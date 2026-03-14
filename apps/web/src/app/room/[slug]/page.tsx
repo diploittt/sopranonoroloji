@@ -2246,6 +2246,25 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
                                     }
 
+                                    /* TOPLANTI ODASI tabela — KÜRSÜ tabelasının aynısı */
+                                    .room-container .meeting-room-panel::before {
+                                        content: '';
+                                        position: absolute;
+                                        top: -36px;
+                                        left: 50%;
+                                        transform: translateX(-50%);
+                                        width: 220px;
+                                        height: 36px;
+                                        z-index: 50;
+                                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='36' viewBox='0 0 220 36'%3E%3Cdefs%3E%3ClinearGradient id='mtgMetal' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%234a4a4a'/%3E%3Cstop offset='25%25' stop-color='%232a2a2a'/%3E%3Cstop offset='50%25' stop-color='%231a1a1a'/%3E%3Cstop offset='75%25' stop-color='%232a2a2a'/%3E%3Cstop offset='100%25' stop-color='%233a3a3a'/%3E%3C/linearGradient%3E%3ClinearGradient id='mtgChain' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%23555'/%3E%3Cstop offset='50%25' stop-color='%23333'/%3E%3Cstop offset='100%25' stop-color='%23555'/%3E%3C/linearGradient%3E%3ClinearGradient id='mtgGlow' x1='30' y1='30' x2='190' y2='30' gradientUnits='userSpaceOnUse'%3E%3Cstop offset='0%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3Cstop offset='30%25' stop-color='%23ffe0a0' stop-opacity='0.7'/%3E%3Cstop offset='50%25' stop-color='%23fff0cc' stop-opacity='1'/%3E%3Cstop offset='70%25' stop-color='%23ffe0a0' stop-opacity='0.7'/%3E%3Cstop offset='100%25' stop-color='%23ffcc66' stop-opacity='0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='48' y='0' width='3' height='4' rx='1' fill='url(%23mtgChain)'/%3E%3Crect x='48' y='5' width='3' height='4' rx='1' fill='url(%23mtgChain)'/%3E%3Crect x='169' y='0' width='3' height='4' rx='1' fill='url(%23mtgChain)'/%3E%3Crect x='169' y='5' width='3' height='4' rx='1' fill='url(%23mtgChain)'/%3E%3Crect x='4' y='10' width='212' height='22' rx='7' fill='url(%23mtgMetal)' stroke='rgba(0,0,0,0.4)' stroke-width='0.8'/%3E%3Crect x='14' y='12' width='192' height='1.5' rx='0.75' fill='white' fill-opacity='0.12'/%3E%3Crect x='20' y='30' width='180' height='1.5' rx='0.75' fill='url(%23mtgGlow)'/%3E%3Ccircle cx='14' cy='21' r='2' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='14' cy='21' r='0.8' fill='%23555'/%3E%3Ccircle cx='206' cy='21' r='2' fill='%23333' stroke='%23555' stroke-width='0.5'/%3E%3Ccircle cx='206' cy='21' r='0.8' fill='%23555'/%3E%3Ctext x='110' y='26' text-anchor='middle' font-family='Georgia,serif' font-size='9.5' font-weight='bold' letter-spacing='3' fill='%23d8c890'%3ETOPLANTI ODASI%3C/text%3E%3Ctext x='110' y='25' text-anchor='middle' font-family='Georgia,serif' font-size='9.5' font-weight='bold' letter-spacing='3' fill='%23111' opacity='0.3'%3ETOPLANTI ODASI%3C/text%3E%3C/svg%3E");
+                                        background-size: contain;
+                                        background-repeat: no-repeat;
+                                        background-position: center;
+                                        pointer-events: none;
+                                        filter: drop-shadow(0 3px 8px rgba(0,0,0,0.5));
+                                        animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
+                                    }
+
                                     .room-container .sidebar-left .chat-logo-area {
                                         display: none !important;
                                     }
@@ -2648,58 +2667,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
-                                <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
-                                    {isMeetingRoom ? (
-                                        /* ━━━ TOPLANTI ODASI — SOL ÜST KÖŞE TABELA ━━━ */
-                                        <div style={{
-                                            position: 'absolute', top: 0, left: 16, zIndex: 40,
-                                            display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-                                            animation: 'mtgSignSlide 0.6s cubic-bezier(0.34,1.56,0.64,1)',
-                                            pointerEvents: 'auto',
-                                        }}>
-                                            {/* Zincir çizgileri */}
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', width: '70%', height: 12 }}>
-                                                <div style={{ width: 2, height: 12, background: 'linear-gradient(180deg, rgba(148,163,184,0.5), rgba(148,163,184,0.15))', borderRadius: 1 }} />
-                                                <div style={{ width: 2, height: 12, background: 'linear-gradient(180deg, rgba(148,163,184,0.5), rgba(148,163,184,0.15))', borderRadius: 1 }} />
-                                            </div>
-
-                                            {/* Tabela plakası */}
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', gap: 12,
-                                                background: 'rgba(8, 12, 21, 0.75)',
-                                                backdropFilter: 'blur(16px)',
-                                                WebkitBackdropFilter: 'blur(16px)',
-                                                border: '1px solid rgba(255,255,255,0.06)',
-                                                borderRadius: 5,
-                                                padding: '5px 14px',
-                                                boxShadow: '0 4px 14px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)',
-                                            }}>
-                                                <span style={{ fontSize: 11 }}>🔒</span>
-                                                <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase' }}>Toplantı Odası</span>
-                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)' }} />
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px rgba(34,197,94,0.5)', animation: 'mtgLive 2s ease-in-out infinite' }} />
-                                                    <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>{room.state.users?.length || 0} kişi</span>
-                                                </div>
-                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)' }} />
-                                                <button
-                                                    onClick={() => { const r = room.state.rooms?.find((r: any) => !r.isMeetingRoom); router.push(roomUrl(r?.slug || 'oda-1')); }}
-                                                    style={{ background: 'none', border: 'none', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', transition: 'color 0.2s', fontSize: 9, fontWeight: 600, padding: 0 }}
-                                                    onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; }}
-                                                    onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(239,68,68,0.5)'; }}
-                                                >Ayrıl ✕</button>
-                                            </div>
-                                            <style>{`
-                                                @keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-                                                @keyframes mtgSignSlide {
-                                                    0% { opacity: 0; transform: translateY(-16px); }
-                                                    100% { opacity: 1; transform: translateY(0); }
-                                                }
-                                            `}</style>
-                                        </div>
-                                    ) : (
-                                        null /* HeaderRooms removed — room names now in top bar */
-                                    )}
+                                <main className={`flex-1 flex flex-col min-w-0 relative z-10${isMeetingRoom ? ' meeting-room-panel' : ''}`} onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {/* 💳 ÖDEME HATIRLATMA — neon uyarı banner (oda isimlerinin altında) */}
                                     {room.state.paymentReminder && (
                                         <div style={{
