@@ -817,10 +817,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             case 'moveUserToMeeting':
                 room.socket?.emit('admin:userAction', { action: 'moveToMeeting', targetUserId: targetId });
                 addToast('success', 'Toplantıya Çekildi', `${targetName} ile birlikte toplantıya gidiliyor...`);
-                router.push(roomUrl('staff-meeting'));
+                setActiveSlug('staff-meeting');
+                window.history.replaceState(null, '', roomUrl('staff-meeting'));
                 break;
             case 'joinMeetingRoom':
-                router.push(roomUrl('staff-meeting'));
+                setActiveSlug('staff-meeting');
+                window.history.replaceState(null, '', roomUrl('staff-meeting'));
                 break;
             case 'makeRoomOperator':
                 room.socket?.emit('admin:userAction', { action: 'makeRoomOperator', targetUserId: targetId });
@@ -2292,13 +2294,13 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         background-repeat: no-repeat;
                                         background-position: center;
                                         pointer-events: none;
-                                        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.6));
+                                        filter: none;
                                         animation: meetingSignBlurIn 0.8s ease-out 0.5s both;
                                     }
                                     @keyframes meetingSignBlurIn {
-                                        0% { opacity: 0; filter: blur(12px) drop-shadow(0 4px 12px rgba(0,0,0,0.6)); transform: translateX(-50%) scale(0.9); }
-                                        60% { opacity: 1; filter: blur(2px) drop-shadow(0 4px 12px rgba(0,0,0,0.6)); }
-                                        100% { opacity: 1; filter: blur(0px) drop-shadow(0 4px 12px rgba(0,0,0,0.6)); transform: translateX(-50%) scale(1); }
+                                        0% { opacity: 0; filter: blur(12px); transform: translateX(-50%) scale(0.9); }
+                                        60% { opacity: 1; filter: blur(2px); }
+                                        100% { opacity: 1; filter: blur(0px); transform: translateX(-50%) scale(1); }
                                     }
 
                                     .room-container .sidebar-left .chat-logo-area {
