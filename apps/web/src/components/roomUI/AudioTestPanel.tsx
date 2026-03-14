@@ -334,6 +334,9 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
             flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
             animation: 'fadeIn 0.35s ease',
             background: '#0c101a',
+            position: 'relative',
+            zIndex: 1,
+            isolation: 'isolate',
         }}>
             {/* ── Header ── */}
             <div style={{
@@ -379,6 +382,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
             <div style={{
                 flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center',
                 padding: '14px 14px 10px', gap: 10, justifyContent: 'center',
+                background: '#0c101a',
             }}>
 
                 {/* ── Central Orb ── */}
@@ -461,15 +465,15 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                         width: '100%', display: 'flex', alignItems: 'center',
                         justifyContent: 'center', gap: 2, height: 44,
                         padding: '6px 8px', borderRadius: 10,
-                        background: 'linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.35))',
-                        border: '1px solid rgba(255,255,255,0.04)',
+                        background: 'linear-gradient(180deg, rgba(20,30,50,0.8), rgba(10,15,30,0.95))',
+                        border: '1px solid rgba(255,255,255,0.08)',
                     }}>
                         {bars.map((val, i) => (
                             <div key={i} style={{
                                 width: 3, borderRadius: 2,
                                 height: `${Math.max(12, val)}%`,
-                                background: `linear-gradient(to top, rgba(239,68,68,0.6), rgba(251,146,60,0.8))`,
-                                boxShadow: val > 20 ? `0 0 4px rgba(239,68,68,${val / 200})` : 'none',
+                                background: `linear-gradient(to top, rgba(239,68,68,0.8), rgba(251,146,60,1))`,
+                                boxShadow: val > 20 ? `0 0 6px rgba(239,68,68,${val / 150})` : 'none',
                                 transition: 'height 0.06s ease-out',
                             }} />
                         ))}
@@ -525,7 +529,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
 
                 {/* ── Hint ── */}
                 <p style={{
-                    fontSize: 8, color: '#475569', textAlign: 'center', lineHeight: 1.5,
+                    fontSize: 9, color: '#94a3b8', textAlign: 'center', lineHeight: 1.5,
                     fontStyle: 'italic', margin: 0, maxWidth: '90%',
                 }}>
                     {phase === 'idle' && '🎤 Sesinizi kaydedin, sonra nasıl duyulduğunuzu dinleyin'}
