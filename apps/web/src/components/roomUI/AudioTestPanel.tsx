@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import { Mic, MicOff, Play, Square, ArrowLeft, RotateCcw, Pause } from 'lucide-react';
 
 interface AudioTestPanelProps {
@@ -9,28 +10,44 @@ interface AudioTestPanelProps {
 
 type Phase = 'idle' | 'recording' | 'recorded' | 'playing';
 
-/* ── Custom Dark Dropdown ── */
+/* ── Custom Dark Dropdown (Portal-based — sidebar overflow sorununu çözer) ── */
 function MicDropdown({ devices, selectedId, disabled, onChange }: {
     devices: MediaDeviceInfo[]; selectedId: string; disabled: boolean;
     onChange: (id: string) => void;
 }) {
     const [open, setOpen] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
+    const btnRef = useRef<HTMLButtonElement>(null);
+    const dropRef = useRef<HTMLDivElement>(null);
     const selectedLabel = selectedId
         ? devices.find(d => d.deviceId === selectedId)?.label || `Mikrofon ${selectedId.slice(0, 8)}`
         : 'Varsayılan Mikrofon';
 
+    // Click outside to close
     useEffect(() => {
         if (!open) return;
         const handleClickOutside = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+            if (btnRef.current?.contains(e.target as Node)) return;
+            if (dropRef.current?.contains(e.target as Node)) return;
+            setOpen(false);
         };
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [open]);
 
+    // Calculate dropdown position from button rect
+    const getDropdownPos = () => {
+        if (!btnRef.current) return { top: 0, left: 0, width: 0 };
+        const rect = btnRef.current.getBoundingClientRect();
+        return { top: rect.top, left: rect.left, width: rect.width };
+    };
+
+    const items = [
+        { deviceId: '', label: 'Varsayılan Mikrofon' },
+        ...devices.map(d => ({ deviceId: d.deviceId, label: d.label || `Mikrofon ${d.deviceId.slice(0, 8)}` })),
+    ];
+
     return (
-        <div ref={ref} style={{ width: '100%', position: 'relative' }}>
+        <div style={{ width: '100%' }}>
             <div style={{
                 fontSize: 8, color: '#64748b', fontWeight: 700,
                 textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 4,
@@ -38,6 +55,7 @@ function MicDropdown({ devices, selectedId, disabled, onChange }: {
                 Mikrofon
             </div>
             <button
+                ref={btnRef}
                 type="button"
                 onClick={() => !disabled && setOpen(!open)}
                 style={{
@@ -58,36 +76,53 @@ function MicDropdown({ devices, selectedId, disabled, onChange }: {
                     transform: open ? 'rotate(180deg)' : 'rotate(0)',
                 }}>▼</span>
             </button>
-            {open && (
-                <div style={{
-                    position: 'absolute', left: 0, right: 0, bottom: '100%', marginBottom: 4,
-                    background: 'rgba(15,20,35,0.96)', backdropFilter: 'blur(12px)',
-                    border: '1px solid rgba(139,92,246,0.15)', borderRadius: 10,
-                    boxShadow: '0 -8px 24px rgba(0,0,0,0.5)',
-                    maxHeight: 180, overflowY: 'auto', zIndex: 100,
-                    animation: 'fadeIn 0.15s ease',
-                }}>
-                    {[{ deviceId: '', label: 'Varsayılan Mikrofon' }, ...devices.map(d => ({ deviceId: d.deviceId, label: d.label || `Mikrofon ${d.deviceId.slice(0, 8)}` }))].map(item => (
-                        <button
-                            key={item.deviceId}
-                            type="button"
-                            onClick={() => { onChange(item.deviceId); setOpen(false); }}
+            {/* Portal-based dropdown — sidebar overflow/stacking context bağımsız */}
+            {open && typeof document !== 'undefined' && createPortal(
+                (() => {
+                    const pos = getDropdownPos();
+                    const dropH = Math.min(items.length * 30 + 8, 180);
+                    return (
+                        <div
+                            ref={dropRef}
                             style={{
-                                width: '100%', padding: '7px 10px', fontSize: 10, fontWeight: 600,
-                                color: selectedId === item.deviceId ? '#c4b5fd' : '#e2e8f0',
-                                background: selectedId === item.deviceId ? 'rgba(139,92,246,0.12)' : 'transparent',
-                                border: 'none', cursor: 'pointer', textAlign: 'left',
-                                display: 'flex', alignItems: 'center', gap: 6,
-                                transition: 'all 0.1s ease',
+                                position: 'fixed',
+                                left: pos.left,
+                                top: pos.top - dropH - 4,
+                                width: pos.width,
+                                background: '#0f1423',
+                                border: '1px solid rgba(139,92,246,0.25)',
+                                borderRadius: 10,
+                                boxShadow: '0 -8px 32px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4)',
+                                maxHeight: 180,
+                                overflowY: 'auto',
+                                zIndex: 99999,
+                                padding: '4px 0',
                             }}
-                            onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.18)'; }}
-                            onMouseOut={e => { e.currentTarget.style.background = selectedId === item.deviceId ? 'rgba(139,92,246,0.12)' : 'transparent'; }}
                         >
-                            {selectedId === item.deviceId && <span style={{ fontSize: 10 }}>✓</span>}
-                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
-                        </button>
-                    ))}
-                </div>
+                            {items.map(item => (
+                                <button
+                                    key={item.deviceId}
+                                    type="button"
+                                    onClick={() => { onChange(item.deviceId); setOpen(false); }}
+                                    style={{
+                                        width: '100%', padding: '7px 10px', fontSize: 10, fontWeight: 600,
+                                        color: selectedId === item.deviceId ? '#c4b5fd' : '#e2e8f0',
+                                        background: selectedId === item.deviceId ? 'rgba(139,92,246,0.15)' : 'transparent',
+                                        border: 'none', cursor: 'pointer', textAlign: 'left',
+                                        display: 'flex', alignItems: 'center', gap: 6,
+                                        transition: 'all 0.1s ease',
+                                    }}
+                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.22)'; }}
+                                    onMouseOut={e => { e.currentTarget.style.background = selectedId === item.deviceId ? 'rgba(139,92,246,0.15)' : 'transparent'; }}
+                                >
+                                    {selectedId === item.deviceId && <span style={{ fontSize: 10 }}>✓</span>}
+                                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    );
+                })(),
+                document.body,
             )}
         </div>
     );
