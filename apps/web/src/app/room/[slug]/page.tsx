@@ -2279,28 +2279,30 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
                                     }
 
-                                    /* TOPLANTI ODASI — vintage sokak tabelası */
+                                    /* TOPLANTI ODASI — chat kartına yapışık zarif etiket */
                                     .room-container .meeting-room-panel::before {
-                                        content: '';
+                                        content: '📋  TOPLANTI ODASI';
                                         position: absolute;
-                                        top: 4px;
-                                        left: 22%;
-                                        transform: translateX(-50%);
-                                        width: 200px;
-                                        height: 70px;
+                                        top: 8px;
+                                        left: 12px;
                                         z-index: 50;
-                                        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='70' viewBox='0 0 200 70'%3E%3Cdefs%3E%3ClinearGradient id='vb' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0%25' stop-color='%235c3a2a'/%3E%3Cstop offset='50%25' stop-color='%23402518'/%3E%3Cstop offset='100%25' stop-color='%235c3a2a'/%3E%3C/linearGradient%3E%3C/defs%3E%3C!-- Outer worn frame --%3E%3Crect x='0' y='0' width='200' height='70' rx='4' fill='url(%23vb)'/%3E%3Crect x='1' y='1' width='198' height='68' rx='3' fill='%23503020' opacity='0.4'/%3E%3C!-- Inner cream border --%3E%3Crect x='5' y='5' width='190' height='60' rx='2' fill='%23e8d5a8' opacity='0.85'/%3E%3C!-- Red main area --%3E%3Crect x='8' y='8' width='184' height='38' rx='1' fill='%23c62828'/%3E%3C!-- Vintage wear scratches on red --%3E%3Crect x='12' y='10' width='40' height='1' rx='0.5' fill='%23d44' opacity='0.3'/%3E%3Crect x='140' y='14' width='30' height='1' rx='0.5' fill='%23d44' opacity='0.25'/%3E%3Crect x='20' y='38' width='50' height='1' rx='0.5' fill='%23b71c1c' opacity='0.3'/%3E%3C!-- TOPLANTI ODASI text --%3E%3Ctext x='100' y='33' text-anchor='middle' font-family='Arial Black,Impact,sans-serif' font-size='14' font-weight='900' letter-spacing='2' fill='white'%3ETOPLANTI ODASI%3C/text%3E%3C!-- White stripe bottom --%3E%3Crect x='8' y='48' width='184' height='7' fill='white'/%3E%3C!-- Blue stripe --%3E%3Crect x='8' y='55' width='184' height='7' rx='0 0 1 1' fill='%231565c0'/%3E%3C!-- Sub text on white/blue --%3E%3Ctext x='18' y='54.5' font-family='Arial,sans-serif' font-size='6' font-weight='700' fill='%231565c0' letter-spacing='1'%3ESOPRANO CHAT%3C/text%3E%3Ctext x='18' y='61' font-family='Arial,sans-serif' font-size='5.5' font-weight='700' fill='white' letter-spacing='0.5'%3EPERSONEL%3C/text%3E%3C!-- Corner rivets --%3E%3Ccircle cx='11' cy='11' r='2' fill='%23333' opacity='0.5'/%3E%3Ccircle cx='11' cy='11' r='0.8' fill='%23666'/%3E%3Ccircle cx='189' cy='11' r='2' fill='%23333' opacity='0.5'/%3E%3Ccircle cx='189' cy='11' r='0.8' fill='%23666'/%3E%3Ccircle cx='11' cy='59' r='2' fill='%23333' opacity='0.5'/%3E%3Ccircle cx='11' cy='59' r='0.8' fill='%23666'/%3E%3Ccircle cx='189' cy='59' r='2' fill='%23333' opacity='0.5'/%3E%3Ccircle cx='189' cy='59' r='0.8' fill='%23666'/%3E%3C/svg%3E");
-                                        background-size: contain;
-                                        background-repeat: no-repeat;
-                                        background-position: center;
+                                        padding: 5px 14px 5px 10px;
+                                        font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+                                        font-size: 10px;
+                                        font-weight: 700;
+                                        letter-spacing: 2px;
+                                        color: rgba(255,255,255,0.85);
+                                        background: rgba(180,60,60,0.35);
+                                        border: 1px solid rgba(220,80,80,0.25);
+                                        border-radius: 6px;
+                                        backdrop-filter: blur(8px);
+                                        -webkit-backdrop-filter: blur(8px);
                                         pointer-events: none;
-                                        filter: none;
-                                        animation: meetingSignBlurIn 0.8s ease-out 0.5s both;
+                                        animation: meetingSignBlurIn 0.6s ease-out 0.4s both;
                                     }
                                     @keyframes meetingSignBlurIn {
-                                        0% { opacity: 0; filter: blur(12px); transform: translateX(-50%) scale(0.9); }
-                                        60% { opacity: 1; filter: blur(2px); }
-                                        100% { opacity: 1; filter: blur(0px); transform: translateX(-50%) scale(1); }
+                                        0% { opacity: 0; filter: blur(8px); transform: scale(0.92); }
+                                        100% { opacity: 1; filter: blur(0px); transform: scale(1); }
                                     }
 
                                     .room-container .sidebar-left .chat-logo-area {
