@@ -1066,54 +1066,52 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         return () => { room.socket?.off('gift:received', onGiftReceived); };
     }, [room.socket]);
 
-    // Nudge (screen shake) listener
-    const [nudgeActive, setNudgeActive] = useState(false);
-    useEffect(() => {
-        if (!room.socket) return;
-        const onNudge = (data: { from: string }) => {
-            addToast('info', '📳 Titretme', `${data.from} seni titretti!`);
-            setNudgeActive(true);
-            setTimeout(() => setNudgeActive(false), 1500);
-
-            // ─── MSN Nudge Sesi ───
-            const audio = new Audio('/sounds/msn-nudge.mp3');
-            audio.volume = 0.7;
-            audio.play().catch(() => { });
-        };
-        room.socket.on('room:nudge', onNudge);
-        return () => { room.socket?.off('room:nudge', onNudge); };
-    }, [room.socket]);
-
-    // ─── DM Nudge State ───
+    // Nudge → DM penceresi aç + titret (ekranı titretme)
     const [dmNudgeTargets, setDmNudgeTargets] = useState<Set<string>>(new Set());
     const [dmNudgeCooldowns, setDmNudgeCooldowns] = useState<Record<string, number>>({});
     const [dmNudgeDisabled, setDmNudgeDisabled] = useState<Set<string>>(new Set());
 
+    // Nudge alındığında DM aç + DM penceresini titret
+    const handleNudgeReceived = (from: string) => {
+        // Engellenmişse işleme
+        if (dmNudgeDisabled.has(from)) return;
+
+        // DM penceresini aç (zaten açıksa tekrar açmaz)
+        room.actions.openDM(from);
+
+        addToast('info', '📳 Titretme', `${from} seni titretti!`);
+
+        // DM penceresini titret
+        setDmNudgeTargets(prev => new Set(prev).add(from));
+        setTimeout(() => {
+            setDmNudgeTargets(prev => {
+                const next = new Set(prev);
+                next.delete(from);
+                return next;
+            });
+        }, 1500);
+
+        // MSN Nudge Sesi
+        try {
+            const audio = new Audio('/sounds/msn-nudge.mp3');
+            audio.volume = 0.7;
+            audio.play().catch(() => { });
+        } catch { }
+    };
+
     useEffect(() => {
         if (!room.socket) return;
-        const onDmNudge = (data: { from: string; fromUserId: string }) => {
-            // Engellenmişse işleme
-            if (dmNudgeDisabled.has(data.from)) return;
+        // Context menü nudge (room:nudge)
+        const onRoomNudge = (data: { from: string }) => handleNudgeReceived(data.from);
+        // DM nudge (dm:nudge-received)
+        const onDmNudge = (data: { from: string; fromUserId: string }) => handleNudgeReceived(data.from);
 
-            addToast('info', '📳 Titretme', `${data.from} seni titretti!`);
-            setDmNudgeTargets(prev => new Set(prev).add(data.from));
-            setTimeout(() => {
-                setDmNudgeTargets(prev => {
-                    const next = new Set(prev);
-                    next.delete(data.from);
-                    return next;
-                });
-            }, 1500);
-
-            // MSN Nudge Sesi
-            try {
-                const audio = new Audio('/sounds/msn-nudge.mp3');
-                audio.volume = 0.7;
-                audio.play().catch(() => { });
-            } catch { }
-        };
+        room.socket.on('room:nudge', onRoomNudge);
         room.socket.on('dm:nudge-received', onDmNudge);
-        return () => { room.socket?.off('dm:nudge-received', onDmNudge); };
+        return () => {
+            room.socket?.off('room:nudge', onRoomNudge);
+            room.socket?.off('dm:nudge-received', onDmNudge);
+        };
     }, [room.socket, dmNudgeDisabled]);
 
     const sendDmNudge = (targetUsername: string) => {
@@ -1207,7 +1205,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         <LanguageProvider lang={room.state.systemSettings?.defaultLanguage || 'tr'}>
             <>
                 {/* Nudge shake class applied via globals.css */}
-                <main className={`app-background h-screen w-full flex items-center justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30 ${nudgeActive ? 'nudge-shake' : ''}`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
+                <main className={`app-background h-screen w-full flex items-center justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
 
                     {/* ★ ONE2ONE ROOM — Sanal bire bir oda ★ */}
                     {isOne2OneRoom ? (
