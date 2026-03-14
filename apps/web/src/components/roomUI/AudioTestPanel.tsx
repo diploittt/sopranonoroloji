@@ -150,7 +150,18 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
 
     useEffect(() => {
         navigator.mediaDevices.enumerateDevices().then(devices => {
-            setAudioDevices(devices.filter(d => d.kind === 'audioinput'));
+            // Sadece gerçek mikrofon cihazlarını göster — sanal/loopback cihazları filtrele
+            const realMics = devices.filter(d => {
+                if (d.kind !== 'audioinput') return false;
+                const label = (d.label || '').toLowerCase();
+                // Sanal cihazları çıkar
+                if (label.includes('stereo mix') || label.includes('stereo karışımı')) return false;
+                if (label.includes('virtual audio') || label.includes('vb-cable') || label.includes('vb-audio')) return false;
+                if (label.includes('voicemeeter') || label.includes('cable output')) return false;
+                if (label.includes('what u hear') || label.includes('wave out')) return false;
+                return true;
+            });
+            setAudioDevices(realMics);
         }).catch(() => { });
         return () => cleanup();
     }, []);
@@ -322,6 +333,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
         <div style={{
             flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
             animation: 'fadeIn 0.35s ease',
+            background: '#0c101a',
         }}>
             {/* ── Header ── */}
             <div style={{
