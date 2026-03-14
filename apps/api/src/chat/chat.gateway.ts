@@ -4160,13 +4160,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!participant) return;
 
     const roomId = participant.roomId; // scoped roomId
+
+    // ★ DUEL AUTO-FORFEIT on mic release — düello katılımcısı mikrofonu bırakırsa kaybeder
+    // Düello mikrofonları roomSpeakers'a eklenmediği için bu kontrolü ÖNCEden yapmak gerekir
+    const activeDuel = this.activeDuels.get(roomId);
+    if (activeDuel && activeDuel.status === 'active') {
+      const isDuelist = activeDuel.challengerId === participant.userId || activeDuel.opponentId === participant.userId;
+      if (isDuelist) {
+        this.logger.log(`[DUEL] Mic released by duelist ${participant.displayName} — auto-forfeit triggered`);
+        this.autoDuelForfeit(roomId, participant.userId, participant.displayName, 'mic_released');
+        return; // Düello bitti, normal release'e gerek yok
+      }
+    }
+
     const currentSpeaker = this.roomSpeakers.get(roomId);
 
     // Only the current speaker can release (or if no speaker, ignore)
     if (!currentSpeaker || currentSpeaker.socketId !== client.id) return;
-
-    // ★ DUEL AUTO-FORFEIT on mic release — mikrofonu bırakan düellodaysa kaybeder
-    this.autoDuelForfeit(roomId, participant.userId, participant.displayName, 'mic_released');
 
     this.releaseSpeaker(roomId, 'released');
   }
