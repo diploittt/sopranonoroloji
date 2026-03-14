@@ -280,25 +280,9 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 if (prevKey === nextKey) return prev; // No change — skip re-render
                 return next;
             });
-            // ★ currentUser senkronizasyonu: participant listesinden mevcut kullanıcının güncel verisini localStorage'a yaz
-            // NOT: setAuthUser KULLANMA — auth-change event'ı dispatch eder → DemoChatRoom user:profileUpdate emit eder → sonsuz döngü!
-            try {
-                const authUser = getAuthUser();
-                if (authUser) {
-                    const me = data.participants.find((p: any) => p.userId === authUser.userId);
-                    if (me) {
-                        let changed = false;
-                        if (me.displayName && me.displayName !== authUser.username) { authUser.username = me.displayName; authUser.displayName = me.displayName; changed = true; }
-                        if (me.avatar && me.avatar !== authUser.avatar) { authUser.avatar = me.avatar; changed = true; }
-                        if ((me as any).nameColor && (me as any).nameColor !== (authUser as any).nameColor) { (authUser as any).nameColor = (me as any).nameColor; changed = true; }
-                        if (changed) {
-                            // Sessiz localStorage yazması — auth-change dispatch ETME (döngü kırılır)
-                            const key = window.location.pathname.startsWith('/t/') ? 'soprano_tenant_user' : 'soprano_auth_user';
-                            localStorage.setItem(key, JSON.stringify(authUser));
-                        }
-                    }
-                }
-            } catch {}
+            // NOT: Burada localStorage'a yazma yapılmaz — DemoChatRoom callback'leri zaten setAuthUser ile güncelliyor.
+            // Eski kod burada room:participants'tan gelen veriyi localStorage'a yazıyordu ama backend henüz
+            // profil değişikliğini işlemeden önceki broadcast eski veriyi içeriyordu → titreme sorunu.
         });
 
         // ★ NOTE: user-status-changed, room:user-banned, room:user-unbanned are handled

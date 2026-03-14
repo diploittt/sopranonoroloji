@@ -9,6 +9,90 @@ interface AudioTestPanelProps {
 
 type Phase = 'idle' | 'recording' | 'recorded' | 'playing';
 
+/* ── Custom Dark Dropdown ── */
+function MicDropdown({ devices, selectedId, disabled, onChange }: {
+    devices: MediaDeviceInfo[]; selectedId: string; disabled: boolean;
+    onChange: (id: string) => void;
+}) {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const selectedLabel = selectedId
+        ? devices.find(d => d.deviceId === selectedId)?.label || `Mikrofon ${selectedId.slice(0, 8)}`
+        : 'Varsayılan Mikrofon';
+
+    useEffect(() => {
+        if (!open) return;
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [open]);
+
+    return (
+        <div ref={ref} style={{ width: '100%', position: 'relative' }}>
+            <div style={{
+                fontSize: 8, color: '#64748b', fontWeight: 700,
+                textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 4,
+            }}>
+                Mikrofon
+            </div>
+            <button
+                type="button"
+                onClick={() => !disabled && setOpen(!open)}
+                style={{
+                    width: '100%', fontSize: 10, color: '#e2e8f0', fontWeight: 600,
+                    borderRadius: 8, padding: '7px 10px',
+                    background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(139,92,246,0.12)',
+                    cursor: disabled ? 'not-allowed' : 'pointer',
+                    opacity: disabled ? 0.4 : 1,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    textAlign: 'left',
+                    transition: 'all 0.2s ease',
+                }}
+            >
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{selectedLabel}</span>
+                <span style={{
+                    fontSize: 8, color: '#64748b', transition: 'transform 0.2s',
+                    transform: open ? 'rotate(180deg)' : 'rotate(0)',
+                }}>▼</span>
+            </button>
+            {open && (
+                <div style={{
+                    position: 'absolute', left: 0, right: 0, bottom: '100%', marginBottom: 4,
+                    background: 'rgba(15,20,35,0.96)', backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(139,92,246,0.15)', borderRadius: 10,
+                    boxShadow: '0 -8px 24px rgba(0,0,0,0.5)',
+                    maxHeight: 180, overflowY: 'auto', zIndex: 100,
+                    animation: 'fadeIn 0.15s ease',
+                }}>
+                    {[{ deviceId: '', label: 'Varsayılan Mikrofon' }, ...devices.map(d => ({ deviceId: d.deviceId, label: d.label || `Mikrofon ${d.deviceId.slice(0, 8)}` }))].map(item => (
+                        <button
+                            key={item.deviceId}
+                            type="button"
+                            onClick={() => { onChange(item.deviceId); setOpen(false); }}
+                            style={{
+                                width: '100%', padding: '7px 10px', fontSize: 10, fontWeight: 600,
+                                color: selectedId === item.deviceId ? '#c4b5fd' : '#e2e8f0',
+                                background: selectedId === item.deviceId ? 'rgba(139,92,246,0.12)' : 'transparent',
+                                border: 'none', cursor: 'pointer', textAlign: 'left',
+                                display: 'flex', alignItems: 'center', gap: 6,
+                                transition: 'all 0.1s ease',
+                            }}
+                            onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.18)'; }}
+                            onMouseOut={e => { e.currentTarget.style.background = selectedId === item.deviceId ? 'rgba(139,92,246,0.12)' : 'transparent'; }}
+                        >
+                            {selectedId === item.deviceId && <span style={{ fontSize: 10 }}>✓</span>}
+                            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
+                        </button>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
     const [audioDevices, setAudioDevices] = useState<MediaDeviceInfo[]>([]);
     const [selectedMic, setSelectedMic] = useState('');
@@ -384,36 +468,13 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                     </button>
                 )}
 
-                {/* ── Mic Selector ── */}
-                <div style={{ width: '100%', marginTop: phase === 'idle' ? 4 : 0 }}>
-                    <div style={{
-                        fontSize: 8, color: '#64748b', fontWeight: 700,
-                        textTransform: 'uppercase' as const, letterSpacing: 1.5, marginBottom: 4,
-                    }}>
-                        Mikrofon
-                    </div>
-                    <select
-                        value={selectedMic}
-                        onChange={(e) => { setSelectedMic(e.target.value); if (phase !== 'idle') resetRecording(); }}
-                        disabled={phase === 'recording'}
-                        style={{
-                            width: '100%', fontSize: 10, color: '#e2e8f0', fontWeight: 600,
-                            borderRadius: 8, padding: '7px 10px',
-                            background: 'rgba(255,255,255,0.04)',
-                            border: '1px solid rgba(139,92,246,0.12)',
-                            outline: 'none', cursor: phase === 'recording' ? 'not-allowed' : 'pointer',
-                            appearance: 'none' as const,
-                            opacity: phase === 'recording' ? 0.4 : 1,
-                        }}
-                    >
-                        <option value="" style={{ background: '#1a1d2e', color: '#fff' }}>Varsayılan Mikrofon</option>
-                        {audioDevices.map(d => (
-                            <option key={d.deviceId} value={d.deviceId} style={{ background: '#1a1d2e', color: '#fff' }}>
-                                {d.label || `Mikrofon ${d.deviceId.slice(0, 8)}`}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {/* ── Mic Selector (Custom Dropdown) ── */}
+                <MicDropdown
+                    devices={audioDevices}
+                    selectedId={selectedMic}
+                    disabled={phase === 'recording'}
+                    onChange={(id) => { setSelectedMic(id); if (phase !== 'idle') resetRecording(); }}
+                />
 
                 {/* ── Hint ── */}
                 <p style={{

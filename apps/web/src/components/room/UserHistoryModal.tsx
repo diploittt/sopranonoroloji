@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { adminApi } from '@/lib/admin/api';
 import './UserHistoryModal.css';
@@ -144,6 +144,46 @@ export function UserHistoryModal({ isOpen, onClose, userId, displayName }: UserH
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const perPage = 30;
 
+    // ─── Drag Support ──────────────────────────────────────────
+    const modalRef = useRef<HTMLDivElement>(null);
+    const dragRef = useRef({ dragging: false, startX: 0, startY: 0, offsetX: 0, offsetY: 0 });
+    const [dragPos, setDragPos] = useState<{ x: number; y: number } | null>(null);
+
+    const onDragStart = useCallback((e: React.MouseEvent) => {
+        if ((e.target as HTMLElement).closest('button, input')) return;
+        e.preventDefault();
+        const rect = modalRef.current?.getBoundingClientRect();
+        if (!rect) return;
+        dragRef.current = {
+            dragging: true,
+            startX: e.clientX,
+            startY: e.clientY,
+            offsetX: rect.left,
+            offsetY: rect.top,
+        };
+    }, []);
+
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            if (!dragRef.current.dragging) return;
+            const dx = e.clientX - dragRef.current.startX;
+            const dy = e.clientY - dragRef.current.startY;
+            setDragPos({ x: dragRef.current.offsetX + dx, y: dragRef.current.offsetY + dy });
+        };
+        const onUp = () => { dragRef.current.dragging = false; };
+        window.addEventListener('mousemove', onMove);
+        window.addEventListener('mouseup', onUp);
+        return () => {
+            window.removeEventListener('mousemove', onMove);
+            window.removeEventListener('mouseup', onUp);
+        };
+    }, []);
+
+    // Reset drag position when modal opens
+    useEffect(() => {
+        if (isOpen) setDragPos(null);
+    }, [isOpen]);
+
     const loadLogs = useCallback(async () => {
         if (!userId) return;
         setLoading(true);
@@ -197,9 +237,19 @@ export function UserHistoryModal({ isOpen, onClose, userId, displayName }: UserH
 
     return createPortal(
         <div className="user-history-backdrop" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
-            <div className="user-history-modal">
-                {/* Header */}
-                <div className="uhm-header">
+            <div
+                ref={modalRef}
+                className="user-history-modal"
+                style={dragPos ? {
+                    position: 'fixed',
+                    left: dragPos.x,
+                    top: dragPos.y,
+                    margin: 0,
+                    transform: 'none',
+                } : undefined}
+            >
+                {/* Header — draggable */}
+                <div className="uhm-header" onMouseDown={onDragStart} style={{ cursor: 'move', userSelect: 'none' }}>
                     <span className="uhm-header-icon">📜</span>
                     <div className="uhm-header-info">
                         <h3 className="uhm-header-title">{displayName} — Geçmiş</h3>

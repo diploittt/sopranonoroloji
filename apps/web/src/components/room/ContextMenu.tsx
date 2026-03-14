@@ -189,6 +189,52 @@ export default function ContextMenu({
                     flexShrink: 0,
                 }} />
 
+                {/* ── Target User Header ── */}
+                {targetUser && (targetUser.displayName || targetUser.username) && (
+                    <div style={{
+                        display: 'flex', alignItems: 'center', gap: 10,
+                        padding: '10px 14px',
+                        background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
+                        borderBottom: '1px solid #e2e8f0',
+                        flexShrink: 0,
+                    }}>
+                        {/* Avatar */}
+                        <div style={{
+                            width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                            border: `2px solid ${getRoleColor(targetUser.role)}20`,
+                            boxShadow: `0 0 8px ${getRoleColor(targetUser.role)}15`,
+                        }}>
+                            <img
+                                src={targetUser.avatar || '/avatars/neutral_1.png'}
+                                alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        </div>
+                        {/* Name + Role */}
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{
+                                fontSize: 13, fontWeight: 700, color: '#0f172a',
+                                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                            }}>
+                                {targetUser.displayName || targetUser.username}
+                            </div>
+                            <div style={{
+                                display: 'flex', alignItems: 'center', gap: 4, marginTop: 2,
+                            }}>
+                                {getRoleIcon(targetUser.role) && (
+                                    <span style={{ fontSize: 11 }}>{getRoleIcon(targetUser.role)}</span>
+                                )}
+                                <span style={{
+                                    fontSize: 10, fontWeight: 600,
+                                    color: getRoleColor(targetUser.role),
+                                    letterSpacing: 0.3,
+                                }}>
+                                    {getRoleLabel(targetUser.role)}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Scrollable items */}
                 <div className="hover-scroll" style={{
                     padding: '4px',
