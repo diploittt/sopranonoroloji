@@ -2650,81 +2650,89 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
                                 <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {isMeetingRoom ? (
-                                        /* ━━━ TOPLANTI ODASI ÖZEL HEADER ━━━ */
-                                        <header className="h-24 flex-shrink-0 border-b backdrop-blur-md flex items-center justify-between px-8 relative z-30"
+                                        /* ━━━ TOPLANTI ODASI — KOMPAKT PREMIUM BANNER ━━━ */
+                                        <div className="flex-shrink-0 relative z-30"
                                             style={{
-                                                background: 'linear-gradient(90deg, rgba(8, 12, 21, 0.9) 0%, rgba(15, 22, 40, 0.85) 50%, rgba(8, 12, 21, 0.9) 100%)',
-                                                borderColor: 'rgba(37, 99, 235, 0.15)',
+                                                height: 44,
+                                                background: 'rgba(8, 12, 21, 0.85)',
+                                                borderBottom: '1px solid rgba(255,255,255,0.06)',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'space-between',
+                                                padding: '0 16px',
                                             }}
                                         >
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                                            {/* Left: Icon + Title */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                                                 <div style={{
-                                                    width: '42px', height: '42px', borderRadius: '14px',
-                                                    background: 'linear-gradient(135deg, #1e3a5f, #2563eb)',
+                                                    width: 28, height: 28, borderRadius: 8,
+                                                    background: 'rgba(255,255,255,0.06)',
+                                                    border: '1px solid rgba(255,255,255,0.08)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: '20px',
-                                                    boxShadow: '0 0 24px rgba(37, 99, 235, 0.3)',
+                                                    fontSize: 13,
                                                 }}>🔒</div>
                                                 <div>
                                                     <div style={{
-                                                        fontSize: '16px', fontWeight: 800, letterSpacing: '2px',
-                                                        background: 'linear-gradient(90deg, #7b9fef, #93c5fd, #60a5fa)',
-                                                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                                                        fontSize: 12, fontWeight: 700, letterSpacing: '0.08em',
+                                                        color: '#e2e8f0',
                                                     }}>TOPLANTI ODASI</div>
-                                                    <div style={{ fontSize: '11px', color: 'rgba(123, 159, 239, 0.6)', fontWeight: 500 }}>
-                                                        Sadece yetkili personel
+                                                    <div style={{ fontSize: 9, color: 'rgba(148,163,184,0.5)', fontWeight: 500, marginTop: -1 }}>
+                                                        Yetkili personel
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div style={{
-                                                display: 'flex', alignItems: 'center', gap: '16px',
-                                            }}>
-                                                <div style={{
-                                                    display: 'flex', alignItems: 'center', gap: '8px',
-                                                    background: 'rgba(37, 99, 235, 0.1)',
-                                                    border: '1px solid rgba(37, 99, 235, 0.2)',
-                                                    borderRadius: '20px', padding: '6px 16px',
-                                                }}>
+
+                                            {/* Center: Status */}
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
                                                     <div style={{
-                                                        width: '8px', height: '8px', borderRadius: '50%',
+                                                        width: 6, height: 6, borderRadius: '50%',
                                                         background: '#22c55e',
-                                                        boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
+                                                        boxShadow: '0 0 6px rgba(34,197,94,0.5)',
                                                         animation: 'mtgLive 2s ease-in-out infinite',
                                                     }} />
-                                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#7b9fef' }}>AKTİF</span>
+                                                    <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Canlı</span>
                                                 </div>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
-                                                    <span style={{ fontSize: '14px' }}>👥</span>
-                                                    <span style={{ fontWeight: 700, color: '#7b9fef' }}>{room.state.users?.length || 0}</span>
-                                                    <span>katılımcı</span>
+                                                <div style={{
+                                                    width: 1, height: 14, background: 'rgba(255,255,255,0.06)',
+                                                }} />
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'rgba(148,163,184,0.5)' }}>
+                                                    <span style={{ fontWeight: 700, color: 'rgba(226,232,240,0.7)' }}>{room.state.users?.length || 0}</span>
+                                                    <span>kişi</span>
                                                 </div>
-                                                <button
-                                                    onClick={() => {
-                                                        const firstRoom = room.state.rooms?.find((r: any) => !r.isMeetingRoom);
-                                                        router.push(roomUrl(firstRoom?.slug || 'oda-1'));
-                                                    }}
-                                                    style={{
-                                                        display: 'flex', alignItems: 'center', gap: '6px',
-                                                        background: 'rgba(239, 68, 68, 0.15)',
-                                                        border: '1px solid rgba(239, 68, 68, 0.3)',
-                                                        borderRadius: '12px', padding: '6px 14px',
-                                                        color: '#f87171', fontSize: '12px', fontWeight: 600,
-                                                        cursor: 'pointer', transition: 'all 0.2s ease',
-                                                    }}
-                                                    onMouseEnter={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.25)';
-                                                        e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                                                        e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                                                    }}
-                                                >
-                                                    🚪 Ayrıl
-                                                </button>
                                             </div>
+
+                                            {/* Right: Exit */}
+                                            <button
+                                                onClick={() => {
+                                                    const firstRoom = room.state.rooms?.find((r: any) => !r.isMeetingRoom);
+                                                    router.push(roomUrl(firstRoom?.slug || 'oda-1'));
+                                                }}
+                                                style={{
+                                                    width: 28, height: 28, borderRadius: 8,
+                                                    background: 'rgba(255,255,255,0.04)',
+                                                    border: '1px solid rgba(255,255,255,0.06)',
+                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                    color: 'rgba(239,68,68,0.6)',
+                                                    cursor: 'pointer', transition: 'all 0.2s',
+                                                    fontSize: 12,
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(239,68,68,0.12)';
+                                                    e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)';
+                                                    e.currentTarget.style.color = '#f87171';
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
+                                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
+                                                    e.currentTarget.style.color = 'rgba(239,68,68,0.6)';
+                                                }}
+                                                title="Toplantıdan Ayrıl"
+                                            >
+                                                ✕
+                                            </button>
                                             <style>{`@keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
-                                        </header>
+                                        </div>
                                     ) : (
                                         null /* HeaderRooms removed — room names now in top bar */
                                     )}
