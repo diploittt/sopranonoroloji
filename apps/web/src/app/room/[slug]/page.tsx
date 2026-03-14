@@ -640,6 +640,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             if (detail?.roomSlug) {
                 addToast('info', '📞 Odaya Çekildiniz', `${detail.by || 'Yönetici'} sizi ${detail.roomSlug} odasına çekti.`);
                 setActiveSlug(detail.roomSlug);
+                window.history.replaceState(null, '', roomUrl(detail.roomSlug));
             }
         };
         window.addEventListener('soprano:force-navigate', onForceNavigate);
@@ -1055,6 +1056,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             if (prevSlug) {
                 previousRoomSlugRef.current = null;
                 setActiveSlug(prevSlug);
+                window.history.replaceState(null, '', roomUrl(prevSlug));
             }
         };
         room.socket.on('one2one:invite', onOne2oneInvite);
@@ -1251,6 +1253,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 if (prevSlug) {
                                     previousRoomSlugRef.current = null;
                                     setActiveSlug(prevSlug);
+                                    window.history.replaceState(null, '', roomUrl(prevSlug));
                                 }
                             }}
                         />
@@ -2582,7 +2585,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     <Fragment key={tab.slug}>
                                                         {i > 0 && <span className="room-nav-dot" />}
                                                         <button
-                                                            onClick={() => setActiveSlug(tab.slug)}
+                                                            onClick={() => { setActiveSlug(tab.slug); window.history.replaceState(null, '', roomUrl(tab.slug)); }}
                                                             style={{
                                                                 padding: '6px 14px',
                                                                 background: 'none',
