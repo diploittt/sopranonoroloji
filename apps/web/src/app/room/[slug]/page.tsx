@@ -2572,15 +2572,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 </header>
 
                                 {/* ─── CHATROOM CONTAINER ─── */}
-                            <div className={`${isMeetingRoom ? '' : 'glass-panel'} room-container w-full flex-1 flex overflow-hidden relative`}
+                            <div className={`glass-panel room-container w-full flex-1 flex overflow-hidden relative`}
                                 style={{
                                     ...(isMeetingRoom ? {
-                                        background: 'transparent',
+                                        background: 'linear-gradient(135deg, rgba(8, 12, 21, 0.95) 0%, rgba(12, 18, 32, 0.92) 50%, rgba(8, 12, 21, 0.95) 100%)',
                                         border: 'none',
                                         boxShadow: 'none',
-                                        borderRadius: 0,
-                                        gap: 0,
-                                        padding: 0,
                                     } : {
                                         background: 'transparent',
                                         backdropFilter: 'none',
@@ -2602,13 +2599,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     })
                                 }}
                             >
-                                {/* ═══ UNIFIED TOP BAR OVERLAY — spans all columns (normal rooms only) ═══ */}
-                                {!isMeetingRoom && (
+                                {/* ═══ UNIFIED TOP BAR OVERLAY — spans all columns ═══ */}
                                 <div className="absolute top-0 left-0 right-0 h-[96px] z-20 pointer-events-none rounded-t-[28px]" style={{ background: 'linear-gradient(180deg, rgba(180,40,50,0.12) 0%, rgba(140,30,40,0.06) 40%, transparent 100%)' }}>
                                     {/* Top edge highlight */}
                                     <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[28px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(220,80,80,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(220,80,80,0.25) 75%, transparent 95%)' }} />
                                 </div>
-                                )}
 
                                 {/* 1. LEFT SIDEBAR — desktop only, hidden on mobile */}
                                 <SidebarLeft
@@ -2653,7 +2648,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 />
 
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
-                                <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={isMeetingRoom ? {} : { background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
+                                <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {isMeetingRoom ? (
                                         /* ━━━ TOPLANTI ODASI — KOMPAKT PREMIUM BANNER ━━━ */
                                         <div className="flex-shrink-0 relative z-30"
