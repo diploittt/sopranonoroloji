@@ -2575,7 +2575,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             <div className={`glass-panel room-container w-full flex-1 flex overflow-hidden relative`}
                                 style={{
                                     ...(isMeetingRoom ? {
-                                        background: 'linear-gradient(135deg, rgba(15, 10, 35, 0.95) 0%, rgba(25, 15, 50, 0.92) 50%, rgba(15, 10, 35, 0.95) 100%)',
+                                        background: 'linear-gradient(135deg, rgba(8, 12, 21, 0.95) 0%, rgba(12, 18, 32, 0.92) 50%, rgba(8, 12, 21, 0.95) 100%)',
                                         border: 'none',
                                         boxShadow: 'none',
                                     } : {
@@ -2653,25 +2653,25 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         /* ━━━ TOPLANTI ODASI ÖZEL HEADER ━━━ */
                                         <header className="h-24 flex-shrink-0 border-b backdrop-blur-md flex items-center justify-between px-8 relative z-30"
                                             style={{
-                                                background: 'linear-gradient(90deg, rgba(15, 10, 35, 0.9) 0%, rgba(25, 15, 55, 0.85) 50%, rgba(15, 10, 35, 0.9) 100%)',
-                                                borderColor: 'rgba(139, 92, 246, 0.2)',
+                                                background: 'linear-gradient(90deg, rgba(8, 12, 21, 0.9) 0%, rgba(15, 22, 40, 0.85) 50%, rgba(8, 12, 21, 0.9) 100%)',
+                                                borderColor: 'rgba(37, 99, 235, 0.15)',
                                             }}
                                         >
                                             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
                                                 <div style={{
                                                     width: '42px', height: '42px', borderRadius: '14px',
-                                                    background: 'linear-gradient(135deg, #7c3aed, #a78bfa)',
+                                                    background: 'linear-gradient(135deg, #1e3a5f, #2563eb)',
                                                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                                                     fontSize: '20px',
-                                                    boxShadow: '0 0 24px rgba(139, 92, 246, 0.4)',
+                                                    boxShadow: '0 0 24px rgba(37, 99, 235, 0.3)',
                                                 }}>🔒</div>
                                                 <div>
                                                     <div style={{
                                                         fontSize: '16px', fontWeight: 800, letterSpacing: '2px',
-                                                        background: 'linear-gradient(90deg, #c4b5fd, #a78bfa, #818cf8)',
+                                                        background: 'linear-gradient(90deg, #7b9fef, #93c5fd, #60a5fa)',
                                                         WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                                                     }}>TOPLANTI ODASI</div>
-                                                    <div style={{ fontSize: '11px', color: 'rgba(167, 139, 250, 0.6)', fontWeight: 500 }}>
+                                                    <div style={{ fontSize: '11px', color: 'rgba(123, 159, 239, 0.6)', fontWeight: 500 }}>
                                                         Sadece yetkili personel
                                                     </div>
                                                 </div>
@@ -2681,8 +2681,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             }}>
                                                 <div style={{
                                                     display: 'flex', alignItems: 'center', gap: '8px',
-                                                    background: 'rgba(139, 92, 246, 0.12)',
-                                                    border: '1px solid rgba(139, 92, 246, 0.2)',
+                                                    background: 'rgba(37, 99, 235, 0.1)',
+                                                    border: '1px solid rgba(37, 99, 235, 0.2)',
                                                     borderRadius: '20px', padding: '6px 16px',
                                                 }}>
                                                     <div style={{
@@ -2691,11 +2691,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         boxShadow: '0 0 8px rgba(34, 197, 94, 0.6)',
                                                         animation: 'mtgLive 2s ease-in-out infinite',
                                                     }} />
-                                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#a78bfa' }}>AKTİF</span>
+                                                    <span style={{ fontSize: '12px', fontWeight: 600, color: '#7b9fef' }}>AKTİF</span>
                                                 </div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>
                                                     <span style={{ fontSize: '14px' }}>👥</span>
-                                                    <span style={{ fontWeight: 700, color: '#a78bfa' }}>{room.state.users?.length || 0}</span>
+                                                    <span style={{ fontWeight: 700, color: '#7b9fef' }}>{room.state.users?.length || 0}</span>
                                                     <span>katılımcı</span>
                                                 </div>
                                                 <button
