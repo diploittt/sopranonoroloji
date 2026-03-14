@@ -2650,88 +2650,105 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {/* 2. CENTER PANEL (Header, Chat, Toolbar) */}
                                 <main className="flex-1 flex flex-col min-w-0 relative z-10" onContextMenu={handleChatContextMenu} style={{ background: 'linear-gradient(180deg, rgba(7, 11, 20, 0.6) 0%, rgba(10, 15, 28, 0.4) 50%, transparent 100%)' }}>
                                     {isMeetingRoom ? (
-                                        /* ━━━ TOPLANTI ODASI — KOMPAKT PREMIUM BANNER ━━━ */
-                                        <div className="flex-shrink-0 relative z-30"
-                                            style={{
-                                                height: 44,
-                                                background: 'rgba(8, 12, 21, 0.85)',
-                                                borderBottom: '1px solid rgba(255,255,255,0.06)',
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                justifyContent: 'space-between',
-                                                padding: '0 16px',
-                                            }}
-                                        >
-                                            {/* Left: Icon + Title */}
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        /* ━━━ TOPLANTI ODASI — SARKAN TABELA ━━━ */
+                                        <div className="flex-shrink-0 relative z-30" style={{
+                                            display: 'flex', justifyContent: 'center',
+                                            paddingTop: 0, paddingBottom: 6,
+                                            animation: 'mtgSignSlide 0.6s cubic-bezier(0.34,1.56,0.64,1)',
+                                        }}>
+                                            {/* Tabela gövdesi — zincirlerle asılı */}
+                                            <div style={{ position: 'relative', display: 'inline-flex', flexDirection: 'column', alignItems: 'center' }}>
+                                                {/* Zincir çizgileri — üst kenardan tabela'ya */}
+                                                <div style={{ display: 'flex', justifyContent: 'space-between', width: '80%', height: 10 }}>
+                                                    <div style={{ width: 2, height: 10, background: 'linear-gradient(180deg, rgba(148,163,184,0.4), rgba(148,163,184,0.15))', borderRadius: 1 }} />
+                                                    <div style={{ width: 2, height: 10, background: 'linear-gradient(180deg, rgba(148,163,184,0.4), rgba(148,163,184,0.15))', borderRadius: 1 }} />
+                                                </div>
+
+                                                {/* Ana tabela plakası */}
                                                 <div style={{
-                                                    width: 28, height: 28, borderRadius: 8,
-                                                    background: 'rgba(255,255,255,0.06)',
+                                                    display: 'flex', alignItems: 'center', gap: 16,
+                                                    background: 'rgba(8, 12, 21, 0.9)',
                                                     border: '1px solid rgba(255,255,255,0.08)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    fontSize: 13,
-                                                }}>🔒</div>
-                                                <div>
+                                                    borderRadius: 6,
+                                                    padding: '7px 20px',
+                                                    boxShadow: '0 4px 16px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3)',
+                                                    position: 'relative',
+                                                }}>
+                                                    {/* Sol lamba */}
                                                     <div style={{
-                                                        fontSize: 12, fontWeight: 700, letterSpacing: '0.08em',
-                                                        color: '#e2e8f0',
-                                                    }}>TOPLANTI ODASI</div>
-                                                    <div style={{ fontSize: 9, color: 'rgba(148,163,184,0.5)', fontWeight: 500, marginTop: -1 }}>
-                                                        Yetkili personel
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Center: Status */}
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                                                    <div style={{
-                                                        width: 6, height: 6, borderRadius: '50%',
-                                                        background: '#22c55e',
-                                                        boxShadow: '0 0 6px rgba(34,197,94,0.5)',
-                                                        animation: 'mtgLive 2s ease-in-out infinite',
+                                                        position: 'absolute', left: -4, top: -4,
+                                                        width: 8, height: 8, borderRadius: '50%',
+                                                        background: 'radial-gradient(circle, #d45b5b 20%, #9a2a2a 70%, transparent 100%)',
+                                                        boxShadow: '0 0 6px rgba(212,91,91,0.6), 0 0 12px rgba(212,91,91,0.3)',
+                                                        animation: 'mtgLampGlow 2s ease-in-out infinite',
                                                     }} />
-                                                    <span style={{ fontSize: 10, fontWeight: 600, color: 'rgba(148,163,184,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>Canlı</span>
-                                                </div>
-                                                <div style={{
-                                                    width: 1, height: 14, background: 'rgba(255,255,255,0.06)',
-                                                }} />
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, color: 'rgba(148,163,184,0.5)' }}>
-                                                    <span style={{ fontWeight: 700, color: 'rgba(226,232,240,0.7)' }}>{room.state.users?.length || 0}</span>
-                                                    <span>kişi</span>
+
+                                                    {/* Sağ lamba */}
+                                                    <div style={{
+                                                        position: 'absolute', right: -4, top: -4,
+                                                        width: 8, height: 8, borderRadius: '50%',
+                                                        background: 'radial-gradient(circle, #d45b5b 20%, #9a2a2a 70%, transparent 100%)',
+                                                        boxShadow: '0 0 6px rgba(212,91,91,0.6), 0 0 12px rgba(212,91,91,0.3)',
+                                                        animation: 'mtgLampGlow 2s ease-in-out infinite 0.5s',
+                                                    }} />
+
+                                                    {/* Kilit ikonu */}
+                                                    <span style={{ fontSize: 13 }}>🔒</span>
+
+                                                    {/* Başlık */}
+                                                    <span style={{
+                                                        fontSize: 11, fontWeight: 700, letterSpacing: '0.12em',
+                                                        color: '#e2e8f0', textTransform: 'uppercase',
+                                                    }}>Toplantı Odası</span>
+
+                                                    {/* Ayırıcı */}
+                                                    <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
+
+                                                    {/* Canlı dot + bilgi */}
+                                                    <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                                        <div style={{
+                                                            width: 5, height: 5, borderRadius: '50%',
+                                                            background: '#22c55e',
+                                                            boxShadow: '0 0 5px rgba(34,197,94,0.5)',
+                                                            animation: 'mtgLive 2s ease-in-out infinite',
+                                                        }} />
+                                                        <span style={{ fontSize: 10, color: 'rgba(148,163,184,0.6)' }}>
+                                                            {room.state.users?.length || 0} kişi
+                                                        </span>
+                                                    </div>
+
+                                                    {/* Ayırıcı */}
+                                                    <div style={{ width: 1, height: 14, background: 'rgba(255,255,255,0.1)' }} />
+
+                                                    {/* Çıkış butonu */}
+                                                    <button
+                                                        onClick={() => {
+                                                            const firstRoom = room.state.rooms?.find((r: any) => !r.isMeetingRoom);
+                                                            router.push(roomUrl(firstRoom?.slug || 'oda-1'));
+                                                        }}
+                                                        style={{
+                                                            background: 'none', border: 'none',
+                                                            color: 'rgba(239,68,68,0.5)',
+                                                            cursor: 'pointer', transition: 'color 0.2s',
+                                                            fontSize: 10, fontWeight: 600, padding: '2px 0',
+                                                        }}
+                                                        onMouseEnter={(e) => { e.currentTarget.style.color = '#f87171'; }}
+                                                        onMouseLeave={(e) => { e.currentTarget.style.color = 'rgba(239,68,68,0.5)'; }}
+                                                        title="Toplantıdan Ayrıl"
+                                                    >Ayrıl ✕</button>
                                                 </div>
                                             </div>
-
-                                            {/* Right: Exit */}
-                                            <button
-                                                onClick={() => {
-                                                    const firstRoom = room.state.rooms?.find((r: any) => !r.isMeetingRoom);
-                                                    router.push(roomUrl(firstRoom?.slug || 'oda-1'));
-                                                }}
-                                                style={{
-                                                    width: 28, height: 28, borderRadius: 8,
-                                                    background: 'rgba(255,255,255,0.04)',
-                                                    border: '1px solid rgba(255,255,255,0.06)',
-                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                    color: 'rgba(239,68,68,0.6)',
-                                                    cursor: 'pointer', transition: 'all 0.2s',
-                                                    fontSize: 12,
-                                                }}
-                                                onMouseEnter={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(239,68,68,0.12)';
-                                                    e.currentTarget.style.borderColor = 'rgba(239,68,68,0.25)';
-                                                    e.currentTarget.style.color = '#f87171';
-                                                }}
-                                                onMouseLeave={(e) => {
-                                                    e.currentTarget.style.background = 'rgba(255,255,255,0.04)';
-                                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)';
-                                                    e.currentTarget.style.color = 'rgba(239,68,68,0.6)';
-                                                }}
-                                                title="Toplantıdan Ayrıl"
-                                            >
-                                                ✕
-                                            </button>
-                                            <style>{`@keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }`}</style>
+                                            <style>{`
+                                                @keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+                                                @keyframes mtgLampGlow {
+                                                    0%,100% { box-shadow: 0 0 6px rgba(212,91,91,0.6), 0 0 12px rgba(212,91,91,0.3); }
+                                                    50% { box-shadow: 0 0 10px rgba(212,91,91,0.8), 0 0 20px rgba(212,91,91,0.4); }
+                                                }
+                                                @keyframes mtgSignSlide {
+                                                    0% { opacity: 0; transform: translateY(-20px); }
+                                                    100% { opacity: 1; transform: translateY(0); }
+                                                }
+                                            `}</style>
                                         </div>
                                     ) : (
                                         null /* HeaderRooms removed — room names now in top bar */
