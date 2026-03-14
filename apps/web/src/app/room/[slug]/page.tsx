@@ -2279,30 +2279,45 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         animation: lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0.9s both;
                                     }
 
-                                    /* TOPLANTI ODASI — chat kartına yapışık zarif etiket */
+                                    /* TOPLANTI ODASI — chat kartına yapışık şerit etiket */
                                     .room-container .meeting-room-panel::before {
-                                        content: '📋  TOPLANTI ODASI';
+                                        content: '🔒  TOPLANTI ODASI';
                                         position: absolute;
-                                        top: 8px;
-                                        left: 12px;
+                                        top: 12px;
+                                        left: 16px;
                                         z-index: 50;
-                                        padding: 5px 14px 5px 10px;
+                                        padding: 8px 20px 8px 14px;
                                         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-                                        font-size: 10px;
-                                        font-weight: 700;
-                                        letter-spacing: 2px;
-                                        color: rgba(255,255,255,0.85);
-                                        background: rgba(180,60,60,0.35);
-                                        border: 1px solid rgba(220,80,80,0.25);
-                                        border-radius: 6px;
-                                        backdrop-filter: blur(8px);
-                                        -webkit-backdrop-filter: blur(8px);
+                                        font-size: 11px;
+                                        font-weight: 800;
+                                        letter-spacing: 3px;
+                                        text-transform: uppercase;
+                                        color: #fff;
+                                        background: linear-gradient(135deg, #b71c1c 0%, #c62828 50%, #d32f2f 100%);
+                                        border-radius: 4px;
+                                        box-shadow: 0 2px 8px rgba(183,28,28,0.4), inset 0 1px 0 rgba(255,255,255,0.15);
                                         pointer-events: none;
+                                        transform: rotate(-2deg);
                                         animation: meetingSignBlurIn 0.6s ease-out 0.4s both;
                                     }
+                                    .room-container .meeting-room-panel::after {
+                                        content: '';
+                                        position: absolute;
+                                        top: 10px;
+                                        left: 14px;
+                                        width: 6px;
+                                        height: 6px;
+                                        background: radial-gradient(circle, #555 30%, #333 70%);
+                                        border-radius: 50%;
+                                        border: 1px solid rgba(255,255,255,0.1);
+                                        z-index: 51;
+                                        pointer-events: none;
+                                        transform: rotate(-2deg);
+                                        animation: meetingSignBlurIn 0.6s ease-out 0.5s both;
+                                    }
                                     @keyframes meetingSignBlurIn {
-                                        0% { opacity: 0; filter: blur(8px); transform: scale(0.92); }
-                                        100% { opacity: 1; filter: blur(0px); transform: scale(1); }
+                                        0% { opacity: 0; filter: blur(8px); }
+                                        100% { opacity: 1; filter: blur(0px); }
                                     }
 
                                     .room-container .sidebar-left .chat-logo-area {
