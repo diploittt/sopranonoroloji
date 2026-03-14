@@ -2666,40 +2666,22 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             {/* Tabela plakası */}
                                             <div style={{
                                                 display: 'flex', alignItems: 'center', gap: 12,
-                                                background: 'rgba(0, 0, 0, 0.55)',
-                                                backdropFilter: 'blur(12px)',
-                                                WebkitBackdropFilter: 'blur(12px)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                background: 'rgba(8, 12, 21, 0.75)',
+                                                backdropFilter: 'blur(16px)',
+                                                WebkitBackdropFilter: 'blur(16px)',
+                                                border: '1px solid rgba(255,255,255,0.06)',
                                                 borderRadius: 5,
                                                 padding: '5px 14px',
-                                                boxShadow: '0 3px 12px rgba(0,0,0,0.3)',
-                                                position: 'relative',
+                                                boxShadow: '0 4px 14px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2)',
                                             }}>
-                                                {/* Sol lamba */}
-                                                <div style={{
-                                                    position: 'absolute', left: -3, top: -3,
-                                                    width: 7, height: 7, borderRadius: '50%',
-                                                    background: 'radial-gradient(circle, #d45b5b 20%, #9a2a2a 70%, transparent 100%)',
-                                                    boxShadow: '0 0 5px rgba(212,91,91,0.6), 0 0 10px rgba(212,91,91,0.25)',
-                                                    animation: 'mtgLampGlow 2s ease-in-out infinite',
-                                                }} />
-                                                {/* Sağ lamba */}
-                                                <div style={{
-                                                    position: 'absolute', right: -3, top: -3,
-                                                    width: 7, height: 7, borderRadius: '50%',
-                                                    background: 'radial-gradient(circle, #d45b5b 20%, #9a2a2a 70%, transparent 100%)',
-                                                    boxShadow: '0 0 5px rgba(212,91,91,0.6), 0 0 10px rgba(212,91,91,0.25)',
-                                                    animation: 'mtgLampGlow 2s ease-in-out infinite 0.5s',
-                                                }} />
-
                                                 <span style={{ fontSize: 11 }}>🔒</span>
                                                 <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.1em', color: 'rgba(255,255,255,0.85)', textTransform: 'uppercase' }}>Toplantı Odası</span>
-                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.12)' }} />
+                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)' }} />
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                                                     <div style={{ width: 5, height: 5, borderRadius: '50%', background: '#22c55e', boxShadow: '0 0 4px rgba(34,197,94,0.5)', animation: 'mtgLive 2s ease-in-out infinite' }} />
                                                     <span style={{ fontSize: 9, color: 'rgba(255,255,255,0.5)' }}>{room.state.users?.length || 0} kişi</span>
                                                 </div>
-                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.12)' }} />
+                                                <div style={{ width: 1, height: 12, background: 'rgba(255,255,255,0.1)' }} />
                                                 <button
                                                     onClick={() => { const r = room.state.rooms?.find((r: any) => !r.isMeetingRoom); router.push(roomUrl(r?.slug || 'oda-1')); }}
                                                     style={{ background: 'none', border: 'none', color: 'rgba(239,68,68,0.5)', cursor: 'pointer', transition: 'color 0.2s', fontSize: 9, fontWeight: 600, padding: 0 }}
@@ -2709,10 +2691,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             </div>
                                             <style>{`
                                                 @keyframes mtgLive { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
-                                                @keyframes mtgLampGlow {
-                                                    0%,100% { box-shadow: 0 0 5px rgba(212,91,91,0.6), 0 0 10px rgba(212,91,91,0.25); }
-                                                    50% { box-shadow: 0 0 8px rgba(212,91,91,0.8), 0 0 16px rgba(212,91,91,0.4); }
-                                                }
                                                 @keyframes mtgSignSlide {
                                                     0% { opacity: 0; transform: translateY(-16px); }
                                                     100% { opacity: 1; transform: translateY(0); }
