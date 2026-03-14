@@ -1084,6 +1084,63 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         return () => { room.socket?.off('room:nudge', onNudge); };
     }, [room.socket]);
 
+    // ─── DM Nudge State ───
+    const [dmNudgeTargets, setDmNudgeTargets] = useState<Set<string>>(new Set());
+    const [dmNudgeCooldowns, setDmNudgeCooldowns] = useState<Record<string, number>>({});
+    const [dmNudgeDisabled, setDmNudgeDisabled] = useState<Set<string>>(new Set());
+
+    useEffect(() => {
+        if (!room.socket) return;
+        const onDmNudge = (data: { from: string; fromUserId: string }) => {
+            // Engellenmişse işleme
+            if (dmNudgeDisabled.has(data.from)) return;
+
+            addToast('info', '📳 Titretme', `${data.from} seni titretti!`);
+            setDmNudgeTargets(prev => new Set(prev).add(data.from));
+            setTimeout(() => {
+                setDmNudgeTargets(prev => {
+                    const next = new Set(prev);
+                    next.delete(data.from);
+                    return next;
+                });
+            }, 1500);
+
+            // MSN Nudge Sesi
+            try {
+                const audio = new Audio('/sounds/msn-nudge.mp3');
+                audio.volume = 0.7;
+                audio.play().catch(() => { });
+            } catch { }
+        };
+        room.socket.on('dm:nudge-received', onDmNudge);
+        return () => { room.socket?.off('dm:nudge-received', onDmNudge); };
+    }, [room.socket, dmNudgeDisabled]);
+
+    const sendDmNudge = (targetUsername: string) => {
+        if (!room.socket) return;
+        room.socket.emit('dm:nudge', { targetUsername });
+        // Local cooldown 5 saniye
+        setDmNudgeCooldowns(prev => ({ ...prev, [targetUsername]: 5 }));
+        const interval = setInterval(() => {
+            setDmNudgeCooldowns(prev => {
+                const val = (prev[targetUsername] || 0) - 1;
+                if (val <= 0) {
+                    clearInterval(interval);
+                    const next = { ...prev };
+                    delete next[targetUsername];
+                    return next;
+                }
+                return { ...prev, [targetUsername]: val };
+            });
+        }, 1000);
+        // Gönderen sesi
+        try {
+            const audio = new Audio('/sounds/msn-nudge.mp3');
+            audio.volume = 0.5;
+            audio.play().catch(() => { });
+        } catch { }
+    };
+
     // ─── Phone Ringtone for one-to-one invite ───────────
     useEffect(() => {
         if (!one2oneInvite) return;
@@ -3103,6 +3160,18 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             } : undefined}
                                             isIgnored={isDmIgnored}
                                             initialPosition={{ x: 200 + (idx * 30), y: 150 + (idx * 30) }}
+                                            nudgeActive={dmNudgeTargets.has(dmUser)}
+                                            onNudge={() => sendDmNudge(dmUser)}
+                                            nudgeCooldown={dmNudgeCooldowns[dmUser] || 0}
+                                            nudgeDisabled={dmNudgeDisabled.has(dmUser)}
+                                            onNudgeToggle={() => {
+                                                setDmNudgeDisabled(prev => {
+                                                    const next = new Set(prev);
+                                                    if (next.has(dmUser)) next.delete(dmUser);
+                                                    else next.add(dmUser);
+                                                    return next;
+                                                });
+                                            }}
                                         />
                                     );
                                 })}

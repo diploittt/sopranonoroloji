@@ -4335,6 +4335,54 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     );
   }
 
+  // ─── DM NUDGE (MSN-style screen shake via DM) ───
+  @SubscribeMessage('dm:nudge')
+  handleDmNudge(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { targetUsername: string },
+  ) {
+    const sender = this.participants.get(client.id);
+    if (!sender) return;
+
+    const { targetUsername } = payload;
+    if (!targetUsername) return;
+
+    // Cooldown: 5 saniye — aynı kullanıcıya tekrar nudge atılamaz
+    const cooldownKey = `nudge:${sender.userId}:${targetUsername}`;
+    const lastNudge = this._duelReactionCooldowns.get(cooldownKey) || 0;
+    if (Date.now() - lastNudge < 5000) {
+      client.emit('room:toast', { type: 'warning', title: 'Bekle', message: 'Titretmek için 5 saniye bekle.' });
+      return;
+    }
+    this._duelReactionCooldowns.set(cooldownKey, Date.now());
+
+    // Find target by displayName in same room
+    let targetSocketId: string | null = null;
+    let targetParticipant: any = null;
+    for (const [sid, p] of this.participants.entries()) {
+      if (p.displayName === targetUsername && p.roomId === sender.roomId) {
+        targetSocketId = sid;
+        targetParticipant = p;
+        break;
+      }
+    }
+
+    if (!targetSocketId || !targetParticipant) {
+      client.emit('room:toast', { type: 'error', title: 'Hata', message: 'Kullanıcı bulunamadı.' });
+      return;
+    }
+
+    // Send nudge to target
+    this.server.to(targetSocketId).emit('dm:nudge-received', {
+      from: sender.displayName,
+      fromUserId: sender.userId,
+    });
+
+    // Confirmation to sender
+    client.emit('room:toast', { type: 'info', title: '📳 Titretme', message: `${targetParticipant.displayName} titretildi!` });
+    this.logger.log(`[DM-NUDGE] ${sender.displayName} nudged ${targetParticipant.displayName} via DM`);
+  }
+
   @SubscribeMessage('dm:typing')
   handleDmTyping(
     @ConnectedSocket() client: Socket,
