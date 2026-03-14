@@ -4165,6 +4165,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // Only the current speaker can release (or if no speaker, ignore)
     if (!currentSpeaker || currentSpeaker.socketId !== client.id) return;
 
+    // ★ DUEL AUTO-FORFEIT on mic release — mikrofonu bırakan düellodaysa kaybeder
+    this.autoDuelForfeit(roomId, participant.userId, participant.displayName, 'mic_released');
+
     this.releaseSpeaker(roomId, 'released');
   }
 
@@ -5309,7 +5312,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   // ─── DUEL AUTO-FORFEIT: Disconnect veya oda değişiminde düelloyu otomatik bitir ───
-  private autoDuelForfeit(roomId: string, userId: string, displayName: string, reason: 'disconnected' | 'room_switch' | 'forfeit') {
+  private autoDuelForfeit(roomId: string, userId: string, displayName: string, reason: 'disconnected' | 'room_switch' | 'forfeit' | 'mic_released') {
     const duel = this.activeDuels.get(roomId);
     if (!duel) return;
 
@@ -5337,7 +5340,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const winnerName = isChallenger ? duel.opponentName : duel.challengerName;
     const loserId = userId;
     const result = isChallenger ? 'OPPONENT_WIN' : 'CHALLENGER_WIN';
-    const reasonText = reason === 'disconnected' ? 'bağlantı koptu' : reason === 'forfeit' ? 'pes etti' : 'odayı terk etti';
+    const reasonText = reason === 'disconnected' ? 'bağlantı koptu' : reason === 'forfeit' ? 'pes etti' : reason === 'mic_released' ? 'mikrofonu bıraktı' : 'odayı terk etti';
 
     // Release mics
     this.server.to(roomId).emit('mic:released', { userId: duel.challengerId, displayName: duel.challengerName, socketId: duel.challengerSocketId, reason: 'duel_ended' });

@@ -46,55 +46,54 @@ interface Props {
     roomSlug?: string; // Used to reset duel state on room switch
 }
 
-// ─── Styles ─────────────────────────────────────────────────
+// ─── Styles (Premium Blue/Gold Theme) ───────────────────────────────
 const ARENA_STYLES = {
     container: {
         position: 'relative' as const,
-        background: 'linear-gradient(135deg, rgba(15,12,30,0.97), rgba(30,20,60,0.97))',
-        border: '1px solid rgba(168,85,247,0.3)',
-        borderRadius: 16,
-        padding: '16px 20px',
+        background: 'linear-gradient(135deg, rgba(10,15,30,0.97), rgba(15,22,40,0.97))',
+        border: '1px solid rgba(200,150,46,0.18)',
+        borderRadius: 14,
+        padding: '14px 16px',
         marginBottom: 8,
         overflow: 'hidden' as const,
-        backdropFilter: 'blur(20px)',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05)',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04), 0 0 20px rgba(200,150,46,0.06)',
     },
     glowOverlay: {
         position: 'absolute' as const,
         top: 0, left: 0, right: 0, bottom: 0,
-        background: 'radial-gradient(ellipse at 50% 0%, rgba(168,85,247,0.15) 0%, transparent 70%)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(200,150,46,0.08) 0%, transparent 70%)',
         pointerEvents: 'none' as const,
     },
     header: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 12,
+        marginBottom: 10,
         position: 'relative' as const,
         zIndex: 1,
     },
     title: {
-        fontSize: 13,
+        fontSize: 11,
         fontWeight: 800,
-        letterSpacing: '0.08em',
+        letterSpacing: '0.1em',
         textTransform: 'uppercase' as const,
-        background: 'linear-gradient(90deg, #a855f7, #ec4899)',
+        background: 'linear-gradient(90deg, #c8962e, #e8b84a)',
         WebkitBackgroundClip: 'text',
         WebkitTextFillColor: 'transparent',
     },
     timer: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 900,
         fontFamily: 'monospace',
         color: '#fff',
-        textShadow: '0 0 12px rgba(168,85,247,0.6)',
+        textShadow: '0 0 12px rgba(200,150,46,0.5)',
     },
     vsContainer: {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 24,
-        padding: '8px 0',
+        gap: 16,
+        padding: '6px 0',
         position: 'relative' as const,
         zIndex: 1,
     },
@@ -102,44 +101,45 @@ const ARENA_STYLES = {
         display: 'flex',
         flexDirection: 'column' as const,
         alignItems: 'center',
-        gap: 6,
+        gap: 5,
         flex: 1,
     },
     avatar: {
-        width: 56,
-        height: 56,
+        width: 52,
+        height: 52,
         borderRadius: '50%',
-        border: '3px solid rgba(168,85,247,0.5)',
+        border: '2px solid rgba(123,159,239,0.4)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        fontSize: 28,
-        background: 'linear-gradient(135deg, rgba(168,85,247,0.2), rgba(236,72,153,0.2))',
+        fontSize: 24,
+        background: 'linear-gradient(135deg, rgba(123,159,239,0.12), rgba(56,189,248,0.08))',
+        boxShadow: '0 0 12px rgba(123,159,239,0.15)',
     },
     name: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 700,
-        color: '#fff',
+        color: '#e2e8f0',
         textAlign: 'center' as const,
-        maxWidth: 100,
+        maxWidth: 90,
         overflow: 'hidden' as const,
         textOverflow: 'ellipsis' as const,
         whiteSpace: 'nowrap' as const,
     },
     vs: {
-        fontSize: 24,
+        fontSize: 20,
         fontWeight: 900,
-        color: '#f59e0b',
-        textShadow: '0 0 20px rgba(245,158,11,0.5)',
+        color: '#c8962e',
+        textShadow: '0 0 16px rgba(200,150,46,0.4)',
         animation: 'duelPulse 1.5s ease-in-out infinite',
     },
     progressBar: {
         width: '100%',
-        height: 4,
+        height: 3,
         borderRadius: 4,
-        background: 'rgba(255,255,255,0.1)',
+        background: 'rgba(255,255,255,0.06)',
         overflow: 'hidden' as const,
-        margin: '8px 0',
+        margin: '6px 0',
         position: 'relative' as const,
         zIndex: 1,
     },
@@ -147,13 +147,13 @@ const ARENA_STYLES = {
         height: '100%',
         borderRadius: 4,
         transition: 'width 1s linear',
-        background: 'linear-gradient(90deg, #a855f7, #ec4899, #f59e0b)',
+        background: 'linear-gradient(90deg, #7b9fef, #38bdf8, #c8962e)',
     },
     reactionsContainer: {
         display: 'flex',
-        gap: 8,
+        gap: 6,
         justifyContent: 'center',
-        marginTop: 8,
+        marginTop: 6,
         position: 'relative' as const,
         zIndex: 1,
     },
@@ -161,42 +161,42 @@ const ARENA_STYLES = {
         display: 'flex',
         flexDirection: 'column' as const,
         alignItems: 'center',
-        gap: 3,
-        padding: '8px 14px',
-        borderRadius: 12,
-        border: `1px solid ${color}40`,
-        background: active ? `${color}20` : 'rgba(255,255,255,0.04)',
+        gap: 2,
+        padding: '6px 10px',
+        borderRadius: 10,
+        border: `1px solid ${color}30`,
+        background: active ? `${color}15` : 'rgba(255,255,255,0.03)',
         cursor: 'pointer',
         transition: 'all 0.2s',
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: 600,
-        color: '#fff',
-        minWidth: 80,
+        color: '#e2e8f0',
+        minWidth: 64,
     }),
     reactionEmoji: {
-        fontSize: 18,
+        fontSize: 16,
     },
     reactionCount: {
-        fontSize: 11,
-        opacity: 0.6,
+        fontSize: 10,
+        opacity: 0.5,
     },
     voteBtn: (color: string) => ({
         flex: 1,
-        padding: '12px 16px',
-        borderRadius: 12,
+        padding: '10px 14px',
+        borderRadius: 10,
         border: 'none',
         cursor: 'pointer',
         fontWeight: 700,
-        fontSize: 14,
+        fontSize: 12,
         color: '#fff',
         background: `linear-gradient(135deg, ${color}, ${color}99)`,
         transition: 'transform 0.2s, box-shadow 0.2s',
-        boxShadow: `0 4px 16px ${color}40`,
+        boxShadow: `0 4px 16px ${color}30, inset 0 1px 0 rgba(255,255,255,0.1)`,
         textAlign: 'center' as const,
     }),
     resultBanner: (isWin: boolean) => ({
         textAlign: 'center' as const,
-        padding: '16px 0',
+        padding: '12px 0',
         position: 'relative' as const,
         zIndex: 1,
     }),
@@ -205,15 +205,14 @@ const ARENA_STYLES = {
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        background: 'linear-gradient(135deg, rgba(15,12,30,0.98), rgba(30,20,60,0.98))',
-        border: '1px solid rgba(168,85,247,0.4)',
-        borderRadius: 20,
-        padding: 32,
+        background: 'linear-gradient(135deg, rgba(10,15,30,0.98), rgba(15,22,40,0.98))',
+        border: '1px solid rgba(200,150,46,0.25)',
+        borderRadius: 18,
+        padding: 28,
         zIndex: 9999,
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        backdropFilter: 'blur(30px)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6), 0 0 30px rgba(200,150,46,0.08)',
         textAlign: 'center' as const,
-        minWidth: 340,
+        minWidth: 320,
     },
     backdrop: {
         position: 'fixed' as const,
@@ -226,7 +225,7 @@ const ARENA_STYLES = {
 const CSS_ANIMATIONS = `
 @keyframes duelPulse {
   0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.2); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 0.85; }
 }
 @keyframes confettiDrop {
   0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
@@ -419,10 +418,10 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                     <div style={{ fontSize: 48, marginBottom: 12 }}>⚔️</div>
                     <h3 style={{ color: '#fff', fontSize: 20, fontWeight: 800, marginBottom: 8 }}>Düello Daveti!</h3>
                     <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 14, marginBottom: 12, lineHeight: 1.6 }}>
-                        <strong style={{ color: '#a855f7' }}>{challengeFrom.challengerName}</strong> seni düelloya davet ediyor!
+                    <strong style={{ color: '#c8962e' }}>{challengeFrom.challengerName}</strong> seni düelloya davet ediyor!
                     </p>
                     <div style={{
-                        background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)',
+                        background: 'rgba(200,150,46,0.08)', border: '1px solid rgba(200,150,46,0.15)',
                         borderRadius: 10, padding: '10px 14px', marginBottom: 16, textAlign: 'left' as const,
                     }}>
                         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12, margin: 0, lineHeight: 1.7 }}>
@@ -471,8 +470,8 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         if (isParticipant) {
             return (
                 <div style={{
-                    background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.2)',
-                    borderRadius: 10, padding: '8px 12px', margin: '8px 0',
+                    background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.15)',
+                    borderRadius: 8, padding: '6px 10px', margin: '6px 0',
                     position: 'relative' as const, zIndex: 1,
                 }}>
                     <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0, lineHeight: 1.6 }}>
@@ -498,12 +497,12 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
         }
         return (
             <div style={{
-                background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)',
-                borderRadius: 10, padding: '8px 12px', margin: '8px 0',
+                background: 'rgba(123,159,239,0.08)', border: '1px solid rgba(123,159,239,0.15)',
+                borderRadius: 8, padding: '6px 10px', margin: '6px 0',
                 position: 'relative' as const, zIndex: 1,
             }}>
                 <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 12, margin: 0, lineHeight: 1.6 }}>
-                    👂 <strong style={{ color: '#a855f7' }}>Düello dinleyicisisin!</strong> Aşağıdaki butonlarla reaksiyon gönder (3sn bekleme süresi). Tartışma bitince oy kullanacaksın.
+                    👂 <strong style={{ color: '#7b9fef' }}>Düello dinleyicisisin!</strong> Aşağıdaki butonlarla reaksiyon gönder (3sn bekleme süresi). Tartışma bitince oy kullanacaksın.
                 </p>
             </div>
         );
@@ -558,7 +557,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             return (
                 <div style={{ textAlign: 'center', padding: '16px 0', position: 'relative', zIndex: 1 }}>
                     <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14 }}>Dinleyiciler oy kullanıyor...</p>
-                    <p style={{ color: '#a855f7', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
+                    <p style={{ color: '#7b9fef', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
                         {challengerVotes} — {opponentVotes}
                     </p>
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
@@ -572,7 +571,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
             return (
                 <div style={{ textAlign: 'center', padding: '16px 0', position: 'relative', zIndex: 1 }}>
                     <p style={{ color: '#22c55e', fontSize: 14, fontWeight: 600 }}>✅ Oyunuz kaydedildi!</p>
-                    <p style={{ color: '#a855f7', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
+                    <p style={{ color: '#7b9fef', fontWeight: 700, fontSize: 18, marginTop: 8 }}>
                         {challengerVotes} — {opponentVotes}
                     </p>
                     <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, marginTop: 4 }}>
@@ -588,10 +587,10 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                     🗳️ Kimin daha iyi tartıştığını oyla! ({votingRemaining}s)
                 </p>
                 <div style={{ display: 'flex', gap: 12 }}>
-                    <button onClick={() => sendVote(duelData.challengerId)} style={ARENA_STYLES.voteBtn('#a855f7')}>
+                    <button onClick={() => sendVote(duelData.challengerId)} style={ARENA_STYLES.voteBtn('#3b82f6')}>
                         {duelData.challengerName}
                     </button>
-                    <button onClick={() => sendVote(duelData.opponentId)} style={ARENA_STYLES.voteBtn('#ec4899')}>
+                    <button onClick={() => sendVote(duelData.opponentId)} style={ARENA_STYLES.voteBtn('#c8962e')}>
                         {duelData.opponentName}
                     </button>
                 </div>
@@ -633,7 +632,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                                 {result.challengerName} {result.challengerVotes} — {result.opponentVotes} {result.opponentName}
                             </p>
                         )}
-                        <p style={{ color: '#a855f7', fontSize: 12, marginTop: 4 }}>🏆 +10 puan | 💀 -10 puan</p>
+                        <p style={{ color: '#c8962e', fontSize: 12, marginTop: 4 }}>🏆 +10 puan | 💀 -10 puan</p>
                     </>
                 )}
             </div>
@@ -650,7 +649,7 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                 <div style={ARENA_STYLES.header}>
                     <span style={ARENA_STYLES.title}>⚔️ Eristik Düello</span>
                     {phase === 'active' && <span style={ARENA_STYLES.timer}>{formatTime(remaining)}</span>}
-                    {phase === 'voting' && <span style={{ ...ARENA_STYLES.timer, color: '#f59e0b' }}>🗳️ Oylama</span>}
+                    {phase === 'voting' && <span style={{ ...ARENA_STYLES.timer, color: '#c8962e' }}>🗳️ Oylama</span>}
                     {phase === 'result' && <span style={{ ...ARENA_STYLES.timer, color: '#22c55e' }}>Sonuç</span>}
                 </div>
 
@@ -662,17 +661,17 @@ export default function DuelArena({ socket, currentUserId, roomSlug }: Props) {
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.challengerName}</span>
                         {(phase === 'voting' || phase === 'result') && (
-                            <span style={{ fontSize: 18, fontWeight: 900, color: '#a855f7' }}>{challengerVotes}</span>
+                            <span style={{ fontSize: 16, fontWeight: 900, color: '#3b82f6' }}>{challengerVotes}</span>
                         )}
                     </div>
                     <span style={ARENA_STYLES.vs}>⚔️</span>
                     <div style={ARENA_STYLES.participant}>
-                        <div style={{ ...ARENA_STYLES.avatar, borderColor: 'rgba(236,72,153,0.5)' }}>
+                        <div style={{ ...ARENA_STYLES.avatar, borderColor: 'rgba(200,150,46,0.4)' }}>
                             <img src={duelData.opponentAvatar || `/avatars/neutral_1.png`} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />
                         </div>
                         <span style={ARENA_STYLES.name}>{duelData.opponentName}</span>
                         {(phase === 'voting' || phase === 'result') && (
-                            <span style={{ fontSize: 18, fontWeight: 900, color: '#ec4899' }}>{opponentVotes}</span>
+                            <span style={{ fontSize: 16, fontWeight: 900, color: '#c8962e' }}>{opponentVotes}</span>
                         )}
                     </div>
                 </div>
