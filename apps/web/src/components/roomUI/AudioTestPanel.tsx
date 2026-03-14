@@ -62,7 +62,7 @@ function MicDropdown({ devices, selectedId, disabled, onChange }: {
                     width: '100%', fontSize: 10, color: '#e2e8f0', fontWeight: 600,
                     borderRadius: 8, padding: '7px 10px',
                     background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(139,92,246,0.12)',
+                    border: '1px solid rgba(59,130,246,0.12)',
                     cursor: disabled ? 'not-allowed' : 'pointer',
                     opacity: disabled ? 0.4 : 1,
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -90,7 +90,7 @@ function MicDropdown({ devices, selectedId, disabled, onChange }: {
                                 top: pos.top - dropH - 4,
                                 width: pos.width,
                                 background: '#0f1423',
-                                border: '1px solid rgba(139,92,246,0.25)',
+                                border: '1px solid rgba(59,130,246,0.25)',
                                 borderRadius: 10,
                                 boxShadow: '0 -8px 32px rgba(0,0,0,0.7), 0 4px 16px rgba(0,0,0,0.4)',
                                 maxHeight: 180,
@@ -106,14 +106,14 @@ function MicDropdown({ devices, selectedId, disabled, onChange }: {
                                     onClick={() => { onChange(item.deviceId); setOpen(false); }}
                                     style={{
                                         width: '100%', padding: '7px 10px', fontSize: 10, fontWeight: 600,
-                                        color: selectedId === item.deviceId ? '#c4b5fd' : '#e2e8f0',
-                                        background: selectedId === item.deviceId ? 'rgba(139,92,246,0.15)' : 'transparent',
+                                color: selectedId === item.deviceId ? '#93c5fd' : '#e2e8f0',
+                                        background: selectedId === item.deviceId ? 'rgba(59,130,246,0.15)' : 'transparent',
                                         border: 'none', cursor: 'pointer', textAlign: 'left',
                                         display: 'flex', alignItems: 'center', gap: 6,
                                         transition: 'all 0.1s ease',
                                     }}
-                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.22)'; }}
-                                    onMouseOut={e => { e.currentTarget.style.background = selectedId === item.deviceId ? 'rgba(139,92,246,0.15)' : 'transparent'; }}
+                                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.22)'; }}
+                                    onMouseOut={e => { e.currentTarget.style.background = selectedId === item.deviceId ? 'rgba(59,130,246,0.15)' : 'transparent'; }}
                                 >
                                     {selectedId === item.deviceId && <span style={{ fontSize: 10 }}>✓</span>}
                                     <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.label}</span>
@@ -338,8 +338,8 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
             {/* ── Header ── */}
             <div style={{
                 display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px',
-                background: 'linear-gradient(135deg, rgba(139,92,246,0.10), rgba(59,130,246,0.06))',
-                borderBottom: '1px solid rgba(139,92,246,0.12)',
+                background: 'linear-gradient(135deg, rgba(59,130,246,0.08), rgba(34,211,238,0.05))',
+                borderBottom: '1px solid rgba(59,130,246,0.10)',
             }}>
                 <button
                     onClick={handleClose}
@@ -349,7 +349,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                         cursor: 'pointer', color: '#94a3b8', transition: 'all 0.2s',
                     }}
-                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.2)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                    onMouseOver={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; e.currentTarget.style.color = '#93c5fd'; }}
                     onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
                 >
                     <ArrowLeft style={{ width: 13, height: 13 }} />
@@ -388,7 +388,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                         <div key={i} style={{
                             position: 'absolute', inset: -8 - i * 12,
                             borderRadius: '50%',
-                            border: `1.5px solid rgba(139,92,246,${0.15 - i * 0.04})`,
+                            border: `1.5px solid rgba(59,130,246,${0.15 - i * 0.04})`,
                             animation: `pulseRing 2s ease-out infinite ${i * 0.5}s`,
                             pointerEvents: 'none',
                         }} />
@@ -410,14 +410,14 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                                     ? 'linear-gradient(145deg, #22d3ee, #06b6d4)'
                                     : phase === 'recorded'
                                         ? 'linear-gradient(145deg, #34d399, #10b981)'
-                                        : 'linear-gradient(145deg, #8b5cf6, #7c3aed)',
+                                        : 'linear-gradient(145deg, #3b82f6, #2563eb)',
                             boxShadow: phase === 'recording'
                                 ? '0 0 30px rgba(239,68,68,0.4), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
                                 : phase === 'playing'
                                     ? '0 0 30px rgba(34,211,238,0.3), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
                                     : phase === 'recorded'
                                         ? '0 0 30px rgba(52,211,153,0.3), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)'
-                                        : '0 0 30px rgba(139,92,246,0.3), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
+                                        : '0 0 30px rgba(59,130,246,0.3), 0 4px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)',
                             transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
                             transform: phase === 'recording' ? 'scale(1.05)' : 'scale(1)',
                         }}
@@ -507,7 +507,7 @@ export function AudioTestPanel({ onClose }: AudioTestPanelProps) {
                             cursor: 'pointer', transition: 'all 0.2s',
                             letterSpacing: '0.03em',
                         }}
-                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(139,92,246,0.15)'; e.currentTarget.style.color = '#c4b5fd'; }}
+                        onMouseOver={e => { e.currentTarget.style.background = 'rgba(59,130,246,0.15)'; e.currentTarget.style.color = '#93c5fd'; }}
                         onMouseOut={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = '#94a3b8'; }}
                     >
                         <RotateCcw style={{ width: 11, height: 11 }} />
