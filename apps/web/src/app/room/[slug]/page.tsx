@@ -1955,7 +1955,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             }
 
                             {/* ═══ HOMEPAGE-STYLE FRAME + TOP BAR ═══ */}
-                            <div style={{
+                            <div className={typeof window !== 'undefined' && sessionStorage.getItem('room-anims-played') ? 'room-anims-done' : ''} ref={(el) => { if (el && typeof window !== 'undefined') { setTimeout(() => sessionStorage.setItem('room-anims-played', '1'), 2500); } }} style={{
                                 width: '100%',
                                 maxWidth: 1400,
                                 margin: '0 auto',
@@ -1971,7 +1971,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 overflow: 'visible',
                                 height: 968,
                                 paddingBottom: 32,
-                                animation: 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                                animation: typeof window !== 'undefined' && sessionStorage.getItem('room-anims-played') ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
                             }}>
                                 {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}
                                 <style>{`
@@ -2047,6 +2047,23 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     @keyframes glowLightUp {
                                         0% { opacity: 0; }
                                         100% { opacity: 1; }
+                                    }
+                                    /* Animasyonlar bir kez oynadıktan sonra devre dışı */
+                                    .room-anims-done .sidebar-left::before,
+                                    .room-anims-done .right-live-panel::before,
+                                    .room-anims-done .sidebar-right::before {
+                                        animation: none !important;
+                                        opacity: 1 !important;
+                                        transform: translateX(-50%) translateY(0) !important;
+                                    }
+                                    .room-anims-done .sidebar-left::after {
+                                        animation: none !important;
+                                        opacity: 1 !important;
+                                    }
+                                    .room-anims-done .meeting-room-panel::before {
+                                        animation: none !important;
+                                        opacity: 1 !important;
+                                        transform: translateX(-50%) translateY(0) !important;
                                     }
                                     /* === RAPTİYE (pushpins) — orta sütun chat kartı === */
                                     .room-container main.flex-1 > .chat-area {
