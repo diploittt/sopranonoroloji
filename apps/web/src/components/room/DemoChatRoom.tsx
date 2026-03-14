@@ -217,20 +217,33 @@ export function DemoChatRoom({ slug, room: externalRoom, onRoomData }: { slug: s
         }
     }, [nudgeCooldown > 0]);
 
-    // ★ Ana Sayfa Profil → Oda Senkronizasyonu
+    // ★ Ana Sayfa Profil → Oda Senkronizasyonu (status:change-* event'leri kullanılır)
+    const lastSyncedRef = React.useRef<{ name?: string; avatar?: string; nameColor?: string }>({});
     useEffect(() => {
         const onAuthChange = () => {
-            if (room.socket) {
-                const au = getAuthUser();
-                if (au) {
-                    room.socket.emit('user:profileUpdate', {
-                        displayName: au.username,
-                        avatar: au.avatar,
-                        nameColor: (au as any).nameColor,
-                    });
-                }
+            if (!room.socket) return;
+            const au = getAuthUser();
+            if (!au) return;
+            const prev = lastSyncedRef.current;
+            // Sadece gerçek değişikliklerde emit yap (döngü önleme)
+            if (au.username && au.username !== prev.name) {
+                room.socket.emit('status:change-name', { newName: au.username });
+                prev.name = au.username;
+            }
+            if (au.avatar && au.avatar !== prev.avatar) {
+                room.socket.emit('status:change-avatar', { avatar: au.avatar });
+                prev.avatar = au.avatar;
+            }
+            if ((au as any).nameColor && (au as any).nameColor !== prev.nameColor) {
+                room.socket.emit('status:change-name-color', { color: (au as any).nameColor });
+                prev.nameColor = (au as any).nameColor;
             }
         };
+        // İlk değerleri kaydet (döngü önleme)
+        const au = getAuthUser();
+        if (au) {
+            lastSyncedRef.current = { name: au.username, avatar: au.avatar, nameColor: (au as any).nameColor };
+        }
         window.addEventListener('auth-change', onAuthChange);
         return () => window.removeEventListener('auth-change', onAuthChange);
     }, [room.socket]);

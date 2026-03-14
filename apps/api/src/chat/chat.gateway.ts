@@ -333,9 +333,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // ★ PERIODIC ZOMBIE SWEEP — Her 60sn'de bir bağlı olmayan socket'leri temizle
     this.zombieSweepInterval = setInterval(() => {
       const zombieIds: string[] = [];
+      const now = Date.now();
       for (const [socketId, participant] of this.participants.entries()) {
         const socket = this.server?.sockets?.sockets?.get(socketId);
         if (!socket || !socket.connected) {
+          // ★ GRACE PERIOD: Yeni katılmış kullanıcıları korumak için 30sn bekle
+          // Socket.IO bazen geçici durumlar sırasında socket'i bulamayabiliyor
+          const joinedAt = (participant as any)._joinedAt || 0;
+          if (now - joinedAt < 30000) {
+            continue; // Henüz çok yeni — silme
+          }
+          // ★ ADAPTER KONTROLÜ: Socket adapter room'unda hâlâ kayıtlı mı?
+          const adapterRoom = this.server?.sockets?.adapter?.rooms?.get(participant.roomId);
+          if (adapterRoom?.has(socketId)) {
+            continue; // Adapter'da hâlâ var — muhtemelen aktif, silme
+          }
           zombieIds.push(socketId);
         }
       }
@@ -356,7 +368,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         }
         // Etkilenen odaların katılımcı listesini güncelle
         for (const roomId of affectedRooms) {
-          this.broadcastParticipants(roomId);
+          this._doBroadcastParticipants(roomId);
         }
       }
     }, 60000); // 60 saniye
@@ -802,7 +814,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(`[user:profileUpdate] ${participant.displayName} profil güncellendi (room=${participant.roomId})`);
 
     // Odadaki herkese güncel katılımcı listesini yayınla
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   public handleAdminUserUpdate(userId: string, data: any) {
@@ -853,7 +865,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     if (found && roomId) {
-      this.broadcastParticipants(roomId);
+      this._doBroadcastParticipants(roomId);
       this.logger.log(
         `[Sync] Admin update for user ${userId} applied in room ${roomId}`,
       );
@@ -998,7 +1010,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.participants.delete(client.id);
 
     // Broadcast updated participant list and room counts
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
     this.broadcastRoomCounts(participant.tenantId);
 
     // ★ DB CLEANUP — Mark participant as inactive AND user as offline
@@ -1442,7 +1454,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           userId: zombieParticipant.userId,
           socketId: zombieId,
         });
-        this.broadcastParticipants(zombieParticipant.roomId);
+        this._doBroadcastParticipants(zombieParticipant.roomId);
         this.participants.delete(zombieId);
       }
     }
@@ -1578,6 +1590,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     this.participants.set(client.id, participant);
+    (participant as any)._joinedAt = Date.now(); // ZOMBIE SWEEP grace period için
 
     // ★ SOFT BAN — mark participant as banned if soft ban applies
     if (softBanInfo) {
@@ -2213,7 +2226,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           });
         }
       });
-      this.broadcastParticipants(participant.roomId);
+      this._doBroadcastParticipants(participant.roomId);
       return;
     }
 
@@ -2278,7 +2291,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Re-broadcast participant list to everyone in the room
     // Each viewer gets a filtered list based on their role
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   // ═══════════ Change Display Name ═══════════
@@ -2341,7 +2354,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Broadcast updated participant list
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   // ═══════════ Change Avatar ═══════════
@@ -2371,7 +2384,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error(`Failed to persist avatar change for ${participant.userId}: ${e.message}`);
     }
 
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   // ═══════════ Change Name Color ═══════════
@@ -2402,7 +2415,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.error(`Failed to persist name color change for ${participant.userId}: ${e.message}`);
     }
 
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   // ═══════════ Change GodMaster Icon ═══════════
@@ -2426,7 +2439,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.logger.log(`GodMaster icon change: ${participant.displayName} → ${icon}`);
 
-    this.broadcastParticipants(participant.roomId);
+    this._doBroadcastParticipants(participant.roomId);
   }
 
   // ═══════════ Change Password ═══════════
@@ -3230,7 +3243,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
                 this.server.to(p.socketId).emit('auth:session-update', {
                   role: originalRole,
                 });
-                this.broadcastParticipants(p.roomId);
+                this._doBroadcastParticipants(p.roomId);
                 this.logger.log(`[TEMP ROLE EXPIRED] ${p.displayName}: ${newRole} → ${originalRole}`);
               }
             }
@@ -3264,7 +3277,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             message: `${target.displayName} → ${newRole}`,
           });
 
-          this.broadcastParticipants(target.roomId);
+          this._doBroadcastParticipants(target.roomId);
 
           this.logger.log(
             `[TEMP ROLE] ${actor.displayName} → ${target.displayName}: ${previousRole} → ${newRole} (expires: ${expiresAt.toISOString()})`,
@@ -3306,7 +3319,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('room:toast', {
           type: 'success', title: 'Rol', message: `${target.displayName} → oda operatörü`,
         });
-        this.broadcastParticipants(target.roomId);
+        this._doBroadcastParticipants(target.roomId);
         this.logger.log(`[MAKE OPERATOR] ${actor.displayName} → ${target.displayName}: ${previousRoleOp} → operator`);
         break;
       }
@@ -3326,7 +3339,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         client.emit('room:toast', {
           type: 'success', title: 'Rol', message: `${target.displayName}: ${previousRoleRevoke} → member`,
         });
-        this.broadcastParticipants(target.roomId);
+        this._doBroadcastParticipants(target.roomId);
         this.logger.log(`[REVOKE ROLE] ${actor.displayName} → ${target.displayName}: ${previousRoleRevoke} → member`);
         break;
       }
@@ -3447,7 +3460,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Notify the target user directly
         this.server.to(target.socketId).emit('room:moderation', { action: 'mute', isMuted: target.isMuted });
         // Broadcast updated participant list to all viewers (per-viewer filtered)
-        this.broadcastParticipants(targetRoomId);
+        this._doBroadcastParticipants(targetRoomId);
         client.emit('admin:remoteActionResult', { success: true, message: `${target.displayName} ${target.isMuted ? 'susturuldu' : 'sesi açıldı'}.` });
         break;
       }
@@ -3457,7 +3470,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // Notify the target user directly
         this.server.to(target.socketId).emit('room:moderation', { action: 'gag', isGagged: target.isGagged });
         // Broadcast updated participant list to all viewers (per-viewer filtered)
-        this.broadcastParticipants(targetRoomId);
+        this._doBroadcastParticipants(targetRoomId);
         client.emit('admin:remoteActionResult', { success: true, message: `${target.displayName} ${target.isGagged ? 'yazı yasağı verildi' : 'yazı yasağı kaldırıldı'}.` });
         break;
       }
@@ -3701,7 +3714,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.warn(`[admin:pull-user] socketsLeave failed: ${leaveErr.message}`);
     }
     this.participants.delete(socketId);
-    this.broadcastParticipants(oldRoomId);
+    this._doBroadcastParticipants(oldRoomId);
 
     // Kullanıcıya yönlendirme emri gönder
     this.server.to(socketId).emit('room:force-navigate', {

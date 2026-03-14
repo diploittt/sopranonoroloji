@@ -504,7 +504,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
             {isAudioTestOpen && onCloseAudioTest ? (
                 <AudioTestPanel onClose={onCloseAudioTest} />
             ) : (
-                <div className="flex-1 p-6 custom-scrollbar space-y-6 overflow-y-auto" style={{ contain: 'layout style', willChange: 'contents' }}>
+                <div className="flex-1 p-3 custom-scrollbar space-y-3 overflow-y-auto">
                     {/* ═══ KONUŞMACI BÖLÜMÜ — logo altında, online listesinin üstünde ═══ */}
                     {!isMeetingRoom && currentSpeaker && (() => {
                         const speakerUser = sortedUsers.find(u => u.userId === currentSpeaker.userId);

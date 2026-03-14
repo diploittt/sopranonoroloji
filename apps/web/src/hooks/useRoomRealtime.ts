@@ -531,8 +531,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     localStorage.setItem('soprano_user', JSON.stringify(newState));
                 } catch (e) { console.error(e); }
                 // Also update participant list so sidebar reflects the change immediately
-                if (data.role && prev.userId) {
-                    updateParticipantLocally(prev.userId, { role: data.role } as any);
+                if (prev.userId) {
+                    const partialUpdate: any = {};
+                    if (data.role) partialUpdate.role = data.role;
+                    if (data.displayName) { partialUpdate.displayName = data.displayName; partialUpdate.username = data.displayName; }
+                    if (data.avatar) partialUpdate.avatar = data.avatar;
+                    if (Object.keys(partialUpdate).length > 0) {
+                        updateParticipantLocally(prev.userId, partialUpdate);
+                    }
                 }
                 return newState;
             });
