@@ -488,6 +488,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const isMeetingRoom = activeSlug === 'staff-meeting';
     const isOne2OneRoom = activeSlug.startsWith('one2one-');
 
+    // Animasyonlar bir kez oynadıktan sonra tekrarı engelle (SSR-safe)
+    const [roomAnimsPlayed, setRoomAnimsPlayed] = useState(false);
+    useEffect(() => {
+        if (sessionStorage.getItem('room-anims-played')) {
+            setRoomAnimsPlayed(true);
+        } else {
+            const t = setTimeout(() => { sessionStorage.setItem('room-anims-played', '1'); setRoomAnimsPlayed(true); }, 2500);
+            return () => clearTimeout(t);
+        }
+    }, []);
+
 
     // ─── Active Design (dizayn preset'inden gelen bölgesel renkler) ───
     const activeDesign = useMemo(() => {
@@ -1955,7 +1966,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             }
 
                             {/* ═══ HOMEPAGE-STYLE FRAME + TOP BAR ═══ */}
-                            <div className={typeof window !== 'undefined' && sessionStorage.getItem('room-anims-played') ? 'room-anims-done' : ''} ref={(el) => { if (el && typeof window !== 'undefined') { setTimeout(() => sessionStorage.setItem('room-anims-played', '1'), 2500); } }} style={{
+                            <div className={roomAnimsPlayed ? 'room-anims-done' : ''} style={{
                                 width: '100%',
                                 maxWidth: 1400,
                                 margin: '0 auto',
@@ -1971,7 +1982,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 overflow: 'visible',
                                 height: 968,
                                 paddingBottom: 32,
-                                animation: typeof window !== 'undefined' && sessionStorage.getItem('room-anims-played') ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                                animation: roomAnimsPlayed ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
                             }}>
                                 {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}
                                 <style>{`
