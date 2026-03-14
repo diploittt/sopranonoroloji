@@ -2966,7 +2966,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         <style>{`
                                                             @keyframes spinLoader {
                                                                 from { transform: rotate(0deg); }
-                                                                to { transform: rotate(360deg); }
+                                                                to { transform: rotate(-360deg); }
                                                             }
                                                             @keyframes pulseText {
                                                                 0%, 100% { opacity: 0.5; }
