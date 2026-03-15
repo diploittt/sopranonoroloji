@@ -11,20 +11,20 @@ export default function AdminPage() {
     const [checking, setChecking] = useState(true);
 
     useEffect(() => {
-        const token = localStorage.getItem('soprano_admin_token');
+        const token = sessionStorage.getItem('soprano_admin_token');
         if (!token) {
             router.replace('/riconun-odasi');
             return;
         }
         // Validate token exists and user has admin role
         try {
-            const userStr = localStorage.getItem('soprano_admin_user');
+            const userStr = sessionStorage.getItem('soprano_admin_user');
             if (userStr) {
                 const user = JSON.parse(userStr);
                 const allowedRoles = ['admin', 'superadmin', 'owner', 'godmaster'];
                 if (!allowedRoles.includes(user?.role?.toLowerCase())) {
-                    localStorage.removeItem('soprano_admin_token');
-                    localStorage.removeItem('soprano_admin_user');
+                    sessionStorage.removeItem('soprano_admin_token');
+                    sessionStorage.removeItem('soprano_admin_user');
                     router.replace('/riconun-odasi');
                     return;
                 }

@@ -82,7 +82,7 @@ export default function OwnerPanel() {
 
     // Auth check — redirect to login if no token
     useEffect(() => {
-        const token = localStorage.getItem('soprano_admin_token');
+        const token = sessionStorage.getItem('soprano_admin_token');
         if (!token) {
             router.replace('/riconun-odasi');
             return;
@@ -133,7 +133,7 @@ export default function OwnerPanel() {
     const fetchInlineOrders = async () => {
         setOrdersLoading(true); setOrdersError('');
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/orders`, { headers: { Authorization: `Bearer ${token}` } });
             if (!res.ok) throw new Error('Siparişler yüklenemedi');
             const data = await res.json();
@@ -157,7 +157,7 @@ export default function OwnerPanel() {
 
     const orderUpdateStatus = async (id: string, status: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/orders/${id}/status`, {
                 method: 'PATCH', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ status })
@@ -189,7 +189,7 @@ export default function OwnerPanel() {
             type: 'danger',
             onConfirm: async () => {
                 try {
-                    const token = localStorage.getItem('soprano_admin_token');
+                    const token = sessionStorage.getItem('soprano_admin_token');
                     await fetch(`${API_URL}/admin/orders/${id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } });
                     addToast('Sipariş silindi.', 'success');
                     fetchInlineOrders();
@@ -212,7 +212,7 @@ export default function OwnerPanel() {
         // Pending count API
         const fetchPendingCount = async () => {
             try {
-                const token = localStorage.getItem('soprano_admin_token');
+                const token = sessionStorage.getItem('soprano_admin_token');
                 const res = await fetch(`${API_URL}/admin/orders/pending-count`, {
                     headers: { Authorization: `Bearer ${token}` },
                 });
@@ -225,7 +225,7 @@ export default function OwnerPanel() {
         fetchPendingCount();
 
         // Socket.IO bağlantısı — admin:new_order dinle
-        const token = localStorage.getItem('soprano_admin_token');
+        const token = sessionStorage.getItem('soprano_admin_token');
         if (token) {
             const socket = io(API_URL.replace('/api', ''), {
                 auth: { token },
@@ -258,7 +258,7 @@ export default function OwnerPanel() {
     const fetchSystemLogs = async () => {
         setLogLoading(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const params = new URLSearchParams();
             params.set('page', String(logPage));
             params.set('limit', '25');
@@ -328,7 +328,7 @@ export default function OwnerPanel() {
     const loadHqMembers = async () => {
         setHqMembersLoading(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users?limit=100`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -352,7 +352,7 @@ export default function OwnerPanel() {
     const loadContactMessages = async () => {
         setContactMsgLoading(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/contact-messages`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -369,7 +369,7 @@ export default function OwnerPanel() {
 
     const markContactMessageRead = async (id: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             await fetch(`${API_URL}/admin/contact-messages/${id}/read`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -381,7 +381,7 @@ export default function OwnerPanel() {
 
     const deleteContactMsg = async (id: string, wasUnread: boolean) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             await fetch(`${API_URL}/admin/contact-messages/${id}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -395,7 +395,7 @@ export default function OwnerPanel() {
         if (!newHelper.displayName || !newHelper.email || !newHelper.password) return;
         setAddingHelper(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/members`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -425,7 +425,7 @@ export default function OwnerPanel() {
         }
         setSavingPassword(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -449,7 +449,7 @@ export default function OwnerPanel() {
         }
         setSavingUsername(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -471,7 +471,7 @@ export default function OwnerPanel() {
         if (!balanceAmount || isNaN(Number(balanceAmount))) return;
         setSavingBalance(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${userId}/balance`, {
                 method: 'PATCH',
                 headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -495,7 +495,7 @@ export default function OwnerPanel() {
 
     const handleDeleteHelper = async (userId: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${token}` }
@@ -513,7 +513,7 @@ export default function OwnerPanel() {
         if (!adminUser?.id) return;
         setSavingProfile(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${adminUser.id}`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -670,7 +670,7 @@ export default function OwnerPanel() {
     const fetchSiteConfig = async () => {
         setSiteConfigLoading(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/settings`, { headers: { Authorization: `Bearer ${token}` } });
             if (res.ok) {
                 const data = await res.json();
@@ -688,7 +688,7 @@ export default function OwnerPanel() {
     const saveSiteConfig = async () => {
         setSiteConfigSaving(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const tenantId = systemTenantId || 'system';
             // Settings endpoint'ine PUT et
             const res = await fetch(`${API_URL}/admin/settings`, {
@@ -712,7 +712,7 @@ export default function OwnerPanel() {
         setTenantDetailLoading(true);
         setTenantRooms([]); setTenantMembers([]);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const headers = { Authorization: `Bearer ${token}` };
             const [roomsRes, membersRes] = await Promise.all([
                 fetch(`${API_URL}/admin/customers/${tenantId}/rooms`, { headers }),
@@ -726,7 +726,7 @@ export default function OwnerPanel() {
 
     const handleGodMasterEnter = async (tenantId: string, roomSlug?: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${tenantId}/godmaster-token`, {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
@@ -753,7 +753,7 @@ export default function OwnerPanel() {
         // Fetch system tenant ID separately (excluded from getCustomers)
         (async () => {
             try {
-                const token = localStorage.getItem('soprano_admin_token');
+                const token = sessionStorage.getItem('soprano_admin_token');
                 const res = await fetch(`${API_URL}/admin/customers/system-tenant`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -779,7 +779,7 @@ export default function OwnerPanel() {
     useEffect(() => {
         const fetchStats = async () => {
             try {
-                const token = localStorage.getItem('soprano_admin_token');
+                const token = sessionStorage.getItem('soprano_admin_token');
                 const res = await fetch(`${API_URL}/admin/stats`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -798,7 +798,7 @@ export default function OwnerPanel() {
     useEffect(() => {
         const fetchNotifs = async () => {
             try {
-                const token = localStorage.getItem('soprano_admin_token');
+                const token = sessionStorage.getItem('soprano_admin_token');
                 const res = await fetch(`${API_URL}/admin/announcements`, {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
@@ -868,8 +868,8 @@ export default function OwnerPanel() {
         // Clear auth state
         removeAuthUser();
         // Clear admin token
-        localStorage.removeItem('soprano_admin_token');
-        localStorage.removeItem('soprano_admin_user');
+        sessionStorage.removeItem('soprano_admin_token');
+        sessionStorage.removeItem('soprano_admin_user');
         // Redirect to admin login
         router.push('/riconun-odasi');
     };
@@ -1180,7 +1180,7 @@ export default function OwnerPanel() {
                                                     if (!adminUser?.id) return;
                                                     setSavingProfile(true);
                                                     try {
-                                                        const token = localStorage.getItem('soprano_admin_token');
+                                                        const token = sessionStorage.getItem('soprano_admin_token');
                                                         const res = await fetch(`${API_URL}/admin/users/${adminUser.id}`, {
                                                             method: 'PATCH',
                                                             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -2861,8 +2861,8 @@ export default function OwnerPanel() {
                                                         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
                                                             <div><div className="text-sm font-semibold text-white">Admin Token</div><div className="text-[11px] text-gray-400 mt-0.5">Mevcut oturum token bilgisi</div></div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs text-gray-400 font-mono">{(localStorage.getItem('soprano_admin_token') || '').substring(0, 20)}...</span>
-                                                                <button onClick={() => { navigator.clipboard.writeText(localStorage.getItem('soprano_admin_token') || ''); addToast('Token kopyalandı', 'success'); }} className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
+                                                                <span className="text-xs text-gray-400 font-mono">{(sessionStorage.getItem('soprano_admin_token') || '').substring(0, 20)}...</span>
+                                                                <button onClick={() => { navigator.clipboard.writeText(sessionStorage.getItem('soprano_admin_token') || ''); addToast('Token kopyalandı', 'success'); }} className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -2883,7 +2883,7 @@ export default function OwnerPanel() {
                                                             <div className="text-sm font-semibold text-white">Yönetici Yönetimi</div>
                                                             <div className="text-[10px] text-gray-400 mt-0.5">Admin ve yardımcılar</div>
                                                         </button>
-                                                        <button onClick={() => { localStorage.removeItem('soprano_admin_token'); localStorage.removeItem('soprano_admin_user'); router.replace('/riconun-odasi'); }} className="p-4 rounded-xl bg-white/[0.02] hover:bg-red-500/[0.05] border border-white/5 hover:border-red-500/20 transition-all text-left group">
+                                                        <button onClick={() => { sessionStorage.removeItem('soprano_admin_token'); sessionStorage.removeItem('soprano_admin_user'); router.replace('/riconun-odasi'); }} className="p-4 rounded-xl bg-white/[0.02] hover:bg-red-500/[0.05] border border-white/5 hover:border-red-500/20 transition-all text-left group">
                                                             <LogOut className="w-5 h-5 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
                                                             <div className="text-sm font-semibold text-white">Çıkış Yap</div>
                                                             <div className="text-[10px] text-gray-400 mt-0.5">Oturumu sonlandır</div>
@@ -3969,7 +3969,7 @@ export default function OwnerPanel() {
                                             onClick={async () => {
                                                 setLoadingOverdue(true);
                                                 try {
-                                                    const token = localStorage.getItem('soprano_admin_token');
+                                                    const token = sessionStorage.getItem('soprano_admin_token');
                                                     const res = await fetch(`${API_URL}/admin/overdue-tenants`, {
                                                         headers: { Authorization: `Bearer ${token}` },
                                                     });
@@ -4005,7 +4005,7 @@ export default function OwnerPanel() {
                                                         onClick={async () => {
                                                             setSendingReminder(p => ({ ...p, [t.id]: true }));
                                                             try {
-                                                                const token = localStorage.getItem('soprano_admin_token');
+                                                                const token = sessionStorage.getItem('soprano_admin_token');
                                                                 const res = await fetch(`${API_URL}/admin/customers/${t.id}/payment-reminder`, {
                                                                     method: 'POST',
                                                                     headers: { Authorization: `Bearer ${token}` },
@@ -4057,12 +4057,12 @@ export default function OwnerPanel() {
                                                 try {
                                                     let tenantId = systemTenantId;
                                                     if (!tenantId) {
-                                                        const token = localStorage.getItem('soprano_admin_token');
+                                                        const token = sessionStorage.getItem('soprano_admin_token');
                                                         const res = await fetch(`${API_URL}/admin/customers/system-tenant`, { headers: { 'Authorization': `Bearer ${token}` } });
                                                         if (res.ok) { const data = await res.json(); tenantId = data.id; setSystemTenantId(tenantId!); }
                                                     }
                                                     if (!tenantId) { addToast('Sistem tenant bulunamadı', 'error'); return; }
-                                                    const token = localStorage.getItem('soprano_admin_token');
+                                                    const token = sessionStorage.getItem('soprano_admin_token');
                                                     const res = await fetch(`${API_URL}/admin/customers/${tenantId}/godmaster-token`, { method: 'POST', headers: { 'Authorization': `Bearer ${token}` } });
                                                     if (!res.ok) throw new Error('Token alınamadı');
                                                     const data = await res.json();
@@ -4078,7 +4078,7 @@ export default function OwnerPanel() {
                                                 onClick={async () => {
                                                     let tid = systemTenantId;
                                                     if (!tid) {
-                                                        const token = localStorage.getItem('soprano_admin_token');
+                                                        const token = sessionStorage.getItem('soprano_admin_token');
                                                         const res = await fetch(`${API_URL}/admin/customers/system-tenant`, { headers: { 'Authorization': `Bearer ${token}` } });
                                                         if (res.ok) { const data = await res.json(); tid = data.id; setSystemTenantId(tid!); }
                                                     }
@@ -4401,7 +4401,7 @@ export default function OwnerPanel() {
                                         if (!announcementText.trim()) return;
                                         setAnnouncementSending(true);
                                         try {
-                                            const token = localStorage.getItem('soprano_admin_token');
+                                            const token = sessionStorage.getItem('soprano_admin_token');
                                             const res = await fetch(`${API_URL}/admin/announcement`, {
                                                 method: 'POST',
                                                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -4462,7 +4462,7 @@ export default function OwnerPanel() {
                                             onClick={async () => {
                                                 setLoadingAnnouncements(true);
                                                 try {
-                                                    const token = localStorage.getItem('soprano_admin_token');
+                                                    const token = sessionStorage.getItem('soprano_admin_token');
                                                     const res = await fetch(`${API_URL}/admin/announcements`, {
                                                         headers: { Authorization: `Bearer ${token}` },
                                                     });
@@ -4501,7 +4501,7 @@ export default function OwnerPanel() {
                                                                     onClick={async () => {
                                                                         if (!editAnnouncementText.trim()) return;
                                                                         try {
-                                                                            const token = localStorage.getItem('soprano_admin_token');
+                                                                            const token = sessionStorage.getItem('soprano_admin_token');
                                                                             const res = await fetch(`${API_URL}/admin/announcements/${ann.id}`, {
                                                                                 method: 'PATCH',
                                                                                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -4541,7 +4541,7 @@ export default function OwnerPanel() {
                                                                                 type: 'danger',
                                                                                 onConfirm: async () => {
                                                                                     try {
-                                                                                        const token = localStorage.getItem('soprano_admin_token');
+                                                                                        const token = sessionStorage.getItem('soprano_admin_token');
                                                                                         const res = await fetch(`${API_URL}/admin/announcements/${ann.id}`, {
                                                                                             method: 'DELETE',
                                                                                             headers: { Authorization: `Bearer ${token}` },

@@ -120,9 +120,9 @@ export default function AdminLoginPage() {
                 throw new Error('Bu panele erişim yetkiniz bulunmuyor. Yalnızca Admin ve üzeri roller giriş yapabilir.');
             }
 
-            localStorage.setItem('soprano_admin_token', data.access_token);
+            sessionStorage.setItem('soprano_admin_token', data.access_token);
             localStorage.setItem('soprano_auth_token', data.access_token);
-            localStorage.setItem('soprano_admin_user', JSON.stringify(data.user));
+            sessionStorage.setItem('soprano_admin_user', JSON.stringify(data.user));
             setAuthUser(data.user);
 
             setToast({ message: `Hoş geldiniz, ${data.user?.displayName || data.user?.email || ''}!`, type: 'success' });
