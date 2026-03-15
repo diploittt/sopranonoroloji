@@ -29,7 +29,7 @@ export class AuthController {
       identifier,
       req.password,
     );
-    if (!user) throw new UnauthorizedException('Invalid credentials');
+    if (!user) throw new UnauthorizedException('E-posta veya şifre hatalı.');
     return this.authService.login(user);
   }
 
@@ -39,7 +39,7 @@ export class AuthController {
     @Body() body: { username: string; avatar?: string; gender?: string; tenantId?: string },
   ) {
     if (!body.username || body.username.trim().length < 2) {
-      throw new BadRequestException('Username must be at least 2 characters');
+      throw new BadRequestException('Kullanıcı adı en az 2 karakter olmalıdır.');
     }
     return this.authService.guestLogin(
       body.username.trim(),

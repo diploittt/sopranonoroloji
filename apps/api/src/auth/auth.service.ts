@@ -327,7 +327,7 @@ export class AuthService {
     providerId: string;
   }) {
     if (!reqUser) {
-      throw new BadRequestException('No user from social provider');
+      throw new BadRequestException('Sosyal giriş sağlayıcısından kullanıcı bilgisi alınamadı.');
     }
 
     // Build provider-specific search conditions

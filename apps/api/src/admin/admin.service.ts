@@ -449,14 +449,14 @@ export class AdminService implements OnModuleInit {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
     });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException('Müşteri bulunamadı.');
 
     // Prevent duplicate slug if slug is being updated
     if (data.slug && data.slug !== tenant.slug) {
       const existing = await this.prisma.tenant.findUnique({
         where: { slug: data.slug },
       });
-      if (existing) throw new ConflictException('Slug already taken');
+      if (existing) throw new ConflictException('Bu slug zaten kullanılıyor.');
     }
 
     // Helper to extract users if present
@@ -795,7 +795,7 @@ export class AdminService implements OnModuleInit {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
     });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException('Müşteri bulunamadı.');
 
     // Protect system tenant
     if (tenant.slug === 'system' || tenant.slug === 'default') {
@@ -812,7 +812,7 @@ export class AdminService implements OnModuleInit {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
     });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException('Müşteri bulunamadı.');
 
     // Update paymentReminderAt
     await this.prisma.tenant.update({
@@ -843,7 +843,7 @@ export class AdminService implements OnModuleInit {
     const tenant = await this.prisma.tenant.findUnique({
       where: { id: tenantId },
     });
-    if (!tenant) throw new NotFoundException('Tenant not found');
+    if (!tenant) throw new NotFoundException('Müşteri bulunamadı.');
 
     // DB'ye kaydet
     const announcement = await this.prisma.announcement.create({
@@ -989,7 +989,7 @@ export class AdminService implements OnModuleInit {
     });
 
     if (!adminUser) {
-      throw new NotFoundException('No admin user found for this tenant.');
+      throw new NotFoundException('Bu müşteri için admin kullanıcı bulunamadı.');
     }
 
     // 2. Hash new password
@@ -1028,7 +1028,7 @@ export class AdminService implements OnModuleInit {
     });
 
     if (!gmUser) {
-      throw new NotFoundException('No GodMaster user found for this tenant.');
+      throw new NotFoundException('Bu müşteri için GodMaster kullanıcı bulunamadı.');
     }
 
     const passwordHash = await bcrypt.hash(newPassword, 10);
@@ -1186,7 +1186,7 @@ export class AdminService implements OnModuleInit {
         },
       },
     });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException('Kullanıcı bulunamadı.');
     const { passwordHash, ...result } = user;
     return result;
   }
@@ -1208,7 +1208,7 @@ export class AdminService implements OnModuleInit {
     const target = await this.prisma.user.findUnique({
       where: { id: targetUserId },
     });
-    if (!target) throw new NotFoundException('User not found');
+    if (!target) throw new NotFoundException('Kullanıcı bulunamadı.');
 
     // ── Temel yetki kontrolü ──
     if (
@@ -1291,7 +1291,7 @@ export class AdminService implements OnModuleInit {
     const target = await this.prisma.user.findUnique({
       where: { id: targetUserId },
     });
-    if (!target) throw new NotFoundException('User not found');
+    if (!target) throw new NotFoundException('Kullanıcı bulunamadı.');
 
     // ★ KORUMA — GodMaster koruma ★
     // GodMaster kullanıcısı asla silinemez (kendisi dahil)
@@ -1483,7 +1483,7 @@ export class AdminService implements OnModuleInit {
     const target = await this.prisma.user.findUnique({
       where: { id: targetUserId },
     });
-    if (!target) throw new NotFoundException('User not found');
+    if (!target) throw new NotFoundException('Kullanıcı bulunamadı.');
 
     // ── Hiyerarşi kontrolü: üst veya eşit sınıfın şifresini değiştiremez ──
     const admin = await this.prisma.user.findUnique({ where: { id: adminId } });
@@ -1602,7 +1602,7 @@ export class AdminService implements OnModuleInit {
     adminIp?: string,
   ) {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new NotFoundException('Oda bulunamadı.');
 
     // null değerleri DB'de temizlemek için koruma
     const updateData: any = { ...data };
@@ -1653,7 +1653,7 @@ export class AdminService implements OnModuleInit {
 
   async deleteRoom(adminId: string, roomId: string, adminIp?: string) {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new NotFoundException('Oda bulunamadı.');
 
     await this.prisma.room.delete({ where: { id: roomId } });
 
@@ -1670,7 +1670,7 @@ export class AdminService implements OnModuleInit {
 
   async closeRoom(adminId: string, roomId: string, adminIp?: string) {
     const room = await this.prisma.room.findUnique({ where: { id: roomId } });
-    if (!room) throw new NotFoundException('Room not found');
+    if (!room) throw new NotFoundException('Oda bulunamadı.');
 
     // "Close" means lock it so no one can join
     await this.prisma.room.update({
@@ -1792,7 +1792,7 @@ export class AdminService implements OnModuleInit {
 
   async removeBan(adminId: string, banId: string, adminIp?: string) {
     const ban = await this.prisma.banLog.findUnique({ where: { id: banId } });
-    if (!ban) throw new NotFoundException('Ban not found');
+    if (!ban) throw new NotFoundException('Ban kaydı bulunamadı.');
 
     // ★ SELF-UNBAN PREVENTION — Kullanıcı kendi banını kaldıramaz
     if (ban.userId === adminId) {
@@ -1945,7 +1945,7 @@ export class AdminService implements OnModuleInit {
 
   async removeIpBan(adminId: string, banId: string, adminIp?: string) {
     const ban = await this.prisma.ipBan.findUnique({ where: { id: banId } });
-    if (!ban) throw new NotFoundException('IP Ban not found');
+    if (!ban) throw new NotFoundException('IP ban kaydı bulunamadı.');
 
     await this.prisma.ipBan.delete({ where: { id: banId } });
 
@@ -2282,7 +2282,7 @@ export class AdminService implements OnModuleInit {
     const filter = await this.prisma.wordFilter.findUnique({
       where: { id: filterId },
     });
-    if (!filter) throw new NotFoundException('Word filter not found');
+    if (!filter) throw new NotFoundException('Kelime filtresi bulunamadı.');
 
     await this.prisma.wordFilter.delete({ where: { id: filterId } });
 
