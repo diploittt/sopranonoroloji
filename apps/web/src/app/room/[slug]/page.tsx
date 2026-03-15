@@ -1742,8 +1742,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 onClose={() => setIsAllUsersOpen(false)}
                                 socket={room.socket}
                                 currentUser={room.state.currentUser}
-                                onOpenDM={(username) => {
-                                    room.actions.openDM(username);
+                                onOpenDM={(username, userId) => {
+                                    room.actions.openDM(username, userId);
                                     addToast('info', 'Özel Mesaj', `${username} ile özel mesajlaşma başlatıldı.`);
                                 }}
                             />

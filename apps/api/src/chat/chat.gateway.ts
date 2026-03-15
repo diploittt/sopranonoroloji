@@ -4309,11 +4309,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: { targetUserId: string; content: string },
   ) {
     const sender = this.participants.get(client.id);
-    if (!sender) return;
+    // Fallback: backend restart sonrası participants Map boş olabilir
+    const senderUser = sender || (client.data?.user ? {
+      userId: client.data.user.sub || client.data.user.userId,
+      displayName: client.data.user.displayName || client.data.user.username || 'Unknown',
+      role: client.data.user.role || 'guest',
+      tenantId: client.data.user.tenantId || 'default',
+    } : null);
+    if (!senderUser) return;
 
     // ─── GUEST DM PERMISSION CHECK ──────────────────────────
-    if (sender.role === 'guest') {
-      const settings = this.tenantSettings.get(sender.tenantId);
+    if (senderUser.role === 'guest') {
+      const settings = this.tenantSettings.get(senderUser.tenantId);
       if (settings && !settings.guestPrivateMessage) {
         client.emit('dm:error', { message: 'Misafirler özel mesaj gönderemez.' });
         return;
@@ -4333,8 +4340,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     const dmMessage = {
       id: `dm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      from: sender.displayName,
-      fromUserId: sender.userId,
+      from: senderUser.displayName,
+      fromUserId: senderUser.userId,
       to: target.displayName,
       toUserId: target.userId,
       message: content.trim(),
@@ -4354,7 +4361,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     this.logger.log(
-      `[DM] ${sender.displayName} → ${target.displayName}: ${content.trim().slice(0, 50)}`,
+      `[DM] ${senderUser.displayName} → ${target.displayName}: ${content.trim().slice(0, 50)}`,
     );
   }
 

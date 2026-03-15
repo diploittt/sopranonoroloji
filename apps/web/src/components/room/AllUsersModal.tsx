@@ -29,7 +29,7 @@ interface AllUsersModalProps {
     onClose: () => void;
     socket: any;
     currentUser: any;
-    onOpenDM?: (username: string) => void;
+    onOpenDM?: (username: string, userId?: string) => void;
 }
 
 // ─── Room Name Map ──────────────────────────────────────────
@@ -199,7 +199,7 @@ export default function AllUsersModal({ isOpen, onClose, socket, currentUser, on
 
     const handleAction = (user: OnlineUser, actionId: string) => {
         if (actionId === 'pm') {
-            onOpenDM?.(user.displayName);
+            onOpenDM?.(user.displayName, user.userId);
             onClose();
             return;
         }

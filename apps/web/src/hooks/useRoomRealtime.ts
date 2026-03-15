@@ -117,6 +117,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     const [isRemoteMuted, setIsRemoteMuted] = useState(false);
     const [openDMs, setOpenDMs] = useState<string[]>([]);
     const [dmMessages, setDmMessages] = useState<any>({});
+    const [dmUserIdMap, setDmUserIdMap] = useState<Record<string, string>>({});  // displayName -> userId mapping for cross-room DM
     // DM ignore: userIds whose DMs should be silently dropped
     const dmIgnoredUserIdsRef = useRef<Set<string>>(new Set());
     const [stereoMode, setStereoMode] = useState(false);
@@ -1086,21 +1087,26 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             });
         },
         // DM Actions
-        openDM: (targetUsername: string) => {
+        openDM: (targetUsername: string, targetUserId?: string) => {
             setOpenDMs(prev => {
                 if (prev.includes(targetUsername)) return prev;
                 return [...prev, targetUsername];
             });
+            // Save userId mapping for cross-room DM support
+            if (targetUserId) {
+                setDmUserIdMap(prev => ({ ...prev, [targetUsername]: targetUserId }));
+            }
         },
         closeDM: (targetUsername: string) => {
             setOpenDMs(prev => prev.filter(u => u !== targetUsername));
         },
         sendDM: (targetUsername: string, text: string) => {
             if (!socket) return;
-            // Find target userId from participants
+            // Find target userId from participants (same room)
             const target = socketParticipants.find((p: SocketParticipant) => p.displayName === targetUsername);
-            if (!target) return;
-            socket.emit('dm:send', { targetUserId: target.userId, content: text });
+            const targetUserId = target?.userId || dmUserIdMap[targetUsername];
+            if (!targetUserId) return;
+            socket.emit('dm:send', { targetUserId, content: text });
         },
         // ─── Bire Bir Görüşme Ses Akışı (LiveKit handles transport) ───────────────
         startDirectAudio: async () => {
