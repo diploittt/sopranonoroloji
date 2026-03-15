@@ -1388,49 +1388,72 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                         />
                     ) : (
                         <>
-                            {/* ★ DUPLICATE BLOCKED OVERLAY — Bu hesap zaten aktif, giriş engellendi ★ */}
+                            {/* ★ DUPLICATE BLOCKED OVERLAY — Yumuşak sakin uyarı ekranı ★ */}
                             {room.state.duplicateBlocked && (
-                                <div className="fixed inset-0 z-[999999] flex items-center justify-center" style={{ background: 'rgba(0,0,0,0.95)', backdropFilter: 'blur(24px)' }}>
-                                    <div style={{ textAlign: 'center', maxWidth: 440, padding: 48 }}>
-                                        {/* Red warning icon */}
-                                        <div style={{ position: 'relative', width: 96, height: 96, margin: '0 auto 24px' }}>
+                                <div className="fixed inset-0 z-[999999] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(15,17,30,0.97) 0%, rgba(20,22,40,0.98) 100%)', backdropFilter: 'blur(32px)' }}>
+                                    <div style={{ textAlign: 'center', maxWidth: 480, padding: 48 }}>
+                                        {/* Soft pulsing circle with lock icon */}
+                                        <div style={{ position: 'relative', width: 108, height: 108, margin: '0 auto 28px' }}>
                                             <div style={{
-                                                position: 'absolute', inset: 0, borderRadius: '50%',
-                                                background: 'rgba(239, 68, 68, 0.15)',
-                                                animation: 'pulse 2s ease-in-out infinite',
+                                                position: 'absolute', inset: -8, borderRadius: '50%',
+                                                background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)',
+                                                animation: 'pulse 3s ease-in-out infinite',
                                             }} />
                                             <div style={{
-                                                position: 'relative', width: 96, height: 96, borderRadius: '50%',
-                                                background: 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(220,38,38,0.1))',
-                                                border: '2px solid rgba(239,68,68,0.4)',
+                                                position: 'absolute', inset: 0, borderRadius: '50%',
+                                                background: 'rgba(99,102,241,0.06)',
+                                                animation: 'pulse 3s ease-in-out infinite 0.5s',
+                                            }} />
+                                            <div style={{
+                                                position: 'relative', width: 108, height: 108, borderRadius: '50%',
+                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.08))',
+                                                border: '1.5px solid rgba(99,102,241,0.25)',
                                                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                boxShadow: '0 0 40px rgba(99,102,241,0.12), inset 0 0 20px rgba(99,102,241,0.05)',
                                             }}>
-                                                <span style={{ fontSize: 48 }}>🚫</span>
+                                                <span style={{ fontSize: 44, filter: 'drop-shadow(0 0 12px rgba(99,102,241,0.3))' }}>🔒</span>
                                             </div>
                                         </div>
-                                        <h2 style={{ fontSize: 26, fontWeight: 800, color: '#ef4444', marginBottom: 12, letterSpacing: '-0.02em' }}>
-                                            Giriş Engellendi
+                                        <h2 style={{ fontSize: 24, fontWeight: 700, color: 'rgba(165,180,252,0.95)', marginBottom: 12, letterSpacing: '-0.02em' }}>
+                                            Aktif Oturum Tespit Edildi
                                         </h2>
-                                        <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.7)', marginBottom: 8, lineHeight: 1.6 }}>
-                                            {room.state.duplicateBlocked.message}
+                                        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginBottom: 6, lineHeight: 1.7 }}>
+                                            {room.state.duplicateBlocked.message || 'Bu hesap şu anda başka bir cihazda aktif. Aynı anda birden fazla oturum açılamaz.'}
                                         </p>
-                                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 32 }}>
-                                            {room.state.duplicateBlocked.countdown} saniye içinde yönlendirileceksiniz...
+                                        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', marginBottom: 10 }}>
+                                            Lütfen diğer oturumu kapatın veya farklı bir hesapla giriş yapın.
                                         </p>
+
+                                        {/* Countdown chip */}
+                                        <div style={{
+                                            display: 'inline-flex', alignItems: 'center', gap: 6,
+                                            padding: '6px 16px', borderRadius: 20, marginBottom: 28,
+                                            background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.15)',
+                                        }}>
+                                            <span style={{ fontSize: 11, color: 'rgba(165,180,252,0.7)' }}>⏱</span>
+                                            <span style={{ fontSize: 12, color: 'rgba(165,180,252,0.6)', fontWeight: 500 }}>
+                                                {room.state.duplicateBlocked.countdown} saniye içinde yönlendirileceksiniz
+                                            </span>
+                                        </div>
+                                        <br />
+
                                         <button
                                             onClick={() => {
                                                 const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/);
                                                 window.location.href = tenantMatch ? `/t/${tenantMatch[1]}` : '/';
                                             }}
                                             style={{
-                                                padding: '14px 40px', borderRadius: 14, border: 'none', cursor: 'pointer',
-                                                background: 'linear-gradient(135deg, #ef4444, #dc2626)', color: '#fff',
-                                                fontWeight: 700, fontSize: 14, letterSpacing: '0.02em',
-                                                boxShadow: '0 8px 24px rgba(239, 68, 68, 0.25)',
-                                                transition: 'transform 0.2s, box-shadow 0.2s',
+                                                padding: '13px 44px', borderRadius: 12, border: '1px solid rgba(99,102,241,0.25)', cursor: 'pointer',
+                                                background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))',
+                                                color: 'rgba(165,180,252,0.9)',
+                                                fontWeight: 600, fontSize: 13, letterSpacing: '0.01em',
+                                                boxShadow: '0 4px 16px rgba(99,102,241,0.12)',
+                                                transition: 'transform 0.2s, box-shadow 0.2s, background 0.2s',
                                             }}
+                                            onMouseEnter={e => { (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(139,92,246,0.18))'; (e.target as HTMLButtonElement).style.transform = 'translateY(-1px)'; }}
+                                            onMouseLeave={e => { (e.target as HTMLButtonElement).style.background = 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))'; (e.target as HTMLButtonElement).style.transform = 'translateY(0)'; }}
                                         >
-                                            Geri Dön
+                                            ← Geri Dön
                                         </button>
                                     </div>
                                 </div>
@@ -2738,7 +2761,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
                                 {/* ─── PREMIUM HEADER BAR (exact homepage copy) ─── */}
                                 <header className="room-premium-header">
-                                    <div className="room-header-logo">
+                                    <div className="room-header-logo" style={{ flexShrink: 0, zIndex: 10, display: 'flex', alignItems: 'center' }}>
                                         {(() => {
                                             if (!tenantMatch) {
                                                 // Default SopranoChat logo
@@ -2800,16 +2823,18 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     </div>
 
                                     {/* ═══ ROOM NAV WITH SCROLL ARROWS ═══ */}
-                                    <RoomNavScroller
-                                        rooms={(room.state.rooms || []).filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))}
-                                        activeSlug={activeSlug}
-                                        onSelect={(slug: string) => { setActiveSlug(slug); window.history.replaceState(null, '', roomUrl(slug)); }}
-                                    />
+                                    <div style={{ position: 'absolute', left: '50%', transform: 'translateX(-50%)', zIndex: 5, display: 'flex', justifyContent: 'center', width: 'max-content' }}>
+                                        <RoomNavScroller
+                                            rooms={(room.state.rooms || []).filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))}
+                                            activeSlug={activeSlug}
+                                            onSelect={(slug: string) => { setActiveSlug(slug); window.history.replaceState(null, '', roomUrl(slug)); }}
+                                        />
+                                    </div>
 
 
 
                                     {/* HOME — sağ panel genişliğinde wrapper, nav sağ sınırı burası */}
-                                    <div style={{ width: 260, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 20 }}>
+                                    <div style={{ paddingRight: 20, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', zIndex: 10 }}>
                                         <a
                                             href={tenantMatch ? `/t/${tenantMatch[1]}` : '/'}
                                             style={{

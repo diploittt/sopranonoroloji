@@ -794,6 +794,13 @@ export default function OwnerPanel() {
         fetchNotifs();
     }, []);
 
+    // İletişim mesajlarını başlangıçta yükle (bell badge için)
+    useEffect(() => {
+        loadContactMessages();
+        const msgInterval = setInterval(loadContactMessages, 30000);
+        return () => clearInterval(msgInterval);
+    }, []);
+
     // CSV Dışa Aktarma
     const exportCSV = () => {
         const headers = ['Müşteri', 'Domain', 'Durum', 'Oda Limiti', 'Bitiş Tarihi', 'E-posta', 'Telefon'];
@@ -845,6 +852,23 @@ export default function OwnerPanel() {
     };
 
     return (
+        <>
+        <style>{`
+            .owner-glossy {
+                background:
+                    radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                    linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                    linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                backdrop-filter: blur(24px);
+                -webkit-backdrop-filter: blur(24px);
+                border: 1px solid rgba(255,255,255,0.15);
+                border-top: 1px solid rgba(255,255,255,0.35);
+                border-left: 1px solid rgba(255,255,255,0.2);
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+                border-radius: 22px;
+                overflow: hidden;
+            }
+        `}</style>
         <div className="owner-panel-root" style={{ background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', minHeight: '100vh', display: 'flex', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif" }}>
             <div className="flex w-full max-w-[1600px] h-screen text-[#e2e8f0]" style={{
                 background: '#7a7e9e',
@@ -984,27 +1008,44 @@ export default function OwnerPanel() {
                         <div className="w-px h-8 bg-white/10"></div>
                         <div className="relative">
                             <button onClick={() => setShowNotifPanel(p => !p)} className="relative p-2 text-gray-400 hover:text-white transition-colors">
-                                <Bell className="w-5 h-5" />
-                                {notifications.length > 0 && (
-                                    <span className="absolute top-1.5 right-2 w-2 h-2 bg-red-500 rounded-full border border-[#050505] animate-pulse"></span>
+                                {unreadCount > 0 ? <BellRing className="w-5 h-5 text-emerald-400 animate-bounce" /> : <Bell className="w-5 h-5" />}
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center border-2 border-[#1e222e] shadow-lg shadow-red-500/30">{unreadCount > 99 ? '99+' : unreadCount}</span>
                                 )}
                             </button>
                             {showNotifPanel && (
-                                <div className="absolute right-0 top-12 w-80 max-h-96 overflow-y-auto rounded-xl border border-white/10 bg-[#0f111a]/95 backdrop-blur-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                                <div className="absolute right-0 top-12 w-96 max-h-[480px] overflow-y-auto rounded-xl border border-white/10 bg-[#0f111a]/95 backdrop-blur-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="p-4 border-b border-white/5 flex items-center justify-between">
-                                        <span className="text-sm font-bold text-white">🔔 Bildirimler</span>
-                                        <button onClick={() => setShowNotifPanel(false)} className="text-gray-500 hover:text-white transition-colors text-xs">Kapat</button>
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-white">📩 İletişim Mesajları</span>
+                                            {unreadCount > 0 && <span className="text-[10px] font-bold px-2 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full">{unreadCount} yeni</span>}
+                                        </div>
+                                        <button onClick={() => setShowNotifPanel(false)} className="text-gray-400 hover:text-white transition-colors text-xs">Kapat</button>
                                     </div>
-                                    {notifications.length === 0 ? (
-                                        <div className="p-6 text-center text-gray-500 text-xs">Henüz bildirim yok</div>
+                                    {contactMessages.filter(m => !m.isRead).length === 0 ? (
+                                        <div className="p-8 text-center">
+                                            <Inbox className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                                            <div className="text-gray-400 text-xs">Okunmamış mesaj yok</div>
+                                        </div>
                                     ) : (
-                                        notifications.map(n => (
-                                            <div key={n.id} className="p-4 border-b border-white/5 hover:bg-white/5 transition-colors">
-                                                <p className="text-xs text-white leading-relaxed">{n.message}</p>
-                                                <p className="text-[9px] text-gray-500 mt-1">{new Date(n.createdAt).toLocaleString('tr-TR')}</p>
+                                        contactMessages.filter(m => !m.isRead).slice(0, 8).map(msg => (
+                                            <div key={msg.id} className="p-4 border-b border-white/5 hover:bg-emerald-500/5 transition-colors cursor-pointer" onClick={() => { setShowNotifPanel(false); setActiveView('contactMessages'); loadContactMessages(); setContactMsgSelected(msg); markContactMessageRead(msg.id); }}>
+                                                <div className="flex items-center gap-3 mb-1">
+                                                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-[10px] font-bold flex-shrink-0">{msg.name?.charAt(0)?.toUpperCase()}</div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="text-xs font-bold text-white truncate">{msg.name}</div>
+                                                        <div className="text-[10px] text-gray-400 truncate">{msg.email}</div>
+                                                    </div>
+                                                    <span className="text-[9px] text-gray-400 flex-shrink-0">{new Date(msg.createdAt).toLocaleDateString('tr-TR')}</span>
+                                                </div>
+                                                <div className="text-[11px] text-emerald-300 font-semibold truncate">{msg.subject}</div>
+                                                <div className="text-[10px] text-gray-400 truncate mt-0.5">{msg.message?.substring(0, 80)}...</div>
                                             </div>
                                         ))
                                     )}
+                                    <button onClick={() => { setShowNotifPanel(false); setActiveView('contactMessages'); loadContactMessages(); }} className="w-full p-3 text-center text-xs font-bold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/5 transition-colors border-t border-white/5">
+                                        Tüm Mesajları Gör →
+                                    </button>
                                 </div>
                             )}
                         </div>
@@ -1025,7 +1066,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Panel Yönetimi</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">GodMaster hesaplarını yönetin</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">GodMaster hesaplarını yönetin</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -1042,7 +1083,7 @@ export default function OwnerPanel() {
                             </div>
 
                             {/* Profil Kartı */}
-                            <div className="p-6 rounded-2xl bg-gradient-to-br from-cyan-500/[0.05] to-blue-500/[0.03] border border-cyan-500/20 backdrop-blur-md">
+                            <div className="owner-glossy p-6">
                                 <div className="flex items-center justify-between mb-4">
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         <Crown className="w-4 h-4 text-amber-400" /> Aktif Oturum
@@ -1090,7 +1131,7 @@ export default function OwnerPanel() {
                                     <div className="mt-5 pt-5 border-t border-white/10 space-y-4">
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">İsim</label>
+                                                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">İsim</label>
                                                 <input
                                                     type="text"
                                                     value={profileForm.displayName}
@@ -1100,7 +1141,7 @@ export default function OwnerPanel() {
                                                 />
                                             </div>
                                             <div className="space-y-1.5">
-                                                <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">E-Posta</label>
+                                                <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">E-Posta</label>
                                                 <input
                                                     type="email"
                                                     value={profileForm.email}
@@ -1144,13 +1185,13 @@ export default function OwnerPanel() {
 
                             {/* GodMaster Ekleme Formu */}
                             {showAddHelper && (
-                                <div className="p-5 rounded-2xl bg-cyan-500/[0.04] border border-cyan-500/20 space-y-4 animate-in slide-in-from-top-3 duration-300">
+                                <div className="owner-glossy p-5 space-y-4 animate-in slide-in-from-top-3 duration-300">
                                     <h3 className="text-sm font-bold text-cyan-400 flex items-center gap-2">
                                         <UserPlus className="w-4 h-4" /> Yeni GodMaster Ekle
                                     </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Kullanıcı Adı</label>
+                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Kullanıcı Adı</label>
                                             <input
                                                 type="text"
                                                 value={newHelper.displayName}
@@ -1160,7 +1201,7 @@ export default function OwnerPanel() {
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">E-Posta</label>
+                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">E-Posta</label>
                                             <input
                                                 type="email"
                                                 value={newHelper.email}
@@ -1170,7 +1211,7 @@ export default function OwnerPanel() {
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">Şifre</label>
+                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Şifre</label>
                                             <input
                                                 type="password"
                                                 value={newHelper.password}
@@ -1197,31 +1238,31 @@ export default function OwnerPanel() {
                             )}
 
                             {/* GodMaster Listesi */}
-                            <div className="rounded-2xl overflow-hidden border border-white/[0.06] bg-[#0a0c14]/60">
+                            <div className="owner-glossy">
                                 <div className="px-6 py-4 border-b border-white/[0.06] flex items-center justify-between">
                                     <h3 className="text-sm font-bold text-white flex items-center gap-2">
                                         <Shield className="w-4 h-4 text-cyan-400" /> GodMaster Hesapları
                                     </h3>
-                                    <span className="text-[10px] font-bold text-gray-500 bg-white/5 px-2.5 py-1 rounded-full">
+                                    <span className="text-[10px] font-bold text-gray-400 bg-white/5 px-2.5 py-1 rounded-full">
                                         {hqMembers.length} hesap
                                     </span>
                                 </div>
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b border-white/[0.04]">
-                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Durum</th>
-                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Kullanıcı</th>
-                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Rol</th>
-                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">E-Posta</th>
-                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Son Giriş</th>
-                                            <th className="px-6 py-3 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Durum</th>
+                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Kullanıcı</th>
+                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Rol</th>
+                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">E-Posta</th>
+                                            <th className="px-6 py-3 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Son Giriş</th>
+                                            <th className="px-6 py-3 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">İşlemler</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {hqMembersLoading ? (
                                             <tr><td colSpan={6} className="px-6 py-16 text-center"><Loader2 className="w-6 h-6 animate-spin text-cyan-400 mx-auto" /></td></tr>
                                         ) : hqMembers.length === 0 ? (
-                                            <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-600">Henüz GodMaster hesabı yok.</td></tr>
+                                            <tr><td colSpan={6} className="px-6 py-16 text-center text-gray-400">Henüz GodMaster hesabı yok.</td></tr>
                                         ) : (
                                             hqMembers.map((member: any) => {
                                                 const isOnline = member.isOnline || member.status === 'online';
@@ -1230,7 +1271,7 @@ export default function OwnerPanel() {
                                                     <React.Fragment key={member.id}>
                                                         <tr className={`border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors ${isSelf ? 'bg-cyan-500/[0.03]' : ''}`}>
                                                             <td className="px-6 py-4">
-                                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${isOnline ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-gray-500/10 text-gray-500 border border-gray-500/10'}`}>
+                                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold ${isOnline ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/10'}`}>
                                                                     <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-green-400 animate-pulse' : 'bg-gray-600'}`} />
                                                                     {isOnline ? 'Çevrimiçi' : 'Çevrimdışı'}
                                                                 </span>
@@ -1259,14 +1300,14 @@ export default function OwnerPanel() {
                                                                 <span className="text-xs text-gray-400">{member.email}</span>
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <span className="text-xs text-gray-500">{member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
+                                                                <span className="text-xs text-gray-400">{member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}</span>
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center justify-end gap-2">
                                                                     {/* Şifre Değiştir */}
                                                                     <button
                                                                         onClick={() => { setPasswordEditId(passwordEditId === member.id ? null : member.id); setNewPassword(''); }}
-                                                                        className={`p-1.5 rounded-lg transition-colors border ${passwordEditId === member.id ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 hover:bg-amber-500/10 text-gray-500 hover:text-amber-400 border-white/5 hover:border-amber-500/20'}`}
+                                                                        className={`p-1.5 rounded-lg transition-colors border ${passwordEditId === member.id ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 hover:bg-amber-500/10 text-gray-400 hover:text-amber-400 border-white/5 hover:border-amber-500/20'}`}
                                                                         title="Şifre Değiştir"
                                                                     >
                                                                         <KeyRound className="w-3.5 h-3.5" />
@@ -1343,7 +1384,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>İletişim Mesajları</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Landing page&apos;den gelen iletişim formları</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">Landing page&apos;den gelen iletişim formları</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -1355,66 +1396,66 @@ export default function OwnerPanel() {
 
                             {/* Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-emerald-500/20 flex items-center gap-3">
+                                <div className="owner-glossy p-4 flex items-center gap-3">
                                     <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-400"><Inbox className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{contactMessages.length}</div>
-                                        <div className="text-[11px] text-gray-500">Toplam Mesaj</div>
+                                        <div className="text-[11px] text-gray-400">Toplam Mesaj</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-amber-500/20 flex items-center gap-3">
+                                <div className="owner-glossy p-4 flex items-center gap-3">
                                     <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400"><Mail className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{contactMessages.filter(m => !m.isRead).length}</div>
-                                        <div className="text-[11px] text-gray-500">Okunmamış</div>
+                                        <div className="text-[11px] text-gray-400">Okunmamış</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-green-500/20 flex items-center gap-3">
+                                <div className="owner-glossy p-4 flex items-center gap-3">
                                     <div className="p-2 rounded-lg bg-green-500/10 text-green-400"><MailOpen className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{contactMessages.filter(m => m.isRead).length}</div>
-                                        <div className="text-[11px] text-gray-500">Okunan</div>
+                                        <div className="text-[11px] text-gray-400">Okunan</div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Mesaj Detay Modal */}
                             {contactMsgSelected && (
-                                <div className="rounded-2xl border border-emerald-500/20 bg-[#121218]/80 backdrop-blur-md p-6 relative">
-                                    <button onClick={() => setContactMsgSelected(null)} className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 text-gray-500 hover:text-white rounded-lg transition"><X className="w-4 h-4" /></button>
+                                <div className="owner-glossy p-6 relative">
+                                    <button onClick={() => setContactMsgSelected(null)} className="absolute top-4 right-4 p-2 bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white rounded-lg transition"><X className="w-4 h-4" /></button>
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm">{contactMsgSelected.name?.charAt(0)?.toUpperCase()}</div>
                                         <div>
                                             <div className="font-bold text-white">{contactMsgSelected.name}</div>
-                                            <div className="text-xs text-gray-500">{contactMsgSelected.email}</div>
+                                            <div className="text-xs text-gray-400">{contactMsgSelected.email}</div>
                                         </div>
                                     </div>
                                     <div className="mb-2"><span className="text-xs font-bold text-emerald-400 uppercase">Konu:</span> <span className="text-sm text-white ml-1">{contactMsgSelected.subject}</span></div>
                                     <div className="text-sm text-gray-300 leading-relaxed whitespace-pre-wrap bg-black/20 rounded-xl p-4 border border-white/5">{contactMsgSelected.message}</div>
                                     <div className="mt-3 flex items-center justify-between">
-                                        <span className="text-[10px] text-gray-600">{new Date(contactMsgSelected.createdAt).toLocaleString('tr-TR')}</span>
+                                        <span className="text-[10px] text-gray-400">{new Date(contactMsgSelected.createdAt).toLocaleString('tr-TR')}</span>
                                         <a href={`mailto:${contactMsgSelected.email}?subject=Re: ${contactMsgSelected.subject}`} className="text-xs text-emerald-400 hover:text-emerald-300 font-bold flex items-center gap-1"><Mail className="w-3 h-3" /> Yanıtla</a>
                                     </div>
                                 </div>
                             )}
 
                             {/* Mesaj Listesi */}
-                            <div className="rounded-2xl border border-white/5 overflow-hidden bg-[#121218]/60 backdrop-blur-md">
+                            <div className="owner-glossy">
                                 <table className="w-full">
                                     <thead>
                                         <tr className="border-b border-white/5">
-                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Gönderen</th>
-                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Konu</th>
-                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tarih</th>
-                                            <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-500 uppercase tracking-wider">Durum</th>
-                                            <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-500 uppercase tracking-wider">İşlemler</th>
+                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Gönderen</th>
+                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Konu</th>
+                                            <th className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-wider">Tarih</th>
+                                            <th className="px-6 py-4 text-center text-[10px] font-bold text-gray-400 uppercase tracking-wider">Durum</th>
+                                            <th className="px-6 py-4 text-right text-[10px] font-bold text-gray-400 uppercase tracking-wider">İşlemler</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {contactMsgLoading ? (
-                                            <tr><td colSpan={5} className="px-6 py-16 text-center text-gray-600 text-sm">Yükleniyor...</td></tr>
+                                            <tr><td colSpan={5} className="px-6 py-16 text-center text-gray-400 text-sm">Yükleniyor...</td></tr>
                                         ) : contactMessages.length === 0 ? (
-                                            <tr><td colSpan={5} className="px-6 py-16 text-center text-gray-600 text-sm">Henüz mesaj yok.</td></tr>
+                                            <tr><td colSpan={5} className="px-6 py-16 text-center text-gray-400 text-sm">Henüz mesaj yok.</td></tr>
                                         ) : (
                                             contactMessages.map(msg => (
                                                 <tr key={msg.id} className={`border-b border-white/5 hover:bg-white/5 transition-colors cursor-pointer ${!msg.isRead ? 'bg-emerald-500/[0.03]' : ''}`} onClick={() => { setContactMsgSelected(msg); if (!msg.isRead) markContactMessageRead(msg.id); }}>
@@ -1423,15 +1464,15 @@ export default function OwnerPanel() {
                                                             <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 text-xs font-bold">{msg.name?.charAt(0)?.toUpperCase()}</div>
                                                             <div>
                                                                 <div className={`text-sm font-semibold ${!msg.isRead ? 'text-white' : 'text-gray-400'}`}>{msg.name}</div>
-                                                                <div className="text-[11px] text-gray-600">{msg.email}</div>
+                                                                <div className="text-[11px] text-gray-400">{msg.email}</div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`text-sm ${!msg.isRead ? 'text-white font-semibold' : 'text-gray-500'}`}>{msg.subject}</span>
+                                                        <span className={`text-sm ${!msg.isRead ? 'text-white font-semibold' : 'text-gray-400'}`}>{msg.subject}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className="text-xs text-gray-500">{new Date(msg.createdAt).toLocaleString('tr-TR')}</span>
+                                                        <span className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleString('tr-TR')}</span>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
                                                         {msg.isRead ? (
@@ -1461,7 +1502,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Sipariş Yönetimi</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Ana sayfadan gelen paket satın alma talepleri</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">Ana sayfadan gelen paket satın alma talepleri</p>
                                     </div>
                                     {inlineOrders.filter(o => o.status === 'PENDING').length > 0 && (
                                         <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs font-bold rounded-full border border-yellow-500/20 ml-2">
@@ -1484,7 +1525,7 @@ export default function OwnerPanel() {
                             ) : inlineOrders.length === 0 ? (
                                 <div className="text-center py-16">
                                     <ShoppingBag className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                                    <p className="text-sm text-gray-500">Henüz sipariş bulunmuyor.</p>
+                                    <p className="text-sm text-gray-400">Henüz sipariş bulunmuyor.</p>
                                 </div>
                             ) : (
                                 <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
@@ -1678,7 +1719,7 @@ export default function OwnerPanel() {
                                                 )}
                                                 {!isPending && (
                                                     <div style={{ padding: '8px 20px 12px', display: 'flex', justifyContent: 'flex-end' }}>
-                                                        <button onClick={() => orderDelete(order.id)} className="p-2 bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-lg transition-colors border border-white/5" title="Sil">
+                                                        <button onClick={() => orderDelete(order.id)} className="p-2 bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 rounded-lg transition-colors border border-white/5" title="Sil">
                                                             <Trash2 className="w-4 h-4" />
                                                         </button>
                                                     </div>
@@ -1700,7 +1741,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Sistem Logları</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Owner panel işlem geçmişi</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">Owner panel işlem geçmişi</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
@@ -1709,7 +1750,7 @@ export default function OwnerPanel() {
                                         value={logFilter}
                                         onChange={(e) => { setLogFilter(e.target.value); setLogPage(1); }}
                                         placeholder="Filtre (event)..."
-                                        className="bg-black/30 border border-yellow-500/15 rounded-xl px-4 py-2.5 text-white text-xs outline-none focus:border-yellow-500/40 transition placeholder:text-gray-600 w-56"
+                                        className="bg-black/30 border border-yellow-500/15 rounded-xl px-4 py-2.5 text-white text-xs outline-none focus:border-yellow-500/40 transition placeholder:text-gray-400 w-56"
                                     />
                                     <button onClick={() => { setLogFilter(''); setLogPage(1); }} className="p-2.5 bg-white/5 hover:bg-white/10 rounded-xl text-gray-400 hover:text-white transition border border-white/5" title="Sıfırla">
                                         <RefreshCw className="w-4 h-4" />
@@ -1718,7 +1759,7 @@ export default function OwnerPanel() {
                             </div>
 
                             {/* Logs List */}
-                            <div className="glass-panel rounded-2xl overflow-hidden bg-[#121218]/60 backdrop-blur-md border border-white/5">
+                            <div className="owner-glossy">
                                 {logLoading ? (
                                     <div className="flex items-center justify-center py-16">
                                         <div className="w-7 h-7 border-2 border-yellow-400/30 border-t-yellow-400 rounded-full animate-spin"></div>
@@ -1726,7 +1767,7 @@ export default function OwnerPanel() {
                                 ) : systemLogs.length === 0 ? (
                                     <div className="text-center py-16">
                                         <ScrollText className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                                        <p className="text-sm text-gray-500">Henüz sistem logu yok</p>
+                                        <p className="text-sm text-gray-400">Henüz sistem logu yok</p>
                                     </div>
                                 ) : (
                                     <div className="divide-y divide-white/5">
@@ -1753,7 +1794,7 @@ export default function OwnerPanel() {
                                                     <span className="text-xs text-[#7b9fef] font-medium flex-shrink-0">
                                                         {log.admin?.displayName || '—'}
                                                     </span>
-                                                    <span className="text-[10px] text-gray-600 flex-shrink-0 tabular-nums">
+                                                    <span className="text-[10px] text-gray-400 flex-shrink-0 tabular-nums">
                                                         {new Date(log.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                                     </span>
                                                 </div>
@@ -1765,7 +1806,7 @@ export default function OwnerPanel() {
 
                             {/* Pagination */}
                             <div className="flex items-center justify-between px-2">
-                                <span className="text-[11px] text-gray-600">Toplam: {logTotal} kayıt</span>
+                                <span className="text-[11px] text-gray-400">Toplam: {logTotal} kayıt</span>
                                 <div className="flex items-center gap-2">
                                     <button disabled={logPage <= 1} onClick={() => setLogPage(p => p - 1)} className="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-white/10 transition disabled:opacity-30 disabled:cursor-not-allowed border border-white/5">â€ Önceki</button>
                                     <span className="text-xs text-gray-400 tabular-nums">{logPage} / {Math.ceil(logTotal / 25) || 1}</span>
@@ -1784,12 +1825,12 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Müşteri Yönetimi</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Tüm müşteri hesapları ve abonelik durumları</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">Tüm müşteri hesapları ve abonelik durumları</p>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="relative">
-                                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-500" />
+                                        <Search className="absolute left-3 top-2.5 w-4 h-4 text-gray-400" />
                                         <input
                                             type="text"
                                             placeholder="Müşteri veya domain ara..."
@@ -1825,95 +1866,95 @@ export default function OwnerPanel() {
                             </div>
 
                             {/* Stats */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-amber-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(245,158,11,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-                                    <div className="p-2 rounded-lg bg-amber-500/15 text-[#7b9fef]"><Briefcase className="w-4 h-4" /></div>
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-5">
+                                <div className="p-5 flex items-center gap-4 transition-transform hover:-translate-y-1 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.35)', borderLeft: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 22 }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #3b82f6, #60a5fa)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(59,130,246,0.25), inset 0 1px 1px rgba(255,255,255,0.4)', flexShrink: 0 }}><Briefcase style={{ width: 20, height: 20, color: '#fff' }} /></div>
                                     <div>
-                                        <div className="text-2xl font-extrabold text-white">{tenants.length}</div>
-                                        <div className="text-[11px] text-gray-400">Toplam Müşteri</div>
+                                        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.1 }}>{tenants.length}</div>
+                                        <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>Toplam Müşteri</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-green-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(34,197,94,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-                                    <div className="p-2 rounded-lg bg-green-500/15 text-green-400"><CheckCircle className="w-4 h-4" /></div>
+                                <div className="p-5 flex items-center gap-4 transition-transform hover:-translate-y-1 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.35)', borderLeft: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 22 }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #34d399, #10b981)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(52,211,153,0.25), inset 0 1px 1px rgba(255,255,255,0.4)', flexShrink: 0 }}><CheckCircle style={{ width: 20, height: 20, color: '#fff' }} /></div>
                                     <div>
-                                        <div className="text-2xl font-extrabold text-white">{tenants.filter(t => t.status === 'ACTIVE').length}</div>
-                                        <div className="text-[11px] text-gray-400">Aktif Müşteri</div>
+                                        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.1 }}>{tenants.filter(t => t.status === 'ACTIVE').length}</div>
+                                        <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>Aktif Müşteri</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-rose-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(244,63,94,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-                                    <div className="p-2 rounded-lg bg-rose-500/15 text-rose-400"><AlertCircle className="w-4 h-4" /></div>
+                                <div className="p-5 flex items-center gap-4 transition-transform hover:-translate-y-1 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.35)', borderLeft: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 22 }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #f43f5e, #e11d48)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(244,63,94,0.25), inset 0 1px 1px rgba(255,255,255,0.4)', flexShrink: 0 }}><AlertCircle style={{ width: 20, height: 20, color: '#fff' }} /></div>
                                     <div>
-                                        <div className="text-2xl font-extrabold text-white">{tenants.filter(t => { if (!t.expiresAt) return false; const d = new Date(t.expiresAt); const now = new Date(); const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24); return diff >= 0 && diff <= 7; }).length}</div>
-                                        <div className="text-[11px] text-gray-400">7 Gün İçinde Biten</div>
+                                        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.1 }}>{tenants.filter(t => { if (!t.expiresAt) return false; const d = new Date(t.expiresAt); const now = new Date(); const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24); return diff >= 0 && diff <= 7; }).length}</div>
+                                        <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>7 Gün İçinde Biten</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-cyan-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(6,182,212,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
-                                    <div className="p-2 rounded-lg bg-cyan-500/15 text-cyan-400"><Server className="w-4 h-4" /></div>
+                                <div className="p-5 flex items-center gap-4 transition-transform hover:-translate-y-1 overflow-hidden" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.35)', borderLeft: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 22 }}>
+                                    <div style={{ width: 44, height: 44, borderRadius: 14, background: 'linear-gradient(135deg, #22d3ee, #06b6d4)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 16px rgba(6,182,212,0.25), inset 0 1px 1px rgba(255,255,255,0.4)', flexShrink: 0 }}><Server style={{ width: 20, height: 20, color: '#fff' }} /></div>
                                     <div>
-                                        <div className="text-2xl font-extrabold text-white">{tenants.reduce((sum, t) => sum + (t.roomLimit || 0), 0)}</div>
-                                        <div className="text-[11px] text-gray-400">Toplam Oda Kapasitesi</div>
+                                        <div style={{ fontSize: 28, fontWeight: 900, color: '#fff', textShadow: '0 1px 3px rgba(0,0,0,0.5)', lineHeight: 1.1 }}>{tenants.reduce((sum, t) => sum + (t.roomLimit || 0), 0)}</div>
+                                        <div style={{ fontSize: 12, color: '#94a3b8', fontWeight: 500 }}>Toplam Kapasite</div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Table */}
-                            <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/80 backdrop-blur-md" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
+                            <div className="overflow-hidden" style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255,255,255,0.15)', borderTop: '1px solid rgba(255,255,255,0.35)', borderLeft: '1px solid rgba(255,255,255,0.2)', boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', borderRadius: 22 }}>
                                 <table className="w-full text-left border-collapse">
                                     <thead>
-                                        <tr className="bg-white/5 border-b border-white/5 text-gray-400 text-xs uppercase tracking-wider">
-                                            <th className="px-6 py-4 font-bold">Müşteri</th>
-                                            <th className="px-6 py-4 font-bold">Domain / Erişim</th>
-                                            <th className="px-6 py-4 font-bold">Hosting</th>
-                                            <th className="px-6 py-4 font-bold">Oda</th>
-                                            <th className="px-6 py-4 font-bold">Durum</th>
-                                            <th className="px-6 py-4 font-bold">Bitiş</th>
-                                            <th className="px-6 py-4 font-bold text-right">İşlemler</th>
+                                        <tr className="bg-black/20 text-gray-400 text-xs uppercase tracking-widest">
+                                            <th className="px-6 py-5 font-bold">Müşteri</th>
+                                            <th className="px-6 py-5 font-bold">Domain / Erişim</th>
+                                            <th className="px-6 py-5 font-bold">Hosting</th>
+                                            <th className="px-6 py-5 font-bold">Oda</th>
+                                            <th className="px-6 py-5 font-bold">Durum</th>
+                                            <th className="px-6 py-5 font-bold">Bitiş</th>
+                                            <th className="px-6 py-5 font-bold text-right">İşlemler</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/[0.03] text-sm">
                                         {/* ── System Tenant Satırı ── */}
                                         {systemTenantId && (
-                                            <tr className="hover:bg-purple-500/[0.03] transition-colors group bg-purple-500/[0.02] border-b border-purple-500/10">
-                                                <td className="px-6 py-4">
+                                            <tr className="hover:bg-purple-500/[0.06] transition-colors group bg-purple-500/[0.02] border-b border-purple-500/20">
+                                                <td className="px-6 py-5">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-bold text-xs shadow" style={{ background: 'linear-gradient(135deg, #7c3aed, #a78bfa)' }}>
                                                             <Crown className="w-4 h-4" />
                                                         </div>
                                                         <div>
                                                             <div className="font-bold text-white text-sm flex items-center gap-2">System Tenant
-                                                                <span className="text-[9px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full font-bold border border-purple-500/20">SYSTEM</span>
+                                                                <span className="text-[10px] bg-purple-500/20 text-purple-300 px-1.5 py-0.5 rounded-full font-bold border border-purple-500/20">SYSTEM</span>
                                                             </div>
-                                                            <div className="text-[11px] text-gray-500">Ana sistem odaları</div>
+                                                            <div className="text-xs text-gray-400">Ana sistem odaları</div>
                                                         </div>
                                                     </div>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <span className="text-xs text-gray-400">—</span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <span className="text-xs text-purple-400 font-semibold">Kendi Domaini</span>
                                                 </td>
-                                                <td className="px-6 py-4">
+                                                <td className="px-6 py-5">
                                                     <span className="text-sm text-white font-semibold">∞</span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${systemTenantActive ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
+                                                <td className="px-6 py-5">
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${systemTenantActive ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'}`}>
                                                         <span className={`w-1.5 h-1.5 rounded-full ${systemTenantActive ? 'bg-green-400' : 'bg-red-400'}`}></span>
                                                         {systemTenantActive ? 'Aktif' : 'Pasif'}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <span className="text-[10px] text-gray-600">Süresiz</span>
+                                                <td className="px-6 py-5">
+                                                    <span className="text-xs text-gray-400">Süresiz</span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                <td className="px-6 py-5">
+                                                    <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
                                                         {/* Düzenle */}
                                                         <button
                                                             onClick={() => openEditModal(systemTenantId!)}
                                                             className="p-1.5 bg-amber-500/10 hover:bg-amber-500 text-[#7b9fef] hover:text-white rounded-lg transition-colors border border-amber-500/20"
                                                             title="Düzenle"
                                                         >
-                                                            <Pencil className="w-3.5 h-3.5" />
+                                                            <Pencil className="w-4 h-4" />
                                                         </button>
                                                         {/* Erişim Linki */}
                                                         <button
@@ -1926,7 +1967,7 @@ export default function OwnerPanel() {
                                                             className="p-1.5 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white rounded-lg transition-colors border border-blue-500/20"
                                                             title="Erişim Linki Kopyala"
                                                         >
-                                                            <Link2 className="w-3.5 h-3.5" />
+                                                            <Link2 className="w-4 h-4" />
                                                         </button>
                                                         {/* Embed Kodu */}
                                                         <button
@@ -1939,7 +1980,7 @@ export default function OwnerPanel() {
                                                             className="p-1.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-white rounded-lg transition-colors border border-cyan-500/20"
                                                             title="Embed Kodu Kopyala"
                                                         >
-                                                            <CodeXml className="w-3.5 h-3.5" />
+                                                            <CodeXml className="w-4 h-4" />
                                                         </button>
                                                         {/* Aktif/Pasif Toggle */}
                                                         <button
@@ -1952,7 +1993,7 @@ export default function OwnerPanel() {
                                                             className={`p-1.5 rounded-lg transition-colors border ${systemTenantActive ? 'bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border-orange-500/20' : 'bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white border-green-500/20'}`}
                                                             title={systemTenantActive ? 'Pasifleştir' : 'Aktifleştir'}
                                                         >
-                                                            {systemTenantActive ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                                            {systemTenantActive ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                         </button>
                                                         {/* Sil */}
                                                         <button
@@ -1960,7 +2001,7 @@ export default function OwnerPanel() {
                                                             className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-colors border border-red-500/20"
                                                             title="Sil"
                                                         >
-                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                            <Trash2 className="w-4 h-4" />
                                                         </button>
                                                         {/* GodMaster Giriş */}
                                                         <button
@@ -1968,23 +2009,23 @@ export default function OwnerPanel() {
                                                             className="p-1.5 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-lg transition-colors border border-purple-500/20"
                                                             title="GodMaster olarak giriş yap"
                                                         >
-                                                            <Crown className="w-3.5 h-3.5" />
+                                                            <Crown className="w-4 h-4" />
                                                         </button>
                                                         {/* Detay Genişlet */}
                                                         <button
                                                             onClick={() => loadTenantDetails(systemTenantId!)}
-                                                            className={`p-1.5 rounded-lg transition-colors border ${expandedTenantId === systemTenantId ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-white/5 hover:bg-blue-500/10 text-gray-500 hover:text-blue-400 border-white/5 hover:border-blue-500/20'}`}
+                                                            className={`p-1.5 rounded-lg transition-colors border ${expandedTenantId === systemTenantId ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-white/5 hover:bg-blue-500/10 text-gray-400 hover:text-blue-400 border-white/5 hover:border-blue-500/20'}`}
                                                             title="Odalar & Üyeler"
                                                         >
-                                                            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedTenantId === systemTenantId ? 'rotate-180' : ''}`} />
+                                                            <ChevronDown className={`w-4 h-4 transition-transform ${expandedTenantId === systemTenantId ? 'rotate-180' : ''}`} />
                                                         </button>
                                                     </div>
                                                     {/* Silme onay */}
                                                     {deleteConfirmId === systemTenantId && (
                                                         <div className="flex items-center gap-2 mt-2 animate-in fade-in duration-150">
-                                                            <span className="text-[10px] text-red-400 font-semibold">Emin misiniz?</span>
-                                                            <button onClick={() => { deleteTenant(systemTenantId!); setDeleteConfirmId(null); addToast('System Tenant silindi 🗑️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-[10px] rounded-md font-bold hover:bg-red-400 transition">Evet</button>
-                                                            <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-[10px] rounded-md hover:bg-white/10 transition">Hayır</button>
+                                                            <span className="text-xs text-red-400 font-semibold">Emin misiniz?</span>
+                                                            <button onClick={() => { deleteTenant(systemTenantId!); setDeleteConfirmId(null); addToast('System Tenant silindi 🗑️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
+                                                            <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-xs rounded-md hover:bg-white/10 transition">Hayır</button>
                                                         </div>
                                                     )}
                                                 </td>
@@ -2006,8 +2047,8 @@ export default function OwnerPanel() {
                                                 const isExpired = t.expiresAt && new Date(t.expiresAt) < new Date();
                                                 return (
                                                     <React.Fragment key={t.id}>
-                                                        <tr className="hover:bg-white/[0.04] transition-colors group" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                                                            <td className="px-6 py-4">
+                                                        <tr className="hover:bg-white/[0.06] bg-white/[0.01] transition-all group" style={{ borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+                                                            <td className="px-6 py-5">
                                                                 <div className="flex items-center gap-3">
                                                                     {t.logoUrl ? (
                                                                         // eslint-disable-next-line @next/next/no-img-element
@@ -2017,49 +2058,49 @@ export default function OwnerPanel() {
                                                                     )}
                                                                     <div className="min-w-0">
                                                                         <div className="text-sm font-bold text-white truncate max-w-[180px]">{t.displayName || t.name}</div>
-                                                                        <div className="text-[11px] text-gray-600 truncate max-w-[180px]">{(t as any).email || '—'}</div>
+                                                                        <div className="text-xs text-gray-400 truncate max-w-[180px]">{(t as any).email || '—'}</div>
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-6 py-5">
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <span className="text-xs text-white font-medium truncate max-w-[140px]">{t.domain || '—'}</span>
-                                                                    {t.accessCode && <span className="text-[10px] text-gray-600">kod: {t.accessCode}</span>}
+                                                                    {t.accessCode && <span className="text-xs text-gray-400">kod: {t.accessCode}</span>}
                                                                 </div>
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${t.hostingType === 'own_domain' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                                            <td className="px-6 py-5">
+                                                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${t.hostingType === 'own_domain' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
                                                                     }`}>
                                                                     {t.hostingType === 'own_domain' ? 'Kendi Domaini' : 'SopranoChat'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-6 py-5">
                                                                 <span className="text-sm text-white font-semibold">{t.roomLimit || 0}</span>
-                                                                <span className="text-[10px] text-gray-600 ml-1">oda</span>
+                                                                <span className="text-xs text-gray-400 ml-1">oda</span>
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${t.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
+                                                            <td className="px-6 py-5">
+                                                                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${t.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20'
                                                                     }`}>
                                                                     <span className={`w-1.5 h-1.5 rounded-full ${t.status === 'ACTIVE' ? 'bg-green-400' : 'bg-red-400'}`}></span>
                                                                     {t.status === 'ACTIVE' ? 'Aktif' : 'Pasif'}
                                                                 </span>
                                                             </td>
-                                                            <td className="px-6 py-4">
+                                                            <td className="px-6 py-5">
                                                                 {t.expiresAt ? (
                                                                     <span className={`text-xs font-semibold ${isExpired ? 'text-red-400' : isExpiringSoon ? 'text-amber-400' : 'text-gray-400'
                                                                         }`}>{new Date(t.expiresAt).toLocaleDateString('tr-TR')}</span>
                                                                 ) : (
-                                                                    <span className="text-[10px] text-gray-600">Süresiz</span>
+                                                                    <span className="text-xs text-gray-400">Süresiz</span>
                                                                 )}
                                                             </td>
-                                                            <td className="px-6 py-4">
-                                                                <div className="flex items-center justify-end gap-1.5 opacity-60 group-hover:opacity-100 transition-opacity">
+                                                            <td className="px-6 py-5">
+                                                                <div className="flex items-center justify-end gap-2 opacity-70 group-hover:opacity-100 transition-opacity">
                                                                     <button
                                                                         onClick={() => openEditModal(t.id)}
                                                                         className="p-1.5 bg-amber-500/10 hover:bg-amber-500 text-[#7b9fef] hover:text-white rounded-lg transition-colors border border-amber-500/20"
                                                                         title="Düzenle"
                                                                     >
-                                                                        <Pencil className="w-3.5 h-3.5" />
+                                                                        <Pencil className="w-4 h-4" />
                                                                     </button>
                                                                     {/* Erişim Linki */}
                                                                     <button
@@ -2072,7 +2113,7 @@ export default function OwnerPanel() {
                                                                         className="p-1.5 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white rounded-lg transition-colors border border-blue-500/20"
                                                                         title="Erişim Linki Kopyala"
                                                                     >
-                                                                        <Link2 className="w-3.5 h-3.5" />
+                                                                        <Link2 className="w-4 h-4" />
                                                                     </button>
                                                                     {/* Embed Kodu */}
                                                                     <button
@@ -2085,7 +2126,7 @@ export default function OwnerPanel() {
                                                                         className="p-1.5 bg-cyan-500/10 hover:bg-cyan-500 text-cyan-400 hover:text-white rounded-lg transition-colors border border-cyan-500/20"
                                                                         title="Embed Kodu Kopyala"
                                                                     >
-                                                                        <CodeXml className="w-3.5 h-3.5" />
+                                                                        <CodeXml className="w-4 h-4" />
                                                                     </button>
                                                                     <button
                                                                         onClick={() => {
@@ -2096,14 +2137,14 @@ export default function OwnerPanel() {
                                                                         className={`p-1.5 rounded-lg transition-colors border ${t.status === 'ACTIVE' ? 'bg-orange-500/10 hover:bg-orange-500 text-orange-400 hover:text-white border-orange-500/20' : 'bg-green-500/10 hover:bg-green-500 text-green-400 hover:text-white border-green-500/20'}`}
                                                                         title={t.status === 'ACTIVE' ? 'Pasifleştir' : 'Aktifleştir'}
                                                                     >
-                                                                        {t.status === 'ACTIVE' ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                                                                        {t.status === 'ACTIVE' ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                                     </button>
                                                                     <button
                                                                         onClick={() => setDeleteConfirmId(t.id)}
                                                                         className="p-1.5 bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-colors border border-red-500/20"
                                                                         title="Sil"
                                                                     >
-                                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                                        <Trash2 className="w-4 h-4" />
                                                                     </button>
                                                                     {/* GodMaster Giriş */}
                                                                     <button
@@ -2111,23 +2152,23 @@ export default function OwnerPanel() {
                                                                         className="p-1.5 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded-lg transition-colors border border-purple-500/20"
                                                                         title="GodMaster olarak giriş yap"
                                                                     >
-                                                                        <Crown className="w-3.5 h-3.5" />
+                                                                        <Crown className="w-4 h-4" />
                                                                     </button>
                                                                     {/* Detay Genişlet */}
                                                                     <button
                                                                         onClick={() => loadTenantDetails(t.id)}
-                                                                        className={`p-1.5 rounded-lg transition-colors border ${expandedTenantId === t.id ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-white/5 hover:bg-blue-500/10 text-gray-500 hover:text-blue-400 border-white/5 hover:border-blue-500/20'}`}
+                                                                        className={`p-1.5 rounded-lg transition-colors border ${expandedTenantId === t.id ? 'bg-blue-500/20 text-blue-400 border-blue-500/30' : 'bg-white/5 hover:bg-blue-500/10 text-gray-400 hover:text-blue-400 border-white/5 hover:border-blue-500/20'}`}
                                                                         title="Odalar & Üyeler"
                                                                     >
-                                                                        <ChevronDown className={`w-3.5 h-3.5 transition-transform ${expandedTenantId === t.id ? 'rotate-180' : ''}`} />
+                                                                        <ChevronDown className={`w-4 h-4 transition-transform ${expandedTenantId === t.id ? 'rotate-180' : ''}`} />
                                                                     </button>
                                                                 </div>
                                                                 {/* Silme onay */}
                                                                 {deleteConfirmId === t.id && (
                                                                     <div className="flex items-center gap-2 mt-2 animate-in fade-in duration-150">
-                                                                        <span className="text-[10px] text-red-400 font-semibold">Emin misiniz?</span>
-                                                                        <button onClick={() => { deleteTenant(t.id); setDeleteConfirmId(null); addToast('Müşteri silindi 🗑️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-[10px] rounded-md font-bold hover:bg-red-400 transition">Evet</button>
-                                                                        <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-[10px] rounded-md hover:bg-white/10 transition">Hayır</button>
+                                                                        <span className="text-xs text-red-400 font-semibold">Emin misiniz?</span>
+                                                                        <button onClick={() => { deleteTenant(t.id); setDeleteConfirmId(null); addToast('Müşteri silindi 🗑️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
+                                                                        <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-xs rounded-md hover:bg-white/10 transition">Hayır</button>
                                                                     </div>
                                                                 )}
                                                             </td>
@@ -2138,7 +2179,7 @@ export default function OwnerPanel() {
                                                                 <tr className="bg-blue-500/[0.02]">
                                                                     <td colSpan={7} className="px-6 py-4">
                                                                         {tenantDetailLoading ? (
-                                                                            <div className="flex items-center gap-2 py-4 justify-center text-gray-500 text-sm">
+                                                                            <div className="flex items-center gap-2 py-4 justify-center text-gray-400 text-sm">
                                                                                 <RefreshCw className="w-4 h-4 animate-spin" /> Yükleniyor...
                                                                             </div>
                                                                         ) : (
@@ -2155,15 +2196,15 @@ export default function OwnerPanel() {
                                                                                                     <div className="flex items-center gap-2 min-w-0">
                                                                                                         <div className="w-2 h-2 rounded-full flex-shrink-0" style={{ backgroundColor: room.buttonColor || '#3b82f6' }}></div>
                                                                                                         <span className="text-sm text-white font-medium truncate">{room.name}</span>
-                                                                                                        <span className="text-[10px] text-gray-600 flex-shrink-0">{room.slug}</span>
+                                                                                                        <span className="text-xs text-gray-400 flex-shrink-0">{room.slug}</span>
                                                                                                     </div>
                                                                                                     <div className="flex items-center gap-1.5 flex-shrink-0">
                                                                                                         {room.isLocked && <Lock className="w-3 h-3 text-amber-400" />}
                                                                                                         {room.isVipRoom && <Crown className="w-3 h-3 text-yellow-400" />}
-                                                                                                        <span className="text-[10px] text-gray-500">{room._count?.participants || 0} kişi</span>
+                                                                                                        <span className="text-xs text-gray-400">{room._count?.participants || 0} kişi</span>
                                                                                                         <button
                                                                                                             onClick={() => handleGodMasterEnter(t.id, room.slug)}
-                                                                                                            className="ml-1 p-1 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded transition-colors text-[10px] font-bold"
+                                                                                                            className="ml-1 p-1 bg-purple-500/10 hover:bg-purple-500 text-purple-400 hover:text-white rounded transition-colors text-xs font-bold"
                                                                                                             title={`${room.name} odasına GodMaster giriş`}
                                                                                                         >
                                                                                                             <Crown className="w-3 h-3" />
@@ -2173,7 +2214,7 @@ export default function OwnerPanel() {
                                                                                             ))}
                                                                                         </div>
                                                                                     ) : (
-                                                                                        <div className="text-xs text-gray-600 italic">Henüz oda yok</div>
+                                                                                        <div className="text-xs text-gray-400 italic">Henüz oda yok</div>
                                                                                     )}
                                                                                 </div>
 
@@ -2186,7 +2227,7 @@ export default function OwnerPanel() {
                                                                                         <div className="rounded-xl border border-white/5 overflow-hidden">
                                                                                             <table className="w-full text-left">
                                                                                                 <thead>
-                                                                                                    <tr className="bg-white/[0.03] text-[10px] text-gray-500 uppercase tracking-wider">
+                                                                                                    <tr className="bg-white/[0.03] text-xs text-gray-400 uppercase tracking-wider">
                                                                                                         <th className="px-3 py-2 font-bold">Kullanıcı</th>
                                                                                                         <th className="px-3 py-2 font-bold">E-Posta</th>
                                                                                                         <th className="px-3 py-2 font-bold">Rol</th>
@@ -2199,25 +2240,25 @@ export default function OwnerPanel() {
                                                                                                         <tr key={m.id} className="text-xs hover:bg-white/[0.02] transition-colors">
                                                                                                             <td className="px-3 py-2">
                                                                                                                 <div className="flex items-center gap-2">
-                                                                                                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
+                                                                                                                    <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
                                                                                                                         {(m.displayName || m.username)?.[0]?.toUpperCase() || '?'}
                                                                                                                     </div>
                                                                                                                     <span className="text-white font-medium">{m.displayName || m.username || '—'}</span>
                                                                                                                 </div>
                                                                                                             </td>
-                                                                                                            <td className="px-3 py-2 text-gray-500 font-mono text-[10px]">{m.email || '—'}</td>
+                                                                                                            <td className="px-3 py-2 text-gray-400 font-mono text-xs">{m.email || '—'}</td>
                                                                                                             <td className="px-3 py-2">
-                                                                                                                <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold border ${m.role === 'owner' || m.role === 'godmaster' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                                                                                                <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold border ${m.role === 'owner' || m.role === 'godmaster' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                                                                                                                     m.role === 'admin' || m.role === 'superadmin' ? 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20' :
                                                                                                                         m.role === 'moderator' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
                                                                                                                             m.role === 'vip' ? 'bg-purple-500/10 text-purple-400 border-purple-500/20' :
-                                                                                                                                'bg-white/5 text-gray-500 border-white/5'
+                                                                                                                                'bg-white/5 text-gray-400 border-white/5'
                                                                                                                     }`}>{m.role}</span>
                                                                                                             </td>
                                                                                                             <td className="px-3 py-2">
                                                                                                                 <span className={`w-1.5 h-1.5 rounded-full inline-block ${m.isOnline ? 'bg-green-400' : 'bg-gray-600'}`}></span>
                                                                                                             </td>
-                                                                                                            <td className="px-3 py-2 text-gray-600 text-[10px]">
+                                                                                                            <td className="px-3 py-2 text-gray-400 text-xs">
                                                                                                                 {m.lastLoginAt ? new Date(m.lastLoginAt).toLocaleDateString('tr-TR') : '—'}
                                                                                                             </td>
                                                                                                         </tr>
@@ -2226,7 +2267,7 @@ export default function OwnerPanel() {
                                                                                             </table>
                                                                                         </div>
                                                                                     ) : (
-                                                                                        <div className="text-xs text-gray-600 italic">Henüz üye yok</div>
+                                                                                        <div className="text-xs text-gray-400 italic">Henüz üye yok</div>
                                                                                     )}
                                                                                 </div>
                                                                             </div>
@@ -2243,7 +2284,7 @@ export default function OwnerPanel() {
                                             if (searchQuery) { const q = searchQuery.toLowerCase(); return (t.name || '').toLowerCase().includes(q) || (t.domain || '').toLowerCase().includes(q); }
                                             return true;
                                         }).length === 0 && (
-                                                <tr><td colSpan={7} className="px-6 py-16 text-center text-gray-600">Sonuç bulunamadı.</td></tr>
+                                                <tr><td colSpan={7} className="px-6 py-16 text-center text-gray-400">Sonuç bulunamadı.</td></tr>
                                             )}
                                     </tbody>
                                 </table>
@@ -2259,7 +2300,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Panel Ayarları</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Site yapılandırması ve yönetim</p>
+                                        <p className="text-sm text-gray-400 mt-0.5">Site yapılandırması ve yönetim</p>
                                     </div>
                                 </div>
                                 <button onClick={saveSiteConfig} disabled={siteConfigSaving} className="px-5 py-2.5 rounded-xl font-bold text-sm text-white transition-all flex items-center gap-2 border border-green-500/30 shadow-lg shadow-green-500/10 disabled:opacity-50" style={{ background: 'linear-gradient(135deg, #059669, #10b981)' }}>
@@ -2269,7 +2310,7 @@ export default function OwnerPanel() {
                             </div>
 
                             {/* Tab Nav */}
-                            <div className="flex items-center gap-1 bg-[#121218]/60 backdrop-blur-md border border-white/10 rounded-2xl p-1.5 overflow-x-auto">
+                            <div className="flex items-center gap-1 owner-glossy p-1.5 overflow-x-auto">
                                 {[
                                     { id: 'branding' as const, label: 'Branding', icon: <Crown className="w-4 h-4" /> },
                                     { id: 'pricing' as const, label: 'Fiyatlar', icon: <Wallet className="w-4 h-4" /> },
@@ -2279,24 +2320,24 @@ export default function OwnerPanel() {
                                     { id: 'general' as const, label: 'Genel', icon: <Cpu className="w-4 h-4" /> },
                                     { id: 'rooms' as const, label: 'Oda Yönetimi', icon: <Server className="w-4 h-4" /> },
                                 ].map(tab => (
-                                    <button key={tab.id} onClick={() => setSettingsTab(tab.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${settingsTab === tab.id ? 'bg-white/10 text-white border border-white/10 shadow-sm' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
+                                    <button key={tab.id} onClick={() => setSettingsTab(tab.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${settingsTab === tab.id ? 'bg-white/10 text-white border border-white/10 shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                                         {tab.icon} {tab.label}
                                     </button>
                                 ))}
                             </div>
 
                             {siteConfigLoading ? (
-                                <div className="flex items-center justify-center py-16 text-gray-500"> <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...</div>
+                                <div className="flex items-center justify-center py-16 text-gray-400"> <RefreshCw className="w-5 h-5 animate-spin mr-2" /> Yükleniyor...</div>
                             ) : (
                                 <div className="flex gap-4">
                                     {/* Sol Taraf — Ayarlar */}
                                     <div className="flex-1 min-w-0">
                                         {/* ── BRANDING ── */}
                                         {settingsTab === 'branding' && (
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                            <div className="owner-glossy">
                                                 <div className="p-5 border-b border-white/5">
                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2"><Crown className="w-5 h-5 text-amber-400" /> Branding & Logo</h2>
-                                                    <p className="text-xs text-gray-500 mt-1">Ana sayfa ve genel site görünümü ayarları</p>
+                                                    <p className="text-xs text-gray-400 mt-1">Ana sayfa ve genel site görünümü ayarları</p>
                                                 </div>
                                                 <div className="p-5 space-y-5">
                                                     {/* Logo Yükleme */}
@@ -2306,7 +2347,7 @@ export default function OwnerPanel() {
                                                                 // eslint-disable-next-line @next/next/no-img-element
                                                                 <img src={siteLogoUrl} alt="Logo" className="w-20 h-20 rounded-2xl object-cover border border-white/10" />
                                                             ) : (
-                                                                <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-600"><Crown className="w-8 h-8" /></div>
+                                                                <div className="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400"><Crown className="w-8 h-8" /></div>
                                                             )}
                                                             <label className="absolute inset-0 cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 rounded-2xl flex items-center justify-center">
                                                                 <span className="text-white text-xs font-bold">Değiştir</span>
@@ -2342,10 +2383,10 @@ export default function OwnerPanel() {
 
                                         {/* ── FİYATLANDIRMA ── */}
                                         {settingsTab === 'pricing' && (
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                            <div className="owner-glossy">
                                                 <div className="p-6 border-b border-white/5">
                                                     <h2 className="text-xl font-bold text-white flex items-center gap-2"><Wallet className="w-5 h-5 text-green-400" /> Fiyatlandırma</h2>
-                                                    <p className="text-sm text-gray-500 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
+                                                    <p className="text-sm text-gray-400 mt-1">Ana sayfadaki paket fiyatlarını düzenleyin</p>
                                                 </div>
                                                 <div className="p-6 space-y-6">
                                                     {/* Yıllık indirim metni */}
@@ -2363,16 +2404,16 @@ export default function OwnerPanel() {
                                                             <div key={pkg.key} className={`rounded-xl border border-white/10 p-5 space-y-4 bg-white/[0.02]`}>
                                                                 <div className="text-sm font-bold text-white uppercase tracking-wider">{pkg.label}</div>
                                                                 <div>
-                                                                    <label className="text-xs text-gray-500 block mb-1.5">Paket Adı</label>
+                                                                    <label className="text-xs text-gray-400 block mb-1.5">Paket Adı</label>
                                                                     <input value={siteConfig.pricing?.[`${pkg.key}Name`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Name`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" />
                                                                 </div>
                                                                 <div className="grid grid-cols-2 gap-3">
                                                                     <div>
-                                                                        <label className="text-xs text-gray-500 block mb-1.5">Aylık (₺)</label>
+                                                                        <label className="text-xs text-gray-400 block mb-1.5">Aylık (₺)</label>
                                                                         <input value={siteConfig.pricing?.[`${pkg.key}Monthly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Monthly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="990" />
                                                                     </div>
                                                                     <div>
-                                                                        <label className="text-xs text-gray-500 block mb-1.5">Yıllık (₺)</label>
+                                                                        <label className="text-xs text-gray-400 block mb-1.5">Yıllık (₺)</label>
                                                                         <input value={siteConfig.pricing?.[`${pkg.key}Yearly`] || ''} onChange={(e) => setSiteConfig((p: any) => ({ ...p, pricing: { ...(p.pricing || {}), [`${pkg.key}Yearly`]: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-green-500/40" placeholder="9.900" />
                                                                     </div>
                                                                 </div>
@@ -2385,11 +2426,11 @@ export default function OwnerPanel() {
 
                                         {/* ── BANKA / IBAN ── */}
                                         {settingsTab === 'banks' && (
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                            <div className="owner-glossy">
                                                 <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                                     <div>
                                                         <h2 className="text-lg font-bold text-white flex items-center gap-2"><Briefcase className="w-5 h-5 text-amber-400" /> Banka Hesapları (IBAN)</h2>
-                                                        <p className="text-xs text-gray-500 mt-1">Ödeme sayfasında görünecek banka hesapları</p>
+                                                        <p className="text-xs text-gray-400 mt-1">Ödeme sayfasında görünecek banka hesapları</p>
                                                     </div>
                                                     <button onClick={() => setSiteConfig((p: any) => ({ ...p, banks: [...(p.banks || []), { bank: '', name: '', iban: '' }] }))} className="px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 text-xs font-bold border border-amber-500/20 transition-colors flex items-center gap-1.5">
                                                         <PlusCircle className="w-3.5 h-3.5" /> Hesap Ekle
@@ -2400,25 +2441,25 @@ export default function OwnerPanel() {
                                                         <div key={i} className="flex items-start gap-3 p-4 rounded-xl bg-white/[0.02] border border-white/5 group">
                                                             <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-3">
                                                                 <div>
-                                                                    <label className="text-[10px] text-gray-500 block mb-1">Banka Adı</label>
+                                                                    <label className="text-[10px] text-gray-400 block mb-1">Banka Adı</label>
                                                                     <input value={b.bank} onChange={(e) => { const arr = [...siteConfig.banks]; arr[i] = { ...arr[i], bank: e.target.value }; setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/40" placeholder="VakıfBank" />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="text-[10px] text-gray-500 block mb-1">Hesap Sahibi</label>
+                                                                    <label className="text-[10px] text-gray-400 block mb-1">Hesap Sahibi</label>
                                                                     <input value={b.name} onChange={(e) => { const arr = [...siteConfig.banks]; arr[i] = { ...arr[i], name: e.target.value }; setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/40" placeholder="Soprano Bilişim A.Ş." />
                                                                 </div>
                                                                 <div>
-                                                                    <label className="text-[10px] text-gray-500 block mb-1">IBAN</label>
+                                                                    <label className="text-[10px] text-gray-400 block mb-1">IBAN</label>
                                                                     <input value={b.iban} onChange={(e) => { const arr = [...siteConfig.banks]; arr[i] = { ...arr[i], iban: e.target.value }; setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white font-mono text-xs focus:outline-none focus:border-amber-500/40" placeholder="TR00 0000 0000 0000 0000 0000 00" />
                                                                 </div>
                                                             </div>
-                                                            <button onClick={() => { const arr = siteConfig.banks.filter((_: any, j: number) => j !== i); setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="p-2 text-gray-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all mt-4">
+                                                            <button onClick={() => { const arr = siteConfig.banks.filter((_: any, j: number) => j !== i); setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="p-2 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all mt-4">
                                                                 <Trash2 className="w-4 h-4" />
                                                             </button>
                                                         </div>
                                                     ))}
                                                     {(!siteConfig.banks || siteConfig.banks.length === 0) && (
-                                                        <div className="py-8 text-center text-gray-600 text-sm">Henüz banka hesabı eklenmedi</div>
+                                                        <div className="py-8 text-center text-gray-400 text-sm">Henüz banka hesabı eklenmedi</div>
                                                     )}
                                                 </div>
                                             </div>
@@ -2426,10 +2467,10 @@ export default function OwnerPanel() {
 
                                         {/* ── İLETİŞİM ── */}
                                         {settingsTab === 'contact' && (
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                            <div className="owner-glossy">
                                                 <div className="p-5 border-b border-white/5">
                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2"><Phone className="w-5 h-5 text-blue-400" /> İletişim Bilgileri</h2>
-                                                    <p className="text-xs text-gray-500 mt-1">Site genelinde görünecek iletişim bilgileri</p>
+                                                    <p className="text-xs text-gray-400 mt-1">Site genelinde görünecek iletişim bilgileri</p>
                                                 </div>
                                                 <div className="p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
                                                     <div>
@@ -2454,10 +2495,10 @@ export default function OwnerPanel() {
 
                                         {/* ── TEMA ── */}
                                         {settingsTab === 'theme' && (
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                            <div className="owner-glossy">
                                                 <div className="p-5 border-b border-white/5">
                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2"><LayoutGrid className="w-5 h-5 text-purple-400" /> Tema Ayarları</h2>
-                                                    <p className="text-xs text-gray-500 mt-1">Varsayılan tema ve renk şeması</p>
+                                                    <p className="text-xs text-gray-400 mt-1">Varsayılan tema ve renk şeması</p>
                                                 </div>
                                                 <div className="p-5 space-y-5">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -2507,7 +2548,7 @@ export default function OwnerPanel() {
                                             <div className="space-y-4">
                                                 {/* System Info Cards */}
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    <div className="p-5 rounded-2xl border bg-[#121218]/60 backdrop-blur-md border-white/10">
+                                                    <div className="owner-glossy p-5">
                                                         <div className="flex items-center gap-3 mb-3">
                                                             <div className="p-2 rounded-lg bg-green-500/10 text-green-400"><Wifi className="w-4 h-4" /></div>
                                                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">API Durumu</span>
@@ -2515,45 +2556,45 @@ export default function OwnerPanel() {
                                                         <div className="text-sm text-white font-mono break-all">{API_URL}</div>
                                                         <div className="flex items-center gap-1.5 mt-2"><span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span><span className="text-[10px] text-green-400 font-bold">Bağlı</span></div>
                                                     </div>
-                                                    <div className="p-5 rounded-2xl border bg-[#121218]/60 backdrop-blur-md border-white/10">
+                                                    <div className="owner-glossy p-5">
                                                         <div className="flex items-center gap-3 mb-3">
                                                             <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400"><Shield className="w-4 h-4" /></div>
                                                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Oturum</span>
                                                         </div>
                                                         <div className="text-sm text-white font-semibold">{adminUser?.displayName || 'Admin'}</div>
-                                                        <div className="text-[11px] text-gray-500 mt-1">{adminUser?.email || '—'}</div>
+                                                        <div className="text-[11px] text-gray-400 mt-1">{adminUser?.email || '—'}</div>
                                                         <span className={`inline-block mt-2 text-[10px] font-bold px-2 py-0.5 rounded border ${isGodMaster ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20'}`}>{adminUser?.role || 'Bilinmiyor'}</span>
                                                     </div>
-                                                    <div className="p-5 rounded-2xl border bg-[#121218]/60 backdrop-blur-md border-white/10">
+                                                    <div className="owner-glossy p-5">
                                                         <div className="flex items-center gap-3 mb-3">
                                                             <div className="p-2 rounded-lg bg-amber-500/10 text-amber-400"><Briefcase className="w-4 h-4" /></div>
                                                             <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Sistem</span>
                                                         </div>
                                                         <div className="text-sm text-white font-semibold">SopranoChat Admin</div>
-                                                        <div className="text-[11px] text-gray-500 mt-1">Toplam {tenants.length} müşteri &middot; {hqMembers.length} yönetici</div>
+                                                        <div className="text-[11px] text-gray-400 mt-1">Toplam {tenants.length} müşteri &middot; {hqMembers.length} yönetici</div>
                                                     </div>
                                                 </div>
                                                 {/* Güvenlik */}
-                                                <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                <div className="owner-glossy">
                                                     <div className="p-5 border-b border-white/5">
                                                         <h2 className="text-lg font-bold text-white flex items-center gap-2"><KeyRound className="w-5 h-5 text-amber-400" /> Güvenlik</h2>
                                                     </div>
                                                     <div className="p-5 space-y-4">
                                                         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                                                            <div><div className="text-sm font-semibold text-white">Otomatik Admin Oluşturma</div><div className="text-[11px] text-gray-500 mt-0.5">Sunucu başlatıldığında otomatik admin hesabı</div></div>
+                                                            <div><div className="text-sm font-semibold text-white">Otomatik Admin Oluşturma</div><div className="text-[11px] text-gray-400 mt-0.5">Sunucu başlatıldığında otomatik admin hesabı</div></div>
                                                             <span className="text-xs font-bold text-red-400 bg-red-500/10 px-2.5 py-1 rounded-lg border border-red-500/20">Devre Dışı</span>
                                                         </div>
                                                         <div className="flex items-center justify-between p-4 rounded-xl bg-white/[0.02] border border-white/5">
-                                                            <div><div className="text-sm font-semibold text-white">Admin Token</div><div className="text-[11px] text-gray-500 mt-0.5">Mevcut oturum token bilgisi</div></div>
+                                                            <div><div className="text-sm font-semibold text-white">Admin Token</div><div className="text-[11px] text-gray-400 mt-0.5">Mevcut oturum token bilgisi</div></div>
                                                             <div className="flex items-center gap-2">
-                                                                <span className="text-xs text-gray-500 font-mono">{(localStorage.getItem('soprano_admin_token') || '').substring(0, 20)}...</span>
-                                                                <button onClick={() => { navigator.clipboard.writeText(localStorage.getItem('soprano_admin_token') || ''); addToast('Token kopyalandı', 'success'); }} className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-gray-500 hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
+                                                                <span className="text-xs text-gray-400 font-mono">{(localStorage.getItem('soprano_admin_token') || '').substring(0, 20)}...</span>
+                                                                <button onClick={() => { navigator.clipboard.writeText(localStorage.getItem('soprano_admin_token') || ''); addToast('Token kopyalandı', 'success'); }} className="p-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-gray-400 hover:text-white transition-colors"><Copy className="w-3.5 h-3.5" /></button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 {/* Hızlı İşlemler */}
-                                                <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                <div className="owner-glossy">
                                                     <div className="p-5 border-b border-white/5">
                                                         <h2 className="text-lg font-bold text-white flex items-center gap-2"><Zap className="w-5 h-5 text-yellow-400" /> Hızlı İşlemler</h2>
                                                     </div>
@@ -2561,17 +2602,17 @@ export default function OwnerPanel() {
                                                         <button onClick={() => setActiveView('logs')} className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-yellow-500/20 transition-all text-left group">
                                                             <ScrollText className="w-5 h-5 text-yellow-400 mb-2 group-hover:scale-110 transition-transform" />
                                                             <div className="text-sm font-semibold text-white">Sistem Logları</div>
-                                                            <div className="text-[10px] text-gray-600 mt-0.5">Tüm logları görüntüle</div>
+                                                            <div className="text-[10px] text-gray-400 mt-0.5">Tüm logları görüntüle</div>
                                                         </button>
                                                         <button onClick={() => setActiveView('hqMembers')} className="p-4 rounded-xl bg-white/[0.02] hover:bg-white/[0.05] border border-white/5 hover:border-cyan-500/20 transition-all text-left group">
                                                             <ShieldCheck className="w-5 h-5 text-cyan-400 mb-2 group-hover:scale-110 transition-transform" />
                                                             <div className="text-sm font-semibold text-white">Yönetici Yönetimi</div>
-                                                            <div className="text-[10px] text-gray-600 mt-0.5">Admin ve yardımcılar</div>
+                                                            <div className="text-[10px] text-gray-400 mt-0.5">Admin ve yardımcılar</div>
                                                         </button>
                                                         <button onClick={() => { localStorage.removeItem('soprano_admin_token'); localStorage.removeItem('soprano_admin_user'); router.replace('/riconun-odasi'); }} className="p-4 rounded-xl bg-white/[0.02] hover:bg-red-500/[0.05] border border-white/5 hover:border-red-500/20 transition-all text-left group">
                                                             <LogOut className="w-5 h-5 text-red-400 mb-2 group-hover:scale-110 transition-transform" />
                                                             <div className="text-sm font-semibold text-white">Çıkış Yap</div>
-                                                            <div className="text-[10px] text-gray-600 mt-0.5">Oturumu sonlandır</div>
+                                                            <div className="text-[10px] text-gray-400 mt-0.5">Oturumu sonlandır</div>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -2593,7 +2634,7 @@ export default function OwnerPanel() {
                                                             { id: 'layout' as const, label: '📐 Yerleşim' },
                                                             { id: 'media' as const, label: '📻 Medya' },
                                                         ].map(sub => (
-                                                            <button key={sub.id} onClick={() => setRoomConfigTab(sub.id)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${roomConfigTab === sub.id ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'text-gray-500 hover:text-white hover:bg-white/5'}`}>
+                                                            <button key={sub.id} onClick={() => setRoomConfigTab(sub.id)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${roomConfigTab === sub.id ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                                                                 {sub.label}
                                                             </button>
                                                         ))}
@@ -2602,10 +2643,10 @@ export default function OwnerPanel() {
                                                     {/* ── TASARIM ── */}
                                                     {roomConfigTab === 'design' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">🎨 Oda Tasarım Editörü</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Arka plan, renkler ve genel görünüm ayarları</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Arka plan, renkler ve genel görünüm ayarları</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
                                                                     {/* Arka Plan Tipi */}
@@ -2613,7 +2654,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Arka Plan Tipi</label>
                                                                         <div className="grid grid-cols-3 gap-2">
                                                                             {[{ v: 'gradient', l: 'Gradient' }, { v: 'solid', l: 'Düz Renk' }, { v: 'image', l: 'Resim' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, design: { ...(p.roomConfig?.design || {}), bgType: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${siteConfig.roomConfig?.design?.bgType === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, design: { ...(p.roomConfig?.design || {}), bgType: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${siteConfig.roomConfig?.design?.bgType === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -2709,7 +2750,7 @@ export default function OwnerPanel() {
                                                                                             <div className="w-3 h-3 rounded-full" style={{ background: p.accent, boxShadow: `0 0 8px ${p.accent}60` }}></div>
                                                                                         </div>
                                                                                     </div>
-                                                                                    <span className="text-[9px] text-gray-500 group-hover:text-white transition-colors">{p.name}</span>
+                                                                                    <span className="text-[9px] text-gray-400 group-hover:text-white transition-colors">{p.name}</span>
                                                                                 </button>
                                                                             ))}
                                                                         </div>
@@ -2722,10 +2763,10 @@ export default function OwnerPanel() {
                                                     {/* ── TOOLBAR ── */}
                                                     {roomConfigTab === 'toolbar' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">🔧 Toolbar Yapılandırması</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Alt çubuktaki butonları açıp kapatın ve sıralayın</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Alt çubuktaki butonları açıp kapatın ve sıralayın</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
                                                                     {/* Buton Görünürlük */}
@@ -2750,7 +2791,7 @@ export default function OwnerPanel() {
                                                                                             <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ${siteConfig.roomConfig?.toolbar?.[item.key] !== false ? 'left-4' : 'left-0.5'}`}></div>
                                                                                         </div>
                                                                                     </div>
-                                                                                    <span className="text-[10px] text-gray-500">{item.desc}</span>
+                                                                                    <span className="text-[10px] text-gray-400">{item.desc}</span>
                                                                                 </button>
                                                                             ))}
                                                                         </div>
@@ -2760,7 +2801,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Buton Boyutu</label>
                                                                         <div className="grid grid-cols-3 gap-2">
                                                                             {[{ v: 'small', l: 'Küçük' }, { v: 'normal', l: 'Normal' }, { v: 'large', l: 'Büyük' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), buttonSize: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${siteConfig.roomConfig?.toolbar?.buttonSize === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), buttonSize: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${siteConfig.roomConfig?.toolbar?.buttonSize === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -2771,7 +2812,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Toolbar Pozisyonu</label>
                                                                         <div className="grid grid-cols-2 gap-2">
                                                                             {[{ v: 'bottom', l: '⬇️ Alt' }, { v: 'top', l: '⬆️ Üst' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), position: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.toolbar?.position || 'bottom') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), position: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.toolbar?.position || 'bottom') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -2785,18 +2826,18 @@ export default function OwnerPanel() {
                                                     {/* ── YETKİLER ── */}
                                                     {roomConfigTab === 'permissions' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                                                     <div>
                                                                         <h2 className="text-lg font-bold text-white flex items-center gap-2">👥 Rol Bazlı Yetkiler</h2>
-                                                                        <p className="text-xs text-gray-500 mt-1">Her rol için izin verilebilecek eylemleri belirleyin</p>
+                                                                        <p className="text-xs text-gray-400 mt-1">Her rol için izin verilebilecek eylemleri belirleyin</p>
                                                                     </div>
                                                                 </div>
                                                                 <div className="p-5 overflow-x-auto">
                                                                     <table className="w-full text-xs">
                                                                         <thead>
                                                                             <tr className="border-b border-white/5">
-                                                                                <th className="text-left py-3 px-2 text-gray-500 font-bold">Yetki</th>
+                                                                                <th className="text-left py-3 px-2 text-gray-400 font-bold">Yetki</th>
                                                                                 {['guest', 'member', 'vip', 'operator', 'admin'].map(role => (
                                                                                     <th key={role} className="text-center py-3 px-2">
                                                                                         <span className={`text-xs font-bold px-2 py-0.5 rounded border ${role === 'admin' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
@@ -2840,7 +2881,7 @@ export default function OwnerPanel() {
                                                                                                 const perms = { ...p.roomConfig?.permissions?.[role] };
                                                                                                 perms[perm.key] = !perms[perm.key];
                                                                                                 return { ...p, roomConfig: { ...p.roomConfig, permissions: { ...(p.roomConfig?.permissions || {}), [role]: perms } } };
-                                                                                            })} className={`w-7 h-7 rounded-lg border transition-all flex items-center justify-center ${siteConfig.roomConfig?.permissions?.[role]?.[perm.key] ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-white/[0.02] border-white/5 text-gray-600'}`}>
+                                                                                            })} className={`w-7 h-7 rounded-lg border transition-all flex items-center justify-center ${siteConfig.roomConfig?.permissions?.[role]?.[perm.key] ? 'bg-green-500/20 border-green-500/30 text-green-400' : 'bg-white/[0.02] border-white/5 text-gray-400'}`}>
                                                                                                 {siteConfig.roomConfig?.permissions?.[role]?.[perm.key] ? '✓' : '—'}
                                                                                             </button>
                                                                                         </td>
@@ -2865,23 +2906,23 @@ export default function OwnerPanel() {
                                                                 </div>
                                                             </div>
                                                             {/* Yeni Yetki Ekleme */}
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">⚡ Yeni Yetki Tanımla</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Sisteme yeni bir özel yetki ekleyin</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Sisteme yeni bir özel yetki ekleyin</p>
                                                                 </div>
                                                                 <div className="p-5">
                                                                     <div className="grid grid-cols-3 gap-3">
                                                                         <div>
-                                                                            <label className="text-[10px] font-bold text-gray-500 mb-1 block uppercase tracking-wider">Yetki Adı</label>
+                                                                            <label className="text-[10px] font-bold text-gray-400 mb-1 block uppercase tracking-wider">Yetki Adı</label>
                                                                             <input id="newPermLabel" type="text" placeholder="Ör: Duyuru Gönderme" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-indigo-500/50" />
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-[10px] font-bold text-gray-500 mb-1 block uppercase tracking-wider">Yetki Anahtarı</label>
+                                                                            <label className="text-[10px] font-bold text-gray-400 mb-1 block uppercase tracking-wider">Yetki Anahtarı</label>
                                                                             <input id="newPermKey" type="text" placeholder="Ör: sendAnnouncement" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white font-mono outline-none focus:border-indigo-500/50" />
                                                                         </div>
                                                                         <div>
-                                                                            <label className="text-[10px] font-bold text-gray-500 mb-1 block uppercase tracking-wider">İkon</label>
+                                                                            <label className="text-[10px] font-bold text-gray-400 mb-1 block uppercase tracking-wider">İkon</label>
                                                                             <input id="newPermIcon" type="text" placeholder="Ör: 📢" defaultValue="⚡" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-indigo-500/50" />
                                                                         </div>
                                                                     </div>
@@ -2912,10 +2953,10 @@ export default function OwnerPanel() {
                                                     {/* ── CHAT AYARLARI ── */}
                                                     {roomConfigTab === 'chat' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">💬 Chat & Mesaj Ayarları</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Mesaj limiti, font ayarları ve görünüm</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Mesaj limiti, font ayarları ve görünüm</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
                                                                     <div className="grid grid-cols-2 gap-4">
@@ -2945,7 +2986,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Mesaj Baloncuk Stili</label>
                                                                         <div className="grid grid-cols-3 gap-2">
                                                                             {[{ v: 'modern', l: '🟣 Modern' }, { v: 'classic', l: '🔵 Klasik' }, { v: 'minimal', l: '⚪ Minimal' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, chat: { ...(p.roomConfig?.chat || {}), bubbleStyle: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.chat?.bubbleStyle || 'modern') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, chat: { ...(p.roomConfig?.chat || {}), bubbleStyle: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.chat?.bubbleStyle || 'modern') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -2977,22 +3018,22 @@ export default function OwnerPanel() {
                                                     {/* ── YERLEŞİM ── */}
                                                     {roomConfigTab === 'layout' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">📐 Yerleşim Ayarları</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Panel boyutları ve düzen ayarları</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Panel boyutları ve düzen ayarları</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
                                                                     <div className="grid grid-cols-2 gap-4">
                                                                         <div>
                                                                             <label className="text-xs font-bold text-gray-400 mb-1.5 block">Sol Panel Genişliği (px)</label>
                                                                             <input type="range" min="200" max="400" value={siteConfig.roomConfig?.layout?.sidebarWidth || 280} onChange={e => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, layout: { ...(p.roomConfig?.layout || {}), sidebarWidth: parseInt(e.target.value) } } }))} className="w-full accent-indigo-500" />
-                                                                            <div className="text-right text-[10px] text-gray-500 font-mono mt-1">{siteConfig.roomConfig?.layout?.sidebarWidth || 280}px</div>
+                                                                            <div className="text-right text-[10px] text-gray-400 font-mono mt-1">{siteConfig.roomConfig?.layout?.sidebarWidth || 280}px</div>
                                                                         </div>
                                                                         <div>
                                                                             <label className="text-xs font-bold text-gray-400 mb-1.5 block">Sağ Panel Genişliği (px)</label>
                                                                             <input type="range" min="200" max="500" value={siteConfig.roomConfig?.layout?.rightPanelWidth || 320} onChange={e => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, layout: { ...(p.roomConfig?.layout || {}), rightPanelWidth: parseInt(e.target.value) } } }))} className="w-full accent-indigo-500" />
-                                                                            <div className="text-right text-[10px] text-gray-500 font-mono mt-1">{siteConfig.roomConfig?.layout?.rightPanelWidth || 320}px</div>
+                                                                            <div className="text-right text-[10px] text-gray-400 font-mono mt-1">{siteConfig.roomConfig?.layout?.rightPanelWidth || 320}px</div>
                                                                         </div>
                                                                     </div>
                                                                     {/* Layout Önizleme */}
@@ -3000,13 +3041,13 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Yerleşim Önizleme</label>
                                                                         <div className="h-24 rounded-xl border border-white/10 bg-white/[0.02] flex overflow-hidden">
                                                                             <div className="border-r border-white/10 flex items-center justify-center" style={{ width: `${((siteConfig.roomConfig?.layout?.sidebarWidth || 280) / 1000) * 100}%`, minWidth: 40 }}>
-                                                                                <span className="text-[8px] text-gray-600 writing-vertical">Sol Panel</span>
+                                                                                <span className="text-[8px] text-gray-400 writing-vertical">Sol Panel</span>
                                                                             </div>
                                                                             <div className="flex-1 flex items-center justify-center border-r border-white/10">
-                                                                                <span className="text-[8px] text-gray-500">Chat Alanı</span>
+                                                                                <span className="text-[8px] text-gray-400">Chat Alanı</span>
                                                                             </div>
                                                                             <div className="flex items-center justify-center" style={{ width: `${((siteConfig.roomConfig?.layout?.rightPanelWidth || 320) / 1000) * 100}%`, minWidth: 40 }}>
-                                                                                <span className="text-[8px] text-gray-600">Sağ Panel</span>
+                                                                                <span className="text-[8px] text-gray-400">Sağ Panel</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -3031,7 +3072,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Mobil Görünüm</label>
                                                                         <div className="grid grid-cols-3 gap-2">
                                                                             {[{ v: 'auto', l: '🔄 Otomatik' }, { v: 'compact', l: '📱 Kompakt' }, { v: 'full', l: '💻 Tam' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, layout: { ...(p.roomConfig?.layout || {}), mobileLayout: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.layout?.mobileLayout || 'auto') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, layout: { ...(p.roomConfig?.layout || {}), mobileLayout: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.layout?.mobileLayout || 'auto') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -3045,10 +3086,10 @@ export default function OwnerPanel() {
                                                     {/* ── MEDYA ── */}
                                                     {roomConfigTab === 'media' && (
                                                         <div className="space-y-4">
-                                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                                            <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
                                                                     <h2 className="text-lg font-bold text-white flex items-center gap-2">📻 Medya & Erişim</h2>
-                                                                    <p className="text-xs text-gray-500 mt-1">Radyo, video ve medya yapılandırması</p>
+                                                                    <p className="text-xs text-gray-400 mt-1">Radyo, video ve medya yapılandırması</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
                                                                     <div>
@@ -3065,7 +3106,7 @@ export default function OwnerPanel() {
                                                                             <div className="flex items-center justify-between">
                                                                                 <div>
                                                                                     <div className="text-white mb-0.5">🎬 YouTube İzni</div>
-                                                                                    <div className="text-[10px] text-gray-500">Kullanıcılar YouTube video paylaşabilir</div>
+                                                                                    <div className="text-[10px] text-gray-400">Kullanıcılar YouTube video paylaşabilir</div>
                                                                                 </div>
                                                                                 <div className={`w-8 h-4 rounded-full transition-all relative ${siteConfig.roomConfig?.media?.allowYoutube !== false ? 'bg-green-500' : 'bg-gray-700'}`}>
                                                                                     <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ${siteConfig.roomConfig?.media?.allowYoutube !== false ? 'left-4' : 'left-0.5'}`}></div>
@@ -3078,7 +3119,7 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Sticker Paketi</label>
                                                                         <div className="grid grid-cols-3 gap-2">
                                                                             {[{ v: 'default', l: '📦 Varsayılan' }, { v: 'premium', l: '✨ Premium' }, { v: 'custom', l: '🎨 Özel' }].map(opt => (
-                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, media: { ...(p.roomConfig?.media || {}), stickerPacks: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.media?.stickerPacks || 'default') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-500 border-white/5 hover:border-white/10'}`}>
+                                                                                <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, media: { ...(p.roomConfig?.media || {}), stickerPacks: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.media?.stickerPacks || 'default') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
                                                                             ))}
@@ -3091,10 +3132,10 @@ export default function OwnerPanel() {
                                                 </div>
                                                 {/* Sağ Taraf — Canlı Önizleme */}
                                                 <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
-                                                    <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md overflow-hidden">
+                                                    <div className="owner-glossy">
                                                         <div className="p-3 border-b border-white/5 flex items-center justify-between">
                                                             <span className="text-xs font-bold text-gray-400 flex items-center gap-2">👁️ Canlı Önizleme</span>
-                                                            <span className="text-[9px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
+                                                            <span className="text-[9px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
                                                         </div>
                                                         {/* Mini Oda Önizleme — Gerçek Oda Görünümü */}
                                                         <div className="relative" style={{ height: 480 }}>
@@ -3120,12 +3161,12 @@ export default function OwnerPanel() {
                                                                         )}
                                                                         <div>
                                                                             <div className="text-[7px] font-bold text-amber-200/90">{siteLogoName || 'SopranoChat'}</div>
-                                                                            <div className="text-[5px] text-gray-600">SENİN SEÇİN</div>
+                                                                            <div className="text-[5px] text-gray-400">SENİN SEÇİN</div>
                                                                         </div>
                                                                     </div>
                                                                     {/* Katılımcı başlığı */}
                                                                     <div className="px-2 py-1 border-b border-white/5">
-                                                                        <span className="text-[6px] text-gray-500">› çevrimiçi (6)</span>
+                                                                        <span className="text-[6px] text-gray-400">› çevrimiçi (6)</span>
                                                                     </div>
                                                                     {/* Katılımcı listesi */}
                                                                     <div className="flex-1 p-1 space-y-0.5 overflow-hidden">
@@ -3141,7 +3182,7 @@ export default function OwnerPanel() {
                                                                                 <div className="w-4 h-4 rounded-full flex-shrink-0 border border-white/10" style={{ background: `${u.color}30` }}></div>
                                                                                 <div className="min-w-0">
                                                                                     <span className="text-[6px] font-bold truncate block" style={{ color: u.color }}>{u.badge} {u.name}</span>
-                                                                                    {u.selected && <span className="text-[5px] text-gray-600">GodMaster</span>}
+                                                                                    {u.selected && <span className="text-[5px] text-gray-400">GodMaster</span>}
                                                                                 </div>
                                                                             </div>
                                                                         ))}
@@ -3160,11 +3201,11 @@ export default function OwnerPanel() {
                                                                                 <div className="w-4 h-4 rounded-full bg-white/10 flex items-center justify-center"><span className="text-[6px]">▶</span></div>
                                                                                 <div>
                                                                                     <div className="text-[6px] font-bold text-white/70">🎵 TRT FM</div>
-                                                                                    <div className="text-[5px] text-gray-600">Türk Müziği</div>
+                                                                                    <div className="text-[5px] text-gray-400">Türk Müziği</div>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="flex items-center gap-1">
-                                                                                <div className="flex-1 px-1.5 py-0.5 rounded bg-white/5 text-[5px] text-gray-500 text-center">🎵 Kanallar</div>
+                                                                                <div className="flex-1 px-1.5 py-0.5 rounded bg-white/5 text-[5px] text-gray-400 text-center">🎵 Kanallar</div>
                                                                                 <div className="w-4 h-4 rounded bg-white/5 flex items-center justify-center"><span className="text-[6px]">🔊</span></div>
                                                                             </div>
                                                                         </div>
@@ -3175,7 +3216,7 @@ export default function OwnerPanel() {
                                                                             <span className="text-[7px]">🏆</span>
                                                                             <div>
                                                                                 <div className="text-[6px] font-bold" style={{ color: siteConfig.roomConfig?.design?.accentColor || '#6366f1' }}>MİKROFONU AL</div>
-                                                                                <div className="text-[5px] text-gray-600">Konuşmak için tıkla</div>
+                                                                                <div className="text-[5px] text-gray-400">Konuşmak için tıkla</div>
                                                                             </div>
                                                                             <div className="ml-auto w-2 h-2 rounded-full bg-green-500"></div>
                                                                         </div>
@@ -3187,7 +3228,7 @@ export default function OwnerPanel() {
                                                                     {siteConfig.roomConfig?.layout?.showRoomTabs !== false && (
                                                                         <div className="flex items-center justify-center gap-1 px-2 py-1.5 border-b border-white/5" style={{ background: 'rgba(0,0,0,0.25)' }}>
                                                                             {['Genel Sohbet', 'Geyik Muhabbeti', 'Müzik Odası'].map((tab, i) => (
-                                                                                <div key={tab} className={`px-2 py-0.5 rounded-full text-[6px] font-bold ${i === 0 ? 'text-white border' : 'text-gray-600'}`} style={i === 0 ? { background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}20`, borderColor: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40`, color: siteConfig.roomConfig?.design?.accentColor || '#6366f1' } : {}}>
+                                                                                <div key={tab} className={`px-2 py-0.5 rounded-full text-[6px] font-bold ${i === 0 ? 'text-white border' : 'text-gray-400'}`} style={i === 0 ? { background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}20`, borderColor: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40`, color: siteConfig.roomConfig?.design?.accentColor || '#6366f1' } : {}}>
                                                                                     {tab}
                                                                                 </div>
                                                                             ))}
@@ -3219,7 +3260,7 @@ export default function OwnerPanel() {
                                                                             </div>
                                                                         </div>
                                                                         {siteConfig.roomConfig?.chat?.showTimestamps !== false && (
-                                                                            <div className="text-center"><span className="text-[6px] text-gray-600">14:32</span></div>
+                                                                            <div className="text-center"><span className="text-[6px] text-gray-400">14:32</span></div>
                                                                         )}
                                                                         <div className="flex items-start gap-1 justify-end">
                                                                             <div>
@@ -3255,7 +3296,7 @@ export default function OwnerPanel() {
                                                                         {/* Mesaj Giriş Alanı */}
                                                                         <div className="flex items-center gap-1.5 px-2 py-1.5">
                                                                             <div className="flex-1 h-5 rounded-lg bg-white/5 border border-white/10 flex items-center px-2">
-                                                                                <span className="text-[6px] text-gray-600">Mesajınızı buraya yazın...</span>
+                                                                                <span className="text-[6px] text-gray-400">Mesajınızı buraya yazın...</span>
                                                                             </div>
                                                                             <div className="px-2.5 py-1 rounded-lg flex items-center gap-1" style={{ background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}`, boxShadow: `0 0 8px ${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40` }}>
                                                                                 <span className="text-[6px] font-bold text-white">GÖNDER</span>
@@ -3277,11 +3318,11 @@ export default function OwnerPanel() {
                                                                                 <div className="w-8 h-8 mx-auto mb-1 rounded-lg bg-black/30 border border-white/5 flex items-center justify-center">
                                                                                     <span className="text-[10px] opacity-40">📺</span>
                                                                                 </div>
-                                                                                <span className="text-[5px] text-gray-600 block">SINYAL YOK</span>
+                                                                                <span className="text-[5px] text-gray-400 block">SINYAL YOK</span>
                                                                             </div>
                                                                         </div>
                                                                         <div className="text-center">
-                                                                            <span className="text-[5px] text-gray-600">Yayın için bekleniyor</span>
+                                                                            <span className="text-[5px] text-gray-400">Yayın için bekleniyor</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
@@ -3295,10 +3336,10 @@ export default function OwnerPanel() {
                                     {/* Sağ Taraf — Ana Sayfa Önizleme (rooms sekmesi hariç, o kendi önizlemesine sahip) */}
                                     {settingsTab !== 'rooms' && settingsTab !== 'pricing' && (
                                         <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
-                                            <div className="rounded-2xl border border-white/10 bg-[#121218]/60 backdrop-blur-md overflow-hidden">
+                                            <div className="owner-glossy">
                                                 <div className="p-3 border-b border-white/5 flex items-center justify-between">
                                                     <span className="text-xs font-bold text-gray-400 flex items-center gap-2">👁️ Ana Sayfa Önizleme</span>
-                                                    <span className="text-[9px] text-gray-600 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
+                                                    <span className="text-[9px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
                                                 </div>
                                                 {/* Mini Ana Sayfa */}
                                                 <div className="relative bg-[#0a0a12]" style={{ height: 480 }}>
@@ -3313,7 +3354,7 @@ export default function OwnerPanel() {
                                                         <span className="text-[9px] font-bold text-white/90">{siteLogoName || 'SopranoChat'}</span>
                                                         <div className="ml-auto flex items-center gap-2">
                                                             {['Özellikler', 'Fiyatlar', 'İletişim'].map(n => (
-                                                                <span key={n} className="text-[7px] text-gray-500 hover:text-white cursor-default">{n}</span>
+                                                                <span key={n} className="text-[7px] text-gray-400 hover:text-white cursor-default">{n}</span>
                                                             ))}
                                                             <div className="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/30">
                                                                 <span className="text-[7px] font-bold text-indigo-300">Giriş</span>
@@ -3339,7 +3380,7 @@ export default function OwnerPanel() {
                                                     </div>
                                                     {/* Fiyat Kartları */}
                                                     <div className="px-3 mb-4">
-                                                        <div className="text-[8px] font-bold text-gray-500 text-center mb-2 uppercase tracking-wider">Paketler</div>
+                                                        <div className="text-[8px] font-bold text-gray-400 text-center mb-2 uppercase tracking-wider">Paketler</div>
                                                         <div className="grid grid-cols-3 gap-1.5">
                                                             {[
                                                                 { name: siteConfig.pricing?.p1Name || 'Starter', price: siteConfig.pricing?.p1Monthly || '990', color: 'amber' },
@@ -3350,7 +3391,7 @@ export default function OwnerPanel() {
                                                                     {p.popular && <div className="text-[5px] font-bold text-green-400 uppercase mb-0.5">Popüler</div>}
                                                                     <div className="text-[7px] font-bold text-white">{p.name}</div>
                                                                     <div className="text-[9px] font-extrabold text-white mt-0.5">₺{p.price}</div>
-                                                                    <div className="text-[5px] text-gray-600">/ay</div>
+                                                                    <div className="text-[5px] text-gray-400">/ay</div>
                                                                 </div>
                                                             ))}
                                                         </div>
@@ -3366,13 +3407,13 @@ export default function OwnerPanel() {
                                                             <div className="w-6 h-6 rounded-full bg-indigo-500/10 flex items-center justify-center"><span className="text-[8px]">📧</span></div>
                                                             <div>
                                                                 <div className="text-[7px] font-bold text-white">{siteConfig.contactEmail || 'info@soprano.chat'}</div>
-                                                                <div className="text-[5px] text-gray-600">{siteConfig.contactPhone || '+90 555 000 00 00'}</div>
+                                                                <div className="text-[5px] text-gray-400">{siteConfig.contactPhone || '+90 555 000 00 00'}</div>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     {/* Footer */}
                                                     <div className="absolute bottom-0 left-0 right-0 px-3 py-2 border-t border-white/5 bg-black/40">
-                                                        <div className="text-[6px] text-gray-600 text-center">{siteConfig.footerText || '© 2025 SopranoChat. Tüm hakları saklıdır.'}</div>
+                                                        <div className="text-[6px] text-gray-400 text-center">{siteConfig.footerText || '© 2025 SopranoChat. Tüm hakları saklıdır.'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -3392,59 +3433,59 @@ export default function OwnerPanel() {
                                         </div>
                                         Finans & Ödemeler
                                     </h1>
-                                    <p className="text-sm text-gray-500 mt-1 ml-14">Gelir takibi ve ödeme durumları</p>
+                                    <p className="text-sm text-gray-400 mt-1 ml-14">Gelir takibi ve ödeme durumları</p>
                                 </div>
                             </div>
 
                             {/* Finance Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 {/* Aylık Ciro */}
-                                <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5">
+                                <div className="owner-glossy p-5 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-24 h-24 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-green-500/10 rounded-lg border border-green-500/20"><TrendingUp className="w-5 h-5 text-green-400" /></div>
                                     </div>
                                     <div className="text-3xl font-extrabold text-white mb-1">₺{tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod !== 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0).toLocaleString('tr-TR')}</div>
-                                    <div className="text-xs text-gray-500 font-medium">Aylık Tekrarlayan Gelir</div>
+                                    <div className="text-xs text-gray-400 font-medium">Aylık Tekrarlayan Gelir</div>
                                 </div>
 
                                 {/* Yıllık Ciro */}
-                                <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5">
+                                <div className="owner-glossy p-5 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-24 h-24 bg-amber-500/10 rounded-full blur-xl group-hover:bg-amber-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-amber-500/10 rounded-lg border border-amber-500/20"><Wallet className="w-5 h-5 text-amber-400" /></div>
                                     </div>
                                     <div className="text-3xl font-extrabold text-white mb-1">₺{tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod === 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0).toLocaleString('tr-TR')}</div>
-                                    <div className="text-xs text-gray-500 font-medium">Yıllık Sözleşme Geliri</div>
+                                    <div className="text-xs text-gray-400 font-medium">Yıllık Sözleşme Geliri</div>
                                 </div>
 
                                 {/* Aktif Abonelik */}
-                                <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5">
+                                <div className="owner-glossy p-5 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl group-hover:bg-cyan-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20"><Briefcase className="w-5 h-5 text-cyan-400" /></div>
                                     </div>
                                     <div className="text-3xl font-extrabold text-white mb-1">{tenants.filter(t => t.status === 'ACTIVE').length}</div>
-                                    <div className="text-xs text-gray-500 font-medium">Aktif Abonelik</div>
+                                    <div className="text-xs text-gray-400 font-medium">Aktif Abonelik</div>
                                 </div>
 
                                 {/* Ödeme Bekleyen */}
-                                <div className="glass-panel p-5 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5">
+                                <div className="owner-glossy p-5 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-24 h-24 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-rose-500/10 rounded-lg border border-rose-500/20"><AlertCircle className="w-5 h-5 text-rose-400 animate-pulse" /></div>
                                     </div>
                                     <div className="text-3xl font-extrabold text-white mb-1">{adminStats.paymentDue}</div>
-                                    <div className="text-xs text-gray-500 font-medium">Ödeme Bekleyen</div>
+                                    <div className="text-xs text-gray-400 font-medium">Ödeme Bekleyen</div>
                                 </div>
                             </div>
 
                             {/* Gelir Tablosu */}
-                            <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                            <div className="owner-glossy">
                                 <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                     <div>
                                         <h2 className="text-lg font-bold text-white">Müşteri Gelir Tablosu</h2>
-                                        <p className="text-xs text-gray-500 mt-1">Aktif aboneliklerin ödeme detayları</p>
+                                        <p className="text-xs text-gray-400 mt-1">Aktif aboneliklerin ödeme detayları</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <button onClick={exportCSV} className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-xs font-medium text-gray-300 transition-colors flex items-center gap-2">
@@ -3482,12 +3523,12 @@ export default function OwnerPanel() {
                                                 <tr key={t.id} className={`hover:bg-white/[0.02] transition-colors ${isExpired ? 'opacity-50' : ''}`}>
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${t.status === 'ACTIVE' ? 'bg-gradient-to-br from-amber-600 to-amber-800 text-white' : 'bg-gray-900 border border-white/5 text-gray-600'}`}>
+                                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${t.status === 'ACTIVE' ? 'bg-gradient-to-br from-amber-600 to-amber-800 text-white' : 'bg-gray-900 border border-white/5 text-gray-400'}`}>
                                                                 {(t.domain || t.name || '??').substring(0, 2).toUpperCase()}
                                                             </div>
                                                             <div>
                                                                 <div className="font-bold text-white text-sm">{t.domain || t.name}</div>
-                                                                <div className="text-[11px] text-gray-600">{t.name}</div>
+                                                                <div className="text-[11px] text-gray-400">{t.name}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -3496,7 +3537,7 @@ export default function OwnerPanel() {
                                                             <span className={`text-xs font-medium px-2 py-0.5 rounded border ${cameraOn ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
                                                                 {cameraOn ? '📹 Kameralı' : '💬 Mesaj'}
                                                             </span>
-                                                            <span className="text-[10px] text-gray-600">x{t.roomLimit || 1} Oda</span>
+                                                            <span className="text-[10px] text-gray-400">x{t.roomLimit || 1} Oda</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
@@ -3505,7 +3546,7 @@ export default function OwnerPanel() {
                                                         </span>
                                                     </td>
                                                     <td className="px-6 py-4 text-right">
-                                                        <span className={`text-lg font-extrabold ${price > 0 ? 'text-green-400' : 'text-gray-600'}`}>₺{price.toLocaleString('tr-TR')}</span>
+                                                        <span className={`text-lg font-extrabold ${price > 0 ? 'text-green-400' : 'text-gray-400'}`}>₺{price.toLocaleString('tr-TR')}</span>
                                                     </td>
                                                     <td className="px-6 py-4">
                                                         {expiresAt ? (
@@ -3513,12 +3554,12 @@ export default function OwnerPanel() {
                                                                 <span className={`text-xs font-bold ${isExpired ? 'text-red-400' : isUrgent ? 'text-orange-400' : 'text-gray-300'}`}>
                                                                     {expiresAt.toLocaleDateString('tr-TR')}
                                                                 </span>
-                                                                <span className={`text-[10px] ${isExpired ? 'text-red-500' : isUrgent ? 'text-orange-500' : 'text-gray-600'}`}>
+                                                                <span className={`text-[10px] ${isExpired ? 'text-red-500' : isUrgent ? 'text-orange-500' : 'text-gray-400'}`}>
                                                                     {isExpired ? 'Süresi doldu' : `${daysLeft} gün kaldı`}
                                                                 </span>
                                                             </div>
                                                         ) : (
-                                                            <span className="text-xs text-gray-600">—</span>
+                                                            <span className="text-xs text-gray-400">—</span>
                                                         )}
                                                     </td>
                                                     <td className="px-6 py-4 text-center">
@@ -3538,17 +3579,17 @@ export default function OwnerPanel() {
                                     </div>
                                     <div className="flex items-center gap-6">
                                         <div className="text-right">
-                                            <div className="text-[10px] text-gray-600 uppercase tracking-wider">Aylık Toplam</div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Aylık Toplam</div>
                                             <div className="text-lg font-extrabold text-green-400">₺{tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod !== 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0).toLocaleString('tr-TR')}</div>
                                         </div>
                                         <div className="w-px h-8 bg-white/10"></div>
                                         <div className="text-right">
-                                            <div className="text-[10px] text-gray-600 uppercase tracking-wider">Yıllık Toplam</div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Yıllık Toplam</div>
                                             <div className="text-lg font-extrabold text-amber-400">₺{tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod === 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0).toLocaleString('tr-TR')}</div>
                                         </div>
                                         <div className="w-px h-8 bg-white/10"></div>
                                         <div className="text-right">
-                                            <div className="text-[10px] text-gray-600 uppercase tracking-wider">Tahmini Yıllık</div>
+                                            <div className="text-[10px] text-gray-400 uppercase tracking-wider">Tahmini Yıllık</div>
                                             <div className="text-lg font-extrabold text-white">₺{(
                                                 tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod !== 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0) * 12 +
                                                 tenants.filter(t => t.status === 'ACTIVE' && (t as any).billingPeriod === 'YEARLY').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0)
@@ -3564,76 +3605,76 @@ export default function OwnerPanel() {
                             {/* Stats Grid */}
                             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
                                 {/* Ciro */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-green-500/10 rounded-lg border border-green-500/20"><TrendingUp className="w-4 h-4 text-green-400" /></div>
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">₺{tenants.filter(t => t.status === 'ACTIVE').reduce((sum, t) => sum + (parseFloat((t as any).price) || 0), 0).toLocaleString('tr-TR')}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Aylık Ciro</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Aylık Ciro</div>
                                 </div>
 
                                 {/* Müşteri */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-amber-600/10 rounded-full blur-xl group-hover:bg-amber-600/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-amber-600/10 rounded-lg border border-amber-600/20"><Briefcase className="w-4 h-4 text-[#7b9fef]" /></div>
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{tenants.length}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Toplam Müşteri</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Toplam Müşteri</div>
                                 </div>
 
                                 {/* Toplam Oda */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-amber-700/10 rounded-full blur-xl group-hover:bg-amber-700/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-amber-700/10 rounded-lg border border-amber-700/20"><Server className="w-4 h-4 text-[#7b9fef]" /></div>
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{tenants.reduce((sum, t) => sum + (t.roomLimit || 0), 0)}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Toplam Oda</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Toplam Oda</div>
                                 </div>
 
                                 {/* Ödeme Geciken */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-rose-500/10 rounded-full blur-xl group-hover:bg-rose-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-rose-500/10 rounded-lg border border-rose-500/20"><AlertCircle className="w-4 h-4 text-rose-400 animate-pulse" /></div>
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{adminStats.paymentDue}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Ödeme Gecikenler</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Ödeme Gecikenler</div>
                                 </div>
 
                                 {/* Online Kullanıcı */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-cyan-500/10 rounded-full blur-xl group-hover:bg-cyan-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20"><Users className="w-4 h-4 text-cyan-400" /></div>
                                         <span className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse"></span>
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{adminStats.onlineUsers}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Anlık Online</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Anlık Online</div>
                                 </div>
 
                                 {/* Mikrofonda Konuşan */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-purple-500/10 rounded-full blur-xl group-hover:bg-purple-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-purple-500/10 rounded-lg border border-purple-500/20"><Activity className="w-4 h-4 text-purple-400" /></div>
                                         {(adminStats.activeSpeakers || 0) > 0 && <span className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></span>}
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{adminStats.activeSpeakers || 0}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Mikrofonda</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Mikrofonda</div>
                                 </div>
 
                                 {/* Aktif Oda */}
-                                <div className="glass-panel p-4 rounded-2xl relative overflow-hidden group bg-[#121218]/60 backdrop-blur-md border border-white/5 hover:bg-white/5 transition-all hover:-translate-y-0.5 hover:border-white/10">
+                                <div className="owner-glossy p-4 relative group hover:bg-white/5 transition-all hover:-translate-y-0.5">
                                     <div className="absolute -right-6 -top-6 w-20 h-20 bg-emerald-500/10 rounded-full blur-xl group-hover:bg-emerald-500/20 transition-all"></div>
                                     <div className="flex justify-between items-start mb-3">
                                         <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20"><Wifi className="w-4 h-4 text-emerald-400" /></div>
                                         {(adminStats.activeRooms || 0) > 0 && <span className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>}
                                     </div>
                                     <div className="text-2xl font-extrabold text-white mb-0.5">{adminStats.activeRooms || 0}</div>
-                                    <div className="text-[10px] text-gray-500 font-medium">Aktif Oda</div>
+                                    <div className="text-[10px] text-gray-400 font-medium">Aktif Oda</div>
                                 </div>
                             </div>
 
@@ -3647,7 +3688,7 @@ export default function OwnerPanel() {
                                             </div>
                                             <div>
                                                 <h2 className="text-base font-bold text-white">Vadesi Geçmiş Ödemeler</h2>
-                                                <p className="text-xs text-gray-500">{overdueTenants.length} müşterinin ödeme süresi geçmiş</p>
+                                                <p className="text-xs text-gray-400">{overdueTenants.length} müşterinin ödeme süresi geçmiş</p>
                                             </div>
                                         </div>
                                         <button
@@ -3661,7 +3702,7 @@ export default function OwnerPanel() {
                                                     if (res.ok) setOverdueTenants(await res.json());
                                                 } catch { } finally { setLoadingOverdue(false); }
                                             }}
-                                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 hover:text-white transition-all"
+                                            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
                                         >
                                             <RefreshCw className={`w-4 h-4 ${loadingOverdue ? 'animate-spin' : ''}`} />
                                         </button>
@@ -3678,7 +3719,7 @@ export default function OwnerPanel() {
                                                         </div>
                                                         <div className="min-w-0">
                                                             <div className="text-sm font-medium text-white truncate">{t.displayName || t.name}</div>
-                                                            <div className="flex items-center gap-2 text-[10px] text-gray-600">
+                                                            <div className="flex items-center gap-2 text-[10px] text-gray-400">
                                                                 {t.email && <span className="truncate">{t.email}</span>}
                                                                 <span>•</span>
                                                                 <span>Son hatırlatma: {lastReminder}</span>
@@ -3783,7 +3824,7 @@ export default function OwnerPanel() {
                                 </div>
 
                                 {/* Son Siparişler */}
-                                <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                <div className="owner-glossy">
                                     <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <ShoppingBag className="w-4 h-4 text-emerald-400" />
@@ -3792,23 +3833,23 @@ export default function OwnerPanel() {
                                                 <span className="px-2 py-0.5 bg-yellow-500/10 text-yellow-400 text-[10px] font-bold rounded-full border border-yellow-500/20">{inlineOrders.filter(o => o.status === 'PENDING').length} Bekleyen</span>
                                             )}
                                         </div>
-                                        <button onClick={() => setActiveView('orders')} className="text-xs text-gray-500 hover:text-[#7b9fef] transition-colors">Tümünü Gör →</button>
+                                        <button onClick={() => setActiveView('orders')} className="text-xs text-gray-400 hover:text-[#7b9fef] transition-colors">Tümünü Gör →</button>
                                     </div>
                                     <div className="divide-y divide-white/[0.03]">
                                         {inlineOrders.length === 0 ? (
-                                            <div className="px-5 py-8 text-center text-gray-600 text-sm">Henüz sipariş yok</div>
+                                            <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz sipariş yok</div>
                                         ) : inlineOrders.slice(0, 4).map((o: any) => (
                                             <div key={o.id} className="px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`w-2 h-2 rounded-full ${o.status === 'PENDING' ? 'bg-yellow-400 animate-pulse' : o.status === 'APPROVED' ? 'bg-green-400' : 'bg-red-400'}`}></div>
                                                     <div>
                                                         <div className="text-sm text-white font-medium">{o.firstName} {o.lastName}</div>
-                                                        <div className="text-[11px] text-gray-600">{o.paymentCode}</div>
+                                                        <div className="text-[11px] text-gray-400">{o.paymentCode}</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="text-sm font-bold text-white">₺{parseFloat(o.amount || '0').toLocaleString('tr-TR')}</div>
-                                                    <div className="text-[10px] text-gray-600">{new Date(o.createdAt).toLocaleDateString('tr-TR')}</div>
+                                                    <div className="text-[10px] text-gray-400">{new Date(o.createdAt).toLocaleDateString('tr-TR')}</div>
                                                 </div>
                                             </div>
                                         ))}
@@ -3816,7 +3857,7 @@ export default function OwnerPanel() {
                                 </div>
 
                                 {/* Okunmamış Mesajlar */}
-                                <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                <div className="owner-glossy">
                                     <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <Inbox className="w-4 h-4 text-emerald-400" />
@@ -3825,28 +3866,28 @@ export default function OwnerPanel() {
                                                 <span className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] font-bold rounded-full border border-red-500/20 animate-pulse">{unreadCount} Yeni</span>
                                             )}
                                         </div>
-                                        <button onClick={() => { setActiveView('contactMessages'); loadContactMessages(); }} className="text-xs text-gray-500 hover:text-[#7b9fef] transition-colors">Tümünü Gör →</button>
+                                        <button onClick={() => { setActiveView('contactMessages'); loadContactMessages(); }} className="text-xs text-gray-400 hover:text-[#7b9fef] transition-colors">Tümünü Gör →</button>
                                     </div>
                                     <div className="divide-y divide-white/[0.03]">
                                         {contactMessages.length === 0 ? (
-                                            <div className="px-5 py-8 text-center text-gray-600 text-sm">Henüz mesaj yok</div>
+                                            <div className="px-5 py-8 text-center text-gray-400 text-sm">Henüz mesaj yok</div>
                                         ) : contactMessages.slice(0, 4).map((msg: any) => (
                                             <div key={msg.id} className={`px-5 py-3 flex items-center justify-between hover:bg-white/[0.02] transition-colors cursor-pointer ${!msg.isRead ? 'bg-emerald-500/[0.03]' : ''}`} onClick={() => { setActiveView('contactMessages'); loadContactMessages(); }}>
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${!msg.isRead ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-gray-500 border border-white/10'}`}>{msg.name?.charAt(0)?.toUpperCase()}</div>
+                                                    <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold ${!msg.isRead ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-white/5 text-gray-400 border border-white/10'}`}>{msg.name?.charAt(0)?.toUpperCase()}</div>
                                                     <div>
-                                                        <div className={`text-sm font-medium ${!msg.isRead ? 'text-white' : 'text-gray-500'}`}>{msg.name}</div>
-                                                        <div className="text-[11px] text-gray-600 truncate max-w-[200px]">{msg.subject}</div>
+                                                        <div className={`text-sm font-medium ${!msg.isRead ? 'text-white' : 'text-gray-400'}`}>{msg.name}</div>
+                                                        <div className="text-[11px] text-gray-400 truncate max-w-[200px]">{msg.subject}</div>
                                                     </div>
                                                 </div>
-                                                <span className="text-[10px] text-gray-600">{new Date(msg.createdAt).toLocaleDateString('tr-TR')}</span>
+                                                <span className="text-[10px] text-gray-400">{new Date(msg.createdAt).toLocaleDateString('tr-TR')}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* Sistem Performansı */}
-                                <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                <div className="owner-glossy">
                                     <div className="p-5 border-b border-white/5">
                                         <div className="flex items-center gap-2">
                                             <Cpu className="w-4 h-4 text-purple-400" />
@@ -3881,7 +3922,7 @@ export default function OwnerPanel() {
                                         {/* Heap */}
                                         <div className="space-y-1.5">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-[10px] text-gray-500 font-medium">Heap Kullanımı</span>
+                                                <span className="text-[10px] text-gray-400 font-medium">Heap Kullanımı</span>
                                                 <span className="text-[10px] font-bold text-gray-400 font-mono">{adminStats.system?.heapUsedMB || 0} / {adminStats.system?.heapTotalMB || 0} MB</span>
                                             </div>
                                             <div className="w-full bg-white/5 rounded-full h-1.5">
@@ -3903,17 +3944,17 @@ export default function OwnerPanel() {
                                 </div>
 
                                 {/* Anlık Sistem Logları */}
-                                <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                <div className="owner-glossy">
                                     <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <ScrollText className="w-4 h-4 text-yellow-400" />
                                             <span className="text-sm font-bold text-white">Anlık Loglar</span>
                                         </div>
-                                        <button onClick={() => setActiveView('logs')} className="text-xs text-gray-500 hover:text-yellow-400 transition-colors">Tümü →</button>
+                                        <button onClick={() => setActiveView('logs')} className="text-xs text-gray-400 hover:text-yellow-400 transition-colors">Tümü →</button>
                                     </div>
                                     <div className="divide-y divide-white/[0.03] max-h-[320px] overflow-y-auto custom-scrollbar">
                                         {(!adminStats.recentLogs || adminStats.recentLogs.length === 0) ? (
-                                            <div className="px-5 py-8 text-center text-gray-600 text-sm">Son kayıt yok</div>
+                                            <div className="px-5 py-8 text-center text-gray-400 text-sm">Son kayıt yok</div>
                                         ) : adminStats.recentLogs.map((log: any) => (
                                             <div key={log.id} className="px-5 py-3 hover:bg-white/[0.02] transition-colors">
                                                 <div className="flex items-center justify-between mb-1">
@@ -3923,10 +3964,10 @@ export default function OwnerPanel() {
                                                                 log.event?.includes('create') || log.event?.includes('tenant') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                                                                     'bg-gray-500/10 text-gray-400 border-gray-500/20'
                                                         }`}>{log.event}</span>
-                                                    <span className="text-[9px] text-gray-600 font-mono">{new Date(log.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+                                                    <span className="text-[9px] text-gray-400 font-mono">{new Date(log.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                                                 </div>
                                                 {log.metadata && (
-                                                    <div className="text-[10px] text-gray-600 truncate font-mono">{typeof log.metadata === 'object' ? JSON.stringify(log.metadata).substring(0, 80) : String(log.metadata).substring(0, 80)}</div>
+                                                    <div className="text-[10px] text-gray-400 truncate font-mono">{typeof log.metadata === 'object' ? JSON.stringify(log.metadata).substring(0, 80) : String(log.metadata).substring(0, 80)}</div>
                                                 )}
                                             </div>
                                         ))}
@@ -3934,7 +3975,7 @@ export default function OwnerPanel() {
                                 </div>
 
                                 {/* Hızlı Erişim */}
-                                <div className="glass-panel rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                                <div className="owner-glossy">
                                     <div className="p-5 border-b border-white/5">
                                         <div className="flex items-center gap-2">
                                             <Zap className="w-4 h-4 text-amber-400" />
@@ -3943,19 +3984,19 @@ export default function OwnerPanel() {
                                     </div>
                                     <div className="p-5 grid grid-cols-2 gap-3">
                                         <button onClick={() => setActiveView('customers')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/20 transition-all group">
-                                            <Users className="w-5 h-5 text-gray-500 group-hover:text-[#7b9fef] transition-colors" />
+                                            <Users className="w-5 h-5 text-gray-400 group-hover:text-[#7b9fef] transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Müşteriler</span>
                                         </button>
                                         <button onClick={() => toggleDrawer('newClient', true)} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-green-500/10 border border-white/5 hover:border-green-500/20 transition-all group">
-                                            <UserPlus className="w-5 h-5 text-gray-500 group-hover:text-green-400 transition-colors" />
+                                            <UserPlus className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Yeni Müşteri</span>
                                         </button>
                                         <button onClick={() => toggleDrawer('announcement', true)} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/20 transition-all group">
-                                            <Megaphone className="w-5 h-5 text-gray-500 group-hover:text-indigo-400 transition-colors" />
+                                            <Megaphone className="w-5 h-5 text-gray-400 group-hover:text-indigo-400 transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Duyuru Yayınla</span>
                                         </button>
                                         <button onClick={() => setActiveView('logs')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-yellow-500/10 border border-white/5 hover:border-yellow-500/20 transition-all group">
-                                            <ScrollText className="w-5 h-5 text-gray-500 group-hover:text-yellow-400 transition-colors" />
+                                            <ScrollText className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Sistem Logları</span>
                                         </button>
                                     </div>
@@ -4022,12 +4063,12 @@ export default function OwnerPanel() {
                                         </div>
                                         <div>
                                             <h2 className="text-lg font-bold text-white" style={{ letterSpacing: '-0.01em' }}>Duyuru Yayınla</h2>
-                                            <p className="text-[11px] text-gray-500">Yetkili kullanıcılara anlık bildirim</p>
+                                            <p className="text-[11px] text-gray-400">Yetkili kullanıcılara anlık bildirim</p>
                                         </div>
                                     </div>
                                     <button
                                         onClick={() => toggleDrawer('announcement', false)}
-                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-white hover:bg-white/10 transition-all"
+                                        className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-all"
                                     >
                                         <X className="w-4 h-4" />
                                     </button>
@@ -4072,7 +4113,7 @@ export default function OwnerPanel() {
                                                 }}
                                             />
                                         </div>
-                                        <span className={`text-[10px] font-mono ${announcementText.length > 400 ? 'text-amber-400' : 'text-gray-600'
+                                        <span className={`text-[10px] font-mono ${announcementText.length > 400 ? 'text-amber-400' : 'text-gray-400'
                                             }`}>
                                             {announcementText.length}/500
                                         </span>
@@ -4154,7 +4195,7 @@ export default function OwnerPanel() {
                                                     if (res.ok) setPastAnnouncements(await res.json());
                                                 } catch { } finally { setLoadingAnnouncements(false); }
                                             }}
-                                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-500 hover:text-white transition-all"
+                                            className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
                                         >
                                             <RefreshCw className={`w-3 h-3 ${loadingAnnouncements ? 'animate-spin' : ''}`} />
                                         </button>
@@ -4165,7 +4206,7 @@ export default function OwnerPanel() {
                                                 <Loader2 className="w-4 h-4 animate-spin text-indigo-400" />
                                             </div>
                                         ) : pastAnnouncements.length === 0 ? (
-                                            <p className="text-xs text-gray-600 text-center py-6">Henüz duyuru yok.</p>
+                                            <p className="text-xs text-gray-400 text-center py-6">Henüz duyuru yok.</p>
                                         ) : (
                                             pastAnnouncements.map(ann => (
                                                 <div key={ann.id} className="group rounded-xl bg-white/[0.03] border border-white/[0.06] hover:border-indigo-500/20 transition-all p-3">
@@ -4208,11 +4249,11 @@ export default function OwnerPanel() {
                                                         <>
                                                             <p className="text-sm text-gray-300 leading-relaxed mb-2 whitespace-pre-wrap">{ann.message}</p>
                                                             <div className="flex items-center justify-between">
-                                                                <span className="text-[10px] text-gray-600">{new Date(ann.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                                                <span className="text-[10px] text-gray-400">{new Date(ann.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                                                 <div className="flex items-center gap-1">
                                                                     <button
                                                                         onClick={() => { setEditingAnnouncementId(ann.id); setEditAnnouncementText(ann.message); }}
-                                                                        className="p-1 rounded-md bg-white/5 hover:bg-amber-500/20 text-gray-500 hover:text-amber-400 transition-colors"
+                                                                        className="p-1 rounded-md bg-white/5 hover:bg-amber-500/20 text-gray-400 hover:text-amber-400 transition-colors"
                                                                         title="Düzenle"
                                                                     >
                                                                         <Pencil className="w-3 h-3" />
@@ -4239,7 +4280,7 @@ export default function OwnerPanel() {
                                                                                 },
                                                                             });
                                                                         }}
-                                                                        className="p-1 rounded-md bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 transition-colors"
+                                                                        className="p-1 rounded-md bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors"
                                                                         title="Sil"
                                                                     >
                                                                         <Trash2 className="w-3 h-3" />
@@ -4387,5 +4428,6 @@ export default function OwnerPanel() {
             `}</style>
         </div>
         </div>
+        </>
     );
 }
