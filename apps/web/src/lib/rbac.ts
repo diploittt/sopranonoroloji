@@ -223,11 +223,11 @@ export const ADMIN_TAB_ACCESS: Record<AdminTab, { minRole: Role; readOnlyBelow?:
     about: { minRole: Role.Admin },
     logs: { minRole: Role.Admin },
     designs: { minRole: Role.Owner },
-    settings: { minRole: Role.SuperAdmin },
-    bans: { minRole: Role.SuperAdmin },
-    ipbans: { minRole: Role.SuperAdmin },
+    settings: { minRole: Role.Admin },
+    bans: { minRole: Role.Admin },
+    ipbans: { minRole: Role.Admin },
     adminlogin: { minRole: Role.SuperAdmin },
-    words: { minRole: Role.SuperAdmin },
+    words: { minRole: Role.Admin },
 };
 
 export const canAccessTab = (userRole: string | undefined, tab: AdminTab): boolean =>

@@ -4418,7 +4418,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { targetUserId: string; isTyping: boolean },
   ) {
-    const sender = this.participants.get(client.id);
+    const sender = this.participants.get(client.id) || (client.data?.user ? {
+      userId: client.data.user.sub || client.data.user.userId,
+      displayName: client.data.user.displayName || client.data.user.username || 'Unknown',
+    } : null) as any;
     if (!sender) return;
 
     const { socketId: targetSocketId } =

@@ -200,13 +200,13 @@ export class AdminController {
   }
 
   @Get('users/:id')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async getUserDetail(@Param('id') id: string) {
     return this.adminService.getUserDetail(id);
   }
 
   @Patch('users/:id')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async updateUser(
     @Req() req: any,
     @Param('id') id: string,
@@ -297,13 +297,13 @@ export class AdminController {
   // ═══════════════════════════════════════════════════════════
 
   @Get('rooms')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async getRooms(@Req() req: any) {
     return this.adminService.getRooms(req.user.tenantId);
   }
 
   @Post('rooms')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async createRoom(
     @Req() req: any,
     @Body()
@@ -324,7 +324,7 @@ export class AdminController {
   }
 
   @Patch('rooms/:id')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async updateRoom(
     @Req() req: any,
     @Param('id') id: string,
@@ -334,7 +334,7 @@ export class AdminController {
   }
 
   @Delete('rooms/:id')
-  @Roles('admin')
+  @Roles('admin', 'owner', 'superadmin')
   async deleteRoom(@Req() req: any, @Param('id') id: string) {
     return this.adminService.deleteRoom(req.user.userId, id, req.ip);
   }
@@ -353,7 +353,7 @@ export class AdminController {
   // ═══════════════════════════════════════════════════════════
 
   @Get('bans')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async getBans(@Req() req: any, @Query() query: any) {
     return this.adminService.getBans(req.user.tenantId, {
       type: query.type as BanType,
@@ -388,7 +388,7 @@ export class AdminController {
   }
 
   @Delete('bans/:id')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async removeBan(@Req() req: any, @Param('id') id: string) {
     return this.adminService.removeBan(req.user.userId, id, req.ip);
   }
@@ -398,13 +398,13 @@ export class AdminController {
   // ═══════════════════════════════════════════════════════════
 
   @Get('ipbans')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async getIpBans(@Req() req: any) {
     return this.adminService.getIpBans(req.user.tenantId);
   }
 
   @Post('ipbans')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async createIpBan(
     @Req() req: any,
     @Body() body: { ip: string; reason?: string },
@@ -418,7 +418,7 @@ export class AdminController {
   }
 
   @Delete('ipbans/:id')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async removeIpBan(@Req() req: any, @Param('id') id: string) {
     return this.adminService.removeIpBan(req.user.userId, id, req.ip);
   }
@@ -455,13 +455,13 @@ export class AdminController {
   // ═══════════════════════════════════════════════════════════
 
   @Get('words')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async getWordFilters(@Req() req: any) {
     return this.adminService.getWordFilters(req.user.tenantId);
   }
 
   @Post('words')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async createWordFilter(
     @Req() req: any,
     @Body() body: { badWord: string; replacement?: string },
@@ -475,7 +475,7 @@ export class AdminController {
   }
 
   @Delete('words/:id')
-  @Roles('superadmin')
+  @Roles('admin', 'owner', 'superadmin')
   async removeWordFilter(@Req() req: any, @Param('id') id: string) {
     return this.adminService.removeWordFilter(req.user.userId, id, req.ip);
   }

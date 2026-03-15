@@ -248,109 +248,40 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             />
 
             <div className="w-full max-w-5xl space-y-1">
-                {/* ═══ Compact Welcome Banner (toplantı odası hariç) ═══ */}
+                {/* ═══ Compact Welcome Line (toplantı odası hariç) ═══ */}
                 {!(roomName && roomName.toLowerCase().includes('toplant')) && (
-                <>
-                <div className="flex justify-end mb-3" style={{ perspective: 800 }}>
-                    <div className="welcome-banner-3d" style={{
-                        position: 'relative',
+                <div className="flex justify-center mb-2" style={{ animation: 'welcomeLineIn 0.5s ease-out both' }}>
+                    <div style={{
                         display: 'inline-flex',
                         alignItems: 'center',
-                        gap: 10,
-                        padding: '10px 14px 10px 20px',
-                        borderRadius: 16,
-                        background: 'linear-gradient(160deg, rgba(255,255,255,0.96) 0%, rgba(240,243,250,0.94) 50%, rgba(228,233,245,0.92) 100%)',
-                        border: '1px solid rgba(255,255,255,0.6)',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08), inset 0 1px 2px rgba(255,255,255,0.9)',
-                        animation: 'welcomeBannerEntry 0.8s cubic-bezier(0.34,1.56,0.64,1) both',
-                        overflow: 'visible',
+                        gap: 6,
+                        padding: '4px 14px',
+                        borderRadius: 20,
+                        background: 'rgba(148,163,184,0.08)',
+                        border: '1px solid rgba(148,163,184,0.12)',
                     }}>
-                        {/* Konuşma balonu kuyruğu — sağ alt */}
-                        <div style={{
-                            position: 'absolute',
-                            bottom: -6,
-                            right: 18,
-                            width: 0, height: 0,
-                            borderLeft: '7px solid transparent',
-                            borderRight: '7px solid transparent',
-                            borderTop: '7px solid rgba(240,243,250,0.95)',
-                            filter: 'drop-shadow(0 2px 2px rgba(0,0,0,0.08))',
-                        }} />
-                        {/* Emoji */}
-                        <span style={{ fontSize: 18, lineHeight: 1, animation: 'welcomeWave 2s ease-in-out infinite' }}>👋</span>
-                        {/* Hoş geldin mesajı */}
-                        <span style={{
-                            fontSize: 11,
-                            fontWeight: 800,
-                            background: 'linear-gradient(135deg, #1e293b, #475569, #1e293b)',
-                            backgroundSize: '200% auto',
-                            WebkitBackgroundClip: 'text',
-                            WebkitTextFillColor: 'transparent',
-                            backgroundClip: 'text',
-                            animation: 'welcomeShimmer 3s linear infinite',
-                            letterSpacing: 1,
-                            textTransform: 'uppercase',
-                        }}>
-                            {(() => {
-                                const ss = (room as any).state?.systemSettings;
-                                const welcomeMsg = ss?.welcomeMessage;
-                                if (welcomeMsg && welcomeMsg.trim()) return welcomeMsg;
-                                return roomName ? `${roomName} — ${t.welcomeToRoom}` : t.chatStart;
-                            })()}
+                        <span style={{ fontSize: 10 }}>
+                            {roomName?.toLowerCase().includes('müzik') || roomName?.toLowerCase().includes('muzik') ? '🎶' :
+                             roomName?.toLowerCase().includes('oyun') ? '🎮' :
+                             roomName?.toLowerCase().includes('vip') ? '👑' : '💬'}
                         </span>
-                        {/* Tarih + saat */}
                         <span style={{
-                            fontSize: 9,
+                            fontSize: 10,
                             fontWeight: 600,
-                            color: 'rgba(71,85,105,0.6)',
-                            letterSpacing: 0.5,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            marginLeft: 4,
+                            color: '#94a3b8',
+                            letterSpacing: 0.3,
                         }}>
-                            <span style={{
-                                width: 4, height: 4, borderRadius: '50%',
-                                background: '#34d399',
-                                boxShadow: '0 0 4px rgba(52,211,153,0.4)',
-                                animation: 'pulse 2s ease-in-out infinite',
-                                display: 'inline-block',
-                            }} />
-                            {t.today} {sessionTime}
+                            {roomName || 'Sohbet'} • {t.today} {sessionTime}
                         </span>
                     </div>
                 </div>
-                {/* Welcome banner animations */}
+                )}
                 <style>{`
-                    @keyframes welcomeBannerEntry {
-                        0% { opacity: 0; transform: translateY(-30px) scale(0.8) rotateX(15deg); }
-                        60% { opacity: 1; transform: translateY(4px) scale(1.02) rotateX(-2deg); }
-                        100% { opacity: 1; transform: translateY(0) scale(1) rotateX(0deg); }
-                    }
-                    @keyframes sparkleFloat {
-                        0%, 100% { transform: translateY(0px) rotate(0deg); }
-                        50% { transform: translateY(-4px) rotate(15deg); }
-                    }
-                    @keyframes sparklePulse {
-                        0%, 100% { opacity: 0.7; transform: scale(1); }
-                        50% { opacity: 1; transform: scale(1.25); }
-                    }
-                    @keyframes welcomeWave {
-                        0%, 100% { transform: rotate(0deg); }
-                        15% { transform: rotate(14deg); }
-                        30% { transform: rotate(-8deg); }
-                        40% { transform: rotate(14deg); }
-                        50% { transform: rotate(-4deg); }
-                        60% { transform: rotate(10deg); }
-                        70% { transform: rotate(0deg); }
-                    }
-                    @keyframes welcomeShimmer {
-                        0% { background-position: -200% center; }
-                        100% { background-position: 200% center; }
+                    @keyframes welcomeLineIn {
+                        from { opacity: 0; transform: translateY(-8px); }
+                        to { opacity: 1; transform: translateY(0); }
                     }
                 `}</style>
-                </>
-                )}
 
                 {messages
                     .filter(msg => {

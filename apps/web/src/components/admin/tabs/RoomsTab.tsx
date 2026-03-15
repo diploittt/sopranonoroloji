@@ -60,6 +60,7 @@ function ToastPortal({ msg }: { msg: { type: 'success' | 'error'; text: string }
 export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps) {
     const { selectedRoomId, setSelectedRoomId } = useAdminPanelStore();
     const isGodMaster = currentUser?.role?.toLowerCase() === 'godmaster';
+    const isRoomAdmin = isGodMaster || ['owner', 'superadmin', 'admin'].includes(currentUser?.role?.toLowerCase() || '');
 
     const [rooms, setRooms] = useState<DBRoom[]>([]);
     const [loading, setLoading] = useState(false);
@@ -206,7 +207,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadRooms} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12, ...(loading ? { animation: 'adminSpin 0.6s linear infinite' } : {}) }} />
                     </button>
-                    {isGodMaster && (
+                    {isRoomAdmin && (
                         <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => setShowCreateForm(prev => !prev)} disabled={saving} title="Oda Ekle" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10 }}>
                             <Plus style={{ width: 12, height: 12 }} />
                             Oda Ekle
@@ -410,7 +411,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 <label>Şifre</label>
                                 <input type="password" value={formPassword} onChange={e => setFormPassword(e.target.value)} placeholder="Şifresiz" />
                             </div>
-                            {isGodMaster && (
+                            {isRoomAdmin && (
                                 <div className="admin-form-group">
                                     <label>Max Katılımcı</label>
                                     <input type="number" value={formMax} onChange={e => setFormMax(e.target.value ? Number(e.target.value) : '')} placeholder="Sınırsız" />
@@ -440,7 +441,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                             />
                         </div>
 
-                        {isGodMaster && systemSettings?.packageType === 'CAMERA' && (
+                        {isRoomAdmin && systemSettings?.packageType === 'CAMERA' && (
                             <div className="admin-form-row">
                                 <div className="admin-form-group">
                                     <label>Mikrofon Limiti</label>
@@ -512,7 +513,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                         </div>
 
                         {/* ─── Oda Teması (GodMaster Only) ─── */}
-                        {isGodMaster && (
+                        {isRoomAdmin && (
                             <div className="admin-perms-section" style={{ marginTop: 4 }}>
                                 <div className="admin-perms-title">
                                     <Palette style={{ width: 12, height: 12 }} />
@@ -558,7 +559,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                         <div className="admin-divider" />
 
                         {/* Inline Confirm — GodMaster only */}
-                        {isGodMaster && confirmDelete === selectedRoom.id ? (
+                        {isRoomAdmin && confirmDelete === selectedRoom.id ? (
                             <div className="admin-inline-confirm">
                                 <span>"{selectedRoom.name}" odası silinecek. Emin misiniz?</span>
                                 <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={executeDelete}>Evet, Sil</button>
@@ -601,7 +602,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                         <><Lock style={{ width: 13, height: 13 }} /> Odayı Kapat</>
                                     )}
                                 </button>
-                                {isGodMaster && (
+                                {isRoomAdmin && (
                                     <button className="admin-btn admin-btn-danger" onClick={() => setConfirmDelete(selectedRoom.id)}>
                                         <Trash2 style={{ width: 13, height: 13 }} />
                                         Sil
