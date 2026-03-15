@@ -584,7 +584,7 @@ export default function OwnerPanel() {
     const [tenantDetailLoading, setTenantDetailLoading] = useState(false);
 
     // ── Site Ayarları (Panel Ayarları) ──
-    const [settingsTab, setSettingsTab] = useState<'branding' | 'pricing' | 'banks' | 'contact' | 'theme' | 'general' | 'rooms'>('branding');
+    const [settingsTab, setSettingsTab] = useState<'branding' | 'pricing' | 'banks' | 'contact' | 'theme' | 'homepage' | 'general' | 'rooms'>('branding');
     const [roomConfigTab, setRoomConfigTab] = useState<'design' | 'toolbar' | 'permissions' | 'chat' | 'layout' | 'media'>('design');
     const [siteConfig, setSiteConfig] = useState<any>({
         siteTitle: 'SopranoChat', siteSlogan: 'Premium Sohbet Platformu', footerText: '',
@@ -636,6 +636,29 @@ export default function OwnerPanel() {
                 stickerPacks: 'default', gifApiKey: '',
                 maxUploadSize: 5,
             },
+        },
+        homepage: {
+            bodyGradient1: '#a3ace5', bodyGradient2: '#c4c9ee', bodyGradient3: '#d8dbf4',
+            mainBg: '#7a7e9e',
+            headerGradient1: '#5a6070', headerGradient2: '#3d4250', headerGradient3: '#1e222e', headerGradient4: '#282c3a', headerGradient5: '#3a3f50',
+            heroTitle: '', heroSubtitle: '', heroCTA1: 'Hemen Başla', heroCTA2: 'Detaylı Bilgi',
+            navItems: [
+                { label: 'HOME', section: 'home', visible: true },
+                { label: 'ODALAR', section: '_odalar', visible: true },
+                { label: 'REHBER', section: 'rehber', visible: true },
+                { label: 'FİYATLAR', section: 'fiyatlar', visible: true },
+                { label: 'REFERANSLAR', section: 'referanslar', visible: true },
+                { label: 'İLETİŞİM', section: 'iletisim', visible: true },
+            ],
+            loginBg: 'rgba(30,41,59,0.85)', loginCardBorder: 'rgba(255,255,255,0.15)',
+            loginAccentColor: '#38bdf8',
+            showCookieConsent: true, showPackages: true, showReferences: true, showGuide: true,
+            featureCards: [
+                { icon: '🎤', title: 'Kristal Ses', desc: 'HD kalitesinde kesintisiz sesli sohbet' },
+                { icon: '📹', title: 'HD Kamera', desc: 'Yüksek çözünürlüklü video görüşme' },
+                { icon: '👥', title: 'Topluluk', desc: 'Binlerce aktif kullanıcı ile sohbet' },
+                { icon: '🛡️', title: 'Güvenlik', desc: 'Gelişmiş moderasyon ve güvenlik araçları' },
+            ],
         },
     });
     const [siteConfigLoading, setSiteConfigLoading] = useState(false);
@@ -2317,6 +2340,7 @@ export default function OwnerPanel() {
                                     { id: 'banks' as const, label: 'IBAN', icon: <Briefcase className="w-4 h-4" /> },
                                     { id: 'contact' as const, label: 'İletişim', icon: <Phone className="w-4 h-4" /> },
                                     { id: 'theme' as const, label: 'Tema', icon: <LayoutGrid className="w-4 h-4" /> },
+                                    { id: 'homepage' as const, label: 'Ana Sayfa', icon: <Globe className="w-4 h-4" /> },
                                     { id: 'general' as const, label: 'Genel', icon: <Cpu className="w-4 h-4" /> },
                                     { id: 'rooms' as const, label: 'Oda Yönetimi', icon: <Server className="w-4 h-4" /> },
                                 ].map(tab => (
@@ -2542,6 +2566,256 @@ export default function OwnerPanel() {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* ── ANA SAYFA ── */}
+                                        {settingsTab === 'homepage' && (
+                                            <div className="space-y-4">
+                                                {/* Arka Plan Renkleri */}
+                                                <div className="owner-glossy">
+                                                    <div className="p-5 border-b border-white/5">
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2"><Globe className="w-5 h-5 text-blue-400" /> Arka Plan & Renkler</h2>
+                                                        <p className="text-xs text-gray-400 mt-1">Ana sayfanın genel arka plan ve header renkleri</p>
+                                                    </div>
+                                                    <div className="p-5 space-y-5">
+                                                        {/* Body Gradient */}
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-400 mb-2 block">Sayfa Arka Plan Gradient</label>
+                                                            <div className="grid grid-cols-3 gap-3">
+                                                                {[{ key: 'bodyGradient1', label: 'Üst' }, { key: 'bodyGradient2', label: 'Orta' }, { key: 'bodyGradient3', label: 'Alt' }].map(g => (
+                                                                    <div key={g.key}>
+                                                                        <label className="text-[10px] text-gray-400 block mb-1">{g.label}</label>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <input type="color" value={siteConfig.homepage?.[g.key] || '#a3ace5'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), [g.key]: e.target.value } }))} className="w-8 h-8 rounded-lg cursor-pointer border border-white/10" />
+                                                                            <input type="text" value={siteConfig.homepage?.[g.key] || ''} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), [g.key]: e.target.value } }))} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] text-white font-mono outline-none focus:border-blue-500/50" />
+                                                                        </div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {/* Main Content BG */}
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-400 mb-1.5 block">Ana içerik Arka Planı</label>
+                                                            <div className="flex items-center gap-3">
+                                                                <input type="color" value={siteConfig.homepage?.mainBg || '#7a7e9e'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), mainBg: e.target.value } }))} className="w-10 h-10 rounded-lg cursor-pointer border border-white/10" />
+                                                                <input type="text" value={siteConfig.homepage?.mainBg || '#7a7e9e'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), mainBg: e.target.value } }))} className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono outline-none focus:border-blue-500/50" />
+                                                            </div>
+                                                        </div>
+                                                        {/* Header Gradient */}
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-400 mb-2 block">Header Bar Gradient (5 nokta)</label>
+                                                            <div className="grid grid-cols-5 gap-2">
+                                                                {[{ key: 'headerGradient1', label: 'Üst' }, { key: 'headerGradient2', label: '15%' }, { key: 'headerGradient3', label: 'Orta' }, { key: 'headerGradient4', label: '75%' }, { key: 'headerGradient5', label: 'Alt' }].map(g => (
+                                                                    <div key={g.key}>
+                                                                        <label className="text-[9px] text-gray-400 block mb-1 text-center">{g.label}</label>
+                                                                        <input type="color" value={siteConfig.homepage?.[g.key] || '#1e222e'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), [g.key]: e.target.value } }))} className="w-full h-8 rounded-lg cursor-pointer border border-white/10" />
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {/* Login Renkleri */}
+                                                        <div className="grid grid-cols-3 gap-3">
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-gray-400 block mb-1">Giriş Kartı Arka Plan</label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <input type="color" value={siteConfig.homepage?.loginBg || '#1e293b'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), loginBg: e.target.value } }))} className="w-8 h-8 rounded-lg cursor-pointer border border-white/10" />
+                                                                    <input type="text" value={siteConfig.homepage?.loginBg || 'rgba(30,41,59,0.85)'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), loginBg: e.target.value } }))} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] text-white font-mono outline-none" />
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-gray-400 block mb-1">Giriş Kenarlık</label>
+                                                                <input type="text" value={siteConfig.homepage?.loginCardBorder || 'rgba(255,255,255,0.15)'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), loginCardBorder: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] text-white font-mono outline-none" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-gray-400 block mb-1">Giriş Vurgu Rengi</label>
+                                                                <div className="flex items-center gap-2">
+                                                                    <input type="color" value={siteConfig.homepage?.loginAccentColor || '#38bdf8'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), loginAccentColor: e.target.value } }))} className="w-8 h-8 rounded-lg cursor-pointer border border-white/10" />
+                                                                    <input type="text" value={siteConfig.homepage?.loginAccentColor || '#38bdf8'} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), loginAccentColor: e.target.value } }))} className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-[10px] text-white font-mono outline-none" />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        {/* Hazır Renk Temaları */}
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-400 mb-2 block">Hazır Temalar</label>
+                                                            <div className="grid grid-cols-4 gap-2">
+                                                                {[
+                                                                    { name: 'Klasik', bg1: '#a3ace5', bg2: '#c4c9ee', bg3: '#d8dbf4', main: '#7a7e9e', hg1: '#5a6070', hg3: '#1e222e', login: '#38bdf8' },
+                                                                    { name: 'Gece', bg1: '#1a1a2e', bg2: '#16213e', bg3: '#0f3460', main: '#0a0a12', hg1: '#2a2a40', hg3: '#0a0a18', login: '#6366f1' },
+                                                                    { name: 'Okyanus', bg1: '#0e4166', bg2: '#1a5276', bg3: '#2980b9', main: '#154360', hg1: '#1b4f72', hg3: '#0e2f44', login: '#00d2ff' },
+                                                                    { name: 'Orman', bg1: '#1a3c34', bg2: '#2d5a4e', bg3: '#3d7b6e', main: '#1a3c34', hg1: '#2d4a3e', hg3: '#0e2a22', login: '#22c55e' },
+                                                                    { name: 'Gün Batımı', bg1: '#4a1a3a', bg2: '#6a2a4a', bg3: '#8a3a5a', main: '#3a1a2e', hg1: '#5a3040', hg3: '#2a1020', login: '#f97316' },
+                                                                    { name: 'Kraliyet', bg1: '#2d1b69', bg2: '#44278a', bg3: '#5b34a5', main: '#1a0f45', hg1: '#3a2870', hg3: '#15083a', login: '#a855f7' },
+                                                                    { name: 'Gül', bg1: '#4a1a2a', bg2: '#6a2a3a', bg3: '#8a3a4a', main: '#3a1020', hg1: '#5a2030', hg3: '#2a0a18', login: '#ec4899' },
+                                                                    { name: 'Altın', bg1: '#3a3020', bg2: '#5a4a30', bg3: '#7a6a40', main: '#2a2818', hg1: '#4a3820', hg3: '#1a1808', login: '#fbbf24' },
+                                                                ].map(t => (
+                                                                    <button key={t.name} onClick={() => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), bodyGradient1: t.bg1, bodyGradient2: t.bg2, bodyGradient3: t.bg3, mainBg: t.main, headerGradient1: t.hg1, headerGradient3: t.hg3, loginAccentColor: t.login } }))} className="p-2 rounded-lg border border-white/5 hover:border-white/20 transition-all group">
+                                                                        <div className="h-8 rounded mb-1 overflow-hidden" style={{ background: `linear-gradient(180deg, ${t.bg1}, ${t.bg2}, ${t.bg3})` }}>
+                                                                            <div className="h-2 rounded-t" style={{ background: t.hg3 }}></div>
+                                                                        </div>
+                                                                        <span className="text-[9px] text-gray-400 group-hover:text-white transition-colors">{t.name}</span>
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                        {/* Önizleme */}
+                                                        <div>
+                                                            <label className="text-xs font-bold text-gray-400 mb-2 block">Önizleme</label>
+                                                            <div className="h-28 rounded-xl border border-white/10 overflow-hidden" style={{ background: `linear-gradient(180deg, ${siteConfig.homepage?.bodyGradient1 || '#a3ace5'}, ${siteConfig.homepage?.bodyGradient2 || '#c4c9ee'}, ${siteConfig.homepage?.bodyGradient3 || '#d8dbf4'})` }}>
+                                                                <div className="mx-4 mt-2 h-20 rounded-t-lg" style={{ background: siteConfig.homepage?.mainBg || '#7a7e9e' }}>
+                                                                    <div className="h-5 rounded-b-xl mx-auto" style={{ width: '90%', background: `linear-gradient(180deg, ${siteConfig.homepage?.headerGradient1 || '#5a6070'}, ${siteConfig.homepage?.headerGradient3 || '#1e222e'}, ${siteConfig.homepage?.headerGradient5 || '#3a3f50'})` }}>
+                                                                        <div className="flex items-center justify-center h-full gap-2">
+                                                                            <span className="text-[6px] text-gray-300 font-bold">SopranoChat</span>
+                                                                            <span className="text-[5px] text-gray-400">HOME</span>
+                                                                            <span className="text-[5px] text-gray-400">ODALAR</span>
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex items-center justify-center h-10">
+                                                                        <div className="px-3 py-1 rounded text-[6px] font-bold text-white" style={{ background: siteConfig.homepage?.loginAccentColor || '#38bdf8' }}>Hemen Başla</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Hero Section */}
+                                                <div className="owner-glossy">
+                                                    <div className="p-5 border-b border-white/5">
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">✨ Hero Bölümü</h2>
+                                                        <p className="text-xs text-gray-400 mt-1">Ana sayfadaki karşılama başlığı ve buton metinleri</p>
+                                                    </div>
+                                                    <div className="p-5 space-y-4">
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Hero Başlık (boş bırakılırsa varsayılan kullanılır)</label>
+                                                            <input value={siteConfig.homepage?.heroTitle || ''} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), heroTitle: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40" placeholder="Hoş Geldiniz!" />
+                                                        </div>
+                                                        <div>
+                                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">Alt Başlık</label>
+                                                            <input value={siteConfig.homepage?.heroSubtitle || ''} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), heroSubtitle: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40" placeholder="En iyi sesli & görüntülü sohbet platformu" />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-3">
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">CTA Buton 1 Metni</label>
+                                                                <input value={siteConfig.homepage?.heroCTA1 || ''} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), heroCTA1: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40" placeholder="Hemen Başla" />
+                                                            </div>
+                                                            <div>
+                                                                <label className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block mb-1">CTA Buton 2 Metni</label>
+                                                                <input value={siteConfig.homepage?.heroCTA2 || ''} onChange={e => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), heroCTA2: e.target.value } }))} className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-blue-500/40" placeholder="Detaylı Bilgi" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Navigasyon Menüsü */}
+                                                <div className="owner-glossy">
+                                                    <div className="p-5 border-b border-white/5">
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">🧭 Navigasyon Menüsü</h2>
+                                                        <p className="text-xs text-gray-400 mt-1">Header'daki menü öğelerini özelleştirin</p>
+                                                    </div>
+                                                    <div className="p-5 space-y-2">
+                                                        {(siteConfig.homepage?.navItems || [
+                                                            { label: 'HOME', section: 'home', visible: true },
+                                                            { label: 'ODALAR', section: '_odalar', visible: true },
+                                                            { label: 'REHBER', section: 'rehber', visible: true },
+                                                            { label: 'FİYATLAR', section: 'fiyatlar', visible: true },
+                                                            { label: 'REFERANSLAR', section: 'referanslar', visible: true },
+                                                            { label: 'İLETİŞİM', section: 'iletisim', visible: true },
+                                                        ]).map((item: any, i: number) => (
+                                                            <div key={i} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${item.visible !== false ? 'bg-white/[0.02] border-white/5' : 'bg-red-500/5 border-red-500/10 opacity-60'}`}>
+                                                                <button onClick={() => {
+                                                                    const items = [...(siteConfig.homepage?.navItems || [])];
+                                                                    items[i] = { ...items[i], visible: items[i].visible === false ? true : false };
+                                                                    setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), navItems: items } }));
+                                                                }} className={`w-7 h-4 rounded-full transition-all relative ${item.visible !== false ? 'bg-green-500' : 'bg-gray-700'}`}>
+                                                                    <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ${item.visible !== false ? 'left-3.5' : 'left-0.5'}`}></div>
+                                                                </button>
+                                                                <input
+                                                                    value={item.label}
+                                                                    onChange={e => {
+                                                                        const items = [...(siteConfig.homepage?.navItems || [])];
+                                                                        items[i] = { ...items[i], label: e.target.value };
+                                                                        setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), navItems: items } }));
+                                                                    }}
+                                                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-xs text-white font-bold uppercase tracking-wider outline-none focus:border-blue-500/40"
+                                                                />
+                                                                <span className="text-[9px] text-gray-400 font-mono bg-white/5 px-2 py-1 rounded">{item.section}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Özellik Kartları */}
+                                                <div className="owner-glossy">
+                                                    <div className="p-5 border-b border-white/5 flex items-center justify-between">
+                                                        <div>
+                                                            <h2 className="text-lg font-bold text-white flex items-center gap-2">🃏 Özellik Kartları</h2>
+                                                            <p className="text-xs text-gray-400 mt-1">Ana sayfadaki özellik kartlarının içerikleri</p>
+                                                        </div>
+                                                        <button onClick={() => {
+                                                            const cards = [...(siteConfig.homepage?.featureCards || [])];
+                                                            cards.push({ icon: '⚡', title: 'Yeni Özellik', desc: 'Açıklama ekleyin' });
+                                                            setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), featureCards: cards } }));
+                                                        }} className="px-3 py-2 rounded-xl bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/20 transition-colors flex items-center gap-1.5">
+                                                            <PlusCircle className="w-3.5 h-3.5" /> Kart Ekle
+                                                        </button>
+                                                    </div>
+                                                    <div className="p-5 space-y-3">
+                                                        {(siteConfig.homepage?.featureCards || []).map((card: any, i: number) => (
+                                                            <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/5 group">
+                                                                <input value={card.icon} onChange={e => {
+                                                                    const cards = [...(siteConfig.homepage?.featureCards || [])];
+                                                                    cards[i] = { ...cards[i], icon: e.target.value };
+                                                                    setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), featureCards: cards } }));
+                                                                }} className="w-12 bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center text-lg outline-none" />
+                                                                <div className="flex-1 space-y-2">
+                                                                    <input value={card.title} onChange={e => {
+                                                                        const cards = [...(siteConfig.homepage?.featureCards || [])];
+                                                                        cards[i] = { ...cards[i], title: e.target.value };
+                                                                        setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), featureCards: cards } }));
+                                                                    }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white font-bold outline-none focus:border-blue-500/40" placeholder="Başlık" />
+                                                                    <input value={card.desc} onChange={e => {
+                                                                        const cards = [...(siteConfig.homepage?.featureCards || [])];
+                                                                        cards[i] = { ...cards[i], desc: e.target.value };
+                                                                        setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), featureCards: cards } }));
+                                                                    }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-gray-300 outline-none focus:border-blue-500/40" placeholder="Açıklama" />
+                                                                </div>
+                                                                <button onClick={() => {
+                                                                    const cards = (siteConfig.homepage?.featureCards || []).filter((_: any, j: number) => j !== i);
+                                                                    setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), featureCards: cards } }));
+                                                                }} className="p-2 text-gray-400 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all">
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+
+                                                {/* Bölüm Görünürlüğü */}
+                                                <div className="owner-glossy">
+                                                    <div className="p-5 border-b border-white/5">
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">👁️ Bölüm Görünürlüğü</h2>
+                                                        <p className="text-xs text-gray-400 mt-1">Ana sayfadaki bölümleri açıp kapatın</p>
+                                                    </div>
+                                                    <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
+                                                        {[
+                                                            { key: 'showPackages', label: '💰 Fiyat Paketleri' },
+                                                            { key: 'showReferences', label: '⭐ Referanslar' },
+                                                            { key: 'showGuide', label: '📖 Rehber' },
+                                                            { key: 'showCookieConsent', label: '🍪 Çerez Onayı' },
+                                                        ].map(item => (
+                                                            <button key={item.key} onClick={() => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), [item.key]: !(p.homepage || {})[item.key] } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border text-left ${siteConfig.homepage?.[item.key] !== false ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/5 border-red-500/10'}`}>
+                                                                <div className="flex items-center justify-between">
+                                                                    <span className="text-white">{item.label}</span>
+                                                                    <div className={`w-7 h-4 rounded-full transition-all relative ${siteConfig.homepage?.[item.key] !== false ? 'bg-green-500' : 'bg-gray-700'}`}>
+                                                                        <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-all ${siteConfig.homepage?.[item.key] !== false ? 'left-3.5' : 'left-0.5'}`}></div>
+                                                                    </div>
+                                                                </div>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
 
                                         {/* ── GENEL ── */}
                                         {settingsTab === 'general' && (
