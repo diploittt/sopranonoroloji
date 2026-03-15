@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { SOCKET_URL_BASE } from '@/lib/api';
 import { useRouter } from 'next/navigation';
@@ -592,7 +592,7 @@ export default function OwnerPanel() {
     const [tenantDetailLoading, setTenantDetailLoading] = useState(false);
 
     // â”€â”€ Site AyarlarÄ± (Panel AyarlarÄ±) â”€â”€
-    const [settingsTab, setSettingsTab] = useState<'pricing' | 'banks'>('pricing');
+    const [settingsTab, setSettingsTab] = useState<'pricing' | 'banks' | 'branding' | 'contact' | 'theme' | 'homepage' | 'general' | 'rooms'>('pricing');
     const [roomConfigTab, setRoomConfigTab] = useState<'design' | 'toolbar' | 'permissions' | 'chat' | 'layout' | 'media'>('design');
     const [siteConfig, setSiteConfig] = useState<any>({
         siteTitle: 'SopranoChat', siteSlogan: 'Premium Sohbet Platformu', footerText: '',
