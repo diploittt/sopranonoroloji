@@ -287,16 +287,18 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
     return (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" onClick={onClose}>
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/15" />
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
 
             {/* Modal */}
             <div
                 className="relative w-full max-w-5xl max-h-[90vh] flex flex-col animate-in zoom-in-95 fade-in duration-300"
                 style={{
-                    background: '#ffffff',
-                    borderRadius: 12,
-                    border: '1px solid #e2e8f0',
-                    boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                    background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+                    backdropFilter: 'blur(24px)',
+                    borderRadius: 18,
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderTop: '1px solid rgba(255,255,255,0.35)',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
                     overflow: 'hidden',
                     transform: `translate(${offset.x}px, ${offset.y}px)`,
                 }}
@@ -304,13 +306,13 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
             >
 
 
-                {/* ─── Header ─── */}
-                <div className="px-4 py-2.5 bg-[#1e293b] flex items-center justify-between cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
+                {/* ─── Header — Metalik Bar ─── */}
+                <div style={{ padding: '10px 20px', background: 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)', borderBottom: '1px solid rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.3)' }} className="flex items-center justify-between cursor-grab active:cursor-grabbing select-none" onMouseDown={onDragMouseDown}>
                     <div className="flex items-center gap-2">
-                        <Shield className="w-4 h-4 text-white" />
-                        <h2 className="text-xs font-bold text-white">Müşteri Düzenle</h2>
+                        <Shield className="w-4 h-4" style={{ color: '#fef3c7' }} />
+                        <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: 1, textTransform: 'uppercase' }}>Müşteri Düzenle</h2>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition-all">
+                    <button onClick={onClose} className="owner-nav-btn" style={{ padding: 6, borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -324,14 +326,14 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
 
                             {/* ─── MÜŞTERİ BİLGİLERİ ─── */}
                             <div className="space-y-4">
-                                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                                <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 8 }} className="flex items-center gap-2">
                                     <Users className="w-3.5 h-3.5" /> Müşteri Bilgileri
                                 </h3>
 
                                 {/* İsim */}
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] text-gray-500 font-semibold">Müşteri Adı Soyadı *</label>
-                                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] owner-input-inset">
                                         <Users className="w-4 h-4 text-gray-600" />
                                         <input
                                             type="text"
@@ -346,7 +348,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                 {/* Site / Platform Adı */}
                                 <div className="space-y-1.5">
                                     <label className="text-[10px] text-gray-500 font-semibold">Site / Platform Adı</label>
-                                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
+                                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-[10px] owner-input-inset">
                                         <Home className="w-4 h-4 text-gray-600" />
                                         <input
                                             type="text"
@@ -436,11 +438,53 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                         />
                                     </div>
                                 </div>
+
+                                {/* Slug (salt okunur) */}
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] text-gray-500 font-semibold">Slug (Erişim Kodu)</label>
+                                    <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.02] border border-white/[0.06]">
+                                        <Hash className="w-4 h-4 text-gray-600" />
+                                        <input
+                                            type="text"
+                                            value={formData.slug}
+                                            readOnly
+                                            className="flex-1 bg-transparent text-gray-400 text-sm focus:outline-none cursor-default"
+                                        />
+                                    </div>
+                                    <p className="text-[9px] text-gray-600">URL'de kullanılan benzersiz tanımlayıcı (değiştirilemez)</p>
+                                </div>
+
+                                {/* Durum Değiştir */}
+                                <div className="space-y-1.5">
+                                    <label className="text-[10px] text-gray-500 font-semibold">Hesap Durumu</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                        {(['ACTIVE', 'PASSIVE', 'SUSPENDED'] as const).map(s => (
+                                            <button
+                                                key={s}
+                                                onClick={() => setFormData(prev => ({ ...prev, status: s }))}
+                                                className={classNames(
+                                                    "flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl font-bold text-xs transition border",
+                                                    formData.status === s
+                                                        ? s === 'ACTIVE' ? 'bg-green-500/10 text-green-400 border-green-500/30'
+                                                            : s === 'SUSPENDED' ? 'bg-orange-500/10 text-orange-400 border-orange-500/30'
+                                                                : 'bg-red-500/10 text-red-400 border-red-500/30'
+                                                        : 'bg-white/[0.03] text-gray-500 border-white/[0.08] hover:text-white'
+                                                )}
+                                            >
+                                                <span className={classNames(
+                                                    "w-1.5 h-1.5 rounded-full",
+                                                    s === 'ACTIVE' ? 'bg-green-400' : s === 'SUSPENDED' ? 'bg-orange-400' : 'bg-red-400'
+                                                )} />
+                                                {s === 'ACTIVE' ? 'Aktif' : s === 'SUSPENDED' ? 'Askıda' : 'Pasif'}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* ─── PAKET ÖZELLİKLERİ ─── */}
                             <div className="space-y-4">
-                                <h3 className="text-[11px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                                <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 8 }} className="flex items-center gap-2">
                                     <Package className="w-3.5 h-3.5" /> Paket Özellikleri
                                 </h3>
 
@@ -452,7 +496,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                             type="number"
                                             value={formData.roomLimit}
                                             onChange={e => setFormData(prev => ({ ...prev, roomLimit: parseInt(e.target.value) || 1 }))}
-                                            className="w-full px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08] text-white text-sm focus:border-amber-600/50 focus:outline-none transition"
+                                            className="w-full px-3 py-2.5 rounded-[10px] owner-input-inset text-white text-sm focus:outline-none transition"
                                             min={1}
                                         />
                                     </div>
@@ -574,7 +618,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                 {/* Fiyat & Para Birimi */}
                                 <div className="grid grid-cols-[1fr_120px] gap-3">
                                     <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-white/[0.03] border border-white/[0.08]">
-                                        <span className="text-gray-600">₺</span>
+                                        <span className="text-gray-600">{formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '₺'}</span>
                                         <input
                                             type="text"
                                             value={formData.price}
@@ -610,14 +654,14 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                             <div className="flex items-center gap-3 pt-2">
                                 <button
                                     onClick={onClose}
-                                    className="flex-1 px-4 py-3 rounded-xl bg-white/[0.03] border border-white/[0.08] text-gray-400 text-sm font-bold hover:text-white hover:border-white/20 transition"
+                                    className="owner-btn-3d owner-btn-3d-white flex-1 px-4 py-3 rounded-[10px] text-xs font-bold uppercase tracking-wider"
                                 >
                                     İptal
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={loading}
-                                    className="flex-[2] flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-700 hover:to-rose-700 text-white text-sm font-bold transition disabled:opacity-50"
+                                    className="owner-btn-3d owner-btn-3d-green flex-[2] flex items-center justify-center gap-2 px-4 py-3 rounded-[10px] text-xs font-bold uppercase tracking-wider disabled:opacity-50"
                                 >
                                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
                                     Değişiklikleri Kaydet

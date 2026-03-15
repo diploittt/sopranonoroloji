@@ -844,91 +844,91 @@ export default function OwnerPanel() {
     };
 
     return (
-        <div className="flex w-full max-w-[1920px] h-screen mx-auto overflow-y-auto text-[#e2e8f0] font-sans border-x border-white/10 shadow-2xl" style={{ background: 'linear-gradient(180deg, #9ba8d4 0%, #b3b8da 50%, #c5c8e0 100%)' }}>
-            {/* Background Effects */}
-            <div className="fixed inset-0 z-0 pointer-events-none">
-                <div className="absolute top-0 -left-4 w-96 h-96 bg-rose-600/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
-                <div className="absolute bottom-0 -right-4 w-96 h-96 bg-amber-700/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-2000"></div>
-                <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-amber-800/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob animation-delay-4000"></div>
-            </div>
+        <div className="owner-panel-root" style={{ background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', minHeight: '100vh', display: 'flex', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif" }}>
+            <div className="flex w-full max-w-[1600px] h-screen text-[#e2e8f0]" style={{
+                background: '#7a7e9e',
+                borderLeft: '14px solid rgba(255,255,255,0.85)',
+                borderRight: '14px solid rgba(255,255,255,0.85)',
+                borderBottom: '14px solid rgba(255,255,255,0.85)',
+                boxShadow: '0 0 30px rgba(0,0,0,0.25), 0 0 60px rgba(0,0,0,0.12), -4px 0 15px rgba(0,0,0,0.18), 4px 0 15px rgba(0,0,0,0.18)',
+            }}>
 
             {/* Sidebar */}
-            <aside className="w-20 lg:w-64 bg-[#7b8cb8]/40 backdrop-blur-md border-r border-white/10 flex flex-col z-20 transition-all duration-300">
-                <div className="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/5">
+            <aside className="owner-sidebar w-20 lg:w-64 flex flex-col z-20 transition-all duration-300" style={{
+                background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%)',
+                backdropFilter: 'blur(24px)',
+                borderRight: '1px solid rgba(255,255,255,0.15)',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                boxShadow: '4px 0 20px rgba(0,0,0,0.3), inset -1px 0 0 rgba(255,255,255,0.06)',
+            }}>
+                <div className="h-20 flex items-center justify-center lg:justify-start lg:px-5 border-b border-white/10">
                     <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
-                            <span className="font-bold text-white text-lg">S</span>
-                        </div>
                         <div className="hidden lg:flex flex-col">
-                            <div className="flex items-center">
-                                <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-rose-400 to-pink-600 filter drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]">Soprano</span>
-                                <span className="font-bold text-lg text-white ml-0.5">Chat</span>
-                            </div>
-                            <span className="text-[9px] text-gray-500 tracking-widest uppercase">Admin Panel</span>
+                            <h1 style={{ fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', serif", fontSize: 28, lineHeight: 1, margin: 0, letterSpacing: 0.5 }}>
+                                <span style={{ background: 'linear-gradient(180deg, #fff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>Soprano</span>
+                                <span style={{ background: 'linear-gradient(180deg, #b8f0f0 0%, #5ec8c8 30%, #3a9e9e 65%, #4db0a8 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6))' }}>Chat</span>
+                            </h1>
+                            <span style={{ fontSize: 9, color: 'rgba(200,180,140,0.5)', fontStyle: 'italic', letterSpacing: 2, textTransform: 'lowercase' }}>owner panel</span>
+                        </div>
+                        <div className="lg:hidden w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(56,189,248,0.25), rgba(2,132,199,0.35))', boxShadow: '0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15)' }}>
+                            <span style={{ fontFamily: "'Cooper Black', serif", fontSize: 16, color: '#bae6fd' }}>S</span>
                         </div>
                     </div>
                 </div>
 
-                <nav className="flex-1 py-6 px-3 space-y-2 overflow-y-auto custom-scrollbar">
-                    <button onClick={() => setActiveView('dashboard')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'dashboard' ? 'bg-white/5 text-white border border-white/5 shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <LayoutDashboard className={`w-5 h-5 ${activeView === 'dashboard' ? 'text-rose-400' : 'group-hover:text-rose-400 transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Genel Bakış</span>
-                    </button>
-                    <button onClick={() => setActiveView('customers')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'customers' ? 'bg-amber-500/10 text-white border border-amber-500/20 shadow-sm shadow-amber-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <Users className={`w-5 h-5 ${activeView === 'customers' ? 'text-[#7b9fef]' : 'group-hover:text-[#7b9fef] transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Müşteriler</span>
-                    </button>
-                    <button onClick={() => setActiveView('finance')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'finance' ? 'bg-green-500/10 text-white border border-green-500/20 shadow-sm shadow-green-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <Wallet className={`w-5 h-5 ${activeView === 'finance' ? 'text-green-400' : 'group-hover:text-green-400 transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Finans & Ödemeler</span>
-                    </button>
-                    <button onClick={() => setActiveView('orders')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'orders' ? 'bg-emerald-500/10 text-white border border-emerald-500/20 shadow-sm shadow-emerald-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <div className="relative">
-                            <ShoppingBag className={`w-5 h-5 ${activeView === 'orders' ? 'text-emerald-400' : 'group-hover:text-emerald-400 transition-colors'}`} />
-                            {pendingOrderCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center animate-pulse">{pendingOrderCount}</span>}
-                        </div>
-                        <span className="hidden lg:block font-medium text-sm">Siparişler</span>
-                    </button>
-                    <button onClick={() => setActiveView('logs')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'logs' ? 'bg-yellow-500/10 text-white border border-yellow-500/20 shadow-sm shadow-yellow-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <ScrollText className={`w-5 h-5 ${activeView === 'logs' ? 'text-yellow-400' : 'group-hover:text-yellow-400 transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Sistem Logları</span>
-                    </button>
+                <nav className="flex-1 py-6 px-3 space-y-1.5 overflow-y-auto custom-scrollbar">
+                    {[
+                        { key: 'dashboard' as const, icon: <LayoutDashboard className="w-5 h-5" />, label: 'Genel Bakış', color: '#bae6fd' },
+                        { key: 'customers' as const, icon: <Users className="w-5 h-5" />, label: 'Müşteriler', color: '#fbbf24' },
+                        { key: 'finance' as const, icon: <Wallet className="w-5 h-5" />, label: 'Finans & Ödemeler', color: '#a7f3d0' },
+                        { key: 'orders' as const, icon: <div className="relative"><ShoppingBag className="w-5 h-5" />{pendingOrderCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center animate-pulse">{pendingOrderCount}</span>}</div>, label: 'Siparişler', color: '#34d399' },
+                        { key: 'logs' as const, icon: <ScrollText className="w-5 h-5" />, label: 'Sistem Logları', color: '#fef3c7' },
+                    ].map(item => (
+                        <button key={item.key} onClick={() => setActiveView(item.key)} className="owner-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all" style={{
+                            background: activeView === item.key ? 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)' : 'transparent',
+                            border: activeView === item.key ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
+                            boxShadow: activeView === item.key ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                            color: activeView === item.key ? '#fff' : 'rgba(255,255,255,0.5)',
+                        }}>
+                            <span style={{ color: activeView === item.key ? item.color : undefined }}>{item.icon}</span>
+                            <span className="hidden lg:block font-semibold text-[11px] uppercase tracking-wider">{item.label}</span>
+                        </button>
+                    ))}
 
-                    <div className="my-4 border-t border-white/5"></div>
+                    <div style={{ margin: '16px 0', borderTop: '1px solid rgba(200,170,110,0.15)' }} />
 
-                    <div className="px-3 py-2 hidden lg:block text-xs font-bold text-gray-600 uppercase tracking-wider">Yönetim</div>
-                    <button onClick={() => setActiveView('hqMembers')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'hqMembers' ? 'bg-cyan-500/10 text-white border border-cyan-500/20 shadow-sm shadow-cyan-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <ShieldCheck className={`w-5 h-5 ${activeView === 'hqMembers' ? 'text-cyan-400' : 'group-hover:text-cyan-400 transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Panel Yönetimi</span>
-                    </button>
-                    <button onClick={() => { setActiveView('contactMessages'); loadContactMessages(); }} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'contactMessages' ? 'bg-emerald-500/10 text-white border border-emerald-500/20 shadow-sm shadow-emerald-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <div className="relative">
-                            <Inbox className={`w-5 h-5 ${activeView === 'contactMessages' ? 'text-emerald-400' : 'group-hover:text-emerald-400 transition-colors'}`} />
-                            {unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">{unreadCount}</span>}
-                        </div>
-                        <span className="hidden lg:block font-medium text-sm">Mesajlar</span>
-                    </button>
-
-                    <button onClick={() => setActiveView('settings')} className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all group ${activeView === 'settings' ? 'bg-gray-500/10 text-white border border-gray-500/20 shadow-sm shadow-gray-500/10' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
-                        <Settings className={`w-5 h-5 ${activeView === 'settings' ? 'text-gray-300' : 'group-hover:text-gray-300 transition-colors'}`} />
-                        <span className="hidden lg:block font-medium text-sm">Panel Ayarları</span>
-                    </button>
+                    <div className="px-3 py-2 hidden lg:block" style={{ fontSize: 9, fontWeight: 800, color: 'rgba(200,170,110,0.4)', textTransform: 'uppercase', letterSpacing: 3 }}>Yönetim</div>
+                    {[
+                        { key: 'hqMembers' as const, icon: <ShieldCheck className="w-5 h-5" />, label: 'Panel Yönetimi', color: '#67e8f9' },
+                        { key: 'contactMessages' as const, icon: <div className="relative"><Inbox className="w-5 h-5" />{unreadCount > 0 && <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full text-[9px] font-bold text-white flex items-center justify-center">{unreadCount}</span>}</div>, label: 'Mesajlar', color: '#a7f3d0' },
+                        { key: 'settings' as const, icon: <Settings className="w-5 h-5" />, label: 'Panel Ayarları', color: '#94a3b8' },
+                    ].map(item => (
+                        <button key={item.key} onClick={() => { setActiveView(item.key); if (item.key === 'contactMessages') loadContactMessages(); }} className="owner-nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all" style={{
+                            background: activeView === item.key ? 'linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.03) 100%)' : 'transparent',
+                            border: activeView === item.key ? '1px solid rgba(255,255,255,0.12)' : '1px solid transparent',
+                            boxShadow: activeView === item.key ? 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)' : 'none',
+                            color: activeView === item.key ? '#fff' : 'rgba(255,255,255,0.5)',
+                        }}>
+                            <span style={{ color: activeView === item.key ? item.color : undefined }}>{item.icon}</span>
+                            <span className="hidden lg:block font-semibold text-[11px] uppercase tracking-wider">{item.label}</span>
+                        </button>
+                    ))}
                 </nav>
 
-                <div className="p-4 border-t border-white/5">
+                <div style={{ padding: 16, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                     <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-full bg-gray-700 border border-gray-600 flex items-center justify-center overflow-hidden">
-                            {/* Placeholder Avatar */}
+                        <div className="w-9 h-9 rounded-full overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                             <Image src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
                         </div>
                         <div className="hidden lg:block overflow-hidden">
-                            <div className="text-xs font-bold text-white truncate">{adminUser?.displayName || 'Admin'}</div>
-                            <div className="text-[10px] text-gray-500">{adminUser?.role === 'owner' ? 'Owner' : adminUser?.role === 'superadmin' ? 'Super Admin' : 'Admin'}</div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }} className="truncate">{adminUser?.displayName || 'Admin'}</div>
+                            <div style={{ fontSize: 9, color: 'rgba(200,170,110,0.5)' }}>{adminUser?.role === 'owner' ? 'Owner' : adminUser?.role === 'superadmin' ? 'Super Admin' : 'Admin'}</div>
                         </div>
                         <button
                             onClick={handleLogout}
-                            className="ml-auto text-gray-500 hover:text-red-400 transition-colors"
+                            className="ml-auto owner-nav-btn"
                             title="Çıkış Yap"
+                            style={{ padding: '6px', borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                         >
                             <LogOut className="w-4 h-4" />
                         </button>
@@ -938,32 +938,37 @@ export default function OwnerPanel() {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col relative z-10 overflow-hidden">
-                {/* Header */}
-                <header className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-[#8b9ac8]/60 backdrop-blur-md sticky top-0 z-30">
+                {/* Header — Premium Metalik Bar */}
+                <header style={{
+                    height: 72,
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    padding: '0 28px',
+                    background: 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)',
+                    borderBottom: '1px solid rgba(0,0,0,0.5)',
+                    boxShadow: '0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.05)',
+                    position: 'sticky', top: 0, zIndex: 30,
+                }}>
                     <div className="flex-1 max-w-xl">
-                        <div className="relative group">
-                            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-600 to-amber-800 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
-                            <div className="relative flex items-center bg-[#0f111a] border border-white/10 rounded-lg px-4 py-2.5">
-                                <Search className="w-4 h-4 text-gray-500 mr-3" />
-                                <input
-                                    type="text"
-                                    placeholder="Müşteri, domain veya e-posta ara..."
-                                    className="bg-transparent border-none outline-none text-sm text-white w-full placeholder:text-gray-600"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                                <div className="text-[10px] bg-white/5 px-1.5 py-0.5 rounded text-gray-500 border border-white/5">CMD + K</div>
-                            </div>
+                        <div className="relative flex items-center owner-input-inset" style={{ padding: '0 14px', height: 38, borderRadius: 10 }}>
+                            <Search className="w-4 h-4 mr-3" style={{ color: 'rgba(255,255,255,0.3)' }} />
+                            <input
+                                type="text"
+                                placeholder="Müşteri, domain veya e-posta ara..."
+                                className="bg-transparent border-none outline-none text-sm text-white w-full"
+                                style={{ fontSize: 12 }}
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-4 ml-6">
-                        <button onClick={() => toggleDrawer('announcement', true)} className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-amber-700 hover:bg-amber-600 text-white rounded-lg text-sm font-bold shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transition-all transform hover:-translate-y-0.5">
+                    <div className="flex items-center gap-3 ml-6">
+                        <button onClick={() => toggleDrawer('announcement', true)} className="hidden md:flex items-center gap-2 owner-btn-3d owner-btn-3d-gold" style={{ padding: '8px 16px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
                             <Megaphone className="w-4 h-4" />
-                            Duyuru Yayınla
+                            Duyuru
                         </button>
 
-                        <button onClick={() => toggleDrawer('newClient', true)} className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-lg text-sm font-bold shadow-[0_0_20px_rgba(225,29,72,0.3)] hover:shadow-[0_0_30px_rgba(225,29,72,0.5)] transition-all transform hover:-translate-y-0.5">
+                        <button onClick={() => toggleDrawer('newClient', true)} className="hidden md:flex items-center gap-2 owner-btn-3d owner-btn-3d-red" style={{ padding: '8px 16px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
                             <PlusCircle className="w-4 h-4" />
                             Yeni Müşteri
                         </button>
@@ -4278,32 +4283,83 @@ export default function OwnerPanel() {
             />
 
             <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-                .custom-scrollbar::-webkit-scrollbar-track { background: #0f111a; }
-                .custom-scrollbar::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #4f46e5; }
-                .animate-blob {
-                    animation: blob 7s infinite;
+                @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800;900&display=swap');
+                @import url('https://fonts.cdnfonts.com/css/cooper-black');
+
+                .owner-panel-root * { font-family: 'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif; }
+
+                .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
+                .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
+
+                /* ═══ Glossy Panel — kart/tablo container ═══ */
+                .owner-glossy-panel {
+                    background:
+                        radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
+                        linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
+                        linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                    backdrop-filter: blur(24px);
+                    border: 1px solid rgba(255,255,255,0.15);
+                    border-top: 1px solid rgba(255,255,255,0.35);
+                    border-left: 1px solid rgba(255,255,255,0.2);
+                    box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06);
+                    border-radius: 18px;
+                    overflow: hidden;
                 }
-                .animation-delay-2000 {
-                    animation-delay: 2s;
+
+                /* ═══ 3D Butonlar ═══ */
+                .owner-btn-3d {
+                    position: relative; display: inline-flex; align-items: center; justify-content: center;
+                    border: none; outline: none; cursor: pointer; font-weight: 600;
+                    transition: all 0.3s ease; overflow: hidden;
                 }
-                .animation-delay-4000 {
-                    animation-delay: 4s;
+                .owner-btn-3d-blue { background: linear-gradient(180deg, rgba(56,189,248,0.25) 0%, rgba(2,132,199,0.35) 100%); color: #bae6fd; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .owner-btn-3d-blue:hover { background: linear-gradient(180deg, rgba(56,189,248,0.35) 0%, rgba(2,132,199,0.45) 100%); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(56,189,248,0.2), inset 0 1px 0 rgba(255,255,255,0.2); }
+                .owner-btn-3d-green { background: linear-gradient(180deg, rgba(52,211,153,0.25) 0%, rgba(5,150,105,0.35) 100%); color: #a7f3d0; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .owner-btn-3d-green:hover { background: linear-gradient(180deg, rgba(52,211,153,0.35) 0%, rgba(5,150,105,0.45) 100%); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(52,211,153,0.2), inset 0 1px 0 rgba(255,255,255,0.2); }
+                .owner-btn-3d-gold { background: linear-gradient(180deg, rgba(251,191,36,0.25) 0%, rgba(217,119,6,0.35) 100%); color: #fef3c7; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15), inset 0 -1px 0 rgba(255,255,255,0.05); }
+                .owner-btn-3d-gold:hover { background: linear-gradient(180deg, rgba(251,191,36,0.35) 0%, rgba(217,119,6,0.45) 100%); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(251,191,36,0.2), inset 0 1px 0 rgba(255,255,255,0.2); }
+                .owner-btn-3d-red { background: linear-gradient(180deg, rgba(220,38,38,0.3) 0%, rgba(153,27,27,0.45) 100%); color: #fca5a5; box-shadow: 0 4px 16px rgba(0,0,0,0.3), 0 0 12px rgba(220,38,38,0.15), inset 0 1px 0 rgba(255,255,255,0.12); }
+                .owner-btn-3d-red:hover { background: linear-gradient(180deg, rgba(220,38,38,0.4) 0%, rgba(153,27,27,0.55) 100%); transform: translateY(-1px); box-shadow: 0 6px 24px rgba(220,38,38,0.25), 0 0 18px rgba(220,38,38,0.2), inset 0 1px 0 rgba(255,255,255,0.18); }
+                .owner-btn-3d-white { background: linear-gradient(180deg, rgba(255,255,255,0.35) 0%, rgba(200,210,225,0.2) 100%); color: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.4), inset 0 -1px 0 rgba(255,255,255,0.08); }
+                .owner-btn-3d-white:hover { background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(210,220,235,0.3) 100%); transform: translateY(-1px); }
+                .owner-btn-3d:active { transform: translateY(1px) !important; box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1) !important; }
+
+                /* ═══ Input Inset ═══ */
+                .owner-input-inset {
+                    background: rgba(0,0,0,0.2);
+                    border: 1px solid rgba(255,255,255,0.1);
+                    border-top: 1px solid rgba(0,0,0,0.4);
+                    box-shadow: inset 0 3px 6px rgba(0,0,0,0.3);
+                    color: #fff;
+                    transition: all 0.2s ease;
                 }
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
+                .owner-input-inset:focus-within {
+                    background: rgba(0,0,0,0.3);
+                    border-color: #38bdf8;
+                    box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56,189,248,0.2);
                 }
-                .toggle-checkbox:checked {
-                    right: 0;
-                    border-color: #68D391;
+                .owner-input-inset::placeholder { color: rgba(255,255,255,0.3); }
+
+                /* ═══ Nav Hover ═══ */
+                .owner-nav-btn { transition: all 0.2s ease; }
+                .owner-nav-btn:hover { background: rgba(255,255,255,0.06) !important; color: #fff !important; }
+
+                /* ═══ Stat Card ═══ */
+                .owner-stat-card {
+                    background:
+                        radial-gradient(ellipse at 30% 0%, rgba(255,255,255,0.06) 0%, transparent 50%),
+                        linear-gradient(180deg, rgba(30,41,59,0.7) 0%, rgba(15,23,42,0.5) 100%);
+                    backdrop-filter: blur(16px);
+                    border: 1px solid rgba(255,255,255,0.12);
+                    border-top: 1px solid rgba(255,255,255,0.25);
+                    box-shadow: 0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05);
+                    border-radius: 16px;
+                    padding: 16px;
+                    display: flex; align-items: center; gap: 12px;
                 }
-                .toggle-checkbox:checked + .toggle-label {
-                    background-color: #68D391;
-                }
+
                 @keyframes blink-urgent {
                     0%, 100% { border-left-color: transparent; }
                     50% { border-left-color: #ef4444; }
@@ -4320,6 +4376,7 @@ export default function OwnerPanel() {
                     animation: blink-text 1.2s ease-in-out infinite;
                 }
             `}</style>
-        </div >
+        </div>
+        </div>
     );
 }

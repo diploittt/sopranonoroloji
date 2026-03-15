@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from 'react';
-import { X, CheckCircle, Copy, User, Mail, Phone, Globe, Server, Video, VideoOff, Users, CreditCard, ExternalLink, KeyRound, ShieldCheck, UserPlus, FileText, Home, Camera, PenLine } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, CheckCircle, Copy, User, Mail, Phone, Globe, Server, Video, VideoOff, Users, CreditCard, ExternalLink, KeyRound, ShieldCheck, UserPlus, FileText, Home, Camera, PenLine, Loader2 } from 'lucide-react';
 import { useAdminStore } from '@/lib/admin/store';
 import { buildTenantUrls } from '@/lib/tenantUrlHelper';
 
@@ -34,6 +34,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
     // Result State
     const [isCreated, setIsCreated] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [resultData, setResultData] = useState({
         loginLink: '',
         embedCode: '',
@@ -45,9 +46,26 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
     const provisionCustomer = useAdminStore((state) => state.provisionCustomer);
 
+    // Form reset on modal close
+    useEffect(() => {
+        if (!isOpen) {
+            setFormData({
+                name: '', displayName: '', roomName: '', logo: '',
+                email: '', phone: '', domain: '',
+                hostingType: 'sopranochat', roomCount: 1, userLimit: '30',
+                camera: 'true', meeting: 'false', amount: '',
+                currency: 'TRY', billingPeriod: 'MONTHLY',
+            });
+            setIsCreated(false);
+            setIsLoading(false);
+            setResultData({ loginLink: '', embedCode: '', adminUser: '', adminPass: '', apiEndpoint: '', customerDomain: '' });
+        }
+    }, [isOpen]);
+
     if (!isOpen) return null;
 
     const handleGenerate = async () => {
+        if (isLoading) return;
         if (!formData.name || !formData.email || !formData.phone || !formData.amount) {
             addToast('Lütfen tüm zorunlu alanları doldurun.', 'error');
             return;
@@ -57,6 +75,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
             return;
         }
 
+        setIsLoading(true);
         try {
             const apiData = {
                 name: formData.name,
@@ -98,6 +117,8 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
             addToast('Müşteri başarıyla oluşturuldu!', 'success');
         } catch (error: any) {
             addToast(error.message || 'Müşteri oluşturulurken bir hata oluştu.', 'error');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -106,30 +127,32 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
         addToast(`${label} kopyalandı`, 'success');
     };
 
-    const inputClass = "w-full bg-black/30 border border-amber-600/15 rounded-xl px-4 py-2.5 text-white text-sm outline-none focus:border-amber-600/50 transition placeholder:text-gray-600";
+    const inputClass = "w-full rounded-[10px] px-4 py-2.5 text-white text-sm outline-none transition placeholder:text-gray-500" + " " + "owner-input-inset";
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/15" onClick={onClose}></div>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
 
             {/* Modal */}
             <div className="relative w-full max-w-5xl max-h-[90vh] animate-in zoom-in-95 fade-in duration-300 flex flex-col" style={{
-                background: '#ffffff',
-                borderRadius: 12,
-                border: '1px solid #e2e8f0',
-                boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',
+                background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
+                backdropFilter: 'blur(24px)',
+                borderRadius: 18,
+                border: '1px solid rgba(255,255,255,0.15)',
+                borderTop: '1px solid rgba(255,255,255,0.35)',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
                 overflow: 'hidden',
             }}>
 
 
-                {/* Header */}
-                <div className="px-4 py-2.5 bg-[#1e293b] flex items-center justify-between">
+                {/* Header — Metalik Bar */}
+                <div style={{ padding: '10px 20px', background: 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)', borderBottom: '1px solid rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                     <div className="flex items-center gap-2">
-                        <UserPlus className="w-4 h-4 text-white" />
-                        <h2 className="text-xs font-bold text-white">Yeni Müşteri Ekle</h2>
+                        <UserPlus className="w-4 h-4" style={{ color: '#fef3c7' }} />
+                        <h2 style={{ fontSize: 12, fontWeight: 700, color: '#fff', letterSpacing: 1, textTransform: 'uppercase' }}>Yeni Müşteri Ekle</h2>
                     </div>
-                    <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-md text-gray-400 hover:text-white transition-all">
+                    <button onClick={onClose} className="owner-nav-btn" style={{ padding: 6, borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
                         <X className="w-3.5 h-3.5" />
                     </button>
                 </div>
@@ -143,7 +166,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
                             {/* Section: Client Info */}
                             <div className="space-y-4">
-                                <h3 className="text-xs font-bold text-[#7b9fef] uppercase tracking-wider border-b border-amber-600/10 pb-2 mb-4 flex items-center gap-2">
+                                <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 16 }} className="flex items-center gap-2">
                                     <User className="w-3 h-3" /> Müşteri Bilgileri
                                 </h3>
 
@@ -263,7 +286,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
                         {/* Section: Hosting Type */}
                         <div className="space-y-4">
-                            <h3 className="text-xs font-bold text-[#7b9fef] uppercase tracking-wider border-b border-amber-600/10 pb-2 mb-4 flex items-center gap-2">
+                            <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 16 }} className="flex items-center gap-2">
                                 <Globe className="w-3 h-3" /> Hosting Tercihi
                             </h3>
                             <div className="grid grid-cols-2 gap-3">
@@ -311,7 +334,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
                         {/* Section: Package Info */}
                         <div className="space-y-4 pt-2">
-                            <h3 className="text-xs font-bold text-[#7b9fef] uppercase tracking-wider border-b border-amber-600/10 pb-2 mb-4 flex items-center gap-2">
+                            <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 16 }} className="flex items-center gap-2">
                                 <Server className="w-3 h-3" /> Paket Özellikleri
                             </h3>
 
@@ -386,7 +409,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
                         {/* Section: Payment */}
                         <div className="space-y-4 pt-2">
-                            <h3 className="text-xs font-bold text-[#7b9fef] uppercase tracking-wider border-b border-amber-600/10 pb-2 mb-4 flex items-center gap-2">
+                            <h3 style={{ fontSize: 10, fontWeight: 800, color: 'rgba(200,170,110,0.7)', textTransform: 'uppercase', letterSpacing: 2, borderBottom: '1px solid rgba(200,170,110,0.15)', paddingBottom: 8, marginBottom: 16 }} className="flex items-center gap-2">
                                 <CreditCard className="w-3 h-3" /> Ödeme Bilgileri
                             </h3>
                             <div className="flex gap-3 mb-3">
@@ -422,7 +445,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
                                         className={`${inputClass} pl-8`}
                                         placeholder="Tutar"
                                     />
-                                    <span className="absolute left-3 top-2.5 text-gray-500 text-sm">₺</span>
+                                    <span className="absolute left-3 top-2.5 text-gray-500 text-sm">{formData.currency === 'USD' ? '$' : formData.currency === 'EUR' ? '€' : '₺'}</span>
                                 </div>
                                 <select
                                     value={formData.currency}
@@ -438,15 +461,12 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
 
                         {/* Action Buttons */}
                         <div className="pt-4 flex gap-4">
-                            <button onClick={onClose} className="flex-1 py-3 rounded-xl font-bold text-sm transition border border-white/10 text-gray-400 hover:text-white hover:bg-white/5">
+                            <button onClick={onClose} className="owner-btn-3d owner-btn-3d-white flex-1 py-3 rounded-[10px] font-bold text-xs uppercase tracking-wider">
                                 İptal
                             </button>
-                            <button onClick={handleGenerate} className="flex-[2] py-3 rounded-xl font-bold text-sm transition flex items-center justify-center gap-2 text-white" style={{
-                                background: 'linear-gradient(135deg, rgba(225,29,72,0.8), rgba(244,63,94,0.8))',
-                                boxShadow: '0 0 20px rgba(225,29,72,0.3)',
-                            }}>
-                                <CheckCircle className="w-4 h-4" />
-                                Müşteriyi Oluştur
+                            <button onClick={handleGenerate} disabled={isLoading || isCreated} className="owner-btn-3d owner-btn-3d-green flex-[2] py-3 rounded-[10px] font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                                {isLoading ? 'Oluşturuluyor...' : 'Müşteriyi Oluştur'}
                             </button>
                         </div>
 
