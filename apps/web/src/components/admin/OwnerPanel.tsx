@@ -1083,7 +1083,7 @@ export default function OwnerPanel() {
                 </header>
 
                 {/* Dashboard Content */}
-                <div className="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar">
+                <div className="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar" style={{ background: 'linear-gradient(180deg, rgba(15,20,35,0.75) 0%, rgba(20,25,40,0.7) 50%, rgba(15,20,35,0.75) 100%)' }}>
 
                     {activeView === 'hqMembers' ? (
                         /* ══════════ PANEL YÖNETİMİ VIEW ═══════════ */

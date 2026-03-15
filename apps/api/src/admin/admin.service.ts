@@ -2397,9 +2397,11 @@ export class AdminService implements OnModuleInit {
         pricing: config.pricing || null,
         banks: config.banks || null,
         contact: config.contact || null,
+        homepage: config.homepage || null,
         siteTitle: config.siteTitle || null,
         siteSlogan: config.siteSlogan || null,
         footerText: config.footerText || null,
+        primaryColor: config.primaryColor || null,
         roomConfig: config.roomConfig || null,
       },
     };
