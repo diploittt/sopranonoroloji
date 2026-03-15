@@ -44,9 +44,13 @@ function storageRemove(key: string): void {
 
 // ─── Migration: eski localStorage verisini sessionStorage'a taşı ───
 // İlk kez açıldığında localStorage'daki token hala duruyorsa sessionStorage'a kopyala ve sil
+// NOT: soprano_admin_token ve soprano_admin_user OwnerPanel tarafından localStorage'da kullanılır,
+// bu yüzden migration'dan hariç tutulmalıdır!
 function migrateFromLocalStorage(): void {
     if (typeof window === 'undefined') return;
-    const TOKEN_KEYS = ['soprano_auth_token', 'soprano_tenant_token', 'soprano_admin_token'];
+    // Admin token'ları hariç — OwnerPanel bunları localStorage'dan okur
+    const ADMIN_KEYS = ['soprano_admin_token', 'soprano_admin_user'];
+    const TOKEN_KEYS = ['soprano_auth_token', 'soprano_tenant_token'];
     const USER_KEYS = [SYSTEM_USER_KEY, TENANT_USER_KEY];
     const ALL_KEYS = [...TOKEN_KEYS, ...USER_KEYS, SESSION_TIMESTAMP_KEY];
 
@@ -59,9 +63,9 @@ function migrateFromLocalStorage(): void {
         // Artık oturum verisi localStorage'da tutulmayacak
         localStorage.removeItem(key);
     }
-    // Dynamic soprano_auth_token_* / soprano_auth_user_* keys
+    // Dynamic soprano_auth_token_* / soprano_auth_user_* keys (admin hariç)
     Object.keys(localStorage).forEach(key => {
-        if ((key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) && key !== 'soprano_auth_token' && key !== 'soprano_auth_user') {
+        if ((key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) && key !== 'soprano_auth_token' && key !== 'soprano_auth_user' && !ADMIN_KEYS.includes(key)) {
             localStorage.removeItem(key);
         }
     });
