@@ -52,7 +52,7 @@ const EMPTY_AREA_ITEMS: ContextMenuItem[] = [
     { id: 'meeting', label: 'Toplantı Odası', icon: '🔒', action: 'joinMeetingRoom', description: 'Yetkili toplantı odasına gir' },
     { id: 'clear-chat', label: 'Yazıları Sil', icon: '🗑️', action: 'clearChatRealtime', description: 'Chat ekranını temizle (herkes için)', confirm: true, confirmMessage: 'Tüm chat geçmişi silinecek. Emin misiniz?' },
     { id: 'check-history', label: 'Geçmişi Kontrol Et', icon: '📜', action: 'openHistoryModal', description: 'Chat ve oda geçmişini görüntüle' },
-    { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'openUsersModal', description: 'Tüm odalardaki kullanıcıları göster', badge: 'totalUserCount' },
+    { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'openUsersModal', description: 'Tüm odalardaki kullanıcıları göster' },
     { id: 'room-monitor', label: 'Odaları Gözetle', icon: '🏠', action: 'openRoomMonitor', description: 'Tüm odaları izle ve yönet' },
     { id: 'mic-free', label: 'Mikrofonu Serbest Bırak', icon: '🎤', action: 'freeMicrophone', description: 'Mikrofonu serbest bırak' },
     { id: 'mic-take', label: 'Mikrofonu Al', icon: '🎙️', action: 'takeMicrophone', description: 'Mikrofonu al' },

@@ -3356,12 +3356,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
   ) {
     const actor = this.participants.get(client.id);
-    if (!actor) {
+    // Fallback: backend restart sonrası participants Map boş olabilir — socket auth verisini kullan
+    const actorUser = actor || (client.data?.user ? {
+      userId: client.data.user.sub || client.data.user.userId,
+      displayName: client.data.user.displayName || client.data.user.username || 'Unknown',
+      role: client.data.user.role || 'guest',
+    } : null);
+    if (!actorUser) {
       client.emit('room:error', { message: 'Yetki yok.' });
       return;
     }
 
-    const actorLevel = getRoleLevel(actor.role);
+    const actorLevel = getRoleLevel(actorUser.role);
     if (actorLevel < 3) { // operator+
       client.emit('room:error', { message: 'Kullanıcı listesi için yetkiniz yok.' });
       return;
@@ -3371,7 +3377,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const roomMap = new Map<string, any[]>();
     this.participants.forEach((p) => {
       // GodMaster kullanıcıları herkesten gizle (kendisi hariç)
-      if (p.role?.toLowerCase() === 'godmaster' && p.userId !== actor.userId) return;
+      if (p.role?.toLowerCase() === 'godmaster' && p.userId !== actorUser.userId) return;
       // Stealth kullanıcıları sadece admin+ görebilir
       if (p.isStealth && actorLevel < 5) return;
       // Kendini her zaman göster
@@ -3399,7 +3405,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     client.emit('admin:allOnlineUsers', { rooms });
-    this.logger.log(`getAllOnlineUsers → ${rooms.length} oda, actor: ${actor.displayName}`);
+    this.logger.log(`getAllOnlineUsers → ${rooms.length} oda, actor: ${actorUser.displayName}`);
   }
 
   // ═══════════ Uzaktan Moderasyon Aksiyonu (cross-room) ═══════════
