@@ -1,6 +1,7 @@
 "use client";
 
 import { use, useState, useEffect, useCallback, useRef, useMemo, Fragment } from 'react';
+import { usePathname } from 'next/navigation';
 import { SidebarLeft } from '@/components/roomUI/SidebarLeft';
 import { HeaderRooms } from '@/components/roomUI/HeaderRooms';
 import { ChatMessages } from '@/components/roomUI/ChatMessages';
@@ -499,6 +500,19 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         }
     }, []);
 
+    // ─── Branding Live Preview (admin SettingsTab'dan canlı değişiklik) ───
+    const [brandingPreview, setBrandingPreview] = useState<Record<string, any> | null>(null);
+    useEffect(() => {
+        const onPreview = (e: Event) => { setBrandingPreview((e as CustomEvent).detail); };
+        const onClear = () => { setBrandingPreview(null); };
+        window.addEventListener('brandingPreview', onPreview);
+        window.addEventListener('brandingPreviewClear', onClear);
+        return () => {
+            window.removeEventListener('brandingPreview', onPreview);
+            window.removeEventListener('brandingPreviewClear', onClear);
+        };
+    }, []);
+
 
     // ─── Active Design (dizayn preset'inden gelen bölgesel renkler) ───
     const activeDesign = useMemo(() => {
@@ -523,7 +537,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const showConnectingLoader = !room.state.currentUser || !room.socket?.connected;
 
     const router = useRouter();
-    const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
+    const pathname = usePathname();
     // Tenant-aware URL helper: if we're at /t/[tenant]/room/..., keep the tenant prefix
     const tenantMatch = pathname.match(/^\/t\/([^/]+)\/room\//);
     const roomUrl = (roomSlug: string) => tenantMatch ? `/t/${tenantMatch[1]}/room/${roomSlug}` : `/room/${roomSlug}`;
@@ -2596,32 +2610,60 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {/* ─── PREMIUM HEADER BAR (exact homepage copy) ─── */}
                                 <header className="room-premium-header">
                                     <div className="room-header-logo">
-                                        <h1 className="room-retro-logo-text"><span className="room-retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="room-retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
+                                        {(() => {
+                                            if (!tenantMatch) {
+                                                // Default SopranoChat logo
+                                                return (
+                                                    <h1 className="room-retro-logo-text"><span className="room-retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="room-retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
+                                                );
+                                            }
+                                            if (!room.state.systemSettings) return null;
+
+                                            const ss = room.state.systemSettings;
+                                            const bp = brandingPreview;
+                                            const logoName = (bp ? bp.logoName : ss.logoName) || ss.tenantDisplayName || ss.tenantName || 'SopranoChat';
+                                            const logoTextColor = (bp ? bp.logoTextColor : ss.logoTextColor) || '';
+                                            const logoTextColor2 = (bp ? bp.logoTextColor2 : ss.logoTextColor2) || '';
+                                            const logoTextFont = (bp ? bp.logoTextFont : ss.logoTextFont) || '';
+                                            const logoTextSize = (bp ? bp.logoTextSize : ss.logoTextSize) || '';
+                                            const color1 = logoTextColor || '#38d9d9';
+                                            const color2 = logoTextColor2;
+                                            const hasCustomBranding = ss.logoName || logoTextColor || logoTextFont || bp;
+
+                                            return (
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                                                    {ss.tenantLogoUrl && (
+                                                        <img src={ss.tenantLogoUrl} alt={logoName} style={{ maxHeight: 40, maxWidth: 120, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }} />
+                                                    )}
+                                                    <span style={{
+                                                        fontSize: logoTextSize || 18,
+                                                        fontWeight: 900,
+                                                        fontFamily: logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif",
+                                                        textShadow: color2 ? 'none' : '0 1px 3px rgba(0,0,0,0.5)',
+                                                        letterSpacing: '0.02em',
+                                                        transition: 'all 0.3s ease',
+                                                        ...(color2 ? {
+                                                            backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                                            WebkitBackgroundClip: 'text',
+                                                            WebkitTextFillColor: 'transparent',
+                                                            backgroundClip: 'text',
+                                                        } : hasCustomBranding ? {
+                                                            color: color1,
+                                                        } : {
+                                                            color: '#e8e6f4',
+                                                        }),
+                                                    }}>
+                                                        {logoName}
+                                                    </span>
+                                                    {bp && (
+                                                        <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', color: '#818cf8', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 4, padding: '1px 5px', animation: 'pulse 2s ease-in-out infinite' }}>ÖNİZLEME</span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
                                     </div>
 
                                     <nav className="room-header-nav" style={{ flex: 1, justifyContent: 'center', position: 'relative', gap: 4 }}>
-                                        {/* HOME — left side, aligned with KÜRSÜ below */}
-                                        <a
-                                            href="/"
-                                            style={{
-                                                color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 5,
-                                                animation: 'roomContentFadeIn 0.4s ease 0.1s both',
-                                                fontWeight: 700, letterSpacing: '0.08em',
-                                                textTransform: 'uppercase' as const, fontSize: 10,
-                                                textDecoration: 'none', padding: '5px 10px',
-                                                background: 'rgba(56,189,248,0.08)',
-                                                border: '1px solid rgba(56,189,248,0.15)',
-                                                borderRadius: 20, cursor: 'pointer',
-                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                                transition: 'all 0.3s ease',
-                                                marginRight: 8,
-                                                flexShrink: 0,
-                                            }}
-                                        >
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                                            HOME
-                                        </a>
-
                                         {/* Room Nav Links — premium pill buttons */}
                                         {(room.state.rooms || [])
                                             .filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))
@@ -2671,6 +2713,27 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                 );
                                             })}
                                     </nav>
+
+                                    {/* HOME — sağ tarafa, KÜRSÜ alanının üstüne */}
+                                    <a
+                                        href={tenantMatch ? `/t/${tenantMatch[1]}` : '/'}
+                                        style={{
+                                            color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 5,
+                                            animation: 'roomContentFadeIn 0.4s ease 0.1s both',
+                                            fontWeight: 700, letterSpacing: '0.08em',
+                                            textTransform: 'uppercase' as const, fontSize: 10,
+                                            textDecoration: 'none', padding: '5px 10px',
+                                            background: 'rgba(56,189,248,0.08)',
+                                            border: '1px solid rgba(56,189,248,0.15)',
+                                            borderRadius: 20, cursor: 'pointer',
+                                            fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                            transition: 'all 0.3s ease',
+                                            marginLeft: 8, marginRight: 20, flexShrink: 0,
+                                        }}
+                                    >
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                        HOME
+                                    </a>
                                 </header>
 
                                 {/* ─── CHATROOM CONTAINER ─── */}

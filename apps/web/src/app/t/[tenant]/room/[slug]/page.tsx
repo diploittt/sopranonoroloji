@@ -1,11 +1,13 @@
 "use client";
 
 import { use } from 'react';
-import dynamic from 'next/dynamic';
+import RoomPage from '@/app/room/[slug]/page';
 
-const HomePage = dynamic(() => import('@/app/home/HomePage'), { ssr: false });
-
+// Tenant-specific room page — renders the SAME room UI as /room/[slug]
+// but keeps the /t/[tenant]/room/[slug] URL intact so that useRoomRealtime
+// correctly detects isTenantPage=true and uses soprano_tenant_token.
 export default function TenantRoomPage({ params }: { params: Promise<{ tenant: string; slug: string }> }) {
-    const { tenant, slug } = use(params);
-    return <HomePage initialRoomsMode={true} initialSlug={slug} initialTenant={tenant} />;
+    const { slug } = use(params);
+    // Pass slug as a resolved Promise to RoomPage
+    return <RoomPage params={Promise.resolve({ slug })} />;
 }

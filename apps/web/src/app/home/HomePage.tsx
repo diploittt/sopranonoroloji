@@ -39,7 +39,7 @@ import { ToastContainer as RoomToastContainer, useToast } from '@/components/ui/
 import { useAdminPanelStore } from '@/stores/useAdminPanelStore';
 import { AdminPanelWindow } from '@/components/admin/AdminPanelWindow';
 
-import { DemoChatRoom } from '@/components/room/DemoChatRoom';
+
 
 type DemoContextMenuItem = RoomMenuItem;
 
@@ -117,6 +117,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const [showLoginToast, setShowLoginToast] = useState(false);
     const [roomsMode, setRoomsMode] = useState(initialRoomsMode || false);
     useEffect(() => { document.body.style.overflow = roomsMode ? 'hidden' : ''; return () => { document.body.style.overflow = ''; }; }, [roomsMode]);
+    // ★ roomsMode aktif olduğunda doğrudan premium room sayfasına yönlendir
+    useEffect(() => {
+        if (roomsMode && user) {
+            const slug = dbRooms.length > 0 ? dbRooms[0].slug : (initialSlug || 'genel-sohbet');
+            const tenantPrefix = initialTenant && initialTenant !== 'system' ? `/t/${initialTenant}` : '';
+            router.push(`${tenantPrefix}/room/${slug}`);
+        }
+    }, [roomsMode, user]);
     const [blurToOdalar, setBlurToOdalar] = useState<false | 'out' | 'silhouette'>(false);
     const [demoEntrance, setDemoEntrance] = useState<'idle' | 'in' | 'out'>(initialRoomsMode ? 'in' : 'idle');
     const [userStatus, setUserStatus] = useState<'online' | 'busy' | 'brb' | 'away' | 'phone' | 'invisible'>('online');
@@ -171,6 +179,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const [chkBilling, setChkBilling] = useState<'monthly' | 'yearly'>('monthly');
     const [chkPaymentCode] = useState(() => 'SPR-' + Math.random().toString(36).substring(2, 7).toUpperCase());
     const [chkCopied, setChkCopied] = useState<string | null>(null);
+    const [chkSending, setChkSending] = useState(false);
+    const [chkSuccess, setChkSuccess] = useState(false);
 
     // Customer Support widget
     const [supportOpen, setSupportOpen] = useState(false);
@@ -178,6 +188,15 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const [supEmail, setSupEmail] = useState('');
     const [supSubject, setSupSubject] = useState('');
     const [supMessage, setSupMessage] = useState('');
+    const [supSending, setSupSending] = useState(false);
+    const [supSuccess, setSupSuccess] = useState(false);
+
+    // ★ Branding — admin panelden gelen dinamik site config
+    const [branding, setBranding] = useState<any>(null);
+
+    // ★ Müşteri Tenant verileri — Müşteri Platformları + Referanslar
+    const [sopranoChatCustomers, setSopranoChatCustomers] = useState<any[]>([]);
+    const [ownDomainCustomers, setOwnDomainCustomers] = useState<any[]>([]);
 
     // Navigation sections
     const [activeSection, setActiveSection] = useState(initialRoomsMode ? 'odalar' : 'home');
@@ -249,6 +268,33 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
         return () => window.removeEventListener('auth-change', onAuthChange);
     }, []);
 
+    // ★ Fetch branding — admin panelden dinamik site config
+    useEffect(() => {
+        fetch(`${API_URL}/admin/branding`)
+            .then(r => r.ok ? r.json() : null)
+            .then(data => { if (data) setBranding(data); })
+            .catch(() => {});
+    }, []);
+
+    // ★ İletişim formu gönderme
+    const handleContactSubmit = async () => {
+        if (!supName.trim() || !supEmail.trim() || !supMessage.trim()) return;
+        setSupSending(true);
+        try {
+            const res = await fetch(`${API_URL}/admin/contact`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: supName.trim(), email: supEmail.trim(), subject: supSubject.trim(), message: supMessage.trim() }),
+            });
+            if (res.ok) {
+                setSupSuccess(true);
+                setSupName(''); setSupEmail(''); setSupSubject(''); setSupMessage('');
+                setTimeout(() => setSupSuccess(false), 4000);
+            }
+        } catch { }
+        setSupSending(false);
+    };
+
     // Fetch rooms
     useEffect(() => {
         const fetchRooms = () => {
@@ -261,6 +307,23 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
         };
         fetchRooms();
         const interval = setInterval(fetchRooms, 30000);
+        return () => clearInterval(interval);
+    }, []);
+
+    // ★ Fetch müşteri tenant verileri — Müşteri Platformları + Referanslar
+    useEffect(() => {
+        const fetchTenants = () => {
+            fetch(`${API_URL}/rooms/public/tenants`)
+                .then(r => r.ok ? r.json() : null)
+                .then(data => {
+                    if (data) {
+                        setSopranoChatCustomers(data.sopranoChatCustomers || []);
+                        setOwnDomainCustomers(data.ownDomainCustomers || []);
+                    }
+                }).catch(() => { });
+        };
+        fetchTenants();
+        const interval = setInterval(fetchTenants, 30000);
         return () => clearInterval(interval);
     }, []);
 
@@ -315,7 +378,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     const u = { ...user, ...result.user };
                     setUser(u); setAuthUser(u);
                     if (field === 'avatar') setSelectedAvatar(value);
-                    // ★ Tüm bileşenlere profil değişikliğini bildir (DemoChatRoom dahil)
+                    // ★ Tüm bileşenlere profil değişikliğini bildir
                     window.dispatchEvent(new Event('auth-change'));
                 }
                 setProfileMsg('✅ Güncellendi!');
@@ -1454,12 +1517,13 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     <div style={{ position: 'absolute', bottom: -20, left: -20, width: 160, height: 160, background: 'radial-gradient(circle, rgba(123, 159, 239, 0.12) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none', zIndex: 0 }} />
                                                 </>)}
 
+                                                {/* Artık /room/[slug] premium temasına yönlendiriliyor */}
                                                 {roomsMode && (
-                                                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-                                                        <DemoChatRoom
-                                                            slug={demoSlug}
-                                                            onRoomData={(data) => { demoRoomRef.current = data; if (data.users && data.users.length > 0) setDemoRoomUsers(data.users); setDemoCurrentSpeaker(data.currentSpeaker || null); setDemoIsMicOn(data.state?.isMicOn || false); setDemoQueue(data.state?.queue || []); setDemoMicTimeLeft(data.state?.micTimeLeft || 0); if (!demoRoomReady) setDemoRoomReady(true); }}
-                                                        />
+                                                    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                                        <div style={{ textAlign: 'center', color: '#94a3b8', fontSize: 13 }}>
+                                                            <div style={{ width: 32, height: 32, margin: '0 auto 8px', border: '2px solid rgba(148,163,184,0.3)', borderTop: '2px solid #38bdf8', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                                                            Odaya yönlendiriliyorsunuz...
+                                                        </div>
                                                     </div>
                                                 )}
 
@@ -1923,35 +1987,46 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     </div>
 
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                                        {[
-                                                            { name: 'Gurbetçiler', room: 'Gurbetçiler', users: 2, rooms: 1, color: '#fbbf24', emoji: '🌍' },
-                                                            { name: 'MüzikSeverler', room: 'DJ Lounge', users: 5, rooms: 3, color: '#a78bfa', emoji: '🎵' },
-                                                        ].map((p, i) => (
-                                                            <div key={i} className="feature-toast" style={{
+                                                        {sopranoChatCustomers.length === 0 ? (
+                                                            <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: 12, fontWeight: 500 }}>
+                                                                Henüz müşteri platformu bulunmuyor.
+                                                            </div>
+                                                        ) : sopranoChatCustomers.map((p, i) => {
+                                                            const colors = ['#fbbf24', '#a78bfa', '#38bdf8', '#34d399', '#f472b6', '#fb923c'];
+                                                            const emojis = ['🌍', '🎵', '💬', '🎮', '🌟', '🚀'];
+                                                            const color = colors[i % colors.length];
+                                                            const emoji = emojis[i % emojis.length];
+                                                            return (
+                                                            <div key={p.id} className="feature-toast" style={{
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                                                                 padding: '14px 16px', borderRadius: 14,
                                                                 background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
                                                             }}>
                                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                                                                    <div style={{
-                                                                        width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                        background: `linear-gradient(135deg, ${p.color}33, ${p.color}11)`,
-                                                                        border: `1px solid ${p.color}44`, fontSize: 22,
-                                                                    }}>{p.emoji}</div>
+                                                                    {p.logoUrl ? (
+                                                                        <img src={p.logoUrl} alt={p.name} style={{ width: 48, height: 48, borderRadius: 14, objectFit: 'cover', border: `1px solid ${color}44` }} />
+                                                                    ) : (
+                                                                        <div style={{
+                                                                            width: 48, height: 48, borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                            background: `linear-gradient(135deg, ${color}33, ${color}11)`,
+                                                                            border: `1px solid ${color}44`, fontSize: 22,
+                                                                        }}>{emoji}</div>
+                                                                    )}
                                                                     <div>
                                                                         <div style={{ fontSize: 15, fontWeight: 800, color: '#fff' }}>{p.name}</div>
-                                                                        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.room}</div>
+                                                                        {p.firstRoomName && <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>Oda: {p.firstRoomName}</div>}
                                                                         <div style={{ display: 'flex', gap: 12, marginTop: 6, fontSize: 11, color: '#64748b', fontWeight: 600 }}>
-                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.users}</span>
-                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.rooms} oda</span>
+                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users style={{ width: 12, height: 12 }} /> {p.onlineUsers}</span>
+                                                                            <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Monitor style={{ width: 12, height: 12 }} /> {p.roomCount} oda</span>
                                                                         </div>
                                                                     </div>
                                                                 </div>
-                                                                <button className="btn-3d btn-3d-blue" style={{
+                                                                <button className="btn-3d btn-3d-blue" onClick={() => window.open(`/t/${p.slug}`, '_blank')} style={{
                                                                     padding: '6px 18px', fontSize: 11, fontWeight: 800, borderRadius: 10,
                                                                 }}>Katıl</button>
                                                             </div>
-                                                        ))}
+                                                            );
+                                                        })}
                                                     </div>
                                                 </>
                                             )}
@@ -2017,7 +2092,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
                                             {/* İletişim Butonları — yatay */}
                                             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-                                                <a href="https://wa.me/905520363674" target="_blank" rel="noopener noreferrer" style={{
+                                                <a href={`https://wa.me/${(branding?.siteConfig?.contact?.whatsapp || '905520363674').replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" style={{
                                                     flex: 1, display: 'flex', alignItems: 'center', gap: 10,
                                                     padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
                                                     background: 'rgba(37,211,102,0.08)', border: '1px solid rgba(37,211,102,0.18)',
@@ -2028,10 +2103,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     </div>
                                                     <div>
                                                         <div style={{ fontSize: 11, fontWeight: 800, color: '#25d366' }}>WhatsApp</div>
-                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>+90 552 036 3674</div>
+                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>{branding?.siteConfig?.contact?.whatsapp || '+90 552 036 3674'}</div>
                                                     </div>
                                                 </a>
-                                                <a href="mailto:destek@sopranochat.com" style={{
+                                                <a href={`mailto:${branding?.siteConfig?.contact?.email || 'destek@sopranochat.com'}`} style={{
                                                     flex: 1, display: 'flex', alignItems: 'center', gap: 10,
                                                     padding: '12px 14px', borderRadius: 12, textDecoration: 'none',
                                                     background: 'rgba(56,189,248,0.08)', border: '1px solid rgba(56,189,248,0.18)',
@@ -2042,7 +2117,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     </div>
                                                     <div>
                                                         <div style={{ fontSize: 11, fontWeight: 800, color: '#38bdf8' }}>E-Posta</div>
-                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>destek@sopranochat.com</div>
+                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>{branding?.siteConfig?.contact?.email || 'destek@sopranochat.com'}</div>
                                                     </div>
                                                 </a>
                                                 <div style={{
@@ -2055,7 +2130,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     </div>
                                                     <div>
                                                         <div style={{ fontSize: 11, fontWeight: 800, color: '#fbbf24' }}>Web</div>
-                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>sopranochat.com</div>
+                                                        <div style={{ fontSize: 9, color: '#94a3b8' }}>{branding?.siteConfig?.contact?.address || 'sopranochat.com'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -2087,8 +2162,9 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
                                                     background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none', marginBottom: 12,
                                                 }} />
-                                            <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
-                                                Mesaj Gönder <Send style={{ width: 14, height: 14 }} />
+                                            {supSuccess && <div style={{ textAlign: 'center', padding: '10px', borderRadius: 10, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', fontSize: 12, fontWeight: 700, color: '#34d399', marginBottom: 8 }}>✅ Mesajınız başarıyla gönderildi!</div>}
+                                            <button onClick={handleContactSubmit} disabled={supSending || !supName.trim() || !supEmail.trim() || !supMessage.trim()} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '12px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: supSending ? 0.6 : 1 }}>
+                                                {supSending ? 'Gönderiliyor...' : 'Mesaj Gönder'} <Send style={{ width: 14, height: 14 }} />
                                             </button>
                                         </div>
                                     </div>
@@ -2152,11 +2228,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
                                             {/* Paket Kartları */}
                                             <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-                                                {[
-                                                    { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                    { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                    { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
-                                                ].map((plan, i) => (
+                                                {(() => {
+                                                    const p = branding?.siteConfig?.pricing || {};
+                                                    return [
+                                                        { name: p.p1Name || 'Ses + Metin', price: p.p1Monthly || '200', priceNum: parseInt(String(p.p1Monthly || '200').replace(/[^0-9]/g, '')) || 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                        { name: p.p2Name || 'Kamera + Ses', price: p.p2Monthly || '400', priceNum: parseInt(String(p.p2Monthly || '400').replace(/[^0-9]/g, '')) || 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                        { name: p.p3Name || 'White Label', price: p.p3Monthly || '2.990', priceNum: parseInt(String(p.p3Monthly || '2990').replace(/[^0-9]/g, '')) || 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                    ];
+                                                })().map((plan, i) => (
                                                     <div key={i} style={{
                                                         flex: 1, padding: '20px 16px', borderRadius: 14,
                                                         background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
@@ -2497,33 +2576,44 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
                                             {/* Referans Kartları */}
                                             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                                                {[
-                                                    { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#38bdf8', icon: '🌐' },
-                                                    { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#a78bfa', icon: '🌐' },
-                                                    { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#fbbf24', icon: '🌐' },
-                                                    { name: 'Yakında Eklenecek', domain: 'örnek-domain.com', desc: 'İlk referans müşterimiz burada görünecek', color: '#34d399', icon: '🌐' },
-                                                ].map((ref, i) => (
-                                                    <div key={i} style={{
+                                                {ownDomainCustomers.length === 0 ? (
+                                                    <div style={{ gridColumn: '1 / -1', padding: '32px 16px', textAlign: 'center', color: '#64748b', fontSize: 12, fontWeight: 500, background: 'rgba(0,0,0,0.1)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                        Henüz kendi domain'iyle hizmet alan referans müşterimiz bulunmuyor.
+                                                    </div>
+                                                ) : ownDomainCustomers.map((ref, i) => {
+                                                    const colors = ['#38bdf8', '#a78bfa', '#fbbf24', '#34d399', '#f472b6', '#fb923c'];
+                                                    const color = colors[i % colors.length];
+                                                    return (
+                                                    <div key={ref.id} style={{
                                                         padding: '18px 16px', borderRadius: 12,
                                                         background: 'rgba(0,0,0,0.15)', border: '1px solid rgba(255,255,255,0.06)',
                                                         display: 'flex', flexDirection: 'column', gap: 10, transition: 'all 0.3s',
-                                                    }}>
+                                                        cursor: ref.domain ? 'pointer' : 'default',
+                                                    }} onClick={() => ref.domain && window.open(`https://${ref.domain}`, '_blank')}>
                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                            <div style={{
-                                                                width: 36, height: 36, borderRadius: 10,
-                                                                background: `linear-gradient(135deg, ${ref.color}20, ${ref.color}08)`,
-                                                                border: `1px solid ${ref.color}25`,
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                fontSize: 18,
-                                                            }}>{ref.icon}</div>
+                                                            {ref.logoUrl ? (
+                                                                <img src={ref.logoUrl} alt={ref.name} style={{ width: 36, height: 36, borderRadius: 10, objectFit: 'cover', border: `1px solid ${color}25` }} />
+                                                            ) : (
+                                                                <div style={{
+                                                                    width: 36, height: 36, borderRadius: 10,
+                                                                    background: `linear-gradient(135deg, ${color}20, ${color}08)`,
+                                                                    border: `1px solid ${color}25`,
+                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                    fontSize: 18,
+                                                                }}>🌐</div>
+                                                            )}
                                                             <div>
                                                                 <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{ref.name}</div>
-                                                                <div style={{ fontSize: 10, color: ref.color, fontWeight: 600 }}>{ref.domain}</div>
+                                                                <div style={{ fontSize: 10, color: color, fontWeight: 600 }}>{ref.domain || ref.slug}</div>
                                                             </div>
                                                         </div>
-                                                        <div style={{ fontSize: 10, color: '#64748b', fontWeight: 500, lineHeight: 1.6 }}>{ref.desc}</div>
+                                                        <div style={{ display: 'flex', gap: 12, fontSize: 10, color: '#64748b', fontWeight: 600 }}>
+                                                            <span>{ref.roomCount} oda</span>
+                                                            <span>{ref.onlineUsers} aktif kullanıcı</span>
+                                                        </div>
                                                     </div>
-                                                ))}
+                                                    );
+                                                })}
                                             </div>
 
                                             {/* Alt bilgi */}
@@ -3642,8 +3732,9 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             style={{ width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', marginBottom: 6 }} />
                                         <textarea value={supMessage} onChange={e => setSupMessage(e.target.value)} placeholder="Mesajınızı buraya yazın..."
                                             rows={2} style={{ width: '100%', padding: '8px 10px', borderRadius: 8, fontSize: 11, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', resize: 'none', marginBottom: 10 }} />
-                                        <button className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '10px 0', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                                            Mesaj Gönder <Send style={{ width: 13, height: 13 }} />
+                                        {supSuccess && <div style={{ textAlign: 'center', padding: '6px', borderRadius: 8, background: 'rgba(52,211,153,0.1)', fontSize: 10, fontWeight: 700, color: '#34d399', marginBottom: 6 }}>✅ Gönderildi!</div>}
+                                        <button onClick={handleContactSubmit} disabled={supSending || !supName.trim() || !supEmail.trim() || !supMessage.trim()} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '10px 0', fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: supSending ? 0.6 : 1 }}>
+                                            {supSending ? 'Gönderiliyor...' : 'Mesaj Gönder'} <Send style={{ width: 13, height: 13 }} />
                                         </button>
                                     </div>
                                 </div>
@@ -4077,6 +4168,9 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 </div>
 
                                 {/* IBAN Card */}
+                                {(() => {
+                                    const bank = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks[0] : { bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' };
+                                    return (
                                 <div style={{
                                     background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
                                     borderRadius: 14, padding: '14px 16px',
@@ -4090,10 +4184,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             fontSize: 15, fontWeight: 900, color: '#fff',
                                             boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
-                                        }}>A</div>
+                                        }}>{bank.bank.charAt(0)}</div>
                                         <div>
-                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>AKBANK</div>
-                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>SopranoChat Bilişim</div>
+                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{bank.bank}</div>
+                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{bank.name}</div>
                                         </div>
                                     </div>
                                     <div style={{
@@ -4101,8 +4195,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                         padding: '12px 16px', borderRadius: 12,
                                         background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
                                     }}>
-                                        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>TR78 0004 6006 1388 8000 0123 45</span>
-                                        <button onClick={() => copyToClipboard('TR78000460061388800001234 5', 'iban')} style={{
+                                        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>{bank.iban}</span>
+                                        <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), 'iban')} style={{
                                             background: chkCopied === 'iban' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
                                             border: `1px solid ${chkCopied === 'iban' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
                                             borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
@@ -4114,6 +4208,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                         </button>
                                     </div>
                                 </div>
+                                    );
+                                })()}
 
                                 {/* Ödeme Kodu Card */}
                                 <div style={{
@@ -4143,13 +4239,71 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 </div>
 
                                 {/* Ödemeyi Tamamla Butonu */}
-                                <button className="btn-3d btn-3d-gold" style={{
-                                    width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                    letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                }}>
-                                    Ödemeyi Gönderdim, Tamamla <Check style={{ width: 18, height: 18 }} />
-                                </button>
+                                {chkSuccess ? (
+                                    <div style={{ textAlign: 'center', padding: '14px', borderRadius: 12, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', fontSize: 13, fontWeight: 800, color: '#34d399' }}>
+                                        ✅ Siparişiniz başarıyla gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
+                                    </div>
+                                ) : (
+                                    <button onClick={async () => {
+                                        if (!chkName.trim() || !chkEmail.trim()) return;
+                                        setChkSending(true);
+                                        try {
+                                            const nameParts = chkName.trim().split(' ');
+                                            const firstName = nameParts[0] || '';
+                                            const lastName = nameParts.slice(1).join(' ') || '';
+                                            const amount = chkBilling === 'yearly' ? checkoutPlan.price * 10 : checkoutPlan.price;
+                                            // Convert logo to base64 if provided
+                                            let logoBase64: string | null = null;
+                                            if (chkLogo) {
+                                                logoBase64 = await new Promise<string>((resolve) => {
+                                                    const reader = new FileReader();
+                                                    reader.onload = () => resolve(reader.result as string);
+                                                    reader.readAsDataURL(chkLogo);
+                                                });
+                                            }
+                                            const res = await fetch(`${API_URL}/admin/orders`, {
+                                                method: 'POST',
+                                                headers: { 'Content-Type': 'application/json' },
+                                                body: JSON.stringify({
+                                                    firstName, lastName,
+                                                    email: chkEmail.trim(),
+                                                    phone: chkPhone.trim(),
+                                                    packageName: checkoutPlan.name,
+                                                    paymentCode: chkPaymentCode,
+                                                    hostingType: chkHosting === 'own' ? 'own_domain' : 'sopranochat',
+                                                    customDomain: chkHosting === 'own' ? chkDomain : null,
+                                                    roomName: chkHosting === 'soprano' ? chkRoomName : null,
+                                                    amount,
+                                                    logo: logoBase64,
+                                                    details: { billing: chkBilling, period: checkoutPlan.period },
+                                                }),
+                                            });
+                                            if (res.ok) {
+                                                setChkSuccess(true);
+                                                setTimeout(() => {
+                                                    setCheckoutPlan(null);
+                                                    setChkSuccess(false);
+                                                    setChkName('');
+                                                    setChkEmail('');
+                                                    setChkPhone('');
+                                                    setChkLogo(null);
+                                                    setChkHosting('soprano');
+                                                    setChkDomain('');
+                                                    setChkRoomName('');
+                                                    setChkBilling('monthly');
+                                                }, 3000);
+                                            }
+                                        } catch { }
+                                        setChkSending(false);
+                                    }} disabled={chkSending || !chkName.trim() || !chkEmail.trim()} className="btn-3d btn-3d-gold" style={{
+                                        width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                                        letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
+                                        opacity: chkSending ? 0.6 : 1,
+                                    }}>
+                                        {chkSending ? 'Gönderiliyor...' : 'Ödemeyi Gönderdim, Tamamla'} <Check style={{ width: 18, height: 18 }} />
+                                    </button>
+                                )}
                             </div>
                         </div>
                     </div>

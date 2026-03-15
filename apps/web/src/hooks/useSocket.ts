@@ -111,7 +111,11 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         const sessionVisibility = typeof window !== 'undefined' ? sessionStorage.getItem('soprano_session_visibility') : null;
         const effectiveStatus = isVipPlus ? (sessionVisibility || undefined) : storedStatus;
 
-        return { roomId: targetRoomId, initialStatus: effectiveStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined };
+        // Detect tenant slug from URL for cross-tenant join (e.g. GodMaster in tenant room)
+        const urlTenantMatch = typeof window !== 'undefined' ? window.location.pathname.match(/^\/t\/([^/]+)\/room\//) : null;
+        const urlTenantSlug = urlTenantMatch ? urlTenantMatch[1] : undefined;
+
+        return { roomId: targetRoomId, initialStatus: effectiveStatus, disguiseName: storedDisguiseName || undefined, avatar: userAvatar, gender: userGender, godmasterIcon: storedGodmasterIcon || undefined, urlTenantSlug };
     }, []);
 
     // ─── Socket Connection (stable — NOT re-created on room change) ───
@@ -280,7 +284,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 if (prevKey === nextKey) return prev; // No change — skip re-render
                 return next;
             });
-            // NOT: Burada localStorage'a yazma yapılmaz — DemoChatRoom callback'leri zaten setAuthUser ile güncelliyor.
+            // NOT: Burada localStorage'a yazma yapılmaz — callback'ler zaten setAuthUser ile güncelliyor.
             // Eski kod burada room:participants'tan gelen veriyi localStorage'a yazıyordu ama backend henüz
             // profil değişikliğini işlemeden önceki broadcast eski veriyi içeriyordu → titreme sorunu.
         });

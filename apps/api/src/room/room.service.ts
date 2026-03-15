@@ -227,6 +227,29 @@ export class RoomService {
     }
 
     if (!tenant) {
+      // 3. fallback: oda slug'ı ile dene (login URL'si room slug kullanıyor olabilir)
+      const room = await this.prisma.room.findFirst({
+        where: { slug: code },
+        select: {
+          tenant: {
+            select: {
+              id: true,
+              name: true,
+              displayName: true,
+              slug: true,
+              domain: true,
+              status: true,
+              logoUrl: true,
+            },
+          },
+        },
+      });
+      if (room?.tenant) {
+        tenant = room.tenant;
+      }
+    }
+
+    if (!tenant) {
       throw new NotFoundException(`Geçersiz erişim kodu.`);
     }
 
@@ -241,6 +264,17 @@ export class RoomService {
       orderBy: { createdAt: 'asc' },
     });
 
+    // Branding ayarlarını çek (login sayfası chatroom metin logosuyla senkron olsun)
+    const sysSettings = await this.prisma.systemSettings.findUnique({
+      where: { tenantId: tenant.id },
+      select: {
+        logoName: true,
+        logoTextColor: true,
+        logoTextColor2: true,
+        logoTextSize: true,
+      },
+    });
+
     return {
       tenantId: tenant.id,
       tenantName: tenant.name,
@@ -250,6 +284,11 @@ export class RoomService {
       status: tenant.status,
       logoUrl: tenant.logoUrl,
       rooms,
+      // Branding ayarları (admin panelinden gelen)
+      logoName: sysSettings?.logoName || null,
+      logoTextColor: sysSettings?.logoTextColor || null,
+      logoTextColor2: sysSettings?.logoTextColor2 || null,
+      logoTextSize: sysSettings?.logoTextSize || null,
     };
   }
 
@@ -293,5 +332,61 @@ export class RoomService {
       logoUrl: tenant.logoUrl,
       rooms,
     };
+  }
+
+  // Public: anasayfa için aktif müşteri tenant listesini döndür
+  async getPublicTenants() {
+    const tenants = await this.prisma.tenant.findMany({
+      where: {
+        status: 'ACTIVE',
+        slug: { not: 'system' },
+      },
+      select: {
+        id: true,
+        name: true,
+        displayName: true,
+        slug: true,
+        domain: true,
+        hostingType: true,
+        logoUrl: true,
+        rooms: {
+          where: { status: { not: 'CLOSED' } },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            _count: { select: { participants: { where: { isActive: true } } } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const sopranoChatCustomers = tenants
+      .filter(t => !t.hostingType || t.hostingType === 'SopranoChat' || t.hostingType === 'sopranochat')
+      .map(t => ({
+        id: t.id,
+        name: t.displayName || t.name,
+        slug: t.slug,
+        logoUrl: t.logoUrl,
+        roomCount: t.rooms.length,
+        onlineUsers: t.rooms.reduce((sum, r) => sum + (r._count?.participants || 0), 0),
+        firstRoom: t.rooms[0]?.slug || null,
+        firstRoomName: t.rooms[0]?.name || null,
+      }));
+
+    const ownDomainCustomers = tenants
+      .filter(t => t.hostingType === 'own_domain')
+      .map(t => ({
+        id: t.id,
+        name: t.displayName || t.name,
+        slug: t.slug,
+        domain: t.domain,
+        logoUrl: t.logoUrl,
+        roomCount: t.rooms.length,
+        onlineUsers: t.rooms.reduce((sum, r) => sum + (r._count?.participants || 0), 0),
+      }));
+
+    return { sopranoChatCustomers, ownDomainCustomers };
   }
 }

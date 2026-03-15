@@ -2294,14 +2294,14 @@ export class AdminService implements OnModuleInit {
   async getSettings(tenantId: string) {
     let settings = await this.prisma.systemSettings.findUnique({
       where: { tenantId },
-      include: { tenant: { select: { packageType: true } } },
+      include: { tenant: { select: { packageType: true, displayName: true, logoUrl: true, name: true, slug: true } } },
     });
 
     if (!settings) {
       // Create default settings
       settings = await this.prisma.systemSettings.create({
         data: { tenantId },
-        include: { tenant: { select: { packageType: true } } },
+        include: { tenant: { select: { packageType: true, displayName: true, logoUrl: true, name: true, slug: true } } },
       });
     }
 
@@ -2755,7 +2755,7 @@ export class AdminService implements OnModuleInit {
 
         // Ödeme periyodunu parse et
         const billingPeriod: 'MONTHLY' | 'YEARLY' =
-          details.billingPeriod === 'YEARLY' || details.billingPeriod === 'Yıllık' ? 'YEARLY' : 'MONTHLY';
+          details.billing === 'yearly' || details.billingPeriod === 'YEARLY' || details.billingPeriod === 'Yıllık' ? 'YEARLY' : 'MONTHLY';
 
         const provisionResult = await this.provisionCustomer(adminId || 'system', {
           name: existingOrder.customDomain || `${existingOrder.firstName} ${existingOrder.lastName}`,

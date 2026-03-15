@@ -1139,17 +1139,49 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @SubscribeMessage('room:join')
   async handleRoomJoin(
     @ConnectedSocket() client: Socket,
-    @MessageBody() payload: { roomId: string; initialStatus?: string; password?: string; disguiseName?: string; avatar?: string; gender?: string; godmasterIcon?: string },
+    @MessageBody() payload: { roomId: string; initialStatus?: string; password?: string; disguiseName?: string; avatar?: string; gender?: string; godmasterIcon?: string; urlTenantSlug?: string },
   ) {
     const { roomId } = payload;
     const user = client.data.user;
 
+    // ─── RESOLVE EFFECTIVE TENANT (URL tenant slug overrides JWT tenant for cross-tenant access) ──
+    let effectiveTenantId = user?.tenantId || 'default';
+    if (payload.urlTenantSlug && user) {
+      try {
+        // URL'deki tenant slug'ından gerçek tenant'ı bul
+        const urlTenant = await this.prisma.tenant.findFirst({
+          where: {
+            OR: [
+              { slug: payload.urlTenantSlug },
+              { accessCode: payload.urlTenantSlug },
+            ],
+          },
+          select: { id: true },
+        });
+        if (!urlTenant) {
+          // Oda slug'ı ile de dene
+          const roomBySlug = await this.prisma.room.findFirst({
+            where: { slug: payload.urlTenantSlug },
+            select: { tenantId: true },
+          });
+          if (roomBySlug) {
+            effectiveTenantId = roomBySlug.tenantId;
+            this.logger.log(`[room:join] Resolved tenant from room slug "${payload.urlTenantSlug}" → tenantId=${effectiveTenantId}`);
+          }
+        } else {
+          effectiveTenantId = urlTenant.id;
+          this.logger.log(`[room:join] Resolved tenant from URL slug "${payload.urlTenantSlug}" → tenantId=${effectiveTenantId}`);
+        }
+      } catch (e) {
+        this.logger.warn(`[room:join] Failed to resolve urlTenantSlug "${payload.urlTenantSlug}": ${e.message}`);
+      }
+    }
+
     // ─── LOAD TENANT SETTINGS (used for multiple checks below) ──
     let sysSettings: any = null;
     if (user) {
-      const tenantId = user.tenantId || 'default';
-      this.logger.log(`[room:join] user.tenantId=${user.tenantId}, resolved tenantId=${tenantId}`);
-      sysSettings = await this.loadTenantSettings(tenantId);
+      this.logger.log(`[room:join] user.tenantId=${user.tenantId}, effectiveTenantId=${effectiveTenantId}`);
+      sysSettings = await this.loadTenantSettings(effectiveTenantId);
       this.logger.log(`[room:join] sysSettings loaded: ${sysSettings ? 'YES' : 'NULL'}, rolePermissions: ${JSON.stringify(sysSettings?.rolePermissions || 'N/A')}`);
     }
 
@@ -1234,7 +1266,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // GodMaster bypasses all room restrictions
     if (userRole !== 'godmaster') {
       try {
-        const room = await this.roomService.findBySlug(user.tenantId, roomId);
+        const room = await this.roomService.findBySlug(effectiveTenantId, roomId);
         if (room) {
           // 0) MEETING ROOM — davet ile açık, kısıtlama kaldırıldı
           // (Hiyerarşi kontrolü meeting:invite handler'ında yapılıyor)
@@ -1251,7 +1283,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
               // Send room list so user can navigate to other rooms
               let roomList: any[] = [];
               try {
-                const dbRooms = await this.roomService.findAll(user.tenantId);
+                const dbRooms = await this.roomService.findAll(effectiveTenantId);
                 roomList = dbRooms.map((r: any) => ({
                   id: r.id, name: r.name, slug: r.slug, status: r.status,
                   isLocked: r.isLocked, isVipRoom: r.isVipRoom, isMeetingRoom: r.isMeetingRoom,
@@ -1277,7 +1309,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           // 3b) TENANT USER LIMIT PER ROOM CHECK
           try {
             const tenant = await this.prisma.tenant.findUnique({
-              where: { id: user.tenantId },
+              where: { id: effectiveTenantId },
               select: { userLimitPerRoom: true },
             });
             if (tenant?.userLimitPerRoom && tenant.userLimitPerRoom > 0) {
@@ -1301,7 +1333,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             // Fallback: ilk VIP olmayan odayı bul
             let fallbackSlug: string | null = null;
             try {
-              const dbRooms = await this.roomService.findAll(user.tenantId);
+              const dbRooms = await this.roomService.findAll(effectiveTenantId);
               const fallbackRoom = dbRooms.find((r: any) => !r.isVipRoom && !r.isMeetingRoom && r.slug !== roomId);
               if (fallbackRoom) fallbackSlug = fallbackRoom.slug;
             } catch (_e) {
@@ -1322,7 +1354,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Join the Socket.IO room (tenant-scoped to isolate tenants)
-    const tenantId = user.tenantId || 'default';
+    const tenantId = effectiveTenantId;
     const scopedRoom = scopeRoomId(tenantId, roomId);
 
     // ★ DEBUG: Mevcut tüm katılımcıların roomId'lerini logla — tenantId uyumsuzluğunu tespit
@@ -1411,7 +1443,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       socketId: client.id,
       roomId: scopedRoom,
       roomSlug: roomId,
-      tenantId: user.tenantId,
+      tenantId: effectiveTenantId,
       isStealth: initialStealth,
       status: initialStealth ? 'stealth' : 'online',
       nameColor: user.nameColor || undefined,
@@ -1739,6 +1771,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return {
           ...rest,
           packageType: tenant?.packageType || 'CAMERA',
+          tenantDisplayName: tenant?.displayName || tenant?.name || null,
+          tenantLogoUrl: tenant?.logoUrl || null,
+          tenantSlug: tenant?.slug || null,
         };
       })() : null,
       userPermissions: user.permissions || null,
@@ -4785,7 +4820,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const tenantId = user.tenantId || 'default';
 
     try {
-      const settings = await this.loadTenantSettings(tenantId);
+      // ★ Cache'i invalidate et — admin yeni ayar kaydetti, eski cache'i kullanma
+      const resolvedTenantId = tenantId === 'default'
+        ? (await this.adminService.findDefaultTenant())?.id || tenantId
+        : tenantId;
+      this.tenantSettings.delete(resolvedTenantId);
+      this.tenantSettingsExpiry.delete(resolvedTenantId);
+
+      const settings = await this.loadTenantSettings(resolvedTenantId);
       if (!settings) return;
 
       // Spread all settings, excluding internal DB fields

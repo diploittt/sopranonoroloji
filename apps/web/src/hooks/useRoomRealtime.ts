@@ -28,7 +28,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         ? (() => {
             const isTenantPage = window.location.pathname.startsWith('/t/');
             if (isTenantPage) {
-                return localStorage.getItem('soprano_tenant_token') || localStorage.getItem(AUTH_TOKEN_KEY) || undefined;
+                // On tenant pages, ONLY use the tenant-specific token — never fall back to system token
+                return localStorage.getItem('soprano_tenant_token') || undefined;
             }
             return localStorage.getItem(AUTH_TOKEN_KEY) || undefined;
         })()

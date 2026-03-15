@@ -45,6 +45,12 @@ export class RoomController {
     return this.roomService.getPublicUsers();
   }
 
+  // Public endpoint — anasayfa Müşteri Platformları + Referanslar için aktif tenant listesi
+  @Get('public/tenants')
+  async getPublicTenants() {
+    return this.roomService.getPublicTenants();
+  }
+
   // Kullanıcı beğen
   @UseGuards(AuthGuard('jwt'))
   @Post('public/like')

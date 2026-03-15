@@ -60,8 +60,7 @@ import {
     XCircle,
     Copy,
     Loader2,
-    Check,
-    Link2
+    Check
 } from 'lucide-react';
 import { useAdminStore } from '@/lib/admin/store';
 import { Tenant } from '@/lib/admin/types';
@@ -164,14 +163,7 @@ export default function OwnerPanel() {
             if (!res.ok) throw new Error('Güncelleme başarısız');
             const result = await res.json();
             if (result.provision) {
-                const tenantSlug = result.provision.tenant?.slug;
-                const accessLink = `${window.location.origin}/t/${tenantSlug}`;
-                const embedCode = `<iframe src="${window.location.origin}/embed/${tenantSlug}" width="100%" height="1000" frameborder="0" allow="camera; microphone; fullscreen; display-capture" style="border:none;border-radius:12px;max-width:1300px;"></iframe>`;
-                const loginInfo = `Email: ${result.provision.ownerEmail}\nŞifre: ${result.provision.ownerPassword}`;
-                addToast(`✅ Sipariş ONAYLANDI — Müşteri otomatik oluşturuldu!\n\n🔗 Erişim Linki: ${accessLink}\n👤 ${loginInfo}`, 'success');
-                // Copy all info to clipboard automatically
-                const allInfo = `--- MÜŞTERİ BİLGİLERİ ---\nErişim Linki: ${accessLink}\nEmbed Kodu: ${embedCode}\n${loginInfo}\nAccess Code: ${result.provision.tenant?.accessCode || '—'}`;
-                navigator.clipboard.writeText(allInfo).catch(() => {});
+                addToast(`✅ Sipariş ONAYLANDI — Müşteri otomatik oluşturuldu!\nTenant: ${result.provision.tenant.slug}\nGiriş: ${result.provision.ownerEmail} / ${result.provision.ownerPassword}`, 'success');
             } else if (result.provisionError) {
                 addToast(`⚠️ Sipariş onaylandı fakat provision hatası: ${result.provisionError}`, 'error');
             } else {
@@ -844,7 +836,7 @@ export default function OwnerPanel() {
     };
 
     return (
-        <div className="flex w-full max-w-[1920px] h-screen mx-auto overflow-y-auto text-[#e2e8f0] font-sans border-x border-white/10 shadow-2xl" style={{ background: 'linear-gradient(180deg, #9ba8d4 0%, #b3b8da 50%, #c5c8e0 100%)' }}>
+        <div className="flex w-full max-w-[1920px] h-screen mx-auto bg-[#050505] overflow-y-auto text-[#e2e8f0] font-sans border-x border-white/5 shadow-2xl">
             {/* Background Effects */}
             <div className="fixed inset-0 z-0 pointer-events-none">
                 <div className="absolute top-0 -left-4 w-96 h-96 bg-rose-600/10 rounded-full mix-blend-screen filter blur-[100px] animate-blob"></div>
@@ -853,7 +845,7 @@ export default function OwnerPanel() {
             </div>
 
             {/* Sidebar */}
-            <aside className="w-20 lg:w-64 bg-[#7b8cb8]/40 backdrop-blur-md border-r border-white/10 flex flex-col z-20 transition-all duration-300">
+            <aside className="w-20 lg:w-64 bg-[#0f1016] border-r border-white/5 flex flex-col z-20 transition-all duration-300">
                 <div className="h-20 flex items-center justify-center lg:justify-start lg:px-6 border-b border-white/5">
                     <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg shadow-rose-500/20">
@@ -939,7 +931,7 @@ export default function OwnerPanel() {
             {/* Main Content */}
             <main className="flex-1 flex flex-col relative z-10 overflow-hidden">
                 {/* Header */}
-                <header className="h-20 border-b border-white/10 flex items-center justify-between px-8 bg-[#8b9ac8]/60 backdrop-blur-md sticky top-0 z-30">
+                <header className="h-20 border-b border-white/5 flex items-center justify-between px-8 bg-[#050505]/80 backdrop-blur-md sticky top-0 z-30">
                     <div className="flex-1 max-w-xl">
                         <div className="relative group">
                             <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-600 to-amber-800 rounded-lg blur opacity-20 group-hover:opacity-40 transition duration-500"></div>
@@ -1447,7 +1439,7 @@ export default function OwnerPanel() {
                                     </div>
                                     <div>
                                         <h1 className="text-2xl font-extrabold text-white" style={{ letterSpacing: '-0.02em' }}>Sipariş Yönetimi</h1>
-                                        <p className="text-sm text-gray-500 mt-0.5">Ana sayfadan gelen paket satın alma talepleri</p>
+                                        <p className="text-sm text-gray-500 mt-0.5">Gelen paket satın alma talepleri</p>
                                     </div>
                                     {inlineOrders.filter(o => o.status === 'PENDING').length > 0 && (
                                         <span className="px-3 py-1 bg-yellow-500/10 text-yellow-400 text-xs font-bold rounded-full border border-yellow-500/20 ml-2">
@@ -1460,220 +1452,98 @@ export default function OwnerPanel() {
                                 </button>
                             </div>
 
-                            {/* Orders Grid */}
-                            {ordersLoading ? (
-                                <div className="flex items-center justify-center py-16">
-                                    <div className="w-7 h-7 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
-                                </div>
-                            ) : ordersError ? (
-                                <div className="text-center text-red-400 py-10">{ordersError}</div>
-                            ) : inlineOrders.length === 0 ? (
-                                <div className="text-center py-16">
-                                    <ShoppingBag className="w-12 h-12 text-gray-700 mx-auto mb-3" />
-                                    <p className="text-sm text-gray-500">Henüz sipariş bulunmuyor.</p>
-                                </div>
-                            ) : (
-                                <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-                                    {inlineOrders.map((order: any) => {
-                                        const isPending = order.status === 'PENDING';
-                                        const isApproved = order.status === 'APPROVED';
-                                        const isRejected = order.status === 'REJECTED';
-                                        const isSoprano = order.hostingType !== 'own_domain';
-                                        const isYearly = (order.details as any)?.billing === 'yearly' || order.billing === 'yearly';
-                                        const displayPrice = order.amount ? Number(order.amount).toLocaleString('tr-TR') : '?';
-
-                                        return (
-                                            <div key={order.id} style={{
-                                                background: 'linear-gradient(145deg, rgba(13,15,25,0.95), rgba(8,10,18,0.98))',
-                                                border: `1px solid ${isPending ? 'rgba(251,191,36,0.15)' : isApproved ? 'rgba(52,211,153,0.12)' : isRejected ? 'rgba(239,68,68,0.12)' : 'rgba(255,255,255,0.05)'}`,
-                                                borderRadius: 18, overflow: 'hidden',
-                                                boxShadow: isPending ? '0 4px 30px rgba(251,191,36,0.05)' : 'none',
-                                            }}>
-                                                {/* ─── SİPARİŞ ÖZETİ ─── */}
-                                                <div style={{
-                                                    padding: '16px 20px',
-                                                    background: isPending ? 'linear-gradient(135deg, rgba(251,191,36,0.05), transparent)' : isApproved ? 'linear-gradient(135deg, rgba(52,211,153,0.05), transparent)' : 'linear-gradient(135deg, rgba(239,68,68,0.03), transparent)',
-                                                    borderBottom: '1px solid rgba(255,255,255,0.04)',
-                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                }}>
-                                                    <div>
-                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }}>⭐ SİPARİŞ ÖZETİ</div>
-                                                        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-                                                            <span style={{ fontSize: 26, fontWeight: 900, color: '#fff' }}>{displayPrice} ₺</span>
-                                                            <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{isYearly ? '/yıl' : '/ay'}</span>
-                                                            <span style={{ fontSize: 10, color: '#94a3b8' }}>• {order.packageName || 'Paket'}</span>
-                                                        </div>
+                            {/* Orders List */}
+                            <div className="glass-panel rounded-2xl overflow-hidden bg-[#121218]/60 backdrop-blur-md border border-white/5">
+                                {ordersLoading ? (
+                                    <div className="flex items-center justify-center py-16">
+                                        <div className="w-7 h-7 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin"></div>
+                                    </div>
+                                ) : ordersError ? (
+                                    <div className="text-center text-red-400 py-10">{ordersError}</div>
+                                ) : inlineOrders.length === 0 ? (
+                                    <div className="text-center py-16">
+                                        <ShoppingBag className="w-12 h-12 text-gray-700 mx-auto mb-3" />
+                                        <p className="text-sm text-gray-500">Henüz sipariş bulunmuyor.</p>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-white/5">
+                                        {inlineOrders.map((order: any) => (
+                                            <div key={order.id} className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 px-6 py-5 hover:bg-white/[0.03] transition">
+                                                {/* Customer Info */}
+                                                <div className="flex items-center gap-4 min-w-[200px]">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center font-bold text-white uppercase text-sm border border-white/10">
+                                                        {(order.firstName || '?').charAt(0)}{(order.lastName || '?').charAt(0)}
                                                     </div>
-                                                    {/* Status Badge */}
+                                                    <div>
+                                                        <div className="font-bold text-white text-sm">{order.firstName} {order.lastName}</div>
+                                                        <div className="text-xs text-gray-500">{order.email}</div>
+                                                        <div className="text-xs text-gray-500">{order.phone}</div>
+                                                        {order.roomName && <div className="inline-flex items-center gap-1 text-[10px] font-bold text-teal-400 bg-teal-500/10 px-2 py-0.5 rounded border border-teal-500/20 mt-1">🏠 {order.roomName}</div>}
+                                                    </div>
+                                                </div>
+                                                {/* Package Info */}
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        <span className="text-sm font-bold text-emerald-400">{order.packageName}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        {order.hostingType === 'own_domain' ? (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#7b9fef] bg-amber-700/10 px-2 py-0.5 rounded border border-amber-700/20">
+                                                                <Globe className="w-3 h-3" /> {order.customDomain || 'Kendi Domain'}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-[#7b9fef] bg-amber-600/10 px-2 py-0.5 rounded border border-amber-600/20">
+                                                                <Server className="w-3 h-3" /> SopranoChat
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-mono text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 cursor-pointer hover:bg-amber-500/20 transition-colors" onClick={() => copyText(order.paymentCode)} title="Kopyala">
+                                                            {order.paymentCode}
+                                                        </span>
+                                                    </div>
+                                                    {order.details && typeof order.details === 'object' && (
+                                                        <div className="text-[10px] text-gray-500 font-mono mt-1">
+                                                            {(order.details as any).rooms && `${(order.details as any).rooms}`}
+                                                            {(order.details as any).capacity && ` · ${(order.details as any).capacity}`}
+                                                            {(order.details as any).camera && ` · ${(order.details as any).camera}`}
+                                                            {(order.details as any).meeting && ` · Toplantı: ${(order.details as any).meeting}`}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                {/* Status Badge */}
+                                                <div className="flex items-center justify-center min-w-[120px]">
                                                     <span className={`px-3 py-1 rounded-full text-xs font-bold border flex items-center gap-1.5
-                                                        ${isApproved ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                            isRejected ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                                        ${order.status === 'APPROVED' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                                            order.status === 'REJECTED' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
                                                                 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20'}`}>
-                                                        {isApproved && <CheckCircle className="w-3 h-3" />}
-                                                        {isRejected && <XCircle className="w-3 h-3" />}
-                                                        {isPending && <Clock className="w-3 h-3" />}
-                                                        {isApproved ? 'ONAYLANDI' : isRejected ? 'REDDEDİLDİ' : 'BEKLEMEDE'}
+                                                        {order.status === 'APPROVED' && <CheckCircle className="w-3 h-3" />}
+                                                        {order.status === 'REJECTED' && <XCircle className="w-3 h-3" />}
+                                                        {order.status === 'PENDING' && <Clock className="w-3 h-3" />}
+                                                        {order.status === 'APPROVED' ? 'ONAYLANDI' : order.status === 'REJECTED' ? 'REDDEDİLDİ' : 'BEKLEMEDE'}
                                                     </span>
                                                 </div>
-
-                                                {/* ─── ÖDEME PERİYODU ─── */}
-                                                <div style={{ padding: '10px 20px', display: 'flex', gap: 8 }}>
-                                                    <div style={{
-                                                        flex: 1, padding: '7px 0', borderRadius: 8, textAlign: 'center', fontSize: 11, fontWeight: 700,
-                                                        background: !isYearly ? 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(56,189,248,0.08))' : 'rgba(255,255,255,0.02)',
-                                                        color: !isYearly ? '#38bdf8' : '#475569',
-                                                        border: !isYearly ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(255,255,255,0.04)',
-                                                    }}>💳 Aylık Ödeme</div>
-                                                    <div style={{
-                                                        flex: 1, padding: '7px 0', borderRadius: 8, textAlign: 'center', fontSize: 11, fontWeight: 700,
-                                                        background: isYearly ? 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.08))' : 'rgba(255,255,255,0.02)',
-                                                        color: isYearly ? '#34d399' : '#475569',
-                                                        border: isYearly ? '1px solid rgba(52,211,153,0.2)' : '1px solid rgba(255,255,255,0.04)',
-                                                    }}>🎁 Yıllık {isYearly && <span style={{ fontSize: 9, background: 'rgba(52,211,153,0.15)', padding: '1px 6px', borderRadius: 6, marginLeft: 4 }}>2 AY HEDİYE</span>}</div>
-                                                </div>
-
-                                                {/* ─── KİŞİSEL BİLGİLER ─── */}
-                                                <div style={{ padding: '6px 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#7b9fef', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>👤 KİŞİSEL BİLGİLER</div>
-                                                    {[
-                                                        { icon: '👤', value: `${order.firstName || ''} ${order.lastName || ''}`.trim() || '-' },
-                                                        { icon: '📧', value: order.email || '-' },
-                                                        { icon: '📱', value: order.phone || '-' },
-                                                    ].map((row, ri) => (
-                                                        <div key={ri} style={{
-                                                            padding: '8px 14px', marginBottom: 4, borderRadius: 10,
-                                                            background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)',
-                                                            fontSize: 12, color: '#e2e8f0', fontWeight: 600,
-                                                            display: 'flex', alignItems: 'center', gap: 10,
-                                                        }}>
-                                                            <span style={{ fontSize: 13 }}>{row.icon}</span>
-                                                            <span>{row.value}</span>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                {/* ─── LOGO ─── */}
-                                                {(order.logoUrl || order.logoFileName) && (
-                                                    <div style={{ padding: '0 20px 10px' }}>
-                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>🎨 MÜŞTERİ LOGOSU</div>
-                                                        <div style={{ padding: '8px 14px', borderRadius: 10, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.15)', fontSize: 11, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                            <CheckCircle className="w-3.5 h-3.5" /> {order.logoFileName || order.logoUrl || 'Logo yüklendi'}
-                                                        </div>
-                                                    </div>
-                                                )}
-
-                                                {/* ─── HOSTİNG TERCİHİ ─── */}
-                                                <div style={{ padding: '0 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>🌐 HOSTİNG TERCİHİ</div>
-                                                    <div style={{ display: 'flex', gap: 8 }}>
-                                                        <div style={{
-                                                            flex: 1, padding: '10px 14px', borderRadius: 12, textAlign: 'center',
-                                                            background: isSoprano ? 'linear-gradient(135deg, rgba(56,189,248,0.08), rgba(56,189,248,0.03))' : 'rgba(0,0,0,0.15)',
-                                                            border: `1.5px solid ${isSoprano ? 'rgba(56,189,248,0.3)' : 'rgba(255,255,255,0.05)'}`,
-                                                        }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                                                                {isSoprano && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }} />}
-                                                                <span style={{ fontSize: 12, fontWeight: 800, color: isSoprano ? '#38bdf8' : '#475569' }}>🎙️ SopranoChat</span>
-                                                            </div>
-                                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>sopranochat.com üzerinden</div>
-                                                        </div>
-                                                        <div style={{
-                                                            flex: 1, padding: '10px 14px', borderRadius: 12, textAlign: 'center',
-                                                            background: !isSoprano ? 'linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.03))' : 'rgba(0,0,0,0.15)',
-                                                            border: `1.5px solid ${!isSoprano ? 'rgba(251,191,36,0.3)' : 'rgba(255,255,255,0.05)'}`,
-                                                        }}>
-                                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                                                                {!isSoprano && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#fbbf24', boxShadow: '0 0 6px #fbbf24' }} />}
-                                                                <span style={{ fontSize: 12, fontWeight: 800, color: !isSoprano ? '#fbbf24' : '#475569' }}>🌐 Kendi Domainin</span>
-                                                            </div>
-                                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>Embed ile kendi siten</div>
-                                                        </div>
-                                                    </div>
-                                                    {/* Oda adı veya Domain bilgisi */}
-                                                    {isSoprano && order.roomName && (
-                                                        <div style={{ marginTop: 8, padding: '8px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)', fontSize: 12, color: '#38bdf8', fontWeight: 700 }}>
-                                                            {order.roomName}
-                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
-                                                        </div>
+                                                {/* Actions */}
+                                                <div className="flex items-center gap-2 lg:border-l lg:border-white/5 lg:pl-4">
+                                                    {order.status === 'PENDING' && (
+                                                        <>
+                                                            <button onClick={() => orderStatusClick(order.id, 'APPROVED')} className="p-2 bg-green-500/10 hover:bg-green-500 hover:text-white text-green-400 rounded-lg transition-colors border border-green-500/20" title="Onayla">
+                                                                <CheckCircle className="w-4 h-4" />
+                                                            </button>
+                                                            <button onClick={() => orderStatusClick(order.id, 'REJECTED')} className="p-2 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-colors border border-red-500/20" title="Reddet">
+                                                                <XCircle className="w-4 h-4" />
+                                                            </button>
+                                                        </>
                                                     )}
-                                                    {!isSoprano && order.customDomain && (
-                                                        <div style={{ marginTop: 8, padding: '8px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)', fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
-                                                            {order.customDomain}
-                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>🌐 Bu domain'e embed kodu sağlanacak</div>
-                                                        </div>
-                                                    )}
+                                                    <button onClick={() => orderDelete(order.id)} className="p-2 bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-lg transition-colors border border-white/5" title="Sil">
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
                                                 </div>
-
-                                                {/* ─── ÖDEME KODU ─── */}
-                                                <div style={{ padding: '0 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>💳 ÖDEME KODU (AÇIKLAMAYA YAZILACAK)</div>
-                                                    <div style={{
-                                                        padding: '10px 16px', borderRadius: 12,
-                                                        background: 'linear-gradient(135deg, rgba(56,189,248,0.05), rgba(56,189,248,0.02))',
-                                                        border: '1.5px solid rgba(56,189,248,0.2)',
-                                                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                    }}>
-                                                        <span style={{ fontFamily: 'monospace', fontSize: 16, fontWeight: 900, color: '#38bdf8', letterSpacing: 3 }}>{order.paymentCode || '-'}</span>
-                                                        <button onClick={() => copyText(order.paymentCode)} style={{
-                                                            fontSize: 10, fontWeight: 700, color: '#38bdf8',
-                                                            background: 'rgba(56,189,248,0.1)', border: '1px solid rgba(56,189,248,0.2)',
-                                                            borderRadius: 8, padding: '4px 12px', cursor: 'pointer',
-                                                        }}>📋 Kopyala</button>
-                                                    </div>
-                                                </div>
-
-                                                {/* ─── TARİH ─── */}
-                                                <div style={{ padding: '0 20px 8px', fontSize: 9, color: '#475569', display: 'flex', justifyContent: 'space-between' }}>
-                                                    <span>📅 {order.createdAt ? new Date(order.createdAt).toLocaleString('tr-TR') : '-'}</span>
-                                                    {order.details && typeof order.details === 'object' && (
-                                                        <span style={{ color: '#64748b' }}>
-                                                            {(order.details as any).rooms && `🏠 ${(order.details as any).rooms}`}
-                                                            {(order.details as any).capacity && ` · 👥 ${(order.details as any).capacity}`}
-                                                            {(order.details as any).camera && ` · 📷 ${(order.details as any).camera}`}
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {/* ─── AKSİYONLAR ─── */}
-                                                {isPending && (
-                                                    <div style={{ padding: '10px 20px 14px', borderTop: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 8 }}>
-                                                        <button onClick={() => orderStatusClick(order.id, 'APPROVED')} style={{
-                                                            flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
-                                                            background: 'linear-gradient(135deg, #059669, #34d399)', color: '#fff',
-                                                            fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                                            boxShadow: '0 4px 15px rgba(52,211,153,0.2)', transition: 'all 0.2s',
-                                                        }}>
-                                                            <CheckCircle className="w-4 h-4" /> Onayla
-                                                        </button>
-                                                        <button onClick={() => orderStatusClick(order.id, 'REJECTED')} style={{
-                                                            flex: 1, padding: '9px 0', borderRadius: 10, border: 'none', cursor: 'pointer',
-                                                            background: 'linear-gradient(135deg, #dc2626, #ef4444)', color: '#fff',
-                                                            fontSize: 12, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                                                            transition: 'all 0.2s',
-                                                        }}>
-                                                            <XCircle className="w-4 h-4" /> Reddet
-                                                        </button>
-                                                        <button onClick={() => orderDelete(order.id)} style={{
-                                                            padding: '9px 14px', borderRadius: 10,
-                                                            border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.03)',
-                                                            color: '#ef4444', cursor: 'pointer', transition: 'all 0.2s',
-                                                        }}>
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {!isPending && (
-                                                    <div style={{ padding: '8px 20px 12px', display: 'flex', justifyContent: 'flex-end' }}>
-                                                        <button onClick={() => orderDelete(order.id)} className="p-2 bg-white/5 hover:bg-red-500/20 text-gray-500 hover:text-red-400 rounded-lg transition-colors border border-white/5" title="Sil">
-                                                            <Trash2 className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                )}
                                             </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     ) : activeView === 'logs' ? (
                         /* ══════════ SİSTEM LOGLARI VIEW ═══════════ */
@@ -1901,19 +1771,6 @@ export default function OwnerPanel() {
                                                         >
                                                             <Pencil className="w-3.5 h-3.5" />
                                                         </button>
-                                                        {/* Erişim Linki */}
-                                                        <button
-                                                            onClick={() => {
-                                                                const link = `${window.location.origin}/t/system`;
-                                                                navigator.clipboard.writeText(link).then(() => {
-                                                                    addToast(`Erişim linki kopyalandı! ✅\n${link}`, 'success');
-                                                                }).catch(() => addToast('Kopyalama başarısız', 'error'));
-                                                            }}
-                                                            className="p-1.5 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white rounded-lg transition-colors border border-blue-500/20"
-                                                            title="Erişim Linki Kopyala"
-                                                        >
-                                                            <Link2 className="w-3.5 h-3.5" />
-                                                        </button>
                                                         {/* Embed Kodu */}
                                                         <button
                                                             onClick={() => {
@@ -2047,20 +1904,6 @@ export default function OwnerPanel() {
                                                                     >
                                                                         <Pencil className="w-3.5 h-3.5" />
                                                                     </button>
-                                                                    {/* Erişim Linki */}
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            const link = `${window.location.origin}/t/${t.slug}`;
-                                                                            navigator.clipboard.writeText(link).then(() => {
-                                                                                addToast(`Erişim linki kopyalandı! ✅\n${link}`, 'success');
-                                                                            }).catch(() => addToast('Kopyalama başarısız', 'error'));
-                                                                        }}
-                                                                        className="p-1.5 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white rounded-lg transition-colors border border-blue-500/20"
-                                                                        title="Erişim Linki Kopyala"
-                                                                    >
-                                                                        <Link2 className="w-3.5 h-3.5" />
-                                                                    </button>
-                                                                    {/* Embed Kodu */}
                                                                     <button
                                                                         onClick={() => {
                                                                             const embedCode = `<iframe src="${window.location.origin}/embed/${t.slug}" width="100%" height="1000" frameborder="0" allow="camera; microphone; fullscreen; display-capture" style="border:none;border-radius:12px;max-width:1300px;"></iframe>`;

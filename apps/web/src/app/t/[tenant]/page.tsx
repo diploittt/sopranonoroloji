@@ -18,6 +18,12 @@ interface TenantInfo {
     status: string;
     logoUrl?: string;
     rooms?: { id: string; name: string; slug: string }[];
+    // Admin branding ayarları
+    logoName?: string;
+    logoTextColor?: string;
+    logoTextColor2?: string;
+    logoTextSize?: string;
+    logoTextFont?: string;
 }
 
 export default function TenantEntryPage({ params }: { params: Promise<{ tenant: string }> }) {
@@ -28,6 +34,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
     const [tenantInfo, setTenantInfo] = useState<TenantInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [loginMode, setLoginMode] = useState<'member' | 'guest' | 'register'>('member');
+    const [logoReady, setLogoReady] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -72,6 +79,12 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                         status: data.status || 'ACTIVE',
                         logoUrl: data.logoUrl || null,
                         rooms: data.rooms || [],
+                        // Branding ayarları
+                        logoName: data.logoName || null,
+                        logoTextColor: data.logoTextColor || null,
+                        logoTextColor2: data.logoTextColor2 || null,
+                        logoTextSize: data.logoTextSize || null,
+                        logoTextFont: data.logoTextFont || null,
                     };
                     setTenantInfo(info);
 
@@ -583,11 +596,68 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                         <div style={{ width: 280, height: 110, margin: '-8px auto 0', opacity: 0, animation: 'glowLightUp 1.8s cubic-bezier(0.4,0,0.2,1) 1.5s forwards', background: 'radial-gradient(ellipse at top center, rgba(255,210,120,0.32) 0%, rgba(255,180,80,0.14) 40%, transparent 70%)', pointerEvents: 'none', borderRadius: '0 0 50% 50%', filter: 'blur(8px)', zIndex: 1 }} />
                     </div>
 
-                    {/* ═══ Logo — Homepage sol üst ile birebir aynı ═══ */}
-                    <div style={{ textAlign: 'center', marginBottom: 16, position: 'relative', zIndex: 2 }}>
+                    {/* ═══ Logo — Tenant branding: müşteri ismi ve logosu ═══ */}
+                    <div
+                        ref={(el) => { if (el && !logoReady) setTimeout(() => setLogoReady(true), 50); }}
+                        style={{
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                            textAlign: 'center', marginBottom: 12, marginTop: -65, position: 'relative', zIndex: 2,
+                            opacity: logoReady ? 1 : 0,
+                            filter: logoReady ? 'blur(0px)' : 'blur(18px)',
+                            transform: logoReady ? 'scale(1)' : 'scale(0.88)',
+                            transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                        }}>
                         {tenantInfo?.logoUrl ? (
-                            <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 56, maxWidth: 200, objectFit: 'contain', filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.5))' }} />
-                        ) : (
+                            <div style={{ marginTop: -30, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 120, maxWidth: 300, objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))' }} />
+                                {(() => {
+                                    const text = tenantInfo.logoName || tenantInfo.displayName || tenantInfo.name;
+                                    const color1 = tenantInfo.logoTextColor || '#ffffff';
+                                    const color2 = tenantInfo.logoTextColor2 || '';
+                                    const font = tenantInfo.logoTextFont || "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
+                                    const size = tenantInfo.logoTextSize || '1.8rem';
+                                    return text ? (
+                                        <h2 style={{
+                                            fontSize: size, margin: '6px 0 0', display: 'block', textAlign: 'center',
+                                            fontFamily: font, fontWeight: 800, letterSpacing: '-0.02em',
+                                            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
+                                            filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.4))',
+                                            ...(color2 ? {
+                                                backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                                WebkitBackgroundClip: 'text',
+                                                WebkitTextFillColor: 'transparent',
+                                                backgroundClip: 'text',
+                                            } : {
+                                                color: color1,
+                                            }),
+                                        }}>{text}</h2>
+                                    ) : null;
+                                })()}
+                            </div>
+                        ) : (() => {
+                            const text = tenantInfo?.logoName || tenantInfo?.displayName || tenantInfo?.name;
+                            const color1 = tenantInfo?.logoTextColor || '#ffffff';
+                            const color2 = tenantInfo?.logoTextColor2 || '';
+                            const font = tenantInfo?.logoTextFont || "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
+                            const size = tenantInfo?.logoTextSize || '2.2rem';
+                            return text ? (
+                                <h1 style={{
+                                    margin: 0, textAlign: 'center',
+                                    fontSize: size, fontFamily: font, fontWeight: 800,
+                                    letterSpacing: '-0.02em',
+                                    textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
+                                    filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.4))',
+                                    ...(color2 ? {
+                                        backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                    } : {
+                                        color: color1,
+                                    }),
+                                }}>{text}</h1>
+                            ) : null;
+                        })() || (
                             <h1 className="retro-logo-text" style={{ margin: 0 }}>
                                 <span className="retro-logo-soprano">Soprano</span>
                                 <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
@@ -595,9 +665,6 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                                     <span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span>
                                 </span>
                             </h1>
-                        )}
-                        {tenantInfo?.displayName && (
-                            <h2 style={{ fontSize: 14, fontWeight: 800, color: '#334155', marginTop: 4, marginBottom: 0, letterSpacing: 0.5 }}>{tenantInfo.displayName}</h2>
                         )}
                     </div>
 

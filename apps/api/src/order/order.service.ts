@@ -49,50 +49,72 @@ export class OrderService {
       throw new BadRequestException(`Order is already ${order.status}`);
     }
 
-    // 3. Logic for Approval
+    // 3. Logic for Approval — Auto-provision based on checkout form data
     if (status === 'APPROVED') {
       const details = order.details as any;
-      console.log(`[OrderService] Processing APPROVAL. Details:`, details);
+      console.log(`[OrderService] Processing APPROVAL. Order fields:`, {
+        hostingType: order.hostingType,
+        roomName: order.roomName,
+        customDomain: order.customDomain,
+        packageName: order.packageName,
+        amount: order.amount,
+        details,
+      });
 
-      if (!details || !details.domain) {
-        // If details missing, just update status
-        console.warn(
-          `[OrderService] Order ${id} missing details for auto-provisioning.`,
+      try {
+        // Determine tenant name and slug from order fields
+        const isSoprano = order.hostingType !== 'own_domain';
+        const tenantName = isSoprano
+          ? (order.roomName || order.packageName || `tenant-${Date.now()}`)
+          : (order.customDomain || order.packageName || `tenant-${Date.now()}`);
+
+        // Determine billing period
+        const billingPeriod = details?.billing === 'yearly' ? 'YEARLY' : 'MONTHLY';
+
+        // Build slug from name
+        const slug = tenantName.toLowerCase()
+          .replace(/[^a-z0-9ğüşıöç]/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '') || `tenant-${Date.now()}`;
+
+        console.log(`[OrderService] Attempting to provision customer: ${tenantName} (${slug})`);
+
+        const provisioningResult = await this.adminService.provisionCustomer(
+          adminId || 'system',
+          {
+            name: tenantName,
+            displayName: tenantName,
+            domain: !isSoprano ? order.customDomain : null,
+            hostingType: isSoprano ? 'sopranochat' : 'own_domain',
+            slug: slug,
+            roomCount: details?.rooms ? parseInt(details.rooms) : 4,
+            userLimit: details?.capacity ? parseInt(details.capacity) : 50,
+            cameraEnabled: order.packageName?.toLowerCase().includes('kamera') || details?.camera === 'Var',
+            plan: order.packageName || undefined,
+            billingPeriod: billingPeriod as any,
+            adminName: `${order.firstName || ''} ${order.lastName || ''}`.trim() || 'admin',
+            adminEmail: order.email || undefined,
+            adminPhone: order.phone || undefined,
+            price: order.amount ? Number(order.amount) : undefined,
+            currency: 'TRY',
+            customerEmail: order.email || undefined,
+            customerPhone: order.phone || undefined,
+            roomName: order.roomName || undefined,
+            logo: order.logo || undefined,
+          },
         );
-      } else {
-        try {
-          console.log(`[OrderService] Attempting to provision customer...`);
-          // Auto-provision customer
-          const provisioningResult = await this.adminService.provisionCustomer(
-            adminId || 'system',
-            {
-              name: details.domain, // Use domain as name initially
-              domain: details.domain,
-              roomCount: details.customRooms || 1,
-              userLimit: details.customCapacity || 30,
-              cameraEnabled: details.customCam,
-              adminName: 'admin',
-              adminEmail: order.email,
-              adminPhone: order.phone,
-            },
-          );
-          console.log(
-            `[OrderService] Provisioning successful:`,
-            provisioningResult,
-          );
 
-          // Mark as completed right away or kept as approved? Let's keep approved.
-        } catch (error) {
-          console.error(
-            `[OrderService] Failed to provision customer for order ${id}`,
-            error,
-          );
-          // Decide: Fail the request or just log?
-          // Better to fail so admin knows it didn't work.
-          throw new BadRequestException(
-            `Provisioning failed: ${error.message}`,
-          );
-        }
+        console.log(
+          `[OrderService] ✅ Provisioning successful! Tenant: ${provisioningResult.tenant?.slug}, Rooms: ${provisioningResult.defaultRooms?.length}`,
+        );
+      } catch (error) {
+        console.error(
+          `[OrderService] ❌ Failed to provision customer for order ${id}`,
+          error,
+        );
+        throw new BadRequestException(
+          `Provisioning failed: ${error.message}`,
+        );
       }
     } else {
       console.log(

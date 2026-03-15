@@ -566,7 +566,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                 fontFamily: settings.logoTextFont || 'inherit',
                                                                 letterSpacing: '0.02em',
                                                                 ...(settings.logoTextColor2 ? {
-                                                                    background: `linear-gradient(135deg, ${settings.logoTextColor || '#38d9d9'}, ${settings.logoTextColor2 || '#a78bfa'})`,
+                                                                    backgroundImage: `linear-gradient(135deg, ${settings.logoTextColor || '#38d9d9'}, ${settings.logoTextColor2 || '#a78bfa'})`,
                                                                     WebkitBackgroundClip: 'text',
                                                                     WebkitTextFillColor: 'transparent',
                                                                     backgroundClip: 'text',

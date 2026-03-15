@@ -390,6 +390,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         const color1 = logoTextColor || '#38d9d9';
                         const color2 = logoTextColor2;
 
+
+
                         if (!hasCustomColors && logoName === 'SopranoChat' && !logoTextFont) {
                             // Default SopranoChat logo component
                             return (
@@ -424,7 +426,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                     paddingLeft: logoPosition === 'center' ? 0 : 10,
                                     transition: 'all 0.3s ease',
                                     ...(color2 ? {
-                                        background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                        backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
                                         WebkitBackgroundClip: 'text',
                                         WebkitTextFillColor: 'transparent',
                                         backgroundClip: 'text',
