@@ -3415,7 +3415,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @MessageBody() payload: { action: string; targetUserId: string; duration?: string },
   ) {
     const actor = this.participants.get(client.id);
-    if (!actor) {
+    // Fallback: backend restart sonrası participants Map boş olabilir
+    const actorUser = actor || (client.data?.user ? {
+      userId: client.data.user.sub || client.data.user.userId,
+      displayName: client.data.user.displayName || client.data.user.username || 'Unknown',
+      role: client.data.user.role || 'guest',
+      tenantId: client.data.user.tenantId || 'default',
+    } : null);
+    if (!actorUser) {
       client.emit('room:error', { message: 'Yetki yok.' });
       return;
     }
@@ -3432,17 +3439,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // ★ GODMASTER KORUMA BARİYERİ — Sadece başka GodMaster tarafından işlem uygulanabilir ★
-    if (target.role?.toLowerCase() === 'godmaster' && actor.role?.toLowerCase() !== 'godmaster') {
+    if (target.role?.toLowerCase() === 'godmaster' && actorUser.role?.toLowerCase() !== 'godmaster') {
       client.emit('admin:remoteActionResult', { success: false, message: 'Bu kullanıcıya işlem uygulanamaz.' });
-      this.logger.warn(`[GODMASTER PROTECTION] Remote action ${payload.action} on GodMaster by ${actor.displayName} — BLOCKED`);
+      this.logger.warn(`[GODMASTER PROTECTION] Remote action ${payload.action} on GodMaster by ${actorUser.displayName} — BLOCKED`);
       return;
     }
 
-    const actorLevel = getRoleLevel(actor.role);
+    const actorLevel = getRoleLevel(actorUser.role);
     const targetLevel = getRoleLevel(target.role);
 
     // Check if actor outranks target (GodMaster bypasses)
-    if (actor.role?.toLowerCase() !== 'godmaster' && actorLevel <= targetLevel) {
+    if (actorUser.role?.toLowerCase() !== 'godmaster' && actorLevel <= targetLevel) {
       client.emit('room:error', { message: 'Bu kullanıcı üzerinde yetkiniz yok.' });
       return;
     }
@@ -3454,7 +3461,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       return;
     }
 
-    this.logger.log(`RemoteAction: ${actor.displayName}(${actor.role}) → ${payload.action} → ${target.displayName}(${target.role}) in room ${target.roomId}`);
+    this.logger.log(`RemoteAction: ${actorUser.displayName}(${actorUser.role}) → ${payload.action} → ${target.displayName}(${target.role}) in room ${target.roomId}`);
 
     // Execute action on target's room
     const targetRoomId = target.roomId;
@@ -3507,11 +3514,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           else if (dur === '1w') durationEnum = BanDuration.ONE_WEEK;
           else if (dur === '1m') durationEnum = BanDuration.ONE_MONTH;
 
-          await this.adminService.createBan(actor.userId, target.tenantId || 'default', {
+          await this.adminService.createBan(actorUser.userId, target.tenantId || 'default', {
             userId: target.userId,
             type: BanType.BAN,
             duration: durationEnum,
-            reason: `${actor.displayName} tarafından uzaktan yasaklandı`,
+            reason: `${actorUser.displayName} tarafından uzaktan yasaklandı`,
           });
 
           const expiresAt = durationEnum === BanDuration.PERMANENT ? null
@@ -3523,7 +3530,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           const targetSocket = this.server.sockets.sockets.get(target.socketId);
           if (targetSocket) {
             targetSocket.emit('room:banned', {
-              reason: `${actor.displayName} tarafından yasaklandınız.`,
+              reason: `${actorUser.displayName} tarafından yasaklandınız.`,
               expiresAt: expiresAt || null,
             });
           }

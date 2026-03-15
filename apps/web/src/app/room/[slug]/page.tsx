@@ -47,7 +47,7 @@ import DuelArena from '@/components/roomUI/DuelArena';
 
 // ─── EMPTY AREA MENU ITEMS ─────────────────────────────────────────
 const EMPTY_AREA_ITEMS: ContextMenuItem[] = [
-    { id: 'change-name', label: 'İsim Değiştir', icon: '✏️', action: 'openChangeNameModal', description: 'Kullanıcı adını değiştir' },
+
     { id: 'admin-panel', label: 'Admin Paneli', icon: '⚙️', action: 'openAdminPanel', description: 'Admin paneline git' },
     { id: 'meeting', label: 'Toplantı Odası', icon: '🔒', action: 'joinMeetingRoom', description: 'Yetkili toplantı odasına gir' },
     { id: 'clear-chat', label: 'Yazıları Sil', icon: '🗑️', action: 'clearChatRealtime', description: 'Chat ekranını temizle (herkes için)', confirm: true, confirmMessage: 'Tüm chat geçmişi silinecek. Emin misiniz?' },
