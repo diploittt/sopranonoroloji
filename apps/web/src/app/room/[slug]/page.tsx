@@ -1983,7 +1983,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 borderLeft: '14px solid rgba(255,255,255,0.85)',
                                 borderRight: '14px solid rgba(255,255,255,0.85)',
                                 borderBottom: '14px solid rgba(255,255,255,0.85)',
-                                boxShadow: 'none',
+                                boxShadow: '0 -8px 30px 4px rgba(0,0,0,0.22), 0 4px 20px 2px rgba(0,0,0,0.13), 0 12px 10px -4px rgba(0,0,0,0.08)',
                                 overflow: 'visible',
                                 height: 968,
                                 paddingBottom: 32,
@@ -2599,49 +2599,77 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         <h1 className="room-retro-logo-text"><span className="room-retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="room-retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
                                     </div>
 
-                                    <nav className="room-header-nav" style={{ flex: 1, justifyContent: 'center', position: 'relative' }}>
-                                        {/* Room Nav Links — centered */}
+                                    <nav className="room-header-nav" style={{ flex: 1, justifyContent: 'center', position: 'relative', gap: 4 }}>
+                                        {/* HOME — left side, aligned with KÜRSÜ below */}
+                                        <a
+                                            href="/"
+                                            style={{
+                                                color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 5,
+                                                animation: 'roomContentFadeIn 0.4s ease 0.1s both',
+                                                fontWeight: 700, letterSpacing: '0.08em',
+                                                textTransform: 'uppercase' as const, fontSize: 10,
+                                                textDecoration: 'none', padding: '5px 10px',
+                                                background: 'rgba(56,189,248,0.08)',
+                                                border: '1px solid rgba(56,189,248,0.15)',
+                                                borderRadius: 20, cursor: 'pointer',
+                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                                transition: 'all 0.3s ease',
+                                                marginRight: 8,
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                            HOME
+                                        </a>
+
+                                        {/* Room Nav Links — premium pill buttons */}
                                         {(room.state.rooms || [])
                                             .filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))
                                             .map((tab: any, i: number) => {
                                                 const isActive = tab.slug === activeSlug;
                                                 return (
                                                     <Fragment key={tab.slug}>
-                                                        {i > 0 && <span className="room-nav-dot" />}
                                                         <button
                                                             onClick={() => { setActiveSlug(tab.slug); window.history.replaceState(null, '', roomUrl(tab.slug)); }}
                                                             style={{
-                                                                padding: '6px 14px',
-                                                                background: 'none',
-                                                                border: 'none',
+                                                                padding: '5px 14px',
+                                                                background: isActive
+                                                                    ? 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 100%)'
+                                                                    : 'rgba(255,255,255,0.04)',
+                                                                border: isActive
+                                                                    ? '1px solid rgba(251,191,36,0.35)'
+                                                                    : '1px solid rgba(255,255,255,0.08)',
+                                                                borderRadius: 20,
                                                                 cursor: 'pointer',
-                                                                color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.55)',
+                                                                color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.6)',
                                                                 fontFamily: "'Plus Jakarta Sans', sans-serif",
                                                                 fontSize: 10,
-                                                                fontWeight: 600,
-                                                                letterSpacing: '2.5px',
+                                                                fontWeight: isActive ? 700 : 600,
+                                                                letterSpacing: '2px',
                                                                 textTransform: 'uppercase' as const,
                                                                 textDecoration: 'none',
-                                                                transition: 'color 0.3s ease',
-                                                                textShadow: isActive ? '0 0 10px rgba(251,191,36,0.4)' : 'none',
+                                                                transition: 'all 0.3s ease',
+                                                                textShadow: isActive ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+                                                                boxShadow: isActive
+                                                                    ? '0 0 12px rgba(251,191,36,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+                                                                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
                                                                 animation: `roomContentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`,
                                                                 whiteSpace: 'nowrap' as const,
+                                                                position: 'relative' as const,
                                                             }}
                                                         >
                                                             {tab.name}
+                                                            {isActive && (
+                                                                <span style={{
+                                                                    position: 'absolute', bottom: -2, left: '20%', right: '20%',
+                                                                    height: 2, borderRadius: 1,
+                                                                    background: 'linear-gradient(90deg, transparent, #fbbf24, transparent)',
+                                                                }} />
+                                                            )}
                                                         </button>
                                                     </Fragment>
                                                 );
                                             })}
-
-                                        {/* HOME — far right */}
-                                        <a
-                                            href="/"
-                                            style={{ position: 'absolute', right: 0, color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 6, animation: 'roomContentFadeIn 0.4s ease 0.1s both', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase' as const, fontSize: 11, textDecoration: 'none', padding: '8px 18px', background: 'none', border: 'none', cursor: 'pointer', fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-                                        >
-                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                                            HOME
-                                        </a>
                                     </nav>
                                 </header>
 

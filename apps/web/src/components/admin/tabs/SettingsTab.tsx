@@ -90,13 +90,8 @@ const SETTINGS_SECTIONS: SettingsSection[] = [
         key: 'branding',
         title: 'Logo / Marka',
         icon: '🏷️',
-        description: 'Sol üstteki logoyu özelleştirin. Müşteri kendi logosunu (resim/gif) yükleyebilir. Sıfırla butonuyla varsayılan SopranoChat logosuna geri dönebilirsiniz.',
-        settings: [
-            { key: 'logoPosition', label: 'Logo Pozisyonu', type: 'select', options: [{ value: 'left', label: 'Sol' }, { value: 'center', label: 'Orta' }], desc: 'Logonun hizalanma yönü.' },
-            { key: 'logoImageSize', label: 'Logo Boyutu (px)', type: 'number', desc: 'Logo görseli boyutu. Varsayılan: 112px' },
-            { key: 'logoOffsetX', label: 'Logo X Kaydırma (px)', type: 'number', desc: 'Logonun yatay kaydırma miktarı.' },
-            { key: 'logoOffsetY', label: 'Logo Y Kaydırma (px)', type: 'number', desc: 'Logonun dikey kaydırma miktarı.' },
-        ],
+        description: 'Sol üstteki marka yazısını özelleştirin. Yazı, renk, font ve boyut ayarlarını değiştirin.',
+        settings: [],
     },
 
 ];
@@ -236,7 +231,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
 
     const currentRolePerms = rolePermissions[selectedRole] || DEFAULT_ROLE_PERMS[selectedRole] || {};
 
-    const BRANDING_KEYS = ['logoUrl', 'logoPosition', 'logoImageSize', 'logoOffsetX', 'logoOffsetY', 'logoEffect'];
+    const BRANDING_KEYS = ['logoName', 'logoTextSize', 'logoTextColor', 'logoTextColor2', 'logoTextFont', 'logoPosition'];
 
     const dispatchBrandingPreview = useCallback((s: Record<string, any>) => {
         const detail: Record<string, any> = {};
@@ -554,64 +549,175 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                     );
                                                 })}
 
-                                                {/* ═══ BRANDING: Logo Görsel Yükleme + Sıfırla ═══ */}
+                                                {/* ═══ BRANDING: Yazı Tabanlı Logo Ayarları ═══ */}
                                                 {section.key === 'branding' && (
-                                                    <div style={{ marginTop: 8 }}>
-                                                        {/* Logo image upload */}
-                                                        <div className="admin-form-group" style={{ marginBottom: 10 }}>
-                                                            <label>Logo Görseli</label>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                {settings.logoUrl && (
-                                                                    <img src={settings.logoUrl} alt="Logo" style={{
-                                                                        height: 40, width: 'auto', maxWidth: 80,
-                                                                        objectFit: 'contain', borderRadius: 6,
-                                                                        border: '1px solid rgba(100,116,139,0.2)',
-                                                                        background: 'rgba(226,232,240,0.5)',
-                                                                    }} />
-                                                                )}
-                                                                <input
-                                                                    type="file"
-                                                                    accept="image/*"
-                                                                    onChange={(e) => {
-                                                                        const file = e.target.files?.[0];
-                                                                        if (!file) return;
-                                                                        const reader = new FileReader();
-                                                                        reader.onload = () => updateSetting('logoUrl', reader.result as string);
-                                                                        reader.readAsDataURL(file);
-                                                                    }}
-                                                                    style={{
-                                                                        flex: 1, fontSize: 11, color: '#475569',
-                                                                        background: 'rgba(148,163,184,0.12)',
-                                                                        border: '1px solid rgba(148,163,184,0.12)',
-                                                                        borderRadius: 6, padding: '6px 8px',
-                                                                    }}
-                                                                />
-                                                                {settings.logoUrl && (
-                                                                    <button
-                                                                        type="button"
-                                                                        onClick={() => updateSetting('logoUrl', '')}
-                                                                        style={{
-                                                                            background: 'rgba(239,68,68,0.15)',
-                                                                            border: '1px solid rgba(239,68,68,0.3)',
-                                                                            borderRadius: 6, color: '#ef4444',
-                                                                            fontSize: 10, padding: '5px 8px', cursor: 'pointer',
-                                                                        }}
-                                                                    >Kaldır</button>
-                                                                )}
+                                                    <div style={{ marginTop: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+                                                        {/* Canlı Önizleme */}
+                                                        <div style={{
+                                                            background: 'linear-gradient(135deg, rgba(15,23,42,0.95), rgba(30,41,59,0.9))',
+                                                            borderRadius: 10, padding: '14px 16px',
+                                                            border: '1px solid rgba(100,116,139,0.15)',
+                                                            textAlign: (settings.logoPosition || 'left') === 'center' ? 'center' : 'left',
+                                                        }}>
+                                                            <div style={{ fontSize: 9, color: 'rgba(148,163,184,0.6)', fontWeight: 700, letterSpacing: '0.1em', marginBottom: 6, textTransform: 'uppercase' as const }}>ÖNİZLEME</div>
+                                                            <div style={{
+                                                                fontSize: settings.logoTextSize || '1.4rem',
+                                                                fontWeight: 800,
+                                                                fontFamily: settings.logoTextFont || 'inherit',
+                                                                letterSpacing: '0.02em',
+                                                                ...(settings.logoTextColor2 ? {
+                                                                    background: `linear-gradient(135deg, ${settings.logoTextColor || '#38d9d9'}, ${settings.logoTextColor2 || '#a78bfa'})`,
+                                                                    WebkitBackgroundClip: 'text',
+                                                                    WebkitTextFillColor: 'transparent',
+                                                                    backgroundClip: 'text',
+                                                                } : {
+                                                                    color: settings.logoTextColor || '#38d9d9',
+                                                                }),
+                                                            }}>
+                                                                {settings.logoName || 'SopranoChat'}
                                                             </div>
                                                         </div>
 
-                                                        {/* Reset ALL branding */}
+                                                        {/* Marka Yazısı */}
+                                                        <div className="admin-form-group">
+                                                            <label>Marka Yazısı</label>
+                                                            <input
+                                                                type="text"
+                                                                value={settings.logoName || ''}
+                                                                onChange={e => updateSetting('logoName', e.target.value)}
+                                                                placeholder="SopranoChat"
+                                                                maxLength={30}
+                                                                style={{
+                                                                    width: '100%',
+                                                                    background: 'rgba(241,245,249,0.85)',
+                                                                    border: '1px solid rgba(100,116,139,0.22)',
+                                                                    borderRadius: 8, padding: '8px 12px',
+                                                                    color: '#0f172a', fontSize: 13, fontWeight: 600,
+                                                                    outline: 'none',
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Renk 1 & Renk 2 */}
+                                                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                            <div className="admin-form-group">
+                                                                <label>Renk 1</label>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                    <input
+                                                                        type="color"
+                                                                        value={settings.logoTextColor || '#38d9d9'}
+                                                                        onChange={e => updateSetting('logoTextColor', e.target.value)}
+                                                                        style={{ width: 36, height: 28, border: '1px solid rgba(100,116,139,0.25)', borderRadius: 6, cursor: 'pointer', padding: 2 }}
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={settings.logoTextColor || '#38d9d9'}
+                                                                        onChange={e => updateSetting('logoTextColor', e.target.value)}
+                                                                        style={{ flex: 1, background: 'rgba(241,245,249,0.85)', border: '1px solid rgba(100,116,139,0.22)', borderRadius: 6, padding: '5px 8px', color: '#0f172a', fontSize: 11, outline: 'none' }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                            <div className="admin-form-group">
+                                                                <label>Renk 2 (Gradient)</label>
+                                                                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                    <input
+                                                                        type="color"
+                                                                        value={settings.logoTextColor2 || '#a78bfa'}
+                                                                        onChange={e => updateSetting('logoTextColor2', e.target.value)}
+                                                                        style={{ width: 36, height: 28, border: '1px solid rgba(100,116,139,0.25)', borderRadius: 6, cursor: 'pointer', padding: 2 }}
+                                                                    />
+                                                                    <input
+                                                                        type="text"
+                                                                        value={settings.logoTextColor2 || ''}
+                                                                        onChange={e => updateSetting('logoTextColor2', e.target.value)}
+                                                                        placeholder="Boş = tek renk"
+                                                                        style={{ flex: 1, background: 'rgba(241,245,249,0.85)', border: '1px solid rgba(100,116,139,0.22)', borderRadius: 6, padding: '5px 8px', color: '#0f172a', fontSize: 11, outline: 'none' }}
+                                                                    />
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Font Seçimi */}
+                                                        <div className="admin-form-group">
+                                                            <label>Yazı Tipi (Font)</label>
+                                                            <select
+                                                                value={settings.logoTextFont || ''}
+                                                                onChange={e => updateSetting('logoTextFont', e.target.value)}
+                                                            >
+                                                                <option value="">Varsayılan (System)</option>
+                                                                <option value="'Inter', sans-serif">Inter</option>
+                                                                <option value="'Roboto', sans-serif">Roboto</option>
+                                                                <option value="'Outfit', sans-serif">Outfit</option>
+                                                                <option value="'Poppins', sans-serif">Poppins</option>
+                                                                <option value="'Montserrat', sans-serif">Montserrat</option>
+                                                                <option value="'Playfair Display', serif">Playfair Display</option>
+                                                                <option value="'Bebas Neue', sans-serif">Bebas Neue</option>
+                                                                <option value="'Oswald', sans-serif">Oswald</option>
+                                                                <option value="'Righteous', cursive">Righteous</option>
+                                                                <option value="'Permanent Marker', cursive">Permanent Marker</option>
+                                                                <option value="'Pacifico', cursive">Pacifico</option>
+                                                                <option value="'Cooper Black', serif">Cooper Black</option>
+                                                                <option value="'Aref Ruqaa', serif">Aref Ruqaa (Arapça)</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Yazı Boyutu Slider */}
+                                                        <div className="admin-form-group">
+                                                            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                                <span>Yazı Boyutu</span>
+                                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.12)', padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace' }}>
+                                                                    {settings.logoTextSize || '1.4rem'}
+                                                                </span>
+                                                            </label>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                                                <span style={{ fontSize: 11, color: '#334155' }}>0.8</span>
+                                                                <input
+                                                                    type="range"
+                                                                    min={0.8}
+                                                                    max={3}
+                                                                    step={0.1}
+                                                                    value={parseFloat(String(settings.logoTextSize || '1.4').replace('rem', ''))}
+                                                                    onChange={e => updateSetting('logoTextSize', e.target.value + 'rem')}
+                                                                    style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                                                />
+                                                                <span style={{ fontSize: 11, color: '#334155' }}>3.0</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Pozisyon */}
+                                                        <div className="admin-form-group">
+                                                            <label>Pozisyon</label>
+                                                            <div style={{ display: 'flex', gap: 6 }}>
+                                                                {[{ v: 'left', l: '⬅ Sol' }, { v: 'center', l: '⬛ Orta' }].map(opt => (
+                                                                    <button
+                                                                        key={opt.v}
+                                                                        type="button"
+                                                                        onClick={() => updateSetting('logoPosition', opt.v)}
+                                                                        style={{
+                                                                            flex: 1, padding: '7px 0',
+                                                                            fontSize: 11, fontWeight: 600,
+                                                                            borderRadius: 6, cursor: 'pointer',
+                                                                            border: (settings.logoPosition || 'left') === opt.v ? '1px solid rgba(99,102,241,0.4)' : '1px solid rgba(100,116,139,0.15)',
+                                                                            background: (settings.logoPosition || 'left') === opt.v ? 'rgba(99,102,241,0.12)' : 'rgba(241,245,249,0.6)',
+                                                                            color: (settings.logoPosition || 'left') === opt.v ? '#6366f1' : '#475569',
+                                                                            transition: 'all 0.2s',
+                                                                        }}
+                                                                    >{opt.l}</button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Sıfırla */}
                                                         <button
                                                             type="button"
                                                             onClick={() => {
-                                                                const brandingKeys = ['logoUrl', 'logoPosition', 'logoImageSize', 'logoOffsetX', 'logoOffsetY', 'logoEffect'];
+                                                                const brandingKeys = ['logoName', 'logoTextSize', 'logoTextColor', 'logoTextColor2', 'logoTextFont', 'logoPosition'];
                                                                 setSettings(prev => {
                                                                     const next = { ...prev };
                                                                     brandingKeys.forEach(k => { next[k] = ''; });
                                                                     return next;
                                                                 });
-                                                                showStatus('success', 'Logo ayarları sıfırlandı. Kaydetmeyi unutmayın!');
+                                                                showStatus('success', 'Marka ayarları sıfırlandı. Kaydetmeyi unutmayın!');
                                                             }}
                                                             style={{
                                                                 width: '100%', padding: '8px 12px',
@@ -623,7 +729,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
                                                             }}
                                                         >
-                                                            🔄 Tüm Logo Ayarlarını Sıfırla
+                                                            🔄 Tüm Marka Ayarlarını Sıfırla
                                                         </button>
                                                     </div>
                                                 )}

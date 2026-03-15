@@ -376,127 +376,73 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         null
                     )}
 
-                    {/* ═══ LOGO AREA: Custom or Default Wordmark ═══ */}
-                    {(brandingPreview?.logoUrl || brandingPreview?.logoName || room.state.systemSettings?.logoUrl) ? (
-                        /* ── Custom/preview logo ── */
-                        (() => {
-                            const ss = room.state.systemSettings || {};
-                            const bp = brandingPreview; // null when not previewing
-                            const logoSize = (bp?.logoImageSize || ss.logoImageSize) || 112;
-                            const offsetX = (bp ? bp.logoOffsetX : ss.logoOffsetX) || 0;
-                            const offsetY = (bp ? bp.logoOffsetY : ss.logoOffsetY) || 0;
-                            const logoEffect = (bp ? bp.logoEffect : ss.logoEffect) || '';
-                            const logoName = (bp ? bp.logoName : ss.logoName) || '';
-                            const logoTextSize = (bp ? bp.logoTextSize : ss.logoTextSize) || '1.2rem';
-                            const logoTextColor = (bp ? bp.logoTextColor : ss.logoTextColor) || '#a3bfff';
-                            const logoTextColor2 = (bp ? bp.logoTextColor2 : ss.logoTextColor2) || '';
-                            const textOffsetX = (bp ? bp.textOffsetX : ss.textOffsetX) || 0;
-                            const textOffsetY = (bp ? bp.textOffsetY : ss.textOffsetY) || 0;
-                            const textEffect = (bp ? bp.textEffect : ss.textEffect) || '';
-                            const logoPosition = (bp ? bp.logoPosition : ss.logoPosition) || 'left';
-                            const logoUrl = (bp ? bp.logoUrl : ss.logoUrl) || '';
+                    {/* ═══ LOGO AREA: Text-Based Brandmark ═══ */}
+                    {(() => {
+                        const ss = room.state.systemSettings || {};
+                        const bp = brandingPreview; // null when not previewing
+                        const logoName = (bp ? bp.logoName : ss.logoName) || 'SopranoChat';
+                        const logoTextSize = (bp ? bp.logoTextSize : ss.logoTextSize) || '1.4rem';
+                        const logoTextColor = (bp ? bp.logoTextColor : ss.logoTextColor) || '';
+                        const logoTextColor2 = (bp ? bp.logoTextColor2 : ss.logoTextColor2) || '';
+                        const logoTextFont = (bp ? bp.logoTextFont : ss.logoTextFont) || '';
+                        const logoPosition = (bp ? bp.logoPosition : ss.logoPosition) || 'left';
+                        const hasCustomColors = logoTextColor || logoTextColor2;
+                        const color1 = logoTextColor || '#38d9d9';
+                        const color2 = logoTextColor2;
 
-                            // Logo efekt stil objeleri
-                            const effectStyles: Record<string, React.CSSProperties> = {
-                                glow: { filter: 'drop-shadow(0 0 12px rgba(123,159,239,0.5)) drop-shadow(0 0 24px rgba(123,159,239,0.25))' },
-                                pulse: { animation: 'customLogoPulse 2s ease-in-out infinite' },
-                                shadow: { filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.6))' },
-                                neon: { filter: 'drop-shadow(0 0 8px rgba(99,133,209,0.6)) drop-shadow(0 0 20px rgba(99,133,209,0.3))' },
-                                rotate: { animation: 'customLogoRotate 20s linear infinite' },
-                            };
-
-                            // Yazı efekt stil objeleri
-                            const textEffectStyles: Record<string, React.CSSProperties> = {
-                                shimmer: {
-                                    background: `linear-gradient(90deg, ${logoTextColor}, #fff, ${logoTextColor2 || logoTextColor})`,
-                                    backgroundSize: '200% 100%',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                    animation: 'wmFlowLight 3s ease-in-out infinite',
-                                },
-                                glow: { textShadow: `0 0 10px ${logoTextColor}, 0 0 20px ${logoTextColor}80` },
-                                neon: { textShadow: `0 0 4px ${logoTextColor}, 0 0 12px ${logoTextColor}, 0 0 24px ${logoTextColor}60` },
-                                shadow: { textShadow: '0 4px 8px rgba(0,0,0,0.6)' },
-                                'gradient-anim': {
-                                    background: `linear-gradient(90deg, ${logoTextColor}, ${logoTextColor2 || '#fff'}, ${logoTextColor})`,
-                                    backgroundSize: '300% 100%',
-                                    WebkitBackgroundClip: 'text',
-                                    WebkitTextFillColor: 'transparent',
-                                    backgroundClip: 'text',
-                                    animation: 'wmFlowLight 4s ease-in-out infinite',
-                                },
-                            };
-
+                        if (!hasCustomColors && logoName === 'SopranoChat' && !logoTextFont) {
+                            // Default SopranoChat logo component
                             return (
-                                <div style={{
-                                    width: '100%', display: 'flex', flexDirection: 'column',
-                                    alignItems: logoPosition === 'center' ? 'center' : 'flex-start',
-                                    padding: '8px 0 0 0', overflow: 'visible',
-                                }}>
-                                    <style>{`
-                                        @keyframes customLogoPulse { 0%, 100% { transform: scale(1); opacity: 0.9; } 50% { transform: scale(1.04); opacity: 1; } }
-                                        @keyframes customLogoRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                                    `}</style>
-                                    <div style={{
-                                        display: 'flex', alignItems: 'center',
-                                        justifyContent: logoPosition === 'center' ? 'center' : 'flex-start',
-                                        width: '100%', gap: 10, paddingLeft: logoPosition === 'center' ? 0 : 8,
-                                    }}>
-                                        {logoUrl && (
-                                            <img
-                                                src={logoUrl}
-                                                alt="Logo"
-                                                style={{
-                                                    height: logoSize,
-                                                    width: 'auto',
-                                                    maxWidth: '100%',
-                                                    objectFit: 'contain',
-                                                    transform: `translate(${offsetX}px, ${offsetY}px)`,
-                                                    transition: 'all 0.3s ease',
-                                                    ...effectStyles[logoEffect],
-                                                }}
-                                            />
-                                        )}
+                                <>
+                                    <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+                                        <SopranoChatLogo size="md" animated showTagline />
                                     </div>
-                                    {logoName && (
-                                        <div style={{
-                                            fontSize: logoTextSize,
-                                            fontWeight: 700,
-                                            color: logoTextColor,
-                                            textAlign: logoPosition === 'center' ? 'center' : 'left',
-                                            width: '100%',
-                                            paddingLeft: logoPosition === 'center' ? 0 : 8,
-                                            marginTop: 4,
-                                            transform: `translate(${textOffsetX}px, ${textOffsetY}px)`,
-                                            ...(logoTextColor2 && !textEffect ? {
-                                                background: `linear-gradient(135deg, ${logoTextColor}, ${logoTextColor2})`,
-                                                WebkitBackgroundClip: 'text',
-                                                WebkitTextFillColor: 'transparent',
-                                                backgroundClip: 'text',
-                                            } : {}),
-                                            ...textEffectStyles[textEffect],
-                                        }}>
-                                            {logoName}
-                                        </div>
-                                    )}
-                                </div>
+                                    <style>{`
+                                        @keyframes speakerAvatarPulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(52,211,153,0.12), 0 0 12px rgba(52,211,153,0.25); } 50% { box-shadow: 0 0 0 5px rgba(52,211,153,0.20), 0 0 20px rgba(52,211,153,0.40), 0 0 36px rgba(52,211,153,0.10); } }
+                                        @keyframes speakerMicGlow { 0%, 100% { box-shadow: 0 0 6px rgba(52,211,153,0.40), 0 0 12px rgba(16,185,129,0.20); } 50% { box-shadow: 0 0 10px rgba(52,211,153,0.60), 0 0 20px rgba(16,185,129,0.35), 0 0 30px rgba(16,185,129,0.10); } }
+                                        @keyframes speakerRipple { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+                                        @keyframes selfRingRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                                    `}</style>
+                                </>
                             );
-                        })()
-                    ) : (
-                        /* ── Default Brand Logo ── */
-                        <>
-                            <div style={{ width: '100%', display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-                                <SopranoChatLogo size="md" animated showTagline />
+                        }
+
+                        // Custom text brandmark
+                        return (
+                            <div style={{
+                                width: '100%', display: 'flex', flexDirection: 'column',
+                                alignItems: logoPosition === 'center' ? 'center' : 'flex-start',
+                                padding: '10px 0 4px 0',
+                            }}>
+                                <div style={{
+                                    fontSize: logoTextSize,
+                                    fontWeight: 800,
+                                    fontFamily: logoTextFont || 'inherit',
+                                    letterSpacing: '0.02em',
+                                    textAlign: logoPosition === 'center' ? 'center' : 'left',
+                                    width: '100%',
+                                    paddingLeft: logoPosition === 'center' ? 0 : 10,
+                                    transition: 'all 0.3s ease',
+                                    ...(color2 ? {
+                                        background: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                        WebkitBackgroundClip: 'text',
+                                        WebkitTextFillColor: 'transparent',
+                                        backgroundClip: 'text',
+                                    } : {
+                                        color: color1,
+                                    }),
+                                }}>
+                                    {logoName}
+                                </div>
+                                <style>{`
+                                    @keyframes speakerAvatarPulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(52,211,153,0.12), 0 0 12px rgba(52,211,153,0.25); } 50% { box-shadow: 0 0 0 5px rgba(52,211,153,0.20), 0 0 20px rgba(52,211,153,0.40), 0 0 36px rgba(52,211,153,0.10); } }
+                                    @keyframes speakerMicGlow { 0%, 100% { box-shadow: 0 0 6px rgba(52,211,153,0.40), 0 0 12px rgba(16,185,129,0.20); } 50% { box-shadow: 0 0 10px rgba(52,211,153,0.60), 0 0 20px rgba(16,185,129,0.35), 0 0 30px rgba(16,185,129,0.10); } }
+                                    @keyframes speakerRipple { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
+                                    @keyframes selfRingRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+                                `}</style>
                             </div>
-                            <style>{`
-                            @keyframes speakerAvatarPulse { 0%, 100% { box-shadow: 0 0 0 3px rgba(52,211,153,0.12), 0 0 12px rgba(52,211,153,0.25); } 50% { box-shadow: 0 0 0 5px rgba(52,211,153,0.20), 0 0 20px rgba(52,211,153,0.40), 0 0 36px rgba(52,211,153,0.10); } }
-                            @keyframes speakerMicGlow { 0%, 100% { box-shadow: 0 0 6px rgba(52,211,153,0.40), 0 0 12px rgba(16,185,129,0.20); } 50% { box-shadow: 0 0 10px rgba(52,211,153,0.60), 0 0 20px rgba(16,185,129,0.35), 0 0 30px rgba(16,185,129,0.10); } }
-                            @keyframes speakerRipple { 0% { transform: scale(0.7); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
-                            @keyframes selfRingRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-                        `}</style>
-                        </>
-                    )}
+                        );
+                    })()}
                 </div>
             </div>
 

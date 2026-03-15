@@ -207,7 +207,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                     <button className="admin-btn admin-btn-ghost admin-btn-sm" onClick={loadRooms} title="Yenile">
                         <RefreshCw style={{ width: 12, height: 12, ...(loading ? { animation: 'adminSpin 0.6s linear infinite' } : {}) }} />
                     </button>
-                    {isRoomAdmin && (
+                    {isGodMaster && (
                         <button className="admin-btn admin-btn-primary admin-btn-sm" onClick={() => setShowCreateForm(prev => !prev)} disabled={saving} title="Oda Ekle" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 10 }}>
                             <Plus style={{ width: 12, height: 12 }} />
                             Oda Ekle
