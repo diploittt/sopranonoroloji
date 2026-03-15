@@ -100,7 +100,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                         redirecting = true;
                         // Token'ı localStorage'a kaydet
                         const tenantSlug = info.slug || accessCode;
-                        localStorage.setItem('soprano_tenant_token', godmasterToken);
+                        sessionStorage.setItem('soprano_tenant_token', godmasterToken);
                         // Token'dan user bilgilerini decode et
                         try {
                             const payload = JSON.parse(atob(godmasterToken.split('.')[1]));
@@ -119,7 +119,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
 
                     // GodMaster girişi (?gm=1 parametresi ile)
                     const isGodMasterEntry = searchParams.get('gm') === '1';
-                    const existingToken = localStorage.getItem('soprano_tenant_token');
+                    const existingToken = sessionStorage.getItem('soprano_tenant_token');
                     if (isGodMasterEntry && existingToken) {
                         redirecting = true;
                         const firstRoom = info.rooms?.[0];
@@ -129,8 +129,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                         return;
                     }
 
-                    localStorage.removeItem('soprano_tenant_token');
-                    localStorage.removeItem('soprano_tenant_user');
+                    sessionStorage.removeItem('soprano_tenant_token');
+                    sessionStorage.removeItem('soprano_tenant_user');
                 } else {
                     setNotFound(true);
                 }
@@ -172,7 +172,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
             }
 
             const data = await res.json();
-            localStorage.setItem('soprano_tenant_token', data.access_token);
+            sessionStorage.setItem('soprano_tenant_token', data.access_token);
             setAuthUser({
                 userId: data.user.userId || data.user.sub || data.user.id,
                 username: data.user.username || data.user.displayName || data.user.email,
@@ -181,8 +181,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                 role: (data.user.role || 'member') as any,
                 gender: data.user.gender || 'Unspecified',
             });
-            localStorage.setItem('soprano_user', JSON.stringify(data.user));
-            localStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
+            sessionStorage.setItem('soprano_user', JSON.stringify(data.user));
+            sessionStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
 
             // Aynı pencerede odaya yönlendir
             navigateToRoom();
@@ -221,7 +221,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
             }
 
             const data = await res.json();
-            localStorage.setItem('soprano_tenant_token', data.access_token);
+            sessionStorage.setItem('soprano_tenant_token', data.access_token);
             setAuthUser({
                 userId: data.user.sub || data.user.userId || data.user.id,
                 username: data.user.username || data.user.displayName,
@@ -230,8 +230,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                 role: 'guest',
                 gender: formData.gender,
             });
-            localStorage.setItem('soprano_user', JSON.stringify(data.user));
-            localStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
+            sessionStorage.setItem('soprano_user', JSON.stringify(data.user));
+            sessionStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
 
             // Aynı pencerede odaya yönlendir
             navigateToRoom();
@@ -273,7 +273,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
             }
 
             const data = await res.json();
-            localStorage.setItem('soprano_tenant_token', data.access_token);
+            sessionStorage.setItem('soprano_tenant_token', data.access_token);
             setAuthUser({
                 userId: data.user.sub || data.user.userId || data.user.id,
                 username: data.user.username || data.user.displayName,
@@ -282,8 +282,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                 role: (data.user.role || 'member') as any,
                 gender: formData.regGender,
             });
-            localStorage.setItem('soprano_user', JSON.stringify(data.user));
-            localStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
+            sessionStorage.setItem('soprano_user', JSON.stringify(data.user));
+            sessionStorage.setItem('soprano_entry_url', `/t/${accessCode}`);
 
             // Aynı pencerede odaya yönlendir
             navigateToRoom();

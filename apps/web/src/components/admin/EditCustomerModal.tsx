@@ -291,7 +291,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
 
             {/* Modal */}
             <div
-                className="relative w-full max-w-5xl max-h-[90vh] flex flex-col animate-in zoom-in-95 fade-in duration-300"
+                className="relative w-full max-w-4xl max-h-[90vh] flex flex-col animate-in zoom-in-95 fade-in duration-300"
                 style={{
                     background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
                     backdropFilter: 'blur(24px)',

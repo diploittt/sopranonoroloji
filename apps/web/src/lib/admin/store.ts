@@ -78,7 +78,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
     // Provisioning
     provisionCustomer: async (data: ProvisioningDTO) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token') || localStorage.getItem('soprano_auth_token');
+            const token = sessionStorage.getItem('soprano_admin_token') || sessionStorage.getItem('soprano_auth_token');
 
             if (!token) {
                 throw new Error('Token bulunamadı. Lütfen /riconun-odasi sayfasından giriş yapın.');
@@ -131,7 +131,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
     loadInitialData: async () => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             if (!token) {
                 window.location.href = '/riconun-odasi';
                 return;
@@ -146,7 +146,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
             const tenantsRes = await fetch(`${API_URL}/admin/customers`, { headers });
             console.log('[loadInitialData] Response status:', tenantsRes.status);
             if (tenantsRes.status === 401 || tenantsRes.status === 403) {
-                localStorage.removeItem('soprano_admin_token');
+                sessionStorage.removeItem('soprano_admin_token');
                 window.location.href = '/riconun-odasi';
                 return;
             }
@@ -179,7 +179,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
     addTenant: async (tenantData) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers`, {
                 method: "POST",
                 headers: {
@@ -201,7 +201,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
     updateTenant: async (id, updates) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${id}`, {
                 method: "PATCH",
                 headers: {
@@ -231,7 +231,7 @@ export const useAdminStore = create<AdminStore>((set, get) => ({
 
     deleteTenant: async (id) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             await fetch(`${API_URL}/admin/customers/${id}`, {
                 method: "DELETE",
                 headers: {

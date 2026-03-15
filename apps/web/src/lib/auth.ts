@@ -23,14 +23,63 @@ function getAuthKey(): string {
     return window.location.pathname.startsWith('/t/') ? TENANT_USER_KEY : SYSTEM_USER_KEY;
 }
 
+// ─── Storage helpers ────────────────────────────────────────
+// Token ve user verisi sessionStorage'da tutulur → browser kapanınca otomatik silinir.
+// Cookie consent gibi kalıcı tercihler localStorage'da kalır.
+
+function storageGet(key: string): string | null {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem(key);
+}
+
+function storageSet(key: string, value: string): void {
+    if (typeof window === 'undefined') return;
+    sessionStorage.setItem(key, value);
+}
+
+function storageRemove(key: string): void {
+    if (typeof window === 'undefined') return;
+    sessionStorage.removeItem(key);
+}
+
+// ─── Migration: eski localStorage verisini sessionStorage'a taşı ───
+// İlk kez açıldığında localStorage'daki token hala duruyorsa sessionStorage'a kopyala ve sil
+function migrateFromLocalStorage(): void {
+    if (typeof window === 'undefined') return;
+    const TOKEN_KEYS = ['soprano_auth_token', 'soprano_tenant_token', 'soprano_admin_token'];
+    const USER_KEYS = [SYSTEM_USER_KEY, TENANT_USER_KEY];
+    const ALL_KEYS = [...TOKEN_KEYS, ...USER_KEYS, SESSION_TIMESTAMP_KEY];
+
+    for (const key of ALL_KEYS) {
+        const lsValue = localStorage.getItem(key);
+        if (lsValue && !sessionStorage.getItem(key)) {
+            // localStorage'dan sessionStorage'a taşı (bir kerelik migration)
+            sessionStorage.setItem(key, lsValue);
+        }
+        // Artık oturum verisi localStorage'da tutulmayacak
+        localStorage.removeItem(key);
+    }
+    // Dynamic soprano_auth_token_* / soprano_auth_user_* keys
+    Object.keys(localStorage).forEach(key => {
+        if ((key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) && key !== 'soprano_auth_token' && key !== 'soprano_auth_user') {
+            localStorage.removeItem(key);
+        }
+    });
+}
+
+// Boot-time migration
+if (typeof window !== 'undefined') {
+    migrateFromLocalStorage();
+}
+
 /** URL-aware token check */
 function getActiveToken(): string | null {
     if (typeof window === 'undefined') return null;
     const isTenant = window.location.pathname.startsWith('/t/');
     if (isTenant) {
-        return localStorage.getItem('soprano_tenant_token') || localStorage.getItem('soprano_auth_token');
+        return storageGet('soprano_tenant_token') || storageGet('soprano_auth_token');
     }
-    return localStorage.getItem('soprano_auth_token') || localStorage.getItem('soprano_tenant_token');
+    return storageGet('soprano_auth_token') || storageGet('soprano_tenant_token');
 }
 
 /**
@@ -50,12 +99,18 @@ export const clearAllSopranoAuth = () => {
         'soprano_godmaster_disguise_name', 'soprano_godmaster_icon',
         'soprano_user_theme', 'soprano_entry_url',
     ];
-    authKeys.forEach(k => localStorage.removeItem(k));
+    // Hem sessionStorage hem localStorage temizle (geriye uyumluluk)
+    authKeys.forEach(k => {
+        sessionStorage.removeItem(k);
+        localStorage.removeItem(k);
+    });
     // Also clear any dynamic soprano_auth_token_* / soprano_auth_user_* keys
-    Object.keys(localStorage).forEach(key => {
-        if ((key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) && key !== 'soprano_auth_token' && key !== 'soprano_auth_user') {
-            localStorage.removeItem(key);
-        }
+    [sessionStorage, localStorage].forEach(storage => {
+        Object.keys(storage).forEach(key => {
+            if ((key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) && key !== 'soprano_auth_token' && key !== 'soprano_auth_user') {
+                storage.removeItem(key);
+            }
+        });
     });
     window.dispatchEvent(new Event('auth-change'));
 };
@@ -64,14 +119,14 @@ export const getAuthUser = (): AuthUser | null => {
     if (typeof window === 'undefined') return null;
 
     const key = getAuthKey();
-    const storedUser = localStorage.getItem(key);
+    const storedUser = storageGet(key);
     const storedToken = getActiveToken();
 
     if (!storedUser || !storedToken) {
         // If user exists but NO token at all, clear to avoid inconsistent state
         if (storedUser && !storedToken) {
             console.warn('[Auth] Inconsistent auth state detected (missing token). Clearing session.');
-            localStorage.removeItem(key);
+            storageRemove(key);
         }
         return null;
     }
@@ -83,8 +138,8 @@ export const getAuthUser = (): AuthUser | null => {
         return null;
     }
 
-    // Session timeout kontrolü — 2 saat geçmişse otomatik çıkış
-    const sessionTs = localStorage.getItem(SESSION_TIMESTAMP_KEY);
+    // Session timeout kontrolü — 24 saat geçmişse otomatik çıkış
+    const sessionTs = storageGet(SESSION_TIMESTAMP_KEY);
     if (sessionTs) {
         const elapsed = Date.now() - parseInt(sessionTs, 10);
         if (elapsed > SESSION_TIMEOUT_MS) {
@@ -94,7 +149,7 @@ export const getAuthUser = (): AuthUser | null => {
         }
     } else {
         // Eski oturum — timestamp yoksa yeni timestamp oluştur (oturumu koru)
-        localStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
+        storageSet(SESSION_TIMESTAMP_KEY, Date.now().toString());
     }
 
     try {
@@ -107,9 +162,9 @@ export const getAuthUser = (): AuthUser | null => {
 export const setAuthUser = (user: AuthUser) => {
     if (typeof window === 'undefined') return;
     const key = getAuthKey();
-    localStorage.setItem(key, JSON.stringify(user));
+    storageSet(key, JSON.stringify(user));
     // Oturum zaman damgasını güncelle
-    localStorage.setItem(SESSION_TIMESTAMP_KEY, Date.now().toString());
+    storageSet(SESSION_TIMESTAMP_KEY, Date.now().toString());
     // Dispatch a custom event so components can react immediately
     window.dispatchEvent(new Event('auth-change'));
 };
@@ -117,7 +172,7 @@ export const setAuthUser = (user: AuthUser) => {
 export const removeAuthUser = () => {
     if (typeof window === 'undefined') return;
     const key = getAuthKey();
-    localStorage.removeItem(key);
+    storageRemove(key);
     window.dispatchEvent(new Event('auth-change'));
 };
 

@@ -291,8 +291,8 @@ export function RightLivePanel({
                             >
                                 {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
                             </button>
-                            {/* Durdur butonu — sadece yayını açandan üst rütbe durdurabilir */}
-                            {userLevel > tvBroadcastLevel && (
+                            {/* Durdur butonu — aynı veya üst rütbe durdurabilir (GodMaster, Owner) */}
+                            {userLevel >= tvBroadcastLevel && (
                                 <button
                                     onClick={() => onSetTvVideo?.(null)}
                                     className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-500/20 transition-all"

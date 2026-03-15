@@ -156,6 +156,7 @@ interface DuelState {
     origin: '*', // TODO: restrict in production
   },
   namespace: '/',
+  maxHttpBufferSize: 5 * 1024 * 1024, // 5MB — GIF data URI avatarları için
   pingInterval: 10000,  // 10sn — ölü bağlantıları hızlı tespit et
   pingTimeout: 5000,    // 5sn — yanıt gelmezse disconnect tetikle
 })

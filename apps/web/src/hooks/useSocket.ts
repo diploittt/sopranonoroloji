@@ -77,21 +77,21 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
     // ─── Helper: build room:join payload ─────────────────────────────
     const buildJoinPayload = useCallback((targetRoomId: string) => {
-        const authUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_auth_user') || 'null') : null;
-        const tenantUserCheck = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+        const authUser = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null') : null;
+        const tenantUserCheck = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null') : null;
         const effectiveAuthUser = tenantUserCheck || authUser;
         const isGuest = !effectiveAuthUser || effectiveAuthUser.role === 'guest';
         if (isGuest) {
-            localStorage.removeItem('soprano_user_status');
-            localStorage.removeItem('soprano_godmaster_disguise_name');
+            sessionStorage.removeItem('soprano_user_status');
+            sessionStorage.removeItem('soprano_godmaster_disguise_name');
         }
-        const storedStatus = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined);
-        const storedDisguiseName = isGuest ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_disguise_name') : undefined);
-        const tenantUser = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+        const storedStatus = isGuest ? undefined : (typeof window !== 'undefined' ? sessionStorage.getItem('soprano_user_status') : undefined);
+        const storedDisguiseName = isGuest ? undefined : (typeof window !== 'undefined' ? sessionStorage.getItem('soprano_godmaster_disguise_name') : undefined);
+        const tenantUser = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null') : null;
         const effectiveUser = tenantUser || authUser;
         const userAvatar = effectiveUser?.avatar || undefined;
         const userGender = effectiveUser?.gender || undefined;
-        const storedGodmasterIcon = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_icon') : undefined;
+        const storedGodmasterIcon = typeof window !== 'undefined' ? sessionStorage.getItem('soprano_godmaster_icon') : undefined;
 
         // ★ VIP+ roller için initialStatus gönderme — backend her zaman stealth uygular
         // Ancak kullanıcı oturum içinde "görünür" olduysa sessionStorage'dan oku
@@ -126,8 +126,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         const isTenantPage = typeof window !== 'undefined' && window.location.pathname.startsWith('/t/');
         const storedToken = typeof window !== 'undefined'
             ? (isTenantPage
-                ? (localStorage.getItem('soprano_tenant_token') || localStorage.getItem('soprano_auth_token'))
-                : localStorage.getItem('soprano_auth_token'))
+                ? (sessionStorage.getItem('soprano_tenant_token') || sessionStorage.getItem('soprano_auth_token'))
+                : sessionStorage.getItem('soprano_auth_token'))
             : null;
         const effectiveToken = token || storedToken;
 
@@ -390,7 +390,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         const emitProfileUpdate = () => {
             if (!socket.connected) return;
             try {
-                const userJson = localStorage.getItem('soprano_auth_user') || localStorage.getItem('soprano_tenant_user');
+                const userJson = sessionStorage.getItem('soprano_auth_user') || sessionStorage.getItem('soprano_tenant_user');
                 if (userJson) {
                     const user = JSON.parse(userJson);
                     socket.emit('user:profileUpdate', {
@@ -427,15 +427,15 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             // ★ Yöneticiler — tab kapatıldığında görünürlük tercihini sıfırla
             // Tekrar girişte varsayılan 'stealth' modu geçerli olsun
             try {
-                const authUser = JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null');
+                const authUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || sessionStorage.getItem('soprano_auth_user') || 'null');
                 const role = (authUser?.role || 'guest').toLowerCase();
                 const stealthRoles = ['vip', 'operator', 'moderator', 'admin', 'super_admin', 'superadmin', 'owner', 'godmaster'];
                 if (stealthRoles.includes(role)) {
-                    localStorage.removeItem('soprano_user_status');
+                    sessionStorage.removeItem('soprano_user_status');
                     // Tab kapanınca oturum-içi görünürlük tercihi de temizlensin
                     sessionStorage.removeItem('soprano_session_visibility');
                     if (role === 'godmaster') {
-                        localStorage.removeItem('soprano_godmaster_disguise_name');
+                        sessionStorage.removeItem('soprano_godmaster_disguise_name');
                     }
                 }
             } catch { }
@@ -499,8 +499,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const joinWithPassword = (password: string) => {
         if (socketRef.current && passwordRequired) {
             // ★ VIP+ kullancılar için localStorage status gönderme
-            const authUserPw = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_auth_user') || 'null') : null;
-            const tenantUserPw = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('soprano_tenant_user') || 'null') : null;
+            const authUserPw = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null') : null;
+            const tenantUserPw = typeof window !== 'undefined' ? JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null') : null;
             const pwUser = tenantUserPw || authUserPw;
             const pwRoleLevel = (() => {
                 const role = (pwUser?.role || 'guest').toLowerCase();
@@ -508,8 +508,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 return levels[role] ?? 0;
             })();
             const pwIsVipPlus = pwRoleLevel >= 2;
-            const storedStatus = pwIsVipPlus ? undefined : (typeof window !== 'undefined' ? localStorage.getItem('soprano_user_status') : undefined);
-            const storedDisguiseName2 = typeof window !== 'undefined' ? localStorage.getItem('soprano_godmaster_disguise_name') : undefined;
+            const storedStatus = pwIsVipPlus ? undefined : (typeof window !== 'undefined' ? sessionStorage.getItem('soprano_user_status') : undefined);
+            const storedDisguiseName2 = typeof window !== 'undefined' ? sessionStorage.getItem('soprano_godmaster_disguise_name') : undefined;
             socketRef.current.emit('room:join', { roomId: passwordRequired.roomId, initialStatus: storedStatus, password, disguiseName: storedDisguiseName2 || undefined });
             setPasswordRequired(null);
         }

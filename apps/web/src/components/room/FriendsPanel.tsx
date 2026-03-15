@@ -58,8 +58,8 @@ export function FriendsPanel({ isOpen, onClose, socket, token: tokenProp, curren
     // Token resolution — try multiple sources
     const resolvedToken = tokenProp || (() => {
         if (typeof window === 'undefined') return '';
-        return localStorage.getItem('soprano_tenant_token')
-            || localStorage.getItem('soprano_auth_token')
+        return sessionStorage.getItem('soprano_tenant_token')
+            || sessionStorage.getItem('soprano_auth_token')
             || '';
     })();
 

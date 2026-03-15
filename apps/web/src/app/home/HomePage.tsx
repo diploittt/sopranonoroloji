@@ -102,6 +102,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const [profileSaving, setProfileSaving] = useState(false);
     const [profileMsg, setProfileMsg] = useState('');
     const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showRulesModal, setShowRulesModal] = useState(false);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
     const [showMemberAvatars, setShowMemberAvatars] = useState(false);
     const [showRegister, setShowRegister] = useState(false);
     const [regUsername, setRegUsername] = useState('');
@@ -161,6 +163,9 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const tvYtIframeRef = useRef<HTMLIFrameElement>(null);
     const [audioTestOpen, setAudioTestOpen] = useState(false);
     useEffect(() => { (window as any).__sopranoOpenAudioTest = () => setAudioTestOpen(true); return () => { delete (window as any).__sopranoOpenAudioTest; }; }, []);
+    // Cookie consent
+    const [showCookieConsent, setShowCookieConsent] = useState(false);
+    useEffect(() => { if (typeof window !== 'undefined' && !localStorage.getItem('soprano_cookie_consent')) setShowCookieConsent(true); }, []);
     const [cfgRooms, setCfgRooms] = useState(1);
     const [cfgPersons, setCfgPersons] = useState(30);
     const [cfgCamera, setCfgCamera] = useState<'Kameralı' | 'Kamerasız'>('Kameralı');
@@ -331,12 +336,12 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
         e.preventDefault();
         if (!guestNick.trim()) return;
         setGuestError(''); setGuestLoading(true);
-        localStorage.removeItem(AUTH_TOKEN_KEY); removeAuthUser();
+        sessionStorage.removeItem(AUTH_TOKEN_KEY); removeAuthUser();
         try {
             const res = await fetch(`${API_URL}/auth/guest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: guestNick.trim(), gender: guestGender }) });
             const data = await res.json();
             if (data.error) { setGuestError(data.error); return; }
-            localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+            sessionStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
             const avatarUrl = selectedAvatar || generateGenderAvatar(guestNick.trim(), guestGender);
             const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: avatarUrl, isMember: false, role: 'guest' as const, gender: guestGender };
             setAuthUser(u); setUser(u);
@@ -351,7 +356,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
             const data = await res.json();
             if (!res.ok) { setMemberError(data.message === 'Invalid credentials' ? 'Geçersiz kullanıcı adı veya şifre.' : (data.message || 'Giriş başarısız.')); return; }
             if (data.access_token) {
-                localStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
+                sessionStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
                 const memberAvatar = selectedAvatar || data.user?.avatar || generateGenderAvatar(memberUsername.trim(), memberGender || undefined);
                 const u: AuthUser = { userId: data.user?.sub || memberUsername.trim(), username: data.user?.displayName || memberUsername.trim(), avatar: memberAvatar, isMember: true, role: (data.user?.role || 'member') as any, gender: (memberGender || 'Belirsiz') as any, email: data.user?.username || '' };
                 setAuthUser(u); setUser(u); setEditName(u.username); setEditEmail(u.email || data.user?.username || ''); window.dispatchEvent(new Event('auth-change'));
@@ -362,7 +367,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const handleProfileUpdate = async (field: 'displayName' | 'avatar' | 'email' | 'password', value: string) => {
         setProfileSaving(true); setProfileMsg('');
         try {
-            const token = localStorage.getItem(AUTH_TOKEN_KEY);
+            const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
             const res = await fetch(`${API_URL}/auth/update-profile`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ [field]: value }),
@@ -371,7 +376,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 const result = await res.json();
                 // Yeni JWT token'ı kaydet
                 if (result.access_token) {
-                    localStorage.setItem(AUTH_TOKEN_KEY, result.access_token);
+                    sessionStorage.setItem(AUTH_TOKEN_KEY, result.access_token);
                 }
                 // Backend'den dönen user bilgisiyle state'i güncelle
                 if (result.user && user) {
@@ -1126,6 +1131,107 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     0%, 100% { opacity: 0.7; transform: scale(0.95); }
                     50% { opacity: 1; transform: scale(1.05); }
                 }
+
+                /* ═══ WEBCAM ANİMASYONLARI ═══ */
+                .hp-webcam-container { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+                .hp-webcam-container:hover { transform: scale(1.08) rotate(-3deg); z-index: 3 !important; }
+                .hp-webcam-head {
+                    transform-origin: 200px 260px;
+                    animation: hpCamScan 10s infinite ease-in-out;
+                }
+                @keyframes hpCamScan {
+                    0%, 100% { transform: rotate(0deg); }
+                    20% { transform: rotate(-6deg); }
+                    40% { transform: rotate(-6deg); }
+                    60% { transform: rotate(6deg); }
+                    80% { transform: rotate(6deg); }
+                }
+                .hp-webcam-led {
+                    animation: hpLedPulse 2s infinite ease-in-out;
+                }
+                @keyframes hpLedPulse {
+                    0%, 100% { opacity: 0.3; filter: drop-shadow(0px 0px 2px #00ffcc); }
+                    50% { opacity: 1; filter: drop-shadow(0px 0px 8px #00ffcc); }
+                }
+
+                /* ═══ HOPARLÖR ANİMASYONLARI ═══ */
+                .hp-speaker-container { transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+                .hp-speaker-container:hover { transform: scale(1.08) rotate(3deg); }
+                .hp-speaker-body { animation: hpThumpBody 1.2s infinite ease-in-out; }
+                .hp-speaker-cone { animation: hpThumpCone 1.2s infinite ease-in-out; }
+                .hp-speaker-cap { animation: hpThumpCap 1.2s infinite ease-in-out; }
+                .hp-ground-shadow { animation: hpThumpShadow 1.2s infinite ease-in-out; transform-origin: 210px 285px; }
+
+                @keyframes hpThumpBody {
+                    0% { transform: scale(1) translateX(0); }
+                    6% { transform: scale(1.02) translateX(1.5px); }
+                    12% { transform: scale(0.99) translateX(-1px); }
+                    18% { transform: scale(1) translateX(0.5px); }
+                    35% { transform: scale(1) translateX(0); }
+                    40% { transform: scale(1.01) translateX(1px); }
+                    45% { transform: scale(0.995) translateX(-0.5px); }
+                    52% { transform: scale(1.02) translateX(1.5px); }
+                    58% { transform: scale(0.99) translateX(-1px); }
+                    65%, 100% { transform: scale(1) translateX(0); }
+                }
+                @keyframes hpThumpCone {
+                    0% { transform: translateX(0); }
+                    6% { transform: translateX(5px); }
+                    12% { transform: translateX(-2px); }
+                    18% { transform: translateX(1px); }
+                    35% { transform: translateX(0); }
+                    40% { transform: translateX(2px); }
+                    45% { transform: translateX(-1px); }
+                    52% { transform: translateX(5px); }
+                    58% { transform: translateX(-2px); }
+                    65%, 100% { transform: translateX(0); }
+                }
+                @keyframes hpThumpCap {
+                    0% { transform: translateX(0) scale(1); }
+                    6% { transform: translateX(10px) scale(1.05); }
+                    12% { transform: translateX(-3px) scale(0.98); }
+                    18% { transform: translateX(2px) scale(1.01); }
+                    35% { transform: translateX(0) scale(1); }
+                    40% { transform: translateX(4px) scale(1.02); }
+                    45% { transform: translateX(-1px) scale(0.99); }
+                    52% { transform: translateX(10px) scale(1.05); }
+                    58% { transform: translateX(-3px) scale(0.98); }
+                    65%, 100% { transform: translateX(0) scale(1); }
+                }
+                @keyframes hpThumpShadow {
+                    0% { transform: scale(1); opacity: 0.6; }
+                    6% { transform: scale(1.08); opacity: 0.8; }
+                    12% { transform: scale(0.95); opacity: 0.5; }
+                    18% { transform: scale(1.02); opacity: 0.65; }
+                    35% { transform: scale(1); opacity: 0.6; }
+                    40% { transform: scale(1.04); opacity: 0.7; }
+                    45% { transform: scale(0.97); opacity: 0.55; }
+                    52% { transform: scale(1.08); opacity: 0.8; }
+                    58% { transform: scale(0.95); opacity: 0.5; }
+                    65%, 100% { transform: scale(1); opacity: 0.6; }
+                }
+
+                /* Ses Dalgası Yayılımı */
+                .hp-wave {
+                    fill: none;
+                    stroke: #fca311;
+                    stroke-linecap: round;
+                    opacity: 0;
+                    filter: drop-shadow(0px 0px 8px rgba(252, 163, 17, 0.6));
+                }
+                .hp-wave-1 { stroke-width: 6; animation: hpSoundRipples 1.2s infinite ease-in-out; animation-delay: 0s; }
+                .hp-wave-2 { stroke-width: 8; animation: hpSoundRipples 1.2s infinite ease-in-out; animation-delay: 0.08s; }
+                .hp-wave-3 { stroke-width: 10; animation: hpSoundRipples 1.2s infinite ease-in-out; animation-delay: 0.16s; }
+
+                @keyframes hpSoundRipples {
+                    0% { opacity: 0; transform: translateX(-15px) scale(0.9); }
+                    3% { opacity: 1; }
+                    25% { opacity: 0; transform: translateX(45px) scale(1.3); }
+                    52% { opacity: 0; transform: translateX(-15px) scale(0.9); }
+                    55% { opacity: 1; }
+                    77% { opacity: 0; transform: translateX(45px) scale(1.3); }
+                    100% { opacity: 0; transform: translateX(45px) scale(1.3); }
+                }
             `}</style>
 
             <ToastContainer />
@@ -1435,6 +1541,13 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
 
                                             <div className={`glossy-panel`} style={{ padding: roomsMode ? '4px 16px' : '40px', position: 'relative', overflow: roomsMode ? 'visible' : 'hidden', animation: roomsMode ? 'none' : (isInitialLoad.current ? 'cardDropDown 0.8s cubic-bezier(0.22, 0.61, 0.36, 1) 0.6s both' : 'cardSlideIn 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) both'), transformOrigin: 'top center', ...(roomsMode ? { flex: 1, display: 'flex', flexDirection: 'column' as const, boxShadow: '0 8px 32px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' } : {}) }}>
+                                                {/* Metalik köşe parıltıları */}
+                                                {!roomsMode && (<>
+                                                    <div style={{ position: 'absolute', top: 0, left: 0, width: 120, height: 120, background: 'radial-gradient(circle at 0% 0%, rgba(255,255,255,0.35) 0%, rgba(200,215,240,0.18) 25%, rgba(160,180,220,0.08) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                    <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, background: 'radial-gradient(circle at 100% 0%, rgba(255,255,255,0.25) 0%, rgba(200,215,240,0.12) 25%, rgba(160,180,220,0.05) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                    <div style={{ position: 'absolute', bottom: 0, left: 0, width: 100, height: 100, background: 'radial-gradient(circle at 0% 100%, rgba(255,255,255,0.20) 0%, rgba(200,215,240,0.10) 25%, rgba(160,180,220,0.04) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                    <div style={{ position: 'absolute', bottom: 0, right: 0, width: 100, height: 100, background: 'radial-gradient(circle at 100% 100%, rgba(255,255,255,0.18) 0%, rgba(200,215,240,0.08) 25%, rgba(160,180,220,0.03) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                </>)}
                                                 {/* ── Raptiyeler (sadece roomsMode) ── */}
                                                 {roomsMode && (<>
                                                     {/* ─── Sol Raptiye ─── */}
@@ -1530,7 +1643,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                 <div style={{ position: 'relative', zIndex: 10, ...(roomsMode ? { display: 'none' } : {}) }}>
                                                     {/* Orijinal içerik — Sol metin + Sağ CRT Monitör */}
                                                     <div style={{
-                                                        display: 'flex', gap: 24, alignItems: 'center',
+                                                        display: 'flex', flexDirection: 'column' as const, gap: 16,
                                                         transition: 'all 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
                                                         opacity: showPackages ? 0 : 1,
                                                         filter: showPackages ? 'blur(8px)' : 'blur(0)',
@@ -1539,47 +1652,184 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                         overflow: showPackages ? 'hidden' : 'visible',
                                                         pointerEvents: showPackages ? 'none' : 'auto',
                                                     }}>
-                                                        {/* SOL: Metin ve Feature Toasts */}
-                                                        <div style={{ flex: 1, minWidth: 260 }}>
-                                                            <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 12, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
-                                                                Kendi Dijital Sahneni Yarat
-                                                            </h2>
-                                                            <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, marginBottom: 20, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                                                <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
-                                                                HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
-                                                                sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
-                                                                Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
-                                                            </p>
+                                                        <div style={{ display: 'flex', flexDirection: 'column' as const, gap: 16 }}>
+                                                            {/* ÜST: Başlık + Açıklama */}
+                                                            <div style={{ textAlign: 'center' as const }}>
+                                                                <h2 style={{ fontSize: 28, fontWeight: 900, color: '#fff', marginBottom: 10, lineHeight: 1.3, textShadow: '0 2px 4px rgba(0,0,0,0.8)' }}>
+                                                                    Kendi Dijital Sahneni Yarat
+                                                                </h2>
+                                                                <p style={{ fontSize: 14, color: '#cbd5e1', fontWeight: 600, lineHeight: 1.8, margin: 0, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                                    <strong style={{ color: '#fff' }}>Kişisel sohbet odanızı satın alın</strong> ve tamamen sizin kurallarınızla yönetin.
+                                                                    HD kalitesinde sesli ve görüntülü iletişim, şifreli giriş koruması, gelişmiş yönetici paneli ve
+                                                                    sınırsız kişiselleştirme seçenekleriyle topluluğunuzu büyütün.
+                                                                    Kurumsal düzeyde altyapı, bireysel kullanım kolaylığıyla buluşuyor.
+                                                                </p>
+                                                            </div>
 
-                                                            {/* Feature Toasts — 2x2 grid */}
-                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 12 }}>
-                                                                {[
-                                                                    { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
-                                                                    { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
-                                                                    { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
-                                                                    { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
-                                                                ].map((t, i) => (
-                                                                    <div key={i} className="feature-toast" style={{
-                                                                        display: 'flex', alignItems: 'center', gap: 10,
-                                                                        padding: '8px 12px', borderRadius: 10,
-                                                                        background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
-                                                                    }}>
-                                                                        <div style={{
-                                                                            width: 30, height: 30, borderRadius: 8, flexShrink: 0,
-                                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                            background: `${t.color}15`, color: t.color,
-                                                                            border: `1px solid ${t.color}30`,
-                                                                        }}>{t.icon}</div>
-                                                                        <div>
-                                                                            <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
-                                                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
-                                                                        </div>
+                                                            {/* ALT: [Webcam] [Toasts] [Hoparlör] */}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+
+                                                                {/* SOL: Webcam */}
+                                                                <div className="hp-webcam-container" style={{ width: 120, height: 120, flexShrink: 0, overflow: 'visible' }}>
+                                                                    <svg viewBox="0 0 400 400" width="160" height="160" style={{ marginTop: -20, marginLeft: -20 }} xmlns="http://www.w3.org/2000/svg">
+                                                                        <defs>
+                                                                            <linearGradient id="hp-wc-bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#4a4d54"/><stop offset="50%" stopColor="#1c1d21"/><stop offset="100%" stopColor="#0a0b0c"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-wc-rimGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#e0e3eb"/><stop offset="30%" stopColor="#7a7e85"/><stop offset="70%" stopColor="#2a2d35"/><stop offset="100%" stopColor="#0a0b0c"/>
+                                                                            </linearGradient>
+                                                                            <radialGradient id="hp-wc-lensGrad" cx="35%" cy="35%" r="65%">
+                                                                                <stop offset="0%" stopColor="#2a75a3"/><stop offset="45%" stopColor="#0b1c2e"/><stop offset="100%" stopColor="#010305"/>
+                                                                            </radialGradient>
+                                                                            <radialGradient id="hp-wc-sensorGrad" cx="50%" cy="50%" r="50%">
+                                                                                <stop offset="0%" stopColor="#1b2a38"/><stop offset="70%" stopColor="#040608"/><stop offset="100%" stopColor="#000"/>
+                                                                            </radialGradient>
+                                                                            <linearGradient id="hp-wc-glare" x1="0%" y1="0%" x2="100%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#fff" stopOpacity="0.8"/><stop offset="40%" stopColor="#fff" stopOpacity="0.1"/><stop offset="100%" stopColor="#fff" stopOpacity="0"/>
+                                                                            </linearGradient>
+                                                                            <filter id="hp-wc-shadow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="15" result="blur"/></filter>
+                                                                            <pattern id="hp-micPat" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="3" cy="3" r="1.5" fill="#000" opacity="0.7"/></pattern>
+                                                                        </defs>
+                                                                        <ellipse cx="200" cy="360" rx="90" ry="16" fill="#000" filter="url(#hp-wc-shadow)" opacity="0.4"/>
+                                                                        <g>
+                                                                            <ellipse cx="200" cy="350" rx="70" ry="18" fill="url(#hp-wc-rimGrad)"/>
+                                                                            <ellipse cx="200" cy="344" rx="64" ry="15" fill="url(#hp-wc-bodyGrad)"/>
+                                                                            <path d="M 185 260 L 215 260 L 225 344 L 175 344 Z" fill="url(#hp-wc-rimGrad)"/>
+                                                                            <ellipse cx="200" cy="260" rx="20" ry="14" fill="#0a0b0c"/>
+                                                                            <ellipse cx="200" cy="260" rx="12" ry="8" fill="url(#hp-wc-rimGrad)"/>
+                                                                            <g className="hp-webcam-head">
+                                                                                <rect x="55" y="115" width="290" height="100" rx="50" ry="50" fill="url(#hp-wc-rimGrad)"/>
+                                                                                <rect x="50" y="120" width="300" height="110" rx="55" ry="55" fill="url(#hp-wc-bodyGrad)" stroke="#4a4d54" strokeWidth="2"/>
+                                                                                <rect x="65" y="130" width="270" height="90" rx="45" ry="45" fill="#0c0d10" stroke="#1c1d21" strokeWidth="1.5"/>
+                                                                                <rect x="85" y="155" width="40" height="40" rx="20" ry="20" fill="#15161a"/>
+                                                                                <rect x="85" y="155" width="40" height="40" rx="20" ry="20" fill="url(#hp-micPat)"/>
+                                                                                <rect x="275" y="155" width="40" height="40" rx="20" ry="20" fill="#15161a"/>
+                                                                                <rect x="275" y="155" width="40" height="40" rx="20" ry="20" fill="url(#hp-micPat)"/>
+                                                                                <circle cx="200" cy="175" r="50" fill="url(#hp-wc-rimGrad)"/>
+                                                                                <circle cx="200" cy="175" r="44" fill="#0a0b0c"/>
+                                                                                <circle cx="200" cy="175" r="38" fill="url(#hp-wc-lensGrad)"/>
+                                                                                <circle cx="200" cy="175" r="24" fill="none" stroke="#2a4b6c" strokeWidth="2" opacity="0.6"/>
+                                                                                <circle cx="200" cy="175" r="16" fill="url(#hp-wc-sensorGrad)"/>
+                                                                                <circle cx="200" cy="175" r="6" fill="#000"/>
+                                                                                <ellipse cx="180" cy="148" rx="12" ry="26" fill="url(#hp-wc-glare)" transform="rotate(-35 180 148)"/>
+                                                                                <ellipse cx="172" cy="158" rx="4" ry="10" fill="#fff" opacity="0.8" transform="rotate(-45 172 158)"/>
+                                                                                <circle className="hp-webcam-led" cx="145" cy="175" r="6" fill="#00ffcc"/>
+                                                                                <circle cx="145" cy="175" r="6" fill="none" stroke="#000" strokeWidth="1.5" opacity="0.5"/>
+                                                                                <rect x="180" y="116" width="40" height="8" rx="4" ry="4" fill="#0a0b0c"/>
+                                                                                <rect x="185" y="117" width="15" height="5" rx="2.5" ry="2.5" fill="url(#hp-wc-rimGrad)"/>
+                                                                            </g>
+                                                                        </g>
+                                                                    </svg>
+                                                                </div>
+
+                                                                {/* ORTA: Feature Toasts 2x2 */}
+                                                                <div style={{ flex: 1 }}>
+                                                                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                                                                        {[
+                                                                            { icon: <ShieldCheck style={{ width: 15, height: 15 }} />, label: 'Şifreli', desc: 'Uçtan uca şifreleme', color: '#34d399' },
+                                                                            { icon: <Video style={{ width: 15, height: 15 }} />, label: 'HD Video', desc: 'Kristal netliğinde görüntü', color: '#a78bfa' },
+                                                                            { icon: <Mic style={{ width: 15, height: 15 }} />, label: 'Kristal Ses', desc: 'Düşük gecikme, yüksek kalite', color: '#38bdf8' },
+                                                                            { icon: <Settings style={{ width: 15, height: 15 }} />, label: 'Tam Kontrol', desc: 'Gelişmiş yönetici paneli', color: '#fbbf24' },
+                                                                        ].map((t, i) => (
+                                                                            <div key={i} className="feature-toast" style={{
+                                                                                display: 'flex', alignItems: 'center', gap: 10,
+                                                                                padding: '8px 12px', borderRadius: 10,
+                                                                                background: 'rgba(255,255,255,0.04)', border: `1px solid ${t.color}22`,
+                                                                            }}>
+                                                                                <div style={{
+                                                                                    width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                                                                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                                    background: `${t.color}15`, color: t.color,
+                                                                                    border: `1px solid ${t.color}30`,
+                                                                                }}>{t.icon}</div>
+                                                                                <div>
+                                                                                    <div style={{ fontSize: 11, fontWeight: 800, color: t.color, letterSpacing: 0.5 }}>{t.label}</div>
+                                                                                    <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginTop: 1 }}>{t.desc}</div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
                                                                     </div>
-                                                                ))}
+                                                                </div>
+
+                                                                {/* SAĞ: Hoparlör */}
+                                                                <div className="hp-speaker-container" style={{ width: 140, height: 140, flexShrink: 0, overflow: 'visible' }}>
+                                                                    <svg viewBox="0 0 400 400" width="240" height="240" style={{ marginTop: -50, marginLeft: -50 }} xmlns="http://www.w3.org/2000/svg">
+                                                                        <defs>
+                                                                            <filter id="hp-shadowHeavy" x="-100%" y="-100%" width="300%" height="300%"><feGaussianBlur stdDeviation="22" result="blur"/></filter>
+                                                                            <filter id="hp-shadowLight" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8" result="blur"/></filter>
+                                                                            <linearGradient id="hp-glareGrad" x1="85%" y1="0%" x2="15%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#ffffff" stopOpacity="0"/><stop offset="12%" stopColor="#ffffff" stopOpacity="0.95"/><stop offset="25%" stopColor="#ffffff" stopOpacity="0"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-magnetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#8b93a0"/><stop offset="50%" stopColor="#545b66"/><stop offset="100%" stopColor="#2f343d"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#d0d5e0"/><stop offset="40%" stopColor="#9097a8"/><stop offset="100%" stopColor="#4f5563"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-rimOuter" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#e6eaf2"/><stop offset="60%" stopColor="#868e9e"/><stop offset="85%" stopColor="#4b5261"/><stop offset="100%" stopColor="#2a2e38"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-rimFace" x1="85%" y1="0%" x2="15%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#a9b0c2"/><stop offset="12%" stopColor="#ffffff"/><stop offset="25%" stopColor="#7b8396"/><stop offset="60%" stopColor="#464c59"/><stop offset="85%" stopColor="#1d2129"/><stop offset="100%" stopColor="#666e80"/>
+                                                                            </linearGradient>
+                                                                            <linearGradient id="hp-whiteRing" x1="85%" y1="0%" x2="15%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#ffffff"/><stop offset="15%" stopColor="#ffffff"/><stop offset="35%" stopColor="#d4d9e3"/><stop offset="70%" stopColor="#8a92a3"/><stop offset="100%" stopColor="#4a4f5c"/>
+                                                                            </linearGradient>
+                                                                            <radialGradient id="hp-coneGrad" cx="60%" cy="40%" r="70%" fx="70%" fy="30%">
+                                                                                <stop offset="0%" stopColor="#3a4152"/><stop offset="45%" stopColor="#9aa3b5"/><stop offset="80%" stopColor="#dce1eb"/><stop offset="100%" stopColor="#8a93a6"/>
+                                                                            </radialGradient>
+                                                                            <linearGradient id="hp-tubeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                                                                <stop offset="0%" stopColor="#aeb5c4"/><stop offset="50%" stopColor="#686e7d"/><stop offset="100%" stopColor="#292d36"/>
+                                                                            </linearGradient>
+                                                                            <radialGradient id="hp-capGrad" cx="45%" cy="45%" r="55%" fx="35%" fy="35%">
+                                                                                <stop offset="0%" stopColor="#ffffff"/><stop offset="15%" stopColor="#e0e5f0"/><stop offset="45%" stopColor="#8a92a3"/><stop offset="80%" stopColor="#3f4554"/><stop offset="100%" stopColor="#1a1e26"/>
+                                                                            </radialGradient>
+                                                                        </defs>
+                                                                        <g className="hp-ground-shadow">
+                                                                            <ellipse cx="210" cy="285" rx="90" ry="18" fill="#000" filter="url(#hp-shadowHeavy)" opacity="0.5"/>
+                                                                            <ellipse cx="210" cy="285" rx="50" ry="8" fill="#000" filter="url(#hp-shadowLight)" opacity="0.7"/>
+                                                                        </g>
+                                                                        <g transform="translate(180, 200) scale(-1, 1) rotate(-32)">
+                                                                            <g className="hp-speaker-body">
+                                                                                <ellipse cx="-80" cy="0" rx="12" ry="30" fill="url(#hp-magnetGrad)"/>
+                                                                                <path d="M -80 -30 L -55 -30 A 12 30 0 0 1 -55 30 L -80 30 Z" fill="url(#hp-magnetGrad)"/>
+                                                                                <path d="M -70 -30 L -60 -30 A 12 30 0 0 1 -60 30 L -70 30 Z" fill="#1f2229"/>
+                                                                                <path d="M -55 -35 L -15 -80 A 30 80 0 0 1 -15 80 L -55 35 Z" fill="url(#hp-bodyGrad)"/>
+                                                                                <path d="M -15 -80 L 0 -85 A 32 85 0 0 1 0 85 L -15 80 Z" fill="url(#hp-rimOuter)"/>
+                                                                                <path d="M -10 -81.5 L -5 -83 A 32 85 0 0 1 -5 83 L -10 81.5 Z" fill="#1a1c23" opacity="0.8"/>
+                                                                                <ellipse cx="0" cy="0" rx="32" ry="85" fill="url(#hp-rimFace)"/>
+                                                                                <ellipse cx="0" cy="0" rx="31" ry="83.5" fill="none" stroke="url(#hp-glareGrad)" strokeWidth="2"/>
+                                                                                <ellipse cx="1" cy="0" rx="29.5" ry="78.5" fill="#14161c"/>
+                                                                                <ellipse cx="2" cy="0" rx="28" ry="76" fill="url(#hp-whiteRing)"/>
+                                                                                <ellipse cx="2.5" cy="0" rx="26" ry="72" fill="none" stroke="url(#hp-glareGrad)" strokeWidth="1.5"/>
+                                                                                <ellipse cx="3" cy="0" rx="25" ry="70" fill="none" stroke="#2a2e38" strokeWidth="1" opacity="0.8"/>
+                                                                                <path d="M 3 -70 L 8 -65 A 22 65 0 0 1 8 65 L 3 70 Z" fill="#14161c" opacity="0.9"/>
+                                                                                <g className="hp-speaker-cone">
+                                                                                    <ellipse cx="8" cy="0" rx="22" ry="65" fill="url(#hp-coneGrad)"/>
+                                                                                    <ellipse cx="8" cy="0" rx="22" ry="65" fill="none" stroke="#1c1f26" strokeWidth="2" opacity="0.85"/>
+                                                                                </g>
+                                                                                <g className="hp-speaker-cap">
+                                                                                    <path d="M 6 -24 L 14 -32 A 12 32 0 0 1 14 32 L 6 24 Z" fill="url(#hp-tubeGrad)"/>
+                                                                                    <ellipse cx="13" cy="0" rx="12" ry="32" fill="none" stroke="#e6eaf2" strokeWidth="1.5"/>
+                                                                                    <ellipse cx="14" cy="0" rx="11" ry="31" fill="#14161c"/>
+                                                                                    <ellipse cx="18" cy="0" rx="16" ry="36" fill="url(#hp-capGrad)"/>
+                                                                                </g>
+                                                                            </g>
+                                                                            <g>
+                                                                                <path className="hp-wave hp-wave-1" d="M 45 -25 Q 65 0 45 25"/>
+                                                                                <path className="hp-wave hp-wave-2" d="M 70 -45 Q 100 0 70 45"/>
+                                                                                <path className="hp-wave hp-wave-3" d="M 95 -65 Q 135 0 95 65"/>
+                                                                            </g>
+                                                                        </g>
+                                                                    </svg>
+                                                                </div>
+
                                                             </div>
                                                         </div>
 
                                                     </div>
+
 
                                                     {/* Paket Kartları — showPackages açıkken görünür */}
                                                     <div style={{
@@ -1915,7 +2165,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                         )}
 
                                         {/* Müşteri Platformları / Chat Toolbar */}
-                                        <div className="glossy-panel content-fade content-fade-2" style={{ padding: roomsMode ? '16px 20px' : '24px 32px', minHeight: roomsMode ? undefined : 180, ...(roomsMode ? { display: 'none' } : {}) }}>
+                                        <div className="glossy-panel content-fade content-fade-2" style={{ padding: roomsMode ? '16px 20px' : '24px 32px', minHeight: roomsMode ? undefined : 180, position: 'relative', ...(roomsMode ? { display: 'none' } : {}) }}>
+                                            {/* Metalik köşe parıltıları */}
+                                            {!roomsMode && (<>
+                                                <div style={{ position: 'absolute', top: 0, left: 0, width: 120, height: 120, background: 'radial-gradient(circle at 0% 0%, rgba(255,255,255,0.35) 0%, rgba(200,215,240,0.18) 25%, rgba(160,180,220,0.08) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                <div style={{ position: 'absolute', top: 0, right: 0, width: 120, height: 120, background: 'radial-gradient(circle at 100% 0%, rgba(255,255,255,0.25) 0%, rgba(200,215,240,0.12) 25%, rgba(160,180,220,0.05) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                <div style={{ position: 'absolute', bottom: 0, left: 0, width: 100, height: 100, background: 'radial-gradient(circle at 0% 100%, rgba(255,255,255,0.20) 0%, rgba(200,215,240,0.10) 25%, rgba(160,180,220,0.04) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 100, height: 100, background: 'radial-gradient(circle at 100% 100%, rgba(255,255,255,0.18) 0%, rgba(200,215,240,0.08) 25%, rgba(160,180,220,0.03) 45%, transparent 65%)', pointerEvents: 'none', zIndex: 1 }} />
+                                            </>)}
                                             {roomsMode ? (
                                                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                                                     {/* Toolbar Üst Satır */}
@@ -3978,8 +4235,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     <footer style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)', ...(roomsMode ? { display: 'none' } : {}) }}>
                         &copy; 2026 SopranoChat Systems.
                         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 32 }}>
-                            <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Kurallar</a>
-                            <a href="#" style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s' }}>Gizlilik Sözleşmesi</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setShowRulesModal(true); }} style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer' }}>Kurallar</a>
+                            <a href="#" onClick={(e) => { e.preventDefault(); setShowPrivacyModal(true); }} style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer' }}>Gizlilik Sözleşmesi</a>
                         </div>
                     </footer>
                 </main>
@@ -4338,6 +4595,180 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     </div>
                 )
             }
+
+            {/* KURALLAR MODAL */}
+            {showRulesModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowRulesModal(false)}>
+                    <div onClick={(e) => e.stopPropagation()} style={{
+                        background: '#ffffff', borderRadius: 16, padding: '28px 32px',
+                        maxWidth: 560, width: '90vw', maxHeight: '85vh', overflowY: 'auto',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #e2e8f0',
+                        animation: 'ctxUiMenuIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>📋 Platform Kuralları</h3>
+                            <button onClick={() => setShowRulesModal(false)} style={{ background: '#f1f5f9', border: 'none', color: '#64748b', fontSize: 16, cursor: 'pointer', padding: '4px 8px', borderRadius: 8, lineHeight: 1, transition: 'background 0.15s' }} onMouseOver={e => (e.currentTarget.style.background = '#e2e8f0')} onMouseOut={e => (e.currentTarget.style.background = '#f1f5f9')}>✕</button>
+                        </div>
+                        <p style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 16 }}>Son Güncelleme: Mart 2026</p>
+                        <div style={{ fontSize: 13, lineHeight: 1.9, color: '#334155' }}>
+                            <div style={{ background: '#eff6ff', borderRadius: 10, padding: '12px 16px', marginBottom: 16, border: '1px solid #dbeafe' }}>
+                                <p style={{ margin: 0, fontWeight: 600, color: '#1e40af' }}>SopranoChat platformunu kullanarak aşağıdaki kuralları kabul etmiş sayılırsınız. Kuralların ihlali durumunda hesabınız geçici veya kalıcı olarak askıya alınabilir.</p>
+                            </div>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>1. Genel Davranış Kuralları</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Hakaret, küfür, aşağılama ve her türlü sözlü şiddet yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Irkçılık, cinsiyetçilik, homofobik veya ayrımcı söylemler kesinlikle yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Diğer kullanıcıları rahatsız eden, taciz veya tehdit içeren davranışlar yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Spam, flood ve toplu mesaj gönderimi yasaktır.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>2. İçerik Kuralları</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Cinsel içerikli, pornografik veya müstehcen materyal paylaşımı yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Telif hakkı ihlali içeren içerik paylaşılamaz.</li>
+                                <li style={{ marginBottom: 6 }}>Zararlı yazılım, virüs veya kimlik avı bağlantıları paylaşmak yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Kişisel bilgi paylaşımı (doxxing) kesinlikle yasaktır.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>3. Sesli ve Görüntülü İletişim</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Mikrofon kullanırken diğer kullanıcıları sesi bozmadan iletişim kurun.</li>
+                                <li style={{ marginBottom: 6 }}>Oda yöneticisinin talimatlarına uyun, mikrofon sırası kurallarına riayet edin.</li>
+                                <li style={{ marginBottom: 6 }}>Kamera kullanımında uygunsuz görüntü paylaşımı yasaktır.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>4. Hesap Güvenliği</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Birden fazla hesap açmak (çoklu hesap) yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Hesap bilgilerinizi başkalarıyla paylaşmayın.</li>
+                                <li style={{ marginBottom: 6 }}>Başka bir kullanıcının kimliğine bürünmek yasaktır.</li>
+                                <li style={{ marginBottom: 6 }}>Bot, otomasyon veya hile yazılımı kullanımı yasaktır.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>5. Oda Yönetimi</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Oda sahipleri kendi odalarında ek kurallar belirleyebilir.</li>
+                                <li style={{ marginBottom: 6 }}>Moderatörlerin uyarılarına uymak zorunludur.</li>
+                                <li style={{ marginBottom: 6 }}>Oda yönetim yetkilerinin kötüye kullanımı durumunda yetki alınabilir.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>6. Yaptırımlar</h4>
+                            <div style={{ background: '#fef2f2', borderRadius: 10, padding: '12px 16px', border: '1px solid #fecaca' }}>
+                                <p style={{ margin: 0, color: '#991b1b', fontWeight: 600, fontSize: 12 }}>Kuralları ihlal eden kullanıcılara uyarı, geçici susturma, kick, geçici ban veya kalıcı ban uygulanabilir. Yaptırımlar ihlal şiddetine göre belirlenir.</p>
+                            </div>
+                        </div>
+                        <button onClick={() => setShowRulesModal(false)} style={{
+                            width: '100%', padding: '10px 0', fontSize: 13, fontWeight: 700, marginTop: 24,
+                            background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer',
+                            transition: 'background 0.15s',
+                        }} onMouseOver={e => (e.currentTarget.style.background = '#2563eb')} onMouseOut={e => (e.currentTarget.style.background = '#3b82f6')}>Anladım, Kapat</button>
+                    </div>
+                </div>
+            )}
+
+            {/* GİZLİLİK SÖZLEŞMESİ MODAL */}
+            {showPrivacyModal && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 99999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(6px)' }} onClick={() => setShowPrivacyModal(false)}>
+                    <div onClick={(e) => e.stopPropagation()} style={{
+                        background: '#ffffff', borderRadius: 16, padding: '28px 32px',
+                        maxWidth: 560, width: '90vw', maxHeight: '85vh', overflowY: 'auto',
+                        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)', border: '1px solid #e2e8f0',
+                        animation: 'ctxUiMenuIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+                            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1e293b', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>🔒 Gizlilik Sözleşmesi</h3>
+                            <button onClick={() => setShowPrivacyModal(false)} style={{ background: '#f1f5f9', border: 'none', color: '#64748b', fontSize: 16, cursor: 'pointer', padding: '4px 8px', borderRadius: 8, lineHeight: 1, transition: 'background 0.15s' }} onMouseOver={e => (e.currentTarget.style.background = '#e2e8f0')} onMouseOut={e => (e.currentTarget.style.background = '#f1f5f9')}>✕</button>
+                        </div>
+                        <p style={{ fontSize: 12, color: '#64748b', fontWeight: 600, marginBottom: 16 }}>Yürürlük Tarihi: Mart 2026</p>
+                        <div style={{ fontSize: 13, lineHeight: 1.9, color: '#334155' }}>
+                            <div style={{ background: '#eff6ff', borderRadius: 10, padding: '12px 16px', marginBottom: 16, border: '1px solid #dbeafe' }}>
+                                <p style={{ margin: 0, fontWeight: 600, color: '#1e40af' }}>SopranoChat olarak kişisel verilerinizin korunmasına büyük önem veriyoruz. Bu gizlilik politikası, hangi verileri topladığımızı, nasıl kullandığımızı ve haklarınızı açıklamaktadır.</p>
+                            </div>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>1. Toplanan Veriler</h4>
+                            <p style={{ marginBottom: 8 }}>Platformumuzu kullanırken aşağıdaki veriler toplanabilir:</p>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}><strong>Hesap Bilgileri:</strong> Kullanıcı adı, e-posta adresi, şifre (hash'li olarak saklanır).</li>
+                                <li style={{ marginBottom: 6 }}><strong>Profil Bilgileri:</strong> Cinsiyet, avatar, durum mesajı gibi isteğe bağlı veriler.</li>
+                                <li style={{ marginBottom: 6 }}><strong>Kullanım Verileri:</strong> Oturum süreleri, bağlantı logları, IP adresi.</li>
+                                <li style={{ marginBottom: 6 }}><strong>İletişim Verileri:</strong> Sohbet mesajları (uçtan uca şifreli odalarda sunucuda saklanmaz).</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>2. Veri Kullanım Amacı</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Hesap oluşturma ve kimlik doğrulama işlemleri.</li>
+                                <li style={{ marginBottom: 6 }}>Platform güvenliğini sağlama ve kötüye kullanımı önleme.</li>
+                                <li style={{ marginBottom: 6 }}>Hizmet kalitesini iyileştirme ve teknik sorunları çözme.</li>
+                                <li style={{ marginBottom: 6 }}>Yasal yükümlülüklere uyum.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>3. Veri Güvenliği</h4>
+                            <div style={{ background: '#f0fdf4', borderRadius: 10, padding: '12px 16px', marginBottom: 12, border: '1px solid #bbf7d0' }}>
+                                <p style={{ margin: 0, color: '#166534', fontWeight: 600, fontSize: 12 }}>Tüm veriler SSL/TLS şifreleme ile iletilir. Şifreler bcrypt algoritması ile hash'lenir. Sesli ve görüntülü iletişim DTLS-SRTP protokolü ile korunur.</p>
+                            </div>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Veriler güvenli sunucularda saklanır ve düzenli yedeklenir.</li>
+                                <li style={{ marginBottom: 6 }}>Yetkisiz erişim girişimleri otomatik olarak engellenir ve loglanır.</li>
+                                <li style={{ marginBottom: 6 }}>Çalışanlarımız gizlilik sözleşmesine tabidir.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>4. Üçüncü Taraflar</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Kişisel verileriniz üçüncü taraflarla <strong>paylaşılmaz</strong> ve <strong>satılmaz</strong>.</li>
+                                <li style={{ marginBottom: 6 }}>Yasal zorunluluk durumları hariç, verileriniz yetkili makamlarla paylaşılmaz.</li>
+                                <li style={{ marginBottom: 6 }}>Anonim istatistiksel veriler hizmet iyileştirmesi için kullanılabilir.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>5. Çerezler (Cookies)</h4>
+                            <p>Platformumuz oturum yönetimi ve kullanıcı tercihleri için zorunlu çerezler kullanır. Bu çerezler reklam veya izleme amaçlı değildir.</p>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>6. Kullanıcı Hakları</h4>
+                            <ul style={{ paddingLeft: 20, margin: '8px 0' }}>
+                                <li style={{ marginBottom: 6 }}>Hesap bilgilerinizi istediğiniz zaman görüntüleyebilir ve güncelleyebilirsiniz.</li>
+                                <li style={{ marginBottom: 6 }}>Hesap silme talebinde bulunabilirsiniz — verileriniz 30 gün içinde kalıcı silinir.</li>
+                                <li style={{ marginBottom: 6 }}>Verilerinizin bir kopyasını talep edebilirsiniz.</li>
+                                <li style={{ marginBottom: 6 }}>Gizlilik ihlali şüphesi durumunda <strong>destek@sopranochat.com</strong> adresine bildirimde bulunabilirsiniz.</li>
+                            </ul>
+
+                            <h4 style={{ fontSize: 14, fontWeight: 800, color: '#1e293b', marginTop: 20, marginBottom: 8 }}>7. Değişiklikler</h4>
+                            <p>Bu gizlilik politikası zaman zaman güncellenebilir. Önemli değişiklikler platform içi bildirim ile kullanıcılara duyurulur.</p>
+                        </div>
+                        <button onClick={() => setShowPrivacyModal(false)} style={{
+                            width: '100%', padding: '10px 0', fontSize: 13, fontWeight: 700, marginTop: 24,
+                            background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 10, cursor: 'pointer',
+                            transition: 'background 0.15s',
+                        }} onMouseOver={e => (e.currentTarget.style.background = '#2563eb')} onMouseOut={e => (e.currentTarget.style.background = '#3b82f6')}>Anladım, Kapat</button>
+                    </div>
+                </div>
+            )}
+
+            {/* ÇEREZ BİLDİRİMİ BANNER */}
+            {showCookieConsent && !roomsMode && (
+                <div style={{
+                    position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99998,
+                    background: '#ffffff', borderTop: '1px solid #e2e8f0',
+                    boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
+                    padding: '16px 24px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+                    animation: 'ctxUiMenuIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                }}>
+                    <span style={{ fontSize: 20 }}>🍪</span>
+                    <p style={{ fontSize: 13, color: '#334155', margin: 0, lineHeight: 1.5, maxWidth: 600, fontWeight: 500 }}>
+                        SopranoChat, oturum yönetimi ve kullanıcı tercihleri için <strong>zorunlu çerezler</strong> kullanır. Platformu kullanarak bunu kabul etmiş olursunuz.
+                    </p>
+                    <button
+                        onClick={() => { localStorage.setItem('soprano_cookie_consent', 'true'); setShowCookieConsent(false); }}
+                        style={{
+                            background: '#3b82f6', color: '#fff', border: 'none', borderRadius: 8,
+                            padding: '8px 20px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
+                            whiteSpace: 'nowrap', transition: 'background 0.15s', flexShrink: 0,
+                        }}
+                        onMouseOver={e => (e.currentTarget.style.background = '#2563eb')}
+                        onMouseOut={e => (e.currentTarget.style.background = '#3b82f6')}
+                    >Anladım</button>
+                </div>
+            )}
         </>
     );
 }

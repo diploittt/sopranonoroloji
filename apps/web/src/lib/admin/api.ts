@@ -7,9 +7,9 @@ function getToken(): string | null {
     // Chat room admin panel uses soprano_admin_token
     const isTenantPage = window.location.pathname.startsWith('/t/');
     if (isTenantPage) {
-        return localStorage.getItem('soprano_tenant_token') || localStorage.getItem('soprano_admin_token') || localStorage.getItem('soprano_auth_token');
+        return sessionStorage.getItem('soprano_tenant_token') || sessionStorage.getItem('soprano_admin_token') || sessionStorage.getItem('soprano_auth_token');
     }
-    return localStorage.getItem('soprano_auth_token') || localStorage.getItem('soprano_admin_token') || localStorage.getItem('soprano_tenant_token');
+    return sessionStorage.getItem('soprano_auth_token') || sessionStorage.getItem('soprano_admin_token') || sessionStorage.getItem('soprano_tenant_token');
 }
 
 async function request<T = any>(path: string, options: RequestInit = {}): Promise<T> {

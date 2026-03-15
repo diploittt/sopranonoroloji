@@ -197,7 +197,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
             // Int alanlarını garanti et
             const s = syncedSettings as any;
             if (s.logoImageSize !== undefined && s.logoImageSize !== null) {
-                s.logoImageSize = parseInt(String(s.logoImageSize), 10) || 112;
+                s.logoImageSize = parseInt(String(s.logoImageSize), 10) || 160;
             }
             if (s.micDuration !== undefined) {
                 s.micDuration = parseInt(String(s.micDuration), 10) || 120;
@@ -316,20 +316,129 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
 
                                 {openSection === section.key && (
                                     <div className="admin-accordion-body">
-                                        {/* ═══ BRANDING: Canlı Logo Önizleme (sol panelde) ═══ */}
+                                        {/* ═══ BRANDING: Canlı Logo Önizleme + Dışarıdan Logo URL ═══ */}
                                         {section.key === 'branding' && (() => {
                                             const logoUrl = settings.logoUrl || '';
                                             const logoPosition = settings.logoPosition || 'left';
-                                            const logoImageSize = settings.logoImageSize || 112;
+                                            const logoImageSize = settings.logoImageSize || 160;
                                             const offsetX = settings.logoOffsetX || 0;
                                             const offsetY = settings.logoOffsetY || 0;
+                                            const logoName = settings.logoName || 'SopranoChat';
+                                            const logoTextColor = settings.logoTextColor || '#38d9d9';
+                                            const logoTextColor2 = settings.logoTextColor2 || '';
+                                            const logoTextSize = settings.logoTextSize || '1.4rem';
+                                            const logoTextFont = settings.logoTextFont || 'inherit';
 
                                             return (
-                                                <div style={{ marginBottom: 12 }}>
+                                                <div style={{ marginBottom: 16 }}>
                                                     <div style={{
                                                         fontSize: 11, fontWeight: 700, color: '#475569',
-                                                        letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 4,
+                                                        letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 6,
                                                     }}>🔍 Sol üst logo alanı canlı önizlemesi</div>
+
+                                                    {/* Canlı Önizleme Kutusu */}
+                                                    <div style={{
+                                                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
+                                                        borderRadius: 12, padding: '14px 16px', marginBottom: 12,
+                                                        border: '1px solid rgba(255,255,255,0.08)',
+                                                        display: 'flex', flexDirection: 'column',
+                                                        alignItems: logoPosition === 'center' ? 'center' : 'flex-start',
+                                                        gap: 8, minHeight: 80,
+                                                    }}>
+                                                        {logoUrl ? (
+                                                            <img
+                                                                src={logoUrl}
+                                                                alt="Logo önizleme"
+                                                                style={{
+                                                                    maxWidth: logoImageSize,
+                                                                    maxHeight: logoImageSize * 0.8,
+                                                                    objectFit: 'contain',
+                                                                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',
+                                                                    transform: `translate(${offsetX}px, ${offsetY}px)`,
+                                                                    transition: 'all 0.3s ease',
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <div style={{
+                                                                width: 48, height: 48, borderRadius: 12,
+                                                                background: 'rgba(255,255,255,0.06)',
+                                                                border: '1px dashed rgba(255,255,255,0.15)',
+                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                                color: 'rgba(255,255,255,0.25)', fontSize: 20,
+                                                            }}>🖼️</div>
+                                                        )}
+                                                        <span style={{
+                                                            fontSize: logoTextSize,
+                                                            fontWeight: 800,
+                                                            fontFamily: logoTextFont,
+                                                            letterSpacing: '-0.02em',
+                                                            ...(logoTextColor2 ? {
+                                                                backgroundImage: `linear-gradient(135deg, ${logoTextColor}, ${logoTextColor2})`,
+                                                                WebkitBackgroundClip: 'text',
+                                                                WebkitTextFillColor: 'transparent',
+                                                                backgroundClip: 'text',
+                                                            } : {
+                                                                color: logoTextColor,
+                                                            }),
+                                                        }}>{logoName}</span>
+                                                    </div>
+
+                                                    {/* Dışarıdan Logo URL'si */}
+                                                    <div style={{
+                                                        background: 'rgba(241,245,249,0.7)',
+                                                        borderRadius: 8, padding: '10px 12px',
+                                                        border: '1px solid rgba(100,116,139,0.15)',
+                                                    }}>
+                                                        <label style={{ fontSize: 10, fontWeight: 700, color: '#475569', letterSpacing: '0.1em', textTransform: 'uppercase' as const, display: 'block', marginBottom: 4 }}>
+                                                            🌐 Dışarıdan Logo URL
+                                                        </label>
+                                                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                                                            <input
+                                                                type="url"
+                                                                placeholder="https://example.com/logo.png"
+                                                                value={settings.logoUrl || ''}
+                                                                onChange={e => setSettings({ ...settings, logoUrl: e.target.value })}
+                                                                style={{
+                                                                    flex: 1, padding: '6px 10px', fontSize: 11, fontWeight: 500,
+                                                                    borderRadius: 6, border: '1px solid rgba(100,116,139,0.25)',
+                                                                    background: 'rgba(255,255,255,0.8)', color: '#0f172a',
+                                                                    outline: 'none',
+                                                                }}
+                                                            />
+                                                            <label style={{
+                                                                padding: '6px 10px', fontSize: 10, fontWeight: 700,
+                                                                borderRadius: 6, background: 'rgba(99,102,241,0.12)',
+                                                                border: '1px solid rgba(99,102,241,0.25)',
+                                                                color: '#6366f1', cursor: 'pointer',
+                                                                whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 4,
+                                                            }}>
+                                                                📁 Dosya
+                                                                <input
+                                                                    type="file"
+                                                                    accept="image/*"
+                                                                    style={{ display: 'none' }}
+                                                                    onChange={e => {
+                                                                        const file = e.target.files?.[0];
+                                                                        if (file) {
+                                                                            const reader = new FileReader();
+                                                                            reader.onload = () => setSettings({ ...settings, logoUrl: reader.result as string });
+                                                                            reader.readAsDataURL(file);
+                                                                        }
+                                                                    }}
+                                                                />
+                                                            </label>
+                                                        </div>
+                                                        {settings.logoUrl && (
+                                                            <button
+                                                                onClick={() => setSettings({ ...settings, logoUrl: '' })}
+                                                                style={{
+                                                                    marginTop: 6, fontSize: 10, fontWeight: 600,
+                                                                    color: '#ef4444', background: 'none', border: 'none',
+                                                                    cursor: 'pointer', padding: 0,
+                                                                }}
+                                                            >✕ Logo URL'sini Temizle</button>
+                                                        )}
+                                                    </div>
                                                 </div>
                                             );
                                         })()}

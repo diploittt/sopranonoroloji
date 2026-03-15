@@ -531,6 +531,47 @@ export class AdminService implements OnModuleInit {
 
           console.log(`[updateCustomer] roomLimit=${newLimit} → ${roomsToDelete.length} fazla oda silindi:`, roomsToDelete.map(r => r.name).join(', '));
         }
+
+        // ═══ roomLimit artırıldıysa eksik odaları otomatik oluştur ═══
+        if (currentRooms.length < newLimit) {
+          const roomsToCreate = newLimit - currentRooms.length;
+          // Mevcut oda isimlerini al — çakışma önlemek için
+          const existingSlugs = new Set(currentRooms.map(r => r.name));
+          let created = 0;
+          for (let i = 1; created < roomsToCreate; i++) {
+            const roomName = `Oda ${currentRooms.length + created + 1}`;
+            const roomSlug = `oda-${currentRooms.length + created + 1}`;
+            // Slug çakışma kontrolü
+            const slugExists = await this.prisma.room.findFirst({
+              where: { tenantId, slug: roomSlug },
+              select: { id: true },
+            });
+            if (!slugExists) {
+              await this.prisma.room.create({
+                data: {
+                  tenantId,
+                  name: roomName,
+                  slug: roomSlug,
+                  isVipRoom: false,
+                },
+              });
+              created++;
+            } else {
+              // Slug zaten varsa farklı isimle dene
+              const altSlug = `oda-${Date.now()}-${i}`;
+              await this.prisma.room.create({
+                data: {
+                  tenantId,
+                  name: `Oda ${i + currentRooms.length}`,
+                  slug: altSlug,
+                  isVipRoom: false,
+                },
+              });
+              created++;
+            }
+          }
+          console.log(`[updateCustomer] roomLimit=${newLimit} → ${roomsToCreate} yeni oda oluşturuldu`);
+        }
       }
     } catch (e) {
       console.error('[updateCustomer] Prisma update FAILED:', e);

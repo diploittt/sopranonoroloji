@@ -19,7 +19,7 @@ function CallbackHandler() {
             try {
                 const user = JSON.parse(userStr);
                 // Store JWT
-                localStorage.setItem(AUTH_TOKEN_KEY, token);
+                sessionStorage.setItem(AUTH_TOKEN_KEY, token);
                 // Store user for local auth system
                 setAuthUser({
                     userId: user.sub,

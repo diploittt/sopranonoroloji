@@ -61,7 +61,8 @@ import {
     Copy,
     Loader2,
     Check,
-    Link2
+    Link2,
+    UserCog
 } from 'lucide-react';
 import { useAdminStore } from '@/lib/admin/store';
 import { Tenant } from '@/lib/admin/types';
@@ -920,13 +921,21 @@ export default function OwnerPanel() {
                         <div className="w-9 h-9 rounded-full overflow-hidden" style={{ border: '2px solid rgba(255,255,255,0.15)', boxShadow: '0 2px 8px rgba(0,0,0,0.3)' }}>
                             <Image src={adminUser?.avatarUrl && (adminUser.avatarUrl.startsWith('http') || adminUser.avatarUrl.startsWith('/')) ? adminUser.avatarUrl : `/avatars/neutral_1.png`} width={36} height={36} alt="Owner" className="w-full h-full object-cover" />
                         </div>
-                        <div className="hidden lg:block overflow-hidden">
+                        <div className="hidden lg:block overflow-hidden flex-1">
                             <div style={{ fontSize: 12, fontWeight: 700, color: '#fff' }} className="truncate">{adminUser?.displayName || 'Admin'}</div>
                             <div style={{ fontSize: 9, color: 'rgba(200,170,110,0.5)' }}>{adminUser?.role === 'owner' ? 'Owner' : adminUser?.role === 'superadmin' ? 'Super Admin' : 'Admin'}</div>
                         </div>
                         <button
+                            onClick={() => { setEditingProfile(p => !p); setActiveView('hqMembers'); }}
+                            className="ml-auto owner-nav-btn hidden lg:flex"
+                            title="Profil Ayarları"
+                            style={{ padding: '6px', borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
+                        >
+                            <UserCog className="w-4 h-4" />
+                        </button>
+                        <button
                             onClick={handleLogout}
-                            className="ml-auto owner-nav-btn"
+                            className="owner-nav-btn"
                             title="Çıkış Yap"
                             style={{ padding: '6px', borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}
                         >
@@ -1817,38 +1826,38 @@ export default function OwnerPanel() {
 
                             {/* Stats */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-amber-500/20 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-amber-500/10 text-[#7b9fef]"><Briefcase className="w-4 h-4" /></div>
+                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-amber-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(245,158,11,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                                    <div className="p-2 rounded-lg bg-amber-500/15 text-[#7b9fef]"><Briefcase className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{tenants.length}</div>
-                                        <div className="text-[11px] text-gray-500">Toplam Müşteri</div>
+                                        <div className="text-[11px] text-gray-400">Toplam Müşteri</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-green-500/20 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-green-500/10 text-green-400"><CheckCircle className="w-4 h-4" /></div>
+                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-green-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(34,197,94,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                                    <div className="p-2 rounded-lg bg-green-500/15 text-green-400"><CheckCircle className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{tenants.filter(t => t.status === 'ACTIVE').length}</div>
-                                        <div className="text-[11px] text-gray-500">Aktif Müşteri</div>
+                                        <div className="text-[11px] text-gray-400">Aktif Müşteri</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-rose-500/20 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400"><AlertCircle className="w-4 h-4" /></div>
+                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-rose-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(244,63,94,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                                    <div className="p-2 rounded-lg bg-rose-500/15 text-rose-400"><AlertCircle className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{tenants.filter(t => { if (!t.expiresAt) return false; const d = new Date(t.expiresAt); const now = new Date(); const diff = (d.getTime() - now.getTime()) / (1000 * 60 * 60 * 24); return diff >= 0 && diff <= 7; }).length}</div>
-                                        <div className="text-[11px] text-gray-500">7 Gün İçinde Biten</div>
+                                        <div className="text-[11px] text-gray-400">7 Gün İçinde Biten</div>
                                     </div>
                                 </div>
-                                <div className="p-4 rounded-xl border bg-[#121218]/60 backdrop-blur-md border-cyan-500/20 flex items-center gap-3">
-                                    <div className="p-2 rounded-lg bg-cyan-500/10 text-cyan-400"><Server className="w-4 h-4" /></div>
+                                <div className="p-4 rounded-xl border bg-[#121218]/80 backdrop-blur-md border-cyan-500/25 flex items-center gap-3" style={{ boxShadow: '0 4px 20px rgba(0,0,0,0.4), 0 0 15px rgba(6,182,212,0.06), inset 0 1px 0 rgba(255,255,255,0.06)' }}>
+                                    <div className="p-2 rounded-lg bg-cyan-500/15 text-cyan-400"><Server className="w-4 h-4" /></div>
                                     <div>
                                         <div className="text-2xl font-extrabold text-white">{tenants.reduce((sum, t) => sum + (t.roomLimit || 0), 0)}</div>
-                                        <div className="text-[11px] text-gray-500">Toplam Oda Kapasitesi</div>
+                                        <div className="text-[11px] text-gray-400">Toplam Oda Kapasitesi</div>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Table */}
-                            <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/60 backdrop-blur-md">
+                            <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#121218]/80 backdrop-blur-md" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.05)' }}>
                                 <table className="w-full text-left border-collapse">
                                     <thead>
                                         <tr className="bg-white/5 border-b border-white/5 text-gray-400 text-xs uppercase tracking-wider">
@@ -1997,7 +2006,7 @@ export default function OwnerPanel() {
                                                 const isExpired = t.expiresAt && new Date(t.expiresAt) < new Date();
                                                 return (
                                                     <React.Fragment key={t.id}>
-                                                        <tr className="hover:bg-white/[0.02] transition-colors group">
+                                                        <tr className="hover:bg-white/[0.04] transition-colors group" style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center gap-3">
                                                                     {t.logoUrl ? (

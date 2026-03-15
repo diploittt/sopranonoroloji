@@ -23,15 +23,15 @@ interface SpeakerInfo {
 }
 
 export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
-    // Read JWT from localStorage — pick correct token based on URL context
+    // Read JWT from sessionStorage — pick correct token based on URL context
     const token = typeof window !== 'undefined'
         ? (() => {
             const isTenantPage = window.location.pathname.startsWith('/t/');
             if (isTenantPage) {
                 // On tenant pages, ONLY use the tenant-specific token — never fall back to system token
-                return localStorage.getItem('soprano_tenant_token') || undefined;
+                return sessionStorage.getItem('soprano_tenant_token') || undefined;
             }
-            return localStorage.getItem(AUTH_TOKEN_KEY) || undefined;
+            return sessionStorage.getItem(AUTH_TOKEN_KEY) || undefined;
         })()
         : undefined;
 
@@ -291,13 +291,13 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             setToastMessage({ type: 'error', title: '⛔ Zorla Atıldınız', message: data.reason || 'Yönetici tarafından zorla uzaklaştırıldınız.' });
             // ★ Clear ALL auth data — force full logout
             setTimeout(() => {
-                localStorage.removeItem('soprano_auth_token');
-                localStorage.removeItem('soprano_auth_user');
-                localStorage.removeItem('soprano_entry_url');
+                sessionStorage.removeItem('soprano_auth_token');
+                sessionStorage.removeItem('soprano_auth_user');
+                sessionStorage.removeItem('soprano_entry_url');
                 // Clear any tenant-scoped tokens too
-                Object.keys(localStorage).forEach(key => {
+                Object.keys(sessionStorage).forEach(key => {
                     if (key.startsWith('soprano_auth_token_') || key.startsWith('soprano_auth_user_')) {
-                        localStorage.removeItem(key);
+                        sessionStorage.removeItem(key);
                     }
                 });
                 window.location.href = '/';
@@ -317,8 +317,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             setSessionKicked({ message: data.message || 'Başka bir yerden giriş yapıldı. Bu oturum sonlandırıldı.' });
             setToastMessage({ type: 'error', title: '⚠️ Oturum Sonlandırıldı', message: data.message || 'Başka bir yerden giriş yapıldı.' });
             setTimeout(() => {
-                localStorage.removeItem('soprano_tenant_token');
-                localStorage.removeItem('soprano_tenant_user');
+                sessionStorage.removeItem('soprano_tenant_token');
+                sessionStorage.removeItem('soprano_tenant_user');
                 const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/);
                 const entryUrl = tenantMatch ? `/t/${tenantMatch[1]}` : '/';
                 window.location.href = entryUrl;
@@ -385,9 +385,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             } else if (data.action === 'exit_browser') {
                 setToastMessage({ type: 'error', title: 'Tarayıcı Kapatılıyor', message: 'Yönetici tarafından çıkışa zorlandınız.' });
                 // Clear all auth tokens to prevent re-entry
-                localStorage.removeItem('soprano_tenant_user');
-                localStorage.removeItem('soprano_auth_user');
-                localStorage.removeItem('soprano_jwt');
+                sessionStorage.removeItem('soprano_tenant_user');
+                sessionStorage.removeItem('soprano_auth_user');
+                sessionStorage.removeItem('soprano_jwt');
                 sessionStorage.clear();
                 // Disconnect socket
                 if (socket) socket.disconnect();
@@ -530,7 +530,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     newState.username = data.displayName;
                 }
                 try {
-                    localStorage.setItem('soprano_user', JSON.stringify(newState));
+                    sessionStorage.setItem('soprano_user', JSON.stringify(newState));
                 } catch (e) { console.error(e); }
                 // Also update participant list so sidebar reflects the change immediately
                 if (prev.userId) {

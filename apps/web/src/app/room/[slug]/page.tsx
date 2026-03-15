@@ -42,6 +42,119 @@ import OneToOneCallView from '@/components/roomUI/OneToOneCallView';
 import { useRouter } from 'next/navigation';
 import DuelArena from '@/components/roomUI/DuelArena';
 
+// ═══ Room Nav Scroller — header'daki oda butonları için yatay scroll bileşeni ═══
+function RoomNavScroller({ rooms, activeSlug, onSelect }: { rooms: any[]; activeSlug: string; onSelect: (slug: string) => void }) {
+    const navRef = useRef<HTMLDivElement>(null);
+    const [showLeft, setShowLeft] = useState(false);
+    const [showRight, setShowRight] = useState(false);
+
+    const checkScroll = useCallback(() => {
+        const el = navRef.current;
+        if (!el) return;
+        setShowLeft(el.scrollLeft > 8);
+        setShowRight(el.scrollLeft < el.scrollWidth - el.clientWidth - 8);
+    }, []);
+
+    useEffect(() => {
+        const el = navRef.current;
+        if (!el) return;
+        // İlk kontrol — biraz gecikmeyle (render sonrası)
+        const t = setTimeout(checkScroll, 100);
+        el.addEventListener('scroll', checkScroll);
+        const ro = new ResizeObserver(checkScroll);
+        ro.observe(el);
+        return () => { clearTimeout(t); el.removeEventListener('scroll', checkScroll); ro.disconnect(); };
+    }, [rooms.length, checkScroll]);
+
+    const scroll = (dir: number) => {
+        navRef.current?.scrollBy({ left: dir * 200, behavior: 'smooth' });
+    };
+
+    return (
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', position: 'relative', minWidth: 0, overflow: 'hidden' }}>
+            {/* Left Arrow */}
+            {showLeft && (
+                <button onClick={() => scroll(-1)} style={{
+                    position: 'absolute', left: 0, zIndex: 10,
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'rgba(30,34,46,0.95)', border: '1px solid rgba(255,255,255,0.25)',
+                    color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.5)', fontSize: 14, fontWeight: 700,
+                }}>‹</button>
+            )}
+
+            {/* Scrollable Nav */}
+            <div
+                ref={navRef}
+                style={{
+                    display: 'flex', alignItems: 'center', gap: 3,
+                    overflowX: 'auto', overflowY: 'hidden',
+                    flex: 1, paddingLeft: showLeft ? 30 : 4, paddingRight: showRight ? 30 : 4,
+                    scrollbarWidth: 'none',
+                    transition: 'padding 0.2s',
+                }}
+                className="room-nav-scroll"
+            >
+                {rooms.map((tab: any) => {
+                    const isActive = tab.slug === activeSlug;
+                    return (
+                        <button
+                            key={tab.slug}
+                            onClick={() => onSelect(tab.slug)}
+                            style={{
+                                padding: '4px 12px',
+                                background: isActive
+                                    ? 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 100%)'
+                                    : 'rgba(255,255,255,0.04)',
+                                border: isActive
+                                    ? '1px solid rgba(251,191,36,0.35)'
+                                    : '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: 16,
+                                cursor: 'pointer',
+                                color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.6)',
+                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                fontSize: 10,
+                                fontWeight: isActive ? 700 : 600,
+                                letterSpacing: '1.2px',
+                                textTransform: 'uppercase' as const,
+                                textDecoration: 'none',
+                                transition: 'all 0.3s ease',
+                                textShadow: isActive ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
+                                boxShadow: isActive
+                                    ? '0 0 12px rgba(251,191,36,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+                                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                whiteSpace: 'nowrap' as const,
+                                flexShrink: 0,
+                                position: 'relative' as const,
+                            }}
+                        >
+                            {tab.name}
+                            {isActive && (
+                                <span style={{
+                                    position: 'absolute', bottom: -2, left: '20%', right: '20%',
+                                    height: 2, borderRadius: 1,
+                                    background: 'linear-gradient(90deg, transparent, #fbbf24, transparent)',
+                                }} />
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+
+            {/* Right Arrow */}
+            {showRight && (
+                <button onClick={() => scroll(1)} style={{
+                    position: 'absolute', right: 0, zIndex: 10,
+                    width: 24, height: 24, borderRadius: '50%',
+                    background: 'rgba(30,34,46,0.95)', border: '1px solid rgba(255,255,255,0.25)',
+                    color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.5)', fontSize: 14, fontWeight: 700,
+                }}>›</button>
+            )}
+        </div>
+    );
+}
+
 // ─── PERMISSION-BASED MENU SYSTEM ──────────────────────────────────
 // ALL permissions, role hierarchy, and menu filtering are defined in
 // @/common/roomPermissions.ts — single source of truth.
@@ -2122,8 +2235,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         height: 78px;
                                         display: flex;
                                         align-items: center;
-                                        justify-content: center;
-                                        padding: 0 36px;
+                                        justify-content: space-between;
+                                        padding: 0 20px;
                                         background: linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%);
                                         border-radius: 0 0 28px 28px;
                                         border: 1px solid rgba(0,0,0,0.5);
@@ -2131,7 +2244,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12), inset 0 -1px 0 rgba(255,255,255,0.05);
                                         animation: roomHeaderSlide 0.6s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
                                         z-index: 50;
-                                        overflow: visible;
+                                        overflow: hidden;
                                         flex-shrink: 0;
                                     }
                                     .room-premium-header::after {
@@ -2144,7 +2257,23 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     }
                                     .room-header-logo {
                                         display: flex; flex-direction: column; align-items: flex-start;
-                                        gap: 2px; flex-shrink: 0; position: absolute; left: 36px;
+                                        gap: 2px; flex-shrink: 0; min-width: 180px;
+                                    }
+                                    .room-header-nav {
+                                        flex-wrap: nowrap !important;
+                                    }
+                                    .room-header-nav::-webkit-scrollbar {
+                                        height: 3px;
+                                    }
+                                    .room-header-nav::-webkit-scrollbar-track {
+                                        background: transparent;
+                                    }
+                                    .room-header-nav::-webkit-scrollbar-thumb {
+                                        background: rgba(255,255,255,0.12);
+                                        border-radius: 4px;
+                                    }
+                                    .room-header-nav::-webkit-scrollbar-thumb:hover {
+                                        background: rgba(255,255,255,0.25);
                                     }
                                     @keyframes roomHeaderSlide {
                                         0% { transform: translateY(-100%); opacity: 0; }
@@ -2621,7 +2750,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
                                             const ss = room.state.systemSettings;
                                             const bp = brandingPreview;
-                                            const logoName = (bp ? bp.logoName : ss.logoName) || ss.tenantDisplayName || ss.tenantName || 'SopranoChat';
+                                            const logoName = (bp ? bp.logoName : ss.logoName) || 'SopranoChat';
                                             const logoTextColor = (bp ? bp.logoTextColor : ss.logoTextColor) || '';
                                             const logoTextColor2 = (bp ? bp.logoTextColor2 : ss.logoTextColor2) || '';
                                             const logoTextFont = (bp ? bp.logoTextFont : ss.logoTextFont) || '';
@@ -2629,6 +2758,13 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             const color1 = logoTextColor || '#38d9d9';
                                             const color2 = logoTextColor2;
                                             const hasCustomBranding = ss.logoName || logoTextColor || logoTextFont || bp;
+
+                                            // Özel branding yoksa varsayılan SopranoChat logosunu göster
+                                            if (!hasCustomBranding && logoName === 'SopranoChat') {
+                                                return (
+                                                    <h1 className="room-retro-logo-text"><span className="room-retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="room-retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
+                                                );
+                                            }
 
                                             return (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
@@ -2663,77 +2799,37 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         })()}
                                     </div>
 
-                                    <nav className="room-header-nav" style={{ flex: 1, justifyContent: 'center', position: 'relative', gap: 4 }}>
-                                        {/* Room Nav Links — premium pill buttons */}
-                                        {(room.state.rooms || [])
-                                            .filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))
-                                            .map((tab: any, i: number) => {
-                                                const isActive = tab.slug === activeSlug;
-                                                return (
-                                                    <Fragment key={tab.slug}>
-                                                        <button
-                                                            onClick={() => { setActiveSlug(tab.slug); window.history.replaceState(null, '', roomUrl(tab.slug)); }}
-                                                            style={{
-                                                                padding: '5px 14px',
-                                                                background: isActive
-                                                                    ? 'linear-gradient(135deg, rgba(251,191,36,0.18) 0%, rgba(245,158,11,0.10) 100%)'
-                                                                    : 'rgba(255,255,255,0.04)',
-                                                                border: isActive
-                                                                    ? '1px solid rgba(251,191,36,0.35)'
-                                                                    : '1px solid rgba(255,255,255,0.08)',
-                                                                borderRadius: 20,
-                                                                cursor: 'pointer',
-                                                                color: isActive ? '#fbbf24' : 'rgba(255,255,255,0.6)',
-                                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                                                fontSize: 10,
-                                                                fontWeight: isActive ? 700 : 600,
-                                                                letterSpacing: '2px',
-                                                                textTransform: 'uppercase' as const,
-                                                                textDecoration: 'none',
-                                                                transition: 'all 0.3s ease',
-                                                                textShadow: isActive ? '0 0 12px rgba(251,191,36,0.5)' : 'none',
-                                                                boxShadow: isActive
-                                                                    ? '0 0 12px rgba(251,191,36,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
-                                                                    : 'inset 0 1px 0 rgba(255,255,255,0.04)',
-                                                                animation: `roomContentFadeIn 0.4s ease ${0.15 + i * 0.1}s both`,
-                                                                whiteSpace: 'nowrap' as const,
-                                                                position: 'relative' as const,
-                                                            }}
-                                                        >
-                                                            {tab.name}
-                                                            {isActive && (
-                                                                <span style={{
-                                                                    position: 'absolute', bottom: -2, left: '20%', right: '20%',
-                                                                    height: 2, borderRadius: 1,
-                                                                    background: 'linear-gradient(90deg, transparent, #fbbf24, transparent)',
-                                                                }} />
-                                                            )}
-                                                        </button>
-                                                    </Fragment>
-                                                );
-                                            })}
-                                    </nav>
+                                    {/* ═══ ROOM NAV WITH SCROLL ARROWS ═══ */}
+                                    <RoomNavScroller
+                                        rooms={(room.state.rooms || []).filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))}
+                                        activeSlug={activeSlug}
+                                        onSelect={(slug: string) => { setActiveSlug(slug); window.history.replaceState(null, '', roomUrl(slug)); }}
+                                    />
 
-                                    {/* HOME — sağ tarafa, KÜRSÜ alanının üstüne */}
-                                    <a
-                                        href={tenantMatch ? `/t/${tenantMatch[1]}` : '/'}
-                                        style={{
-                                            color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 5,
-                                            animation: 'roomContentFadeIn 0.4s ease 0.1s both',
-                                            fontWeight: 700, letterSpacing: '0.08em',
-                                            textTransform: 'uppercase' as const, fontSize: 10,
-                                            textDecoration: 'none', padding: '5px 10px',
-                                            background: 'rgba(56,189,248,0.08)',
-                                            border: '1px solid rgba(56,189,248,0.15)',
-                                            borderRadius: 20, cursor: 'pointer',
-                                            fontFamily: "'Plus Jakarta Sans', sans-serif",
-                                            transition: 'all 0.3s ease',
-                                            marginLeft: 8, marginRight: 20, flexShrink: 0,
-                                        }}
-                                    >
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                                        HOME
-                                    </a>
+
+
+                                    {/* HOME — sağ panel genişliğinde wrapper, nav sağ sınırı burası */}
+                                    <div style={{ width: 260, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingRight: 20 }}>
+                                        <a
+                                            href={tenantMatch ? `/t/${tenantMatch[1]}` : '/'}
+                                            style={{
+                                                color: '#38bdf8', display: 'flex', alignItems: 'center', gap: 5,
+                                                animation: 'roomContentFadeIn 0.4s ease 0.1s both',
+                                                fontWeight: 700, letterSpacing: '0.08em',
+                                                textTransform: 'uppercase' as const, fontSize: 10,
+                                                textDecoration: 'none', padding: '5px 10px',
+                                                background: 'rgba(56,189,248,0.08)',
+                                                border: '1px solid rgba(56,189,248,0.15)',
+                                                borderRadius: 20, cursor: 'pointer',
+                                                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                                transition: 'all 0.3s ease',
+                                                flexShrink: 0,
+                                            }}
+                                        >
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
+                                            HOME
+                                        </a>
+                                    </div>
                                 </header>
 
                                 {/* ─── CHATROOM CONTAINER ─── */}
