@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { SOCKET_URL_BASE } from '@/lib/api';
 import { useRouter } from 'next/navigation';
 import {
     LayoutDashboard,
@@ -226,23 +227,29 @@ export default function OwnerPanel() {
 
         // Socket.IO bağlantısı — admin:new_order dinle
         const token = sessionStorage.getItem('soprano_admin_token');
+        let mounted = true;
+        let socketTimer: ReturnType<typeof setTimeout>;
         if (token) {
-            const socket = io(API_URL.replace('/api', ''), {
-                auth: { token },
-                transports: ['websocket', 'polling'],
-            });
-            socketRef.current = socket;
+            socketTimer = setTimeout(() => {
+                if (!mounted) return;
+                const socket = io(SOCKET_URL_BASE, {
+                    auth: { token },
+                    transports: ['websocket', 'polling'],
+                });
+                socketRef.current = socket;
 
-            socket.on('admin:new_order', (data: any) => {
-                setPendingOrderCount(data.pendingCount || 0);
-                const name = data.order?.firstName ? `${data.order.firstName} ${data.order.lastName || ''}`.trim() : 'Bilinmeyen';
-                addToast(`🛒 Yeni sipariş: ${name} — ${data.order?.packageName || 'Paket'}`, 'success');
-                // Eğer siparişler sayfası açıksa listeyi yenile
-                fetchInlineOrders();
-            });
+                socket.on('admin:new_order', (data: any) => {
+                    setPendingOrderCount(data.pendingCount || 0);
+                    const name = data.order?.firstName ? `${data.order.firstName} ${data.order.lastName || ''}`.trim() : 'Bilinmeyen';
+                    addToast(`🛒 Yeni sipariş: ${name} — ${data.order?.packageName || 'Paket'}`, 'success');
+                    fetchInlineOrders();
+                });
+            }, 500);
 
             return () => {
-                socket.disconnect();
+                mounted = false;
+                clearTimeout(socketTimer);
+                socketRef.current?.disconnect();
                 socketRef.current = null;
             };
         }
@@ -696,7 +703,7 @@ export default function OwnerPanel() {
                 headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
                 body: JSON.stringify({ siteConfig, logoUrl: siteLogoUrl, logoName: siteLogoName }),
             });
-            if (res.ok) { addToast('Site ayarları kaydedildi ✅', 'success'); }
+            if (res.ok) { addToast('Site ayarları kaydedildi ✅', 'success'); window.dispatchEvent(new Event('siteconfig-updated')); }
             else { addToast('Kaydetme hatası', 'error'); }
         } catch { addToast('Kaydetme hatası', 'error'); }
         setSiteConfigSaving(false);
@@ -3615,79 +3622,119 @@ export default function OwnerPanel() {
                                                     <span className="text-xs font-bold text-gray-400 flex items-center gap-2">👁️ Ana Sayfa Önizleme</span>
                                                     <span className="text-[9px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
                                                 </div>
-                                                {/* Mini Ana Sayfa */}
-                                                <div className="relative bg-[#0a0a12]" style={{ height: 480 }}>
-                                                    {/* Header */}
-                                                    <div className="h-10 flex items-center px-3 gap-2 border-b border-white/5 bg-black/40">
-                                                        {siteLogoUrl ? (
-                                                            // eslint-disable-next-line @next/next/no-img-element
-                                                            <img src={siteLogoUrl} alt="" className="w-5 h-5 rounded object-cover" />
-                                                        ) : (
-                                                            <div className="w-5 h-5 rounded bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center"><span className="text-[6px] font-bold text-white">S</span></div>
-                                                        )}
-                                                        <span className="text-[9px] font-bold text-white/90">{siteLogoName || 'SopranoChat'}</span>
-                                                        <div className="ml-auto flex items-center gap-2">
-                                                            {['Özellikler', 'Fiyatlar', 'İletişim'].map(n => (
-                                                                <span key={n} className="text-[7px] text-gray-400 hover:text-white cursor-default">{n}</span>
-                                                            ))}
-                                                            <div className="px-2 py-0.5 rounded bg-indigo-500/20 border border-indigo-500/30">
-                                                                <span className="text-[7px] font-bold text-indigo-300">Giriş</span>
+                                                {/* Mini Ana Sayfa — Gerçek Retro Tasarımla Eşleşen Ön İzleme */}
+                                                <div className="relative overflow-hidden" style={{ height: 520, background: `linear-gradient(180deg, ${siteConfig.homepage?.bodyGradient1 || '#a3ace5'} 0%, ${siteConfig.homepage?.bodyGradient2 || '#c4c9ee'} 50%, ${siteConfig.homepage?.bodyGradient3 || '#d8dbf4'} 100%)`, padding: '8px 0' }}>
+                                                    {/* Ana Kasa — Beyaz kenar bordürlü */}
+                                                    <div style={{
+                                                        margin: '0 auto', width: '94%', background: siteConfig.homepage?.mainBg || '#7a7e9e',
+                                                        borderLeft: '6px solid rgba(255,255,255,0.85)', borderRight: '6px solid rgba(255,255,255,0.85)', borderBottom: '6px solid rgba(255,255,255,0.85)',
+                                                        boxShadow: '0 0 15px rgba(0,0,0,0.25), -2px 0 8px rgba(0,0,0,0.18), 2px 0 8px rgba(0,0,0,0.18)',
+                                                        position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', minHeight: 490
+                                                    }}>
+                                                        {/* Barrel Header */}
+                                                        <div style={{
+                                                            width: '99%', height: 32, margin: '0 auto',
+                                                            background: `linear-gradient(180deg, ${siteConfig.homepage?.headerGradient1 || '#5a6070'} 0%, ${siteConfig.homepage?.headerGradient2 || '#3d4250'} 15%, ${siteConfig.homepage?.headerGradient3 || '#1e222e'} 50%, ${siteConfig.homepage?.headerGradient4 || '#282c3a'} 75%, ${siteConfig.homepage?.headerGradient5 || '#3a3f50'} 100%)`,
+                                                            borderRadius: '0 0 12px 12px', border: '1px solid rgba(0,0,0,0.5)', borderTop: '1px solid rgba(120,130,150,0.6)',
+                                                            display: 'flex', alignItems: 'center', padding: '0 10px', position: 'relative'
+                                                        }}>
+                                                            {/* Retro Logo */}
+                                                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
+                                                                <span style={{ fontFamily: 'serif', fontWeight: 900, fontSize: 10, color: '#f5e6d3', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                                    {(siteConfig.siteTitle || 'SopranoChat').replace(/Chat$/i, '') || 'Soprano'}
+                                                                </span>
+                                                                <span style={{ fontFamily: 'serif', fontWeight: 900, fontSize: 10, color: '#d4c5a9', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
+                                                                    {(siteConfig.siteTitle || 'SopranoChat').match(/Chat$/i) ? 'Chat' : ''}
+                                                                </span>
+                                                            </div>
+                                                            {/* Nav Items */}
+                                                            <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                                {(siteConfig.homepage?.navItems || [
+                                                                    { label: 'HOME', section: 'home' }, { label: 'ODALAR', section: '_odalar' }, { label: 'REHBER', section: 'rehber' },
+                                                                    { label: 'FİYATLAR', section: 'fiyatlar' }, { label: 'İLETİŞİM', section: 'iletisim' }
+                                                                ]).filter((n: any) => n.visible !== false).slice(0, 4).map((n: any, i: number) => (
+                                                                    <span key={i} style={{ fontSize: 5, fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 0.5 }}>{n.label}</span>
+                                                                ))}
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    {/* Hero Section */}
-                                                    <div className="px-4 pt-8 pb-4 text-center">
-                                                        <div className="mx-auto w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-500/30 flex items-center justify-center mb-3">
-                                                            {siteLogoUrl ? (
-                                                                // eslint-disable-next-line @next/next/no-img-element
-                                                                <img src={siteLogoUrl} alt="" className="w-8 h-8 rounded-xl object-cover" />
-                                                            ) : (
-                                                                <span className="text-lg">💬</span>
+
+                                                        {/* Glossy Panel — Login / Hero */}
+                                                        <div style={{
+                                                            width: '85%', margin: '12px auto 8px',
+                                                            background: `radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.05) 0%, transparent 40%), linear-gradient(180deg, ${siteConfig.homepage?.loginBg || 'rgba(30,41,59,0.85)'} 0%, rgba(15,23,42,0.55) 100%)`,
+                                                            border: `1px solid ${siteConfig.homepage?.loginCardBorder || 'rgba(255,255,255,0.15)'}`,
+                                                            borderTop: '1px solid rgba(255,255,255,0.3)', borderRadius: 10, padding: '14px 12px', textAlign: 'center',
+                                                            backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                                                        }}>
+                                                            <div style={{ fontSize: 12, fontWeight: 900, color: '#fff', marginBottom: 2, fontFamily: 'serif', textShadow: '0 1px 3px rgba(0,0,0,0.4)' }}>
+                                                                {siteConfig.siteTitle || 'SopranoChat'}
+                                                            </div>
+                                                            <div style={{ fontSize: 7, color: 'rgba(255,255,255,0.5)', marginBottom: 8, fontWeight: 500 }}>
+                                                                {siteConfig.siteSlogan || 'Premium Sohbet Platformu'}
+                                                            </div>
+                                                            <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+                                                                <div style={{ padding: '3px 10px', borderRadius: 6, fontSize: 6, fontWeight: 800, color: '#fff', background: `linear-gradient(135deg, ${siteConfig.homepage?.loginAccentColor || '#38bdf8'}, ${siteConfig.primaryColor || '#6366f1'})`, boxShadow: '0 2px 6px rgba(0,0,0,0.3)' }}>
+                                                                    {siteConfig.homepage?.heroCTA1 || 'Hemen Başla'}
+                                                                </div>
+                                                                <div style={{ padding: '3px 10px', borderRadius: 6, fontSize: 6, fontWeight: 700, color: 'rgba(255,255,255,0.6)', border: '1px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.05)' }}>
+                                                                    {siteConfig.homepage?.heroCTA2 || 'Detaylı Bilgi'}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Paketler Glossy Panel */}
+                                                        <div style={{
+                                                            width: '85%', margin: '0 auto 8px',
+                                                            background: `radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.06) 0%, transparent 60%), linear-gradient(180deg, ${siteConfig.homepage?.loginBg || 'rgba(30,41,59,0.85)'} 0%, rgba(15,23,42,0.5) 100%)`,
+                                                            border: `1px solid ${siteConfig.homepage?.loginCardBorder || 'rgba(255,255,255,0.12)'}`,
+                                                            borderTop: '1px solid rgba(255,255,255,0.25)', borderRadius: 10, padding: '10px',
+                                                            backdropFilter: 'blur(8px)', boxShadow: '0 4px 16px rgba(0,0,0,0.3)'
+                                                        }}>
+                                                            <div style={{ fontSize: 7, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textAlign: 'center', marginBottom: 6, letterSpacing: 1.5, textTransform: 'uppercase' }}>Paketler</div>
+                                                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 4 }}>
+                                                                {[
+                                                                    { name: siteConfig.pricing?.p1Name || 'Ses + Metin', price: siteConfig.pricing?.p1Monthly || '990', accent: '#fbbf24' },
+                                                                    { name: siteConfig.pricing?.p2Name || 'Kamera + Ses', price: siteConfig.pricing?.p2Monthly || '1.390', accent: '#a78bfa', popular: true },
+                                                                    { name: siteConfig.pricing?.p3Name || 'White Label', price: siteConfig.pricing?.p3Monthly || '6.990', accent: '#34d399' },
+                                                                ].map((p, i) => (
+                                                                    <div key={i} style={{
+                                                                        borderRadius: 6, padding: '5px 4px', textAlign: 'center',
+                                                                        border: p.popular ? `1px solid ${p.accent}40` : '1px solid rgba(255,255,255,0.06)',
+                                                                        background: p.popular ? `${p.accent}08` : 'rgba(255,255,255,0.02)',
+                                                                    }}>
+                                                                        {p.popular && <div style={{ fontSize: 4, fontWeight: 800, color: p.accent, marginBottom: 1 }}>POPÜLER</div>}
+                                                                        <div style={{ fontSize: 6, fontWeight: 700, color: '#fff' }}>{p.name}</div>
+                                                                        <div style={{ fontSize: 8, fontWeight: 900, color: '#fff', marginTop: 1 }}>₺{p.price}</div>
+                                                                        <div style={{ fontSize: 4, color: 'rgba(255,255,255,0.4)' }}>/ay</div>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                            {siteConfig.pricing?.yearlyDiscount && (
+                                                                <div style={{ textAlign: 'center', marginTop: 4 }}>
+                                                                    <span style={{ fontSize: 5, color: '#34d399', background: 'rgba(52,211,153,0.1)', padding: '1px 6px', borderRadius: 8 }}>{siteConfig.pricing.yearlyDiscount}</span>
+                                                                </div>
                                                             )}
                                                         </div>
-                                                        <div className="text-[11px] font-extrabold text-white mb-1">{siteConfig.siteTitle || siteLogoName || 'SopranoChat'}</div>
-                                                        <div className="text-[8px] text-gray-400 mb-3">{siteConfig.siteSlogan || 'Premium Sohbet Platformu'}</div>
-                                                        <div className="flex items-center justify-center gap-2 mb-5">
-                                                            <div className="px-3 py-1 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-[7px] font-bold text-white">Hemen Başla</div>
-                                                            <div className="px-3 py-1 rounded-lg bg-white/5 border border-white/10 text-[7px] font-bold text-gray-300">Detaylı Bilgi</div>
-                                                        </div>
-                                                    </div>
-                                                    {/* Fiyat Kartları */}
-                                                    <div className="px-3 mb-4">
-                                                        <div className="text-[8px] font-bold text-gray-400 text-center mb-2 uppercase tracking-wider">Paketler</div>
-                                                        <div className="grid grid-cols-3 gap-1.5">
-                                                            {[
-                                                                { name: siteConfig.pricing?.p1Name || 'Starter', price: siteConfig.pricing?.p1Monthly || '990', color: 'amber' },
-                                                                { name: siteConfig.pricing?.p2Name || 'Pro', price: siteConfig.pricing?.p2Monthly || '1.990', color: 'green', popular: true },
-                                                                { name: siteConfig.pricing?.p3Name || 'Bayi', price: siteConfig.pricing?.p3Monthly || '4.990', color: 'blue' },
-                                                            ].map((p, i) => (
-                                                                <div key={i} className={`rounded-lg border p-2 text-center ${p.popular ? `border-${p.color}-500/30 bg-${p.color}-500/5` : 'border-white/5 bg-white/[0.02]'}`}>
-                                                                    {p.popular && <div className="text-[5px] font-bold text-green-400 uppercase mb-0.5">Popüler</div>}
-                                                                    <div className="text-[7px] font-bold text-white">{p.name}</div>
-                                                                    <div className="text-[9px] font-extrabold text-white mt-0.5">₺{p.price}</div>
-                                                                    <div className="text-[5px] text-gray-400">/ay</div>
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                        {siteConfig.pricing?.yearlyDiscount && (
-                                                            <div className="text-center mt-1">
-                                                                <span className="text-[6px] text-green-400 bg-green-500/10 px-2 py-0.5 rounded-full">{siteConfig.pricing.yearlyDiscount}</span>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                    {/* İletişim */}
-                                                    <div className="px-3 mb-3">
-                                                        <div className="rounded-lg border border-white/5 bg-white/[0.02] p-2 flex items-center gap-2">
-                                                            <div className="w-6 h-6 rounded-full bg-indigo-500/10 flex items-center justify-center"><span className="text-[8px]">📧</span></div>
+
+                                                        {/* İletişim Mini */}
+                                                        <div style={{
+                                                            width: '85%', margin: '0 auto 8px',
+                                                            background: `linear-gradient(180deg, ${siteConfig.homepage?.loginBg || 'rgba(30,41,59,0.85)'} 0%, rgba(15,23,42,0.5) 100%)`,
+                                                            border: `1px solid ${siteConfig.homepage?.loginCardBorder || 'rgba(255,255,255,0.1)'}`,
+                                                            borderRadius: 10, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: 6,
+                                                            backdropFilter: 'blur(8px)'
+                                                        }}>
+                                                            <div style={{ width: 18, height: 18, borderRadius: '50%', background: 'rgba(56,189,248,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ fontSize: 7 }}>📧</span></div>
                                                             <div>
-                                                                <div className="text-[7px] font-bold text-white">{siteConfig.contactEmail || 'info@soprano.chat'}</div>
-                                                                <div className="text-[5px] text-gray-400">{siteConfig.contactPhone || '+90 555 000 00 00'}</div>
+                                                                <div style={{ fontSize: 6, fontWeight: 700, color: '#fff' }}>{siteConfig.contact?.email || 'info@soprano.chat'}</div>
+                                                                <div style={{ fontSize: 5, color: 'rgba(255,255,255,0.4)' }}>{siteConfig.contact?.phone || siteConfig.contact?.whatsapp || '+90 555 000 00 00'}</div>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    {/* Footer */}
-                                                    <div className="absolute bottom-0 left-0 right-0 px-3 py-2 border-t border-white/5 bg-black/40">
-                                                        <div className="text-[6px] text-gray-400 text-center">{siteConfig.footerText || '© 2025 SopranoChat. Tüm hakları saklıdır.'}</div>
+
+                                                        {/* Footer */}
+                                                        <div style={{ position: 'absolute', bottom: 6, left: 0, right: 0, textAlign: 'center' }}>
+                                                            <div style={{ fontSize: 5, color: 'rgba(255,255,255,0.3)', fontWeight: 600, letterSpacing: 0.5 }}>{siteConfig.footerText || '© 2026 SopranoChat Systems.'}</div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>

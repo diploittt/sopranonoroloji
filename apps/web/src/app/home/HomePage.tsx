@@ -274,11 +274,18 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     }, []);
 
     // ★ Fetch branding — admin panelden dinamik site config
-    useEffect(() => {
+    const fetchBranding = () => {
         fetch(`${API_URL}/admin/branding`)
             .then(r => r.ok ? r.json() : null)
             .then(data => { if (data) setBranding(data); })
             .catch(() => {});
+    };
+    useEffect(() => {
+        fetchBranding();
+        // Kayıt sonrası anlık yansıma: OwnerPanel kaydedince bu event tetiklenir
+        const onConfigUpdated = () => fetchBranding();
+        window.addEventListener('siteconfig-updated', onConfigUpdated);
+        return () => window.removeEventListener('siteconfig-updated', onConfigUpdated);
     }, []);
 
     // ★ İletişim formu gönderme
@@ -434,7 +441,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 body {
                     margin: 0;
                     padding: 0;
-                    background: linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%);
+                    background: linear-gradient(to bottom, ${branding?.siteConfig?.homepage?.bodyGradient1 || '#a3ace5'} 0%, ${branding?.siteConfig?.homepage?.bodyGradient2 || '#c4c9ee'} 50%, ${branding?.siteConfig?.homepage?.bodyGradient3 || '#d8dbf4'} 100%);
                     background-attachment: fixed;
                     font-family: 'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif;
                     color: #f8fafc;
@@ -448,7 +455,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     max-width: 1400px;
                     margin: 0 auto;
                     position: relative;
-                    background-color: #7a7e9e;
+                    background-color: ${branding?.siteConfig?.homepage?.mainBg || '#7a7e9e'};
                     padding-bottom: 32px;
                     border-left: 14px solid rgba(255,255,255,0.85);
                     border-right: 14px solid rgba(255,255,255,0.85);
@@ -518,11 +525,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     margin: 0 auto;
                     /* Bombeli metalik gradient — barrel efekti */
                     background: linear-gradient(180deg,
-                        #5a6070 0%,
-                        #3d4250 15%,
-                        #1e222e 50%,
-                        #282c3a 75%,
-                        #3a3f50 100%);
+                        ${branding?.siteConfig?.homepage?.headerGradient1 || '#5a6070'} 0%,
+                        ${branding?.siteConfig?.homepage?.headerGradient2 || '#3d4250'} 15%,
+                        ${branding?.siteConfig?.homepage?.headerGradient3 || '#1e222e'} 50%,
+                        ${branding?.siteConfig?.homepage?.headerGradient4 || '#282c3a'} 75%,
+                        ${branding?.siteConfig?.homepage?.headerGradient5 || '#3a3f50'} 100%);
                     border-radius: 0 0 28px 28px;
                     border: 1px solid rgba(0,0,0,0.5);
                     border-top: 1px solid rgba(120,130,150,0.6);
@@ -723,10 +730,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     background:
                         radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
                         linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%),
-                        linear-gradient(180deg, rgba(30, 41, 59, 0.85) 0%, rgba(15, 23, 42, 0.55) 100%);
+                        linear-gradient(180deg, ${branding?.siteConfig?.homepage?.loginBg || 'rgba(30, 41, 59, 0.85)'} 0%, rgba(15, 23, 42, 0.55) 100%);
                     backdrop-filter: blur(24px);
                     -webkit-backdrop-filter: blur(24px);
-                    border: 1px solid rgba(255,255,255,0.15);
+                    border: 1px solid ${branding?.siteConfig?.homepage?.loginCardBorder || 'rgba(255,255,255,0.15)'};
                     border-top: 1px solid rgba(255,255,255,0.35);
                     border-left: 1px solid rgba(255,255,255,0.2);
                     box-shadow:
@@ -775,7 +782,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 .btn-3d-white:active { transform: translateY(1px); box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.3); }
 
                 .input-inset { background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-top: 1px solid rgba(0,0,0,0.4); box-shadow: inset 0 3px 6px rgba(0,0,0,0.3); border-radius: 10px; color: #fff; transition: all 0.2s ease; }
-                .input-inset:focus { outline: none; background: rgba(0,0,0,0.3); border-color: #38bdf8; box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px rgba(56, 189, 248, 0.2); }
+                .input-inset:focus { outline: none; background: rgba(0,0,0,0.3); border-color: ${branding?.siteConfig?.homepage?.loginAccentColor || '#38bdf8'}; box-shadow: inset 0 3px 6px rgba(0,0,0,0.4), 0 0 10px ${branding?.siteConfig?.homepage?.loginAccentColor || 'rgba(56, 189, 248, 0.2)'}33; }
                 .input-inset::placeholder { color: rgba(255,255,255,0.3); }
 
                 .room-item { transition: all 0.2s ease; border: 1px solid transparent; }
@@ -1247,7 +1254,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     transform: (demoPhase === 'bar-up' || demoPhase === 'exit-bar-up') ? 'translateY(-100%)' : 'translateY(0)',
                 }}>
                     <div className="header-logo" style={demoMode ? { transform: 'scale(0.65)', transformOrigin: 'left center' } : {}}>
-                        <h1 className="retro-logo-text"><span className="retro-logo-soprano">Soprano</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="retro-logo-chat">Chat</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span></span></h1>
+                        <h1 className="retro-logo-text"><span className="retro-logo-soprano">{(branding?.siteConfig?.siteTitle || 'SopranoChat').replace(/Chat$/i, '') || 'Soprano'}</span><span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}><span className="retro-logo-chat">{(branding?.siteConfig?.siteTitle || 'SopranoChat').match(/Chat$/i) ? 'Chat' : ''}</span><span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>{branding?.siteConfig?.siteSlogan || 'Senin Sesin'}</span></span></h1>
                     </div>
 
                     <nav className="header-nav">
@@ -1373,14 +1380,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 </button>
                             </>
                         ) : (
-                            [
-                                { label: 'HOME', section: 'home' },
-                                { label: 'ODALAR', section: '_odalar' },
-                                { label: 'REHBER', section: 'rehber' },
-                                { label: 'FİYATLAR', section: 'fiyatlar' },
-                                { label: 'REFERANSLAR', section: 'referanslar' },
-                                { label: 'İLETİŞİM', section: 'iletisim' },
-                            ].map((item, i, arr) => (
+                            (branding?.siteConfig?.homepage?.navItems || [
+                                { label: 'HOME', section: 'home', visible: true },
+                                { label: 'ODALAR', section: '_odalar', visible: true },
+                                { label: 'REHBER', section: 'rehber', visible: true },
+                                { label: 'FİYATLAR', section: 'fiyatlar', visible: true },
+                                { label: 'REFERANSLAR', section: 'referanslar', visible: true },
+                                { label: 'İLETİŞİM', section: 'iletisim', visible: true },
+                            ]).filter((item: any) => item.visible !== false).map((item: any, i: number, arr: any[]) => (
                                 <React.Fragment key={i}>
                                     <button
                                         className={`nav-link nav-link-${i}`}
@@ -1413,8 +1420,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             window.scrollTo({ top: 0, behavior: 'smooth' });
                                         }}
                                         style={{
-                                            color: activeSection === item.section ? '#38bdf8' : undefined,
-                                            textShadow: activeSection === item.section ? '0 0 10px rgba(56,189,248,0.4)' : undefined,
+                                            color: activeSection === item.section ? (branding?.siteConfig?.homepage?.loginAccentColor || '#38bdf8') : undefined,
+                                            textShadow: activeSection === item.section ? `0 0 10px ${branding?.siteConfig?.homepage?.loginAccentColor || 'rgba(56,189,248,0.4)'}66` : undefined,
                                         }}
                                     >{item.label}</button>
                                     {i < arr.length - 1 && <span className="nav-dot" />}
@@ -2428,7 +2435,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 )}
 
                                 {/* FİYATLAR SECTION */}
-                                {activeSection === 'fiyatlar' && (
+                                {activeSection === 'fiyatlar' && (branding?.siteConfig?.homepage?.showPackages !== false) && (
                                     <div style={{ maxWidth: 960, margin: '0 auto', position: 'relative' }}>
                                         {/* Gallery Lamp */}
                                         <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
@@ -2622,7 +2629,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 )}
 
                                 {/* REHBER SECTION */}
-                                {activeSection === 'rehber' && (
+                                {activeSection === 'rehber' && (branding?.siteConfig?.homepage?.showGuide !== false) && (
                                     <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                                         {/* Gallery Lamp */}
                                         <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards' }}>
@@ -2770,7 +2777,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                 )}
 
                                 {/* REFERANSLAR SECTION */}
-                                {activeSection === 'referanslar' && (
+                                {activeSection === 'referanslar' && (branding?.siteConfig?.homepage?.showReferences !== false) && (
                                     <div style={{ maxWidth: 860, margin: '0 auto', position: 'relative' }}>
                                         {/* Gallery Lamp */}
                                         <div className="gallery-lamp-svg" key={'lamp-section-' + sectionChangeKey} style={{ animation: lampAnimDone.current['referanslar'] ? 'none' : (isInitialLoad.current ? 'lampSlideDown 1s cubic-bezier(0.22, 0.61, 0.36, 1) 0s both' : 'lampDip 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards') }} onAnimationEnd={() => { lampAnimDone.current['referanslar'] = true; }}>
@@ -3851,7 +3858,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                             ? 'linear-gradient(180deg, #5a3a3a 0%, #3d2020 15%, #2e1515 50%, #3a2222 75%, #4a2d2d 100%)'
                                                                             : isInQueue
                                                                                 ? 'linear-gradient(180deg, #5a5030 0%, #3d3820 15%, #2e2a15 50%, #3a3522 75%, #4a432d 100%)'
-                                                                                : 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)',
+                                                                                : `linear-gradient(180deg, ${branding?.siteConfig?.homepage?.headerGradient1 || '#5a6070'} 0%, ${branding?.siteConfig?.homepage?.headerGradient2 || '#3d4250'} 15%, ${branding?.siteConfig?.homepage?.headerGradient3 || '#1e222e'} 50%, ${branding?.siteConfig?.homepage?.headerGradient4 || '#282c3a'} 75%, ${branding?.siteConfig?.homepage?.headerGradient5 || '#3a3f50'} 100%)`,
                                                                         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
                                                                         transition: 'all 0.3s ease',
                                                                         boxShadow: isMicOn
@@ -4261,7 +4268,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     )}
 
                     <footer style={{ textAlign: 'center', padding: '32px 0', color: '#94a3b8', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 2, borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: 8, textShadow: '0 1px 1px rgba(0,0,0,0.3)', ...(roomsMode ? { display: 'none' } : {}) }}>
-                        &copy; 2026 SopranoChat Systems.
+                        {branding?.siteConfig?.footerText || '© 2026 SopranoChat Systems.'}
                         <div style={{ marginTop: 16, display: 'flex', justifyContent: 'center', gap: 32 }}>
                             <a href="#" onClick={(e) => { e.preventDefault(); setShowRulesModal(true); }} style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer' }}>Kurallar</a>
                             <a href="#" onClick={(e) => { e.preventDefault(); setShowPrivacyModal(true); }} style={{ color: '#94a3b8', textDecoration: 'none', transition: 'color 0.2s', cursor: 'pointer' }}>Gizlilik Sözleşmesi</a>
@@ -4772,7 +4779,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
             )}
 
             {/* ÇEREZ BİLDİRİMİ BANNER */}
-            {showCookieConsent && !roomsMode && (
+            {showCookieConsent && !roomsMode && (branding?.siteConfig?.homepage?.showCookieConsent !== false) && (
                 <div style={{
                     position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 99998,
                     background: '#ffffff', borderTop: '1px solid #e2e8f0',
