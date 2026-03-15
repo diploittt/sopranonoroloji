@@ -1831,7 +1831,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 onClose={() => setIsRoomMonitorOpen(false)}
                                 socket={room.socket}
                                 currentRoomSlug={activeSlug}
-                                onNavigateToRoom={(roomSlug) => { window.location.href = roomUrl(roomSlug); }}
+                                onNavigateToRoom={(roomSlug) => { setActiveSlug(roomSlug); window.history.replaceState(null, '', roomUrl(roomSlug)); }}
                                 onUserAction={(item, targetUser) => {
                                     handleMenuItemClick(item, targetUser.userId, targetUser.displayName);
                                 }}
