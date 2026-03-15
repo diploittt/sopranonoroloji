@@ -12,8 +12,15 @@ function UpgradeContent() {
     const tenantId = searchParams.get('tenant') || 'default';
     const [request, setRequest] = useState<any>(null);
     const [loading, setLoading] = useState(false);
+    const [branding, setBranding] = useState<any>(null);
 
     useEffect(() => {
+        // Branding'den banka bilgilerini çek
+        fetch(`${API}/admin/branding`)
+            .then(res => res.json())
+            .then(data => setBranding(data))
+            .catch(console.error);
+
         fetch(`${API}/subscriptions/my-request`, {
             headers: { 'x-tenant-id': tenantId }
         })
@@ -45,6 +52,12 @@ function UpgradeContent() {
             setLoading(false);
         }
     };
+
+    // Banka bilgilerini branding'den al
+    const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0)
+        ? branding.siteConfig.banks
+        : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+    const primaryBank = banks[0];
 
     if (request && request.status === 'pending') {
         return (
@@ -102,8 +115,8 @@ function UpgradeContent() {
 
                         <div className="bg-black/40 p-4 rounded-xl border border-white/10 mb-6 font-mono text-sm text-gray-300">
                             <div className="opacity-50 text-xs mb-1">IBAN (Havale/EFT)</div>
-                            TR12 0006 1000 0000 1234 5678 90
-                            <div className="opacity-50 text-xs mt-2">Alıcı: Soprano Teknoloji A.Ş.</div>
+                            {primaryBank.iban}
+                            <div className="opacity-50 text-xs mt-2">Alıcı: {primaryBank.name}</div>
                         </div>
 
                         <button
@@ -128,8 +141,8 @@ function UpgradeContent() {
 
                         <div className="bg-black/40 p-4 rounded-xl border border-white/10 mb-6 font-mono text-sm text-gray-300">
                             <div className="opacity-50 text-xs mb-1">IBAN (Havale/EFT)</div>
-                            TR12 0006 1000 0000 1234 5678 90
-                            <div className="opacity-50 text-xs mt-2">Alıcı: Soprano Teknoloji A.Ş.</div>
+                            {primaryBank.iban}
+                            <div className="opacity-50 text-xs mt-2">Alıcı: {primaryBank.name}</div>
                         </div>
 
                         <button

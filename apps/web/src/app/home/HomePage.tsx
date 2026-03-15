@@ -4424,11 +4424,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                     <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
                                 </div>
 
-                                {/* IBAN Card */}
+                                {/* IBAN Cards — Tüm banka hesapları */}
                                 {(() => {
-                                    const bank = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks[0] : { bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' };
-                                    return (
-                                <div style={{
+                                    const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+                                    return banks.map((bank: any, bankIdx: number) => (
+                                <div key={bankIdx} style={{
                                     background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
                                     borderRadius: 14, padding: '14px 16px',
                                     border: '1px solid rgba(251,191,36,0.1)',
@@ -4441,7 +4441,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                                             fontSize: 15, fontWeight: 900, color: '#fff',
                                             boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
-                                        }}>{bank.bank.charAt(0)}</div>
+                                        }}>{bank.bank?.charAt(0) || '?'}</div>
                                         <div>
                                             <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{bank.bank}</div>
                                             <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{bank.name}</div>
@@ -4453,19 +4453,19 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                         background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
                                     }}>
                                         <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>{bank.iban}</span>
-                                        <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), 'iban')} style={{
-                                            background: chkCopied === 'iban' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
-                                            border: `1px solid ${chkCopied === 'iban' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
+                                        <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), `iban-${bankIdx}`)} style={{
+                                            background: chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
+                                            border: `1px solid ${chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
                                             borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-                                            color: chkCopied === 'iban' ? '#34d399' : '#38bdf8',
+                                            color: chkCopied === `iban-${bankIdx}` ? '#34d399' : '#38bdf8',
                                             display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
                                             transition: 'all 0.2s',
                                         }}>
-                                            {chkCopied === 'iban' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                            {chkCopied === `iban-${bankIdx}` ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
                                         </button>
                                     </div>
                                 </div>
-                                    );
+                                    ));
                                 })()}
 
                                 {/* Ödeme Kodu Card */}
