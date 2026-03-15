@@ -2368,11 +2368,19 @@ export class AdminService implements OnModuleInit {
 
   /** Public — ana sayfa için branding + istatistik döndürür (auth gerektirmez) */
   async getPublicBranding() {
-    const [settings, userCount, roomCount, messageCount] = await Promise.all([
-      this.prisma.systemSettings.findFirst({
-        where: { tenantId: 'system' },
+    // İlk mevcut ayarları bul — tenantId ne olursa olsun (OwnerPanel req.user.tenantId ile kaydediyor)
+    let settings = await this.prisma.systemSettings.findFirst({
+      where: { siteConfig: { not: { equals: null as any } } },
+      select: { logoUrl: true, logoName: true, siteConfig: true },
+      orderBy: { updatedAt: 'desc' },
+    });
+    // Fallback: siteConfig'i olmayan herhangi bir kayıt
+    if (!settings) {
+      settings = await this.prisma.systemSettings.findFirst({
         select: { logoUrl: true, logoName: true, siteConfig: true },
-      }),
+      });
+    }
+    const [userCount, roomCount, messageCount] = await Promise.all([
       this.prisma.user.count(),
       this.prisma.room.count(),
       this.prisma.message.count(),
