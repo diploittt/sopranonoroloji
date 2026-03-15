@@ -2780,7 +2780,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             const logoTextSize = (bp ? bp.logoTextSize : ss.logoTextSize) || '';
                                             const color1 = logoTextColor || '#38d9d9';
                                             const color2 = logoTextColor2;
-                                            const hasCustomBranding = ss.logoName || logoTextColor || logoTextFont || bp;
+                                            const hasCustomBranding = (ss.logoName && ss.logoName !== 'SopranoChat') || logoTextColor || logoTextFont || bp;
 
                                             // Özel branding yoksa varsayılan SopranoChat logosunu göster
                                             if (!hasCustomBranding && logoName === 'SopranoChat') {
