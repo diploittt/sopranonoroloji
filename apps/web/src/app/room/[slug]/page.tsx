@@ -2284,7 +2284,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         content: '🔒  TOPLANTI ODASI';
                                         position: absolute;
                                         top: 12px;
-                                        left: 16px;
+                                        left: 120px;
                                         z-index: 50;
                                         padding: 8px 20px 8px 14px;
                                         font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
@@ -2304,7 +2304,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         content: '';
                                         position: absolute;
                                         top: 10px;
-                                        left: 14px;
+                                        left: 118px;
                                         width: 6px;
                                         height: 6px;
                                         background: radial-gradient(circle, #555 30%, #333 70%);

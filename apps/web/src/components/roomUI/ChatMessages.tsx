@@ -248,7 +248,9 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             />
 
             <div className="w-full max-w-5xl space-y-1">
-                {/* ═══ Compact Welcome Banner ═══ */}
+                {/* ═══ Compact Welcome Banner (toplantı odası hariç) ═══ */}
+                {!(roomName && roomName.toLowerCase().includes('toplant')) && (
+                <>
                 <div className="flex justify-end mb-3" style={{ perspective: 800 }}>
                     <div className="welcome-banner-3d" style={{
                         position: 'relative',
@@ -347,6 +349,8 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                         100% { background-position: 200% center; }
                     }
                 `}</style>
+                </>
+                )}
 
                 {messages
                     .filter(msg => {
