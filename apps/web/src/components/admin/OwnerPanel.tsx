@@ -591,7 +591,7 @@ export default function OwnerPanel() {
     const [tenantDetailLoading, setTenantDetailLoading] = useState(false);
 
     // ── Site Ayarları (Panel Ayarları) ──
-    const [settingsTab, setSettingsTab] = useState<'branding' | 'pricing' | 'banks' | 'contact' | 'theme' | 'homepage' | 'general' | 'rooms'>('branding');
+    const [settingsTab, setSettingsTab] = useState<'pricing' | 'banks'>('pricing');
     const [roomConfigTab, setRoomConfigTab] = useState<'design' | 'toolbar' | 'permissions' | 'chat' | 'layout' | 'media'>('design');
     const [siteConfig, setSiteConfig] = useState<any>({
         siteTitle: 'SopranoChat', siteSlogan: 'Premium Sohbet Platformu', footerText: '',
@@ -2342,14 +2342,8 @@ export default function OwnerPanel() {
                             {/* Tab Nav */}
                             <div className="flex items-center gap-1 owner-glossy p-1.5 overflow-x-auto">
                                 {[
-                                    { id: 'branding' as const, label: 'Branding', icon: <Crown className="w-4 h-4" /> },
                                     { id: 'pricing' as const, label: 'Fiyatlar', icon: <Wallet className="w-4 h-4" /> },
                                     { id: 'banks' as const, label: 'IBAN', icon: <Briefcase className="w-4 h-4" /> },
-                                    { id: 'contact' as const, label: 'İletişim', icon: <Phone className="w-4 h-4" /> },
-                                    { id: 'theme' as const, label: 'Tema', icon: <LayoutGrid className="w-4 h-4" /> },
-                                    { id: 'homepage' as const, label: 'Ana Sayfa', icon: <Globe className="w-4 h-4" /> },
-                                    { id: 'general' as const, label: 'Genel', icon: <Cpu className="w-4 h-4" /> },
-                                    { id: 'rooms' as const, label: 'Oda Yönetimi', icon: <Server className="w-4 h-4" /> },
                                 ].map(tab => (
                                     <button key={tab.id} onClick={() => setSettingsTab(tab.id)} className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${settingsTab === tab.id ? 'bg-white/10 text-white border border-white/10 shadow-sm' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
                                         {tab.icon} {tab.label}

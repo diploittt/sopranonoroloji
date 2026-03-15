@@ -1888,11 +1888,14 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                 pointerEvents: showCustomConfig ? 'none' : 'auto',
                                                             }}>
                                                                 <div style={{ display: 'flex', gap: 12 }}>
-                                                                    {[
-                                                                        { name: 'Ses + Metin', price: '200', priceNum: 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
-                                                                        { name: 'Kamera + Ses', price: '400', priceNum: 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
-                                                                        { name: 'White Label', price: '2.990', priceNum: 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
-                                                                    ].map((plan, i) => (
+                                                                    {(() => {
+                                                                        const p = branding?.siteConfig?.pricing || {};
+                                                                        return [
+                                                                        { name: p.p1Name || 'Ses + Metin', price: p.p1Monthly || '200', priceNum: parseInt(String(p.p1Monthly || '200').replace(/[^0-9]/g, '')) || 200, period: '/ay', icon: '🎙️', features: ['Sınırsız sesli ve yazılı sohbet', 'Şifreli oda koruma', 'Ban / Gag-List yetkileri'], color: '#38bdf8', popular: false, badge: '', btnText: 'Satın Al', btnClass: 'btn-3d-blue' },
+                                                                        { name: p.p2Name || 'Kamera + Ses', price: p.p2Monthly || '400', priceNum: parseInt(String(p.p2Monthly || '400').replace(/[^0-9]/g, '')) || 400, period: '/ay', icon: '📹', features: ['Standart paketteki tüm özellikler', 'Eşzamanlı web kamerası yayını', 'Canlı protokol takibi'], color: '#a78bfa', popular: true, badge: 'POPÜLER', btnText: 'Hemen Başla', btnClass: 'btn-3d-red' },
+                                                                        { name: p.p3Name || 'White Label', price: p.p3Monthly || '2.990', priceNum: parseInt(String(p.p3Monthly || '2990').replace(/[^0-9]/g, '')) || 2990, period: '/ay', icon: '🏢', features: ['10 bağımsız oda lisansı', 'HTML/PHP embed altyapısı', 'Farklı domain desteği'], color: '#fbbf24', popular: false, badge: 'BAYİ', btnText: 'Satın Al', btnClass: 'btn-3d-gold' },
+                                                                    ];
+                                                                    })().map((plan, i) => (
                                                                         <div key={i} style={{
                                                                             flex: 1, padding: '20px 16px', borderRadius: 12,
                                                                             background: plan.popular ? 'rgba(167,139,250,0.08)' : 'rgba(255,255,255,0.03)',
