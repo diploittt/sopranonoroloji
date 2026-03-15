@@ -607,65 +607,54 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                             transform: logoReady ? 'scale(1)' : 'scale(0.88)',
                             transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}>
-                        {tenantInfo?.logoUrl ? (
-                            <div style={{ marginTop: -30, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 120, maxWidth: 300, objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))' }} />
-                                {(() => {
-                                    const text = tenantInfo.logoName || tenantInfo.displayName || tenantInfo.name;
-                                    const color1 = tenantInfo.logoTextColor || '#ffffff';
-                                    const color2 = tenantInfo.logoTextColor2 || '';
-                                    const font = tenantInfo.logoTextFont || "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
-                                    const size = tenantInfo.logoTextSize || '1.8rem';
-                                    return text ? (
-                                        <h2 style={{
-                                            fontSize: size, margin: '6px 0 0', display: 'block', textAlign: 'center',
-                                            fontFamily: font, fontWeight: 800, letterSpacing: '-0.02em',
-                                            textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
-                                            filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.4))',
-                                            ...(color2 ? {
-                                                backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
-                                                WebkitBackgroundClip: 'text',
-                                                WebkitTextFillColor: 'transparent',
-                                                backgroundClip: 'text',
-                                            } : {
-                                                color: color1,
-                                            }),
-                                        }}>{text}</h2>
-                                    ) : null;
-                                })()}
-                            </div>
-                        ) : (() => {
-                            const text = tenantInfo?.logoName || tenantInfo?.displayName || tenantInfo?.name;
+                        {(() => {
+                            const hasCustomBranding = tenantInfo?.logoName || tenantInfo?.logoTextColor || tenantInfo?.logoTextFont || tenantInfo?.logoUrl;
+
+                            // ═══ VARSAYILAN SOPRANOCHAT LOGOSU — anasayfadaki ile birebir aynı ═══
+                            if (!hasCustomBranding) {
+                                return (
+                                    <h1 className="retro-logo-text" style={{ margin: 0 }}>
+                                        <span className="retro-logo-soprano">Soprano</span>
+                                        <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                            <span className="retro-logo-chat">Chat</span>
+                                            <span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span>
+                                        </span>
+                                    </h1>
+                                );
+                            }
+
+                            // ═══ MÜŞTERİ BRANDING LOGOSU ═══
+                            const text = tenantInfo?.logoName || tenantInfo?.displayName || tenantInfo?.name || 'SopranoChat';
                             const color1 = tenantInfo?.logoTextColor || '#ffffff';
                             const color2 = tenantInfo?.logoTextColor2 || '';
-                            const font = tenantInfo?.logoTextFont || "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif";
-                            const size = tenantInfo?.logoTextSize || '2.2rem';
-                            return text ? (
-                                <h1 style={{
-                                    margin: 0, textAlign: 'center',
-                                    fontSize: size, fontFamily: font, fontWeight: 800,
-                                    letterSpacing: '-0.02em',
-                                    textShadow: '0 2px 4px rgba(0,0,0,0.5), 0 4px 12px rgba(0,0,0,0.3)',
-                                    filter: 'drop-shadow(0 2px 12px rgba(0,0,0,0.4))',
-                                    ...(color2 ? {
-                                        backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
-                                        WebkitBackgroundClip: 'text',
-                                        WebkitTextFillColor: 'transparent',
-                                        backgroundClip: 'text',
-                                    } : {
-                                        color: color1,
-                                    }),
-                                }}>{text}</h1>
-                            ) : null;
-                        })() || (
-                            <h1 className="retro-logo-text" style={{ margin: 0 }}>
-                                <span className="retro-logo-soprano">Soprano</span>
-                                <span style={{ display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                    <span className="retro-logo-chat">Chat</span>
-                                    <span style={{ fontSize: 11, fontFamily: "'Cooper Black', 'Arial Rounded MT Bold', sans-serif", fontStyle: 'normal', letterSpacing: '1.5px', lineHeight: 1, marginTop: -2, background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.5))' }}>Senin Sesin</span>
-                                </span>
-                            </h1>
-                        )}
+                            const font = tenantInfo?.logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif";
+                            const size = tenantInfo?.logoTextSize || (tenantInfo?.logoUrl ? '1.8rem' : '2.2rem');
+
+                            return (
+                                <div style={{ marginTop: tenantInfo?.logoUrl ? -30 : 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                                    {tenantInfo?.logoUrl && (
+                                        <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 120, maxWidth: 300, objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))' }} />
+                                    )}
+                                    <h1 style={{
+                                        margin: tenantInfo?.logoUrl ? '6px 0 0' : 0, textAlign: 'center',
+                                        fontSize: size, fontFamily: font, fontWeight: 900,
+                                        letterSpacing: '0.5px',
+                                        transform: 'scaleY(1.05)',
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4))',
+                                        ...(color2 ? {
+                                            backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                            backgroundClip: 'text',
+                                        } : {
+                                            background: `linear-gradient(180deg, ${color1} 0%, ${color1}dd 35%, ${color1}99 70%, ${color1}cc 100%)`,
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                        }),
+                                    }}>{text}</h1>
+                                </div>
+                            );
+                        })()}
                     </div>
 
                     {/* ═══ Glossy Login Panel — Homepage ile birebir aynı ═══ */}

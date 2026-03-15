@@ -2798,19 +2798,24 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         fontSize: logoTextSize || 18,
                                                         fontWeight: 900,
                                                         fontFamily: logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif",
-                                                        textShadow: color2 ? 'none' : '0 1px 3px rgba(0,0,0,0.5)',
-                                                        letterSpacing: '0.02em',
+                                                        letterSpacing: '0.5px',
+                                                        transform: 'scaleY(1.05)',
+                                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4))',
                                                         transition: 'all 0.3s ease',
                                                         ...(color2 ? {
                                                             backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
                                                             WebkitBackgroundClip: 'text',
                                                             WebkitTextFillColor: 'transparent',
                                                             backgroundClip: 'text',
-                                                        } : hasCustomBranding ? {
-                                                            color: color1,
-                                                        } : {
-                                                            color: '#e8e6f4',
-                                                        }),
+                                                        } as React.CSSProperties : hasCustomBranding ? {
+                                                            background: `linear-gradient(180deg, ${color1} 0%, ${color1}dd 35%, ${color1}99 70%, ${color1}cc 100%)`,
+                                                            WebkitBackgroundClip: 'text',
+                                                            WebkitTextFillColor: 'transparent',
+                                                        } as React.CSSProperties : {
+                                                            background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)',
+                                                            WebkitBackgroundClip: 'text',
+                                                            WebkitTextFillColor: 'transparent',
+                                                        } as React.CSSProperties),
                                                     }}>
                                                         {logoName}
                                                     </span>
