@@ -4,9 +4,10 @@ import {
   StyleSheet, Image, Dimensions, ActivityIndicator, Alert,
   KeyboardAvoidingView, Platform,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { COLORS, AVATARS, GENDERS, getAvatarUrl, ROLE_CONFIG } from '../constants';
+import { COLORS, SHADOWS, AVATARS, GENDERS, getAvatarUrl, ROLE_CONFIG } from '../constants';
 import { loginGuest, loginMember, fetchCustomers, registerMember } from '../services/api';
 import type { RootStackParamList } from '../../App';
 
@@ -15,7 +16,6 @@ const { width } = Dimensions.get('window');
 type Props = NativeStackScreenProps<RootStackParamList, 'Home'>;
 
 export default function HomeScreen({ navigation }: Props) {
-  // Auth state
   const [loginTab, setLoginTab] = useState<'guest' | 'member'>('guest');
   const [guestNick, setGuestNick] = useState('');
   const [guestGender, setGuestGender] = useState<string>('');
@@ -28,22 +28,15 @@ export default function HomeScreen({ navigation }: Props) {
   const [regEmail, setRegEmail] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regGender, setRegGender] = useState('');
-
-  // Rooms state
   const [customers, setCustomers] = useState<any[]>([]);
-  const [rooms, setRooms] = useState<any[]>([]);
 
-  useEffect(() => {
-    loadData();
-  }, []);
+  useEffect(() => { loadData(); }, []);
 
   const loadData = async () => {
     try {
       const custData = await fetchCustomers();
       if (Array.isArray(custData)) setCustomers(custData);
-    } catch (e) {
-      console.log('Customers fetch error:', e);
-    }
+    } catch (e) { console.log('Customers fetch error:', e); }
   };
 
   const handleGuestLogin = async () => {
@@ -53,10 +46,8 @@ export default function HomeScreen({ navigation }: Props) {
     try {
       const avatar = selectedAvatar || AVATARS[0];
       const data = await loginGuest(guestNick.trim(), guestGender, avatar);
-      if (data?.token) {
-        // İlk odaya git
-        const slug = rooms.length > 0 ? rooms[0].slug : 'genel-sohbet';
-        navigation.navigate('Room', { slug, token: data.token, user: data.user });
+      if (data?.access_token) {
+        navigation.navigate('Rooms', { token: data.access_token, user: data.user });
       } else {
         Alert.alert('Hata', data?.message || 'Giriş başarısız');
       }
@@ -71,9 +62,8 @@ export default function HomeScreen({ navigation }: Props) {
     setLoading(true);
     try {
       const data = await loginMember(memberUsername.trim(), memberPassword);
-      if (data?.token) {
-        const slug = rooms.length > 0 ? rooms[0].slug : 'genel-sohbet';
-        navigation.navigate('Room', { slug, token: data.token, user: data.user });
+      if (data?.access_token) {
+        navigation.navigate('Rooms', { token: data.access_token, user: data.user });
       } else {
         Alert.alert('Hata', data?.message || 'Giriş başarısız');
       }
@@ -88,7 +78,7 @@ export default function HomeScreen({ navigation }: Props) {
     setLoading(true);
     try {
       const data = await registerMember({ username: regUsername, email: regEmail, password: regPassword, gender: regGender || 'Belirsiz' });
-      if (data?.token) {
+      if (data?.access_token) {
         Alert.alert('Başarılı', 'Hesap oluşturuldu!');
         setShowRegister(false);
       } else {
@@ -101,342 +91,342 @@ export default function HomeScreen({ navigation }: Props) {
   };
 
   return (
-    <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <StatusBar style="light" />
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-        
-        {/* ═══ HEADER / LOGO ═══ */}
-        <View style={styles.header}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoSoprano}>Soprano</Text>
-            <Text style={styles.logoChat}>Chat</Text>
-          </View>
-          <Text style={styles.tagline}>Senin Sesin</Text>
-        </View>
+    <View style={{ flex: 1 }}>
+      <StatusBar style="dark" />
+      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]} style={StyleSheet.absoluteFill} />
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={s.scrollContent} showsVerticalScrollIndicator={false}>
 
-        {/* ═══ HESAP PANELİ ═══ */}
-        <View style={styles.panel}>
-          <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>👤 HESAP PANELİ</Text>
+          {/* ═══ HEADER / LOGO ═══ */}
+          <View style={s.header}>
+            <View style={s.logoRow}>
+              <Text style={s.logoSoprano}>Soprano</Text>
+              <Text style={s.logoChat}>Chat</Text>
+            </View>
+            <Text style={s.tagline}>Senin Sesin</Text>
           </View>
 
-          {/* Sekmeler */}
-          <View style={styles.tabRow}>
-            <TouchableOpacity
-              style={[styles.tab, loginTab === 'guest' && styles.tabActiveGuest]}
-              onPress={() => { setLoginTab('guest'); setShowRegister(false); }}
-            >
-              <Text style={[styles.tabText, loginTab === 'guest' && styles.tabTextActive]}>👤 Misafir</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.tab, loginTab === 'member' && styles.tabActiveMember]}
-              onPress={() => { setLoginTab('member'); setShowRegister(false); }}
-            >
-              <Text style={[styles.tabText, loginTab === 'member' && styles.tabTextActiveMember]}>⭐ Üye Giriş</Text>
-            </TouchableOpacity>
-          </View>
+          {/* ═══ HESAP PANELİ ═══ */}
+          <View style={[s.glassPanel, SHADOWS.panel]}>
+            {/* Panel kenar ışıması */}
+            <View style={s.panelGlow} />
 
-          {loginTab === 'guest' ? (
-            <>
-              {/* Takma Ad */}
-              <Text style={styles.label}>TAKMA ADINIZ</Text>
-              <TextInput
-                style={styles.input}
-                value={guestNick}
-                onChangeText={setGuestNick}
-                placeholder="Nickname girin..."
-                placeholderTextColor={COLORS.textMuted}
-              />
+            <View style={s.panelHeaderRow}>
+              <Text style={s.panelIcon}>👤</Text>
+              <Text style={s.panelTitle}>HESAP PANELİ</Text>
+            </View>
 
-              {/* Cinsiyet */}
-              <Text style={styles.label}>CİNSİYET</Text>
-              <View style={styles.genderRow}>
-                {GENDERS.map(g => (
-                  <TouchableOpacity
-                    key={g.key}
-                    style={[styles.genderBtn, guestGender === g.key && { backgroundColor: `${g.color}30`, borderColor: `${g.color}60` }]}
-                    onPress={() => setGuestGender(g.key)}
-                  >
-                    <Text style={[styles.genderText, guestGender === g.key && { color: g.color }]}>{g.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+            {/* Sekmeler */}
+            <View style={s.tabRow}>
+              <TouchableOpacity
+                style={[s.tab, loginTab === 'guest' && s.tabGuest]}
+                onPress={() => { setLoginTab('guest'); setShowRegister(false); }}
+              >
+                <Text style={[s.tabText, loginTab === 'guest' && s.tabTextGuest]}>🟢 MİSAFİR</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[s.tab, loginTab === 'member' && s.tabMember]}
+                onPress={() => { setLoginTab('member'); setShowRegister(false); }}
+              >
+                <Text style={[s.tabText, loginTab === 'member' && s.tabTextMember]}>⭐ ÜYE GİRİŞ</Text>
+              </TouchableOpacity>
+            </View>
 
-              {/* Avatarlar */}
-              {guestGender ? (
-                <View style={styles.avatarGrid}>
-                  {AVATARS.map(av => (
-                    <TouchableOpacity
-                      key={av}
-                      style={[styles.avatarBtn, selectedAvatar === av && styles.avatarSelected]}
-                      onPress={() => setSelectedAvatar(av)}
-                    >
-                      <Image source={{ uri: getAvatarUrl(av) }} style={styles.avatarImg} />
+            {loginTab === 'guest' ? (
+              <>
+                <Text style={s.label}>TAKMA ADINIZ</Text>
+                <TextInput style={s.input} value={guestNick} onChangeText={setGuestNick}
+                  placeholder="Nickname girin..." placeholderTextColor={COLORS.textMuted} />
+
+                <Text style={s.label}>CİNSİYET</Text>
+                <View style={s.genderRow}>
+                  {GENDERS.map(g => (
+                    <TouchableOpacity key={g.key}
+                      style={[s.genderBtn, guestGender === g.key && { backgroundColor: `${g.color}20`, borderColor: `${g.color}50` }]}
+                      onPress={() => setGuestGender(g.key)}>
+                      <Text style={[s.genderText, guestGender === g.key && { color: g.color }]}>{g.label}</Text>
                     </TouchableOpacity>
                   ))}
                 </View>
-              ) : null}
 
-              {/* Giriş Butonu */}
-              <TouchableOpacity style={styles.btnBlue} onPress={handleGuestLogin} disabled={loading}>
-                {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.btnText}>→ Misafir Giriş</Text>}
-              </TouchableOpacity>
-            </>
-          ) : !showRegister ? (
-            <>
-              {/* Üye Giriş */}
-              <Text style={styles.label}>KULLANICI ADI VEYA E-POSTA</Text>
-              <TextInput
-                style={styles.input}
-                value={memberUsername}
-                onChangeText={setMemberUsername}
-                placeholder="Üye adınız veya e-posta"
-                placeholderTextColor={COLORS.textMuted}
-                autoCapitalize="none"
-              />
-              <Text style={styles.label}>ŞİFRE</Text>
-              <TextInput
-                style={styles.input}
-                value={memberPassword}
-                onChangeText={setMemberPassword}
-                placeholder="••••••••"
-                placeholderTextColor={COLORS.textMuted}
-                secureTextEntry
-              />
+                {guestGender ? (
+                  <>
+                    <Text style={s.label}>AVATAR</Text>
+                    <View style={s.avatarGrid}>
+                      {AVATARS.map(av => (
+                        <TouchableOpacity key={av}
+                          style={[s.avatarBtn, selectedAvatar === av && s.avatarSelected]}
+                          onPress={() => setSelectedAvatar(av)}>
+                          <Image source={{ uri: getAvatarUrl(av) }} style={s.avatarImg} />
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+                  </>
+                ) : null}
 
-              {/* Avatarlar */}
-              <View style={styles.avatarGrid}>
-                {AVATARS.map(av => (
-                  <TouchableOpacity
-                    key={av}
-                    style={[styles.avatarBtn, selectedAvatar === av && styles.avatarSelected]}
-                    onPress={() => setSelectedAvatar(av)}
-                  >
-                    <Image source={{ uri: getAvatarUrl(av) }} style={[styles.avatarImg, { width: 36, height: 36 }]} />
-                  </TouchableOpacity>
-                ))}
-              </View>
+                <TouchableOpacity style={s.btnEmerald} onPress={handleGuestLogin} disabled={loading}>
+                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>→ MİSAFİR GİRİŞ</Text>}
+                </TouchableOpacity>
+              </>
+            ) : !showRegister ? (
+              <>
+                <Text style={s.label}>KULLANICI ADI VEYA E-POSTA</Text>
+                <TextInput style={s.input} value={memberUsername} onChangeText={setMemberUsername}
+                  placeholder="Üye adınız veya e-posta" placeholderTextColor={COLORS.textMuted} autoCapitalize="none" />
 
-              <TouchableOpacity style={styles.btnRed} onPress={handleMemberLogin} disabled={loading}>
-                {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.btnText}>→ Üye Girişi</Text>}
-              </TouchableOpacity>
+                <Text style={s.label}>ŞİFRE</Text>
+                <TextInput style={s.input} value={memberPassword} onChangeText={setMemberPassword}
+                  placeholder="••••••••" placeholderTextColor={COLORS.textMuted} secureTextEntry />
 
-              <TouchableOpacity onPress={() => setShowRegister(true)} style={styles.linkBtn}>
-                <Text style={styles.linkText}>Hesabın yok mu? <Text style={{ color: COLORS.red, fontWeight: '700' }}>Üye Ol</Text></Text>
-              </TouchableOpacity>
-            </>
-          ) : (
-            <>
-              {/* Kayıt Formu */}
-              <Text style={[styles.label, { textAlign: 'center', color: COLORS.red, fontSize: 14, marginBottom: 12 }]}>✨ Yeni Üyelik</Text>
-              <Text style={styles.label}>KULLANICI ADI</Text>
-              <TextInput style={styles.input} value={regUsername} onChangeText={setRegUsername} placeholder="Kullanıcı adınız" placeholderTextColor={COLORS.textMuted} autoCapitalize="none" />
-              <Text style={styles.label}>E-POSTA</Text>
-              <TextInput style={styles.input} value={regEmail} onChangeText={setRegEmail} placeholder="ornek@mail.com" placeholderTextColor={COLORS.textMuted} keyboardType="email-address" autoCapitalize="none" />
-              <Text style={styles.label}>ŞİFRE</Text>
-              <TextInput style={styles.input} value={regPassword} onChangeText={setRegPassword} placeholder="En az 6 karakter" placeholderTextColor={COLORS.textMuted} secureTextEntry />
-              <Text style={styles.label}>CİNSİYET</Text>
-              <View style={styles.genderRow}>
-                {GENDERS.map(g => (
-                  <TouchableOpacity
-                    key={g.key}
-                    style={[styles.genderBtn, regGender === g.key && { backgroundColor: `${g.color}30`, borderColor: `${g.color}60` }]}
-                    onPress={() => setRegGender(g.key)}
-                  >
-                    <Text style={[styles.genderText, regGender === g.key && { color: g.color }]}>{g.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-              <TouchableOpacity style={styles.btnRed} onPress={handleRegister} disabled={loading}>
-                {loading ? <ActivityIndicator color="#fff" size="small" /> : <Text style={styles.btnText}>✨ Üye Ol</Text>}
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setShowRegister(false)} style={styles.linkBtn}>
-                <Text style={styles.linkText}>← Giriş ekranına dön</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+                <TouchableOpacity style={s.btnRed} onPress={handleMemberLogin} disabled={loading}>
+                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>→ ÜYE GİRİŞİ</Text>}
+                </TouchableOpacity>
 
-        {/* ═══ MÜŞTERİ PLATFORMLARI ═══ */}
-        <View style={styles.panel}>
-          <View style={styles.panelHeader}>
-            <Text style={styles.panelTitle}>🏢 Müşteri Platformları</Text>
-            <Text style={styles.panelSubtitle}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanllar.</Text>
+                <TouchableOpacity onPress={() => setShowRegister(true)} style={s.linkBtn}>
+                  <Text style={s.linkText}>Hesabın yok mu? <Text style={{ color: COLORS.red, fontWeight: '700' }}>Üye Ol</Text></Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={[s.label, { textAlign: 'center', color: COLORS.red, fontSize: 13, marginBottom: 12 }]}>✨ Yeni Üyelik</Text>
+                <Text style={s.label}>KULLANICI ADI</Text>
+                <TextInput style={s.input} value={regUsername} onChangeText={setRegUsername}
+                  placeholder="Kullanıcı adınız" placeholderTextColor={COLORS.textMuted} autoCapitalize="none" />
+                <Text style={s.label}>E-POSTA</Text>
+                <TextInput style={s.input} value={regEmail} onChangeText={setRegEmail}
+                  placeholder="ornek@mail.com" placeholderTextColor={COLORS.textMuted} keyboardType="email-address" autoCapitalize="none" />
+                <Text style={s.label}>ŞİFRE</Text>
+                <TextInput style={s.input} value={regPassword} onChangeText={setRegPassword}
+                  placeholder="En az 6 karakter" placeholderTextColor={COLORS.textMuted} secureTextEntry />
+                <Text style={s.label}>CİNSİYET</Text>
+                <View style={s.genderRow}>
+                  {GENDERS.map(g => (
+                    <TouchableOpacity key={g.key}
+                      style={[s.genderBtn, regGender === g.key && { backgroundColor: `${g.color}20`, borderColor: `${g.color}50` }]}
+                      onPress={() => setRegGender(g.key)}>
+                      <Text style={[s.genderText, regGender === g.key && { color: g.color }]}>{g.label}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+                <TouchableOpacity style={s.btnRed} onPress={handleRegister} disabled={loading}>
+                  {loading ? <ActivityIndicator color="#fff" /> : <Text style={s.btnText}>✨ ÜYE OL</Text>}
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowRegister(false)} style={s.linkBtn}>
+                  <Text style={s.linkText}>← Giriş ekranına dön</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
 
-          {customers.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>Platformlar yükleniyor...</Text>
+          {/* ═══ MÜŞTERİ PLATFORMLARI ═══ */}
+          <View style={[s.glassPanel, SHADOWS.panel]}>
+            <View style={s.panelGlow} />
+            <View style={s.panelHeaderRow}>
+              <Text style={s.panelIcon}>🏢</Text>
+              <Text style={s.panelTitle}>Müşteri Platformları</Text>
             </View>
-          ) : (
-            customers.map((cust: any) => (
-              <View key={cust.id} style={styles.roomCard}>
-                <View style={styles.roomInfo}>
-                  {cust.logoUrl ? (
-                    <Image source={{ uri: cust.logoUrl }} style={styles.roomLogo} />
-                  ) : (
-                    <View style={[styles.roomLogo, { backgroundColor: COLORS.bgCard, justifyContent: 'center', alignItems: 'center' }]}>
-                      <Text style={{ fontSize: 20 }}>🏢</Text>
-                    </View>
-                  )}
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.roomName}>{cust.name}</Text>
-                    <Text style={styles.roomDetail}>Oda: {cust.slug || cust.name}</Text>
-                    <View style={styles.roomStats}>
-                      <Text style={styles.roomStatText}>👥 {cust.onlineUsers || 0}</Text>
-                      <Text style={styles.roomStatText}>🚪 {cust.roomCount || 0} oda</Text>
+            <Text style={s.panelSubtitle}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</Text>
+
+            {customers.length === 0 ? (
+              <View style={s.emptyState}>
+                <ActivityIndicator color={COLORS.cyan} size="small" />
+                <Text style={s.emptyText}>Platformlar yükleniyor...</Text>
+              </View>
+            ) : (
+              customers.map((cust: any) => (
+                <View key={cust.id} style={s.customerCard}>
+                  <View style={s.customerInfo}>
+                    {cust.logoUrl ? (
+                      <Image source={{ uri: cust.logoUrl }} style={s.customerLogo} />
+                    ) : (
+                      <View style={[s.customerLogo, { backgroundColor: COLORS.bgCard, justifyContent: 'center', alignItems: 'center' }]}>
+                        <Text style={{ fontSize: 20 }}>🏢</Text>
+                      </View>
+                    )}
+                    <View style={{ flex: 1 }}>
+                      <Text style={s.customerName}>{cust.name}</Text>
+                      <Text style={s.customerDetail}>Oda: {cust.slug || cust.name}</Text>
+                      <View style={s.customerStats}>
+                        <Text style={s.statText}>👥 {cust.onlineUsers || 0}</Text>
+                        <Text style={s.statText}>🚪 {cust.roomCount || 0} oda</Text>
+                      </View>
                     </View>
                   </View>
+                  <TouchableOpacity style={s.joinBtn}
+                    onPress={() => Alert.alert('Giriş Gerekli', 'Önce hesap panelinden giriş yapın')}>
+                    <Text style={s.joinBtnText}>KATIL</Text>
+                  </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  style={styles.joinBtn}
-                  onPress={() => Alert.alert('Giriş Gerekli', 'Önce hesap panelinden giriş yapın')}
-                >
-                  <Text style={styles.joinBtnText}>KATIL</Text>
-                </TouchableOpacity>
-              </View>
-            ))
-          )}
-        </View>
+              ))
+            )}
+          </View>
 
-        {/* ═══ PREMIUM PAKET ═══ */}
-        <View style={styles.panel}>
-          <Text style={styles.premiumBadge}>⭐ PREMİUM PAKET</Text>
-          <Text style={[styles.panelTitle, { fontSize: 16, marginBottom: 6 }]}>Kendi Odanı Kur</Text>
-          <Text style={styles.panelSubtitle}>
-            Yönetici yetkileri, HD yayın kalitesi ve şifreli giriş koruması ile kendi topluluğunuzu oluşturun.
-          </Text>
-          <TouchableOpacity style={styles.btnGold}>
-            <Text style={styles.btnGoldText}>PAKETLERİ İNCELE</Text>
-          </TouchableOpacity>
-        </View>
+          {/* ═══ PREMIUM PAKET ═══ */}
+          <View style={[s.glassPanel, SHADOWS.panel]}>
+            <View style={s.panelGlow} />
+            <Text style={s.premiumBadge}>⭐ PREMİUM PAKET</Text>
+            <Text style={[s.panelTitle, { fontSize: 18, marginBottom: 8 }]}>Kendi Odanı Kur</Text>
+            <Text style={s.panelSubtitle}>
+              Yönetici yetkileri, HD yayın kalitesi ve şifreli giriş koruması ile kendi topluluğunuzu oluşturun.
+            </Text>
+            <TouchableOpacity style={s.btnGold}>
+              <Text style={s.btnGoldText}>PAKETLERİ İNCELE</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* ═══ MÜŞTERİ HİZMETLERİ ═══ */}
-        <View style={styles.panel}>
-          <Text style={{ fontSize: 28, textAlign: 'center', marginBottom: 8 }}>💬</Text>
-          <Text style={[styles.panelTitle, { textAlign: 'center' }]}>MÜŞTERİ HİZMETLERİ</Text>
-          <Text style={[styles.panelSubtitle, { textAlign: 'center' }]}>Sorularınız ve önerileriniz için bize ulaşın.</Text>
-          <TouchableOpacity style={[styles.btnBlue, { marginTop: 12 }]}>
-            <Text style={styles.btnText}>📞 BİZE ULAŞIN</Text>
-          </TouchableOpacity>
-        </View>
+          {/* ═══ MÜŞTERİ HİZMETLERİ ═══ */}
+          <View style={[s.glassPanel, SHADOWS.panel]}>
+            <View style={s.panelGlow} />
+            <Text style={{ fontSize: 32, textAlign: 'center', marginBottom: 8 }}>💬</Text>
+            <Text style={[s.panelTitle, { textAlign: 'center', fontSize: 13 }]}>MÜŞTERİ HİZMETLERİ</Text>
+            <Text style={[s.panelSubtitle, { textAlign: 'center' }]}>Sorularınız ve önerileriniz için bize ulaşın.</Text>
+            <TouchableOpacity style={s.btnIndigo}>
+              <Text style={s.btnText}>📞 BİZE ULAŞIN</Text>
+            </TouchableOpacity>
+          </View>
 
-        {/* ═══ FOOTER ═══ */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>© 2026 SopranoChat Systems.</Text>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+          {/* ═══ FOOTER ═══ */}
+          <View style={s.footer}>
+            <Text style={s.footerText}>© 2026 SOPRANOCHAT SYSTEMS.</Text>
+            <Text style={[s.footerText, { marginTop: 4 }]}>KURALLAR · GİZLİLİK SÖZLEŞMESİ</Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </View>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+const s = StyleSheet.create({
   scrollContent: { paddingBottom: 40 },
 
-  // Header
-  header: { paddingTop: 60, paddingBottom: 24, alignItems: 'center' },
-  logoContainer: { flexDirection: 'row', alignItems: 'baseline' },
-  logoSoprano: { fontSize: 32, fontWeight: '900', color: COLORS.white, textShadowColor: 'rgba(0,0,0,0.5)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
-  logoChat: { fontSize: 32, fontWeight: '900', color: COLORS.cyan, textShadowColor: COLORS.cyanGlow, textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 12 },
-  tagline: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600', letterSpacing: 3, marginTop: 4 },
-
-  // Panel
-  panel: {
-    marginHorizontal: 16, marginBottom: 16, padding: 16,
-    backgroundColor: 'rgba(22, 27, 46, 0.9)',
-    borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 16,
-    elevation: 8,
+  // ═══ Header ═══
+  header: { paddingTop: 60, paddingBottom: 28, alignItems: 'center' },
+  logoRow: { flexDirection: 'row', alignItems: 'baseline' },
+  logoSoprano: {
+    fontSize: 36, fontWeight: '900', color: COLORS.bg,
+    textShadowColor: 'rgba(0,0,0,0.15)', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4,
   },
-  panelHeader: { marginBottom: 14 },
-  panelTitle: { fontSize: 12, fontWeight: '900', color: COLORS.white, textTransform: 'uppercase', letterSpacing: 2 },
-  panelSubtitle: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '500', marginTop: 4 },
+  logoChat: {
+    fontSize: 36, fontWeight: '900', color: '#fbbf24',
+    textShadowColor: 'rgba(251,191,36,0.4)', textShadowOffset: { width: 0, height: 0 }, textShadowRadius: 12,
+  },
+  tagline: { fontSize: 12, color: COLORS.bg, fontWeight: '600', letterSpacing: 3, marginTop: 4, opacity: 0.6 },
 
-  // Tabs
-  tabRow: { flexDirection: 'row', gap: 8, marginBottom: 14 },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 10, backgroundColor: 'rgba(0,0,0,0.25)', alignItems: 'center' },
-  tabActiveGuest: { backgroundColor: 'rgba(56,189,248,0.2)', borderWidth: 1, borderColor: 'rgba(56,189,248,0.3)' },
-  tabActiveMember: { backgroundColor: 'rgba(239,68,68,0.2)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)' },
-  tabText: { fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: 1.5 },
-  tabTextActive: { color: '#7dd3fc' },
-  tabTextActiveMember: { color: '#fca5a5' },
+  // ═══ Glassmorphic Panel ═══
+  glassPanel: {
+    marginHorizontal: 16, marginBottom: 18, padding: 18,
+    backgroundColor: COLORS.bgPanel,
+    borderRadius: 18, borderWidth: 1, borderColor: COLORS.borderLight,
+    overflow: 'hidden',
+  },
+  panelGlow: {
+    position: 'absolute', top: -1, left: -1, right: -1, height: 2,
+    backgroundColor: COLORS.borderGlow,
+  },
+  panelHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
+  panelIcon: { fontSize: 16 },
+  panelTitle: { fontSize: 13, fontWeight: '900', color: COLORS.white, textTransform: 'uppercase', letterSpacing: 2 },
+  panelSubtitle: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '500', marginBottom: 12, lineHeight: 18 },
 
-  // Forms
-  label: { fontSize: 10, fontWeight: '700', color: COLORS.textSecondary, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6, marginLeft: 2, marginTop: 10 },
+  // ═══ Tabs ═══
+  tabRow: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  tab: {
+    flex: 1, paddingVertical: 11, borderRadius: 12, alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)', borderWidth: 1, borderColor: 'transparent',
+  },
+  tabGuest: { backgroundColor: 'rgba(16,185,129,0.15)', borderColor: 'rgba(16,185,129,0.4)' },
+  tabMember: { backgroundColor: 'rgba(239,68,68,0.15)', borderColor: 'rgba(239,68,68,0.4)' },
+  tabText: { fontSize: 11, fontWeight: '800', color: 'rgba(255,255,255,0.3)', letterSpacing: 1.5 },
+  tabTextGuest: { color: COLORS.emerald },
+  tabTextMember: { color: '#fca5a5' },
+
+  // ═══ Forms ═══
+  label: {
+    fontSize: 10, fontWeight: '800', color: COLORS.textSecondary, textTransform: 'uppercase',
+    letterSpacing: 2, marginBottom: 6, marginLeft: 2, marginTop: 12,
+  },
   input: {
-    backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 10, borderWidth: 1, borderColor: COLORS.border,
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: COLORS.white, fontWeight: '500',
+    backgroundColor: COLORS.bgInput, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 16, paddingVertical: 13, fontSize: 14, color: COLORS.white, fontWeight: '500',
   },
 
-  // Gender
+  // ═══ Gender ═══
   genderRow: { flexDirection: 'row', gap: 6 },
   genderBtn: {
-    flex: 1, paddingVertical: 8, borderRadius: 8, alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderColor: 'transparent',
+    flex: 1, paddingVertical: 9, borderRadius: 10, alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.25)', borderWidth: 1, borderColor: 'transparent',
   },
-  genderText: { fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase' },
+  genderText: { fontSize: 10, fontWeight: '800', color: 'rgba(255,255,255,0.3)', letterSpacing: 0.5 },
 
-  // Avatars
+  // ═══ Avatars ═══
   avatarGrid: {
-    flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 12,
-    justifyContent: 'center',
+    flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8,
+    justifyContent: 'center', paddingVertical: 4,
   },
   avatarBtn: {
-    padding: 3, borderRadius: 25, borderWidth: 2, borderColor: 'transparent',
+    padding: 3, borderRadius: 28, borderWidth: 2, borderColor: 'transparent',
   },
   avatarSelected: {
-    borderColor: COLORS.cyan, transform: [{ scale: 1.1 }],
-    shadowColor: COLORS.cyan, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.5, shadowRadius: 8,
+    borderColor: COLORS.cyan,
+    shadowColor: COLORS.cyan, shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 10,
+    elevation: 6,
   },
-  avatarImg: { width: 42, height: 42, borderRadius: 21 },
+  avatarImg: { width: 46, height: 46, borderRadius: 23 },
 
-  // Buttons
-  btnBlue: {
-    backgroundColor: 'rgba(56,189,248,0.2)', paddingVertical: 12, borderRadius: 12, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(56,189,248,0.4)', marginTop: 16,
-    shadowColor: COLORS.cyan, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
+  // ═══ Buttons ═══
+  btnEmerald: {
+    backgroundColor: COLORS.emerald, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+    marginTop: 18,
+    shadowColor: COLORS.emerald, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12,
+    elevation: 6,
   },
   btnRed: {
-    backgroundColor: 'rgba(239,68,68,0.2)', paddingVertical: 12, borderRadius: 12, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(239,68,68,0.4)', marginTop: 16,
-    shadowColor: COLORS.red, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8,
+    backgroundColor: COLORS.red, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+    marginTop: 18,
+    shadowColor: COLORS.red, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12,
+    elevation: 6,
   },
-  btnText: { fontSize: 12, fontWeight: '700', color: COLORS.white, letterSpacing: 1 },
+  btnIndigo: {
+    backgroundColor: COLORS.indigo, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+    marginTop: 14,
+    shadowColor: COLORS.indigo, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12,
+    elevation: 6,
+  },
+  btnText: { fontSize: 13, fontWeight: '800', color: COLORS.white, letterSpacing: 1.5 },
   btnGold: {
-    backgroundColor: 'rgba(251,191,36,0.15)', paddingVertical: 12, borderRadius: 12, alignItems: 'center',
-    borderWidth: 1, borderColor: 'rgba(251,191,36,0.3)', marginTop: 12,
+    backgroundColor: 'rgba(251,191,36,0.15)', paddingVertical: 14, borderRadius: 12, alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(251,191,36,0.35)', marginTop: 14,
   },
-  btnGoldText: { fontSize: 11, fontWeight: '800', color: COLORS.gold, letterSpacing: 2 },
-  linkBtn: { paddingVertical: 8, alignItems: 'center' },
+  btnGoldText: { fontSize: 12, fontWeight: '800', color: COLORS.gold, letterSpacing: 2 },
+  linkBtn: { paddingVertical: 10, alignItems: 'center' },
   linkText: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '600' },
 
-  // Rooms
-  roomCard: {
+  // ═══ Customers ═══
+  customerCard: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    padding: 12, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.15)',
-    borderWidth: 1, borderColor: COLORS.border, marginBottom: 8,
+    padding: 14, borderRadius: 14, backgroundColor: 'rgba(0,0,0,0.2)',
+    borderWidth: 1, borderColor: COLORS.border, marginBottom: 10,
   },
-  roomInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
-  roomLogo: { width: 42, height: 42, borderRadius: 12, overflow: 'hidden' },
-  roomName: { fontSize: 14, fontWeight: '800', color: COLORS.white },
-  roomDetail: { fontSize: 10, color: COLORS.textSecondary, fontWeight: '600', marginTop: 2 },
-  roomStats: { flexDirection: 'row', gap: 12, marginTop: 4 },
-  roomStatText: { fontSize: 9, color: COLORS.textMuted, fontWeight: '600' },
+  customerInfo: { flexDirection: 'row', alignItems: 'center', gap: 12, flex: 1 },
+  customerLogo: { width: 44, height: 44, borderRadius: 22, overflow: 'hidden' },
+  customerName: { fontSize: 14, fontWeight: '800', color: COLORS.white },
+  customerDetail: { fontSize: 10, color: COLORS.textSecondary, fontWeight: '600', marginTop: 2 },
+  customerStats: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  statText: { fontSize: 9, color: COLORS.textMuted, fontWeight: '600' },
   joinBtn: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8,
-    backgroundColor: 'rgba(56,189,248,0.2)', borderWidth: 1, borderColor: 'rgba(56,189,248,0.3)',
+    paddingHorizontal: 18, paddingVertical: 9, borderRadius: 10,
+    backgroundColor: COLORS.red,
+    shadowColor: COLORS.red, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 6,
+    elevation: 4,
   },
-  joinBtnText: { fontSize: 10, fontWeight: '800', color: COLORS.cyan, letterSpacing: 1.5 },
+  joinBtnText: { fontSize: 10, fontWeight: '900', color: COLORS.white, letterSpacing: 1.5 },
 
-  // States
-  emptyState: { padding: 24, alignItems: 'center' },
+  // ═══ States ═══
+  emptyState: { padding: 24, alignItems: 'center', gap: 8 },
   emptyText: { fontSize: 12, color: COLORS.textMuted, fontWeight: '500' },
+  premiumBadge: { fontSize: 10, fontWeight: '800', color: COLORS.gold, letterSpacing: 2, marginBottom: 8 },
 
-  // Premium
-  premiumBadge: { fontSize: 9, fontWeight: '800', color: COLORS.gold, textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 },
-
-  // Footer
-  footer: { paddingVertical: 24, alignItems: 'center' },
-  footerText: { fontSize: 10, color: COLORS.textMuted, fontWeight: '600', letterSpacing: 1 },
+  // ═══ Footer ═══
+  footer: { paddingVertical: 28, alignItems: 'center' },
+  footerText: { fontSize: 10, color: 'rgba(7,11,20,0.4)', fontWeight: '700', letterSpacing: 1.5 },
 });

@@ -1,29 +1,31 @@
 import { io, Socket } from 'socket.io-client';
-import { API_URL } from '../constants';
+import { WS_URL } from '../constants';
 
 let socket: Socket | null = null;
 
 export const connectSocket = (token: string): Socket => {
-  if (socket?.connected) return socket;
-  
-  socket = io(API_URL, {
+  if (socket?.connected) {
+    socket.disconnect();
+  }
+
+  socket = io(WS_URL, {
     auth: { token },
     transports: ['websocket'],
     reconnection: true,
-    reconnectionAttempts: 10,
-    reconnectionDelay: 1000,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 2000,
   });
 
   socket.on('connect', () => {
-    console.log('[Socket] Connected:', socket?.id);
-  });
-
-  socket.on('disconnect', (reason) => {
-    console.log('[Socket] Disconnected:', reason);
+    console.log('✅ Socket connected:', socket?.id);
   });
 
   socket.on('connect_error', (err) => {
-    console.log('[Socket] Connection error:', err.message);
+    console.error('❌ Socket connect error:', err.message);
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.log('🔌 Socket disconnected:', reason);
   });
 
   return socket;
