@@ -53,7 +53,7 @@ export function RightLivePanel({
     const [expandedStream, setExpandedStream] = useState<MediaStream | null>(null);
     const [expandedUsername, setExpandedUsername] = useState<string>('');
     const [tvPaused, setTvPaused] = useState(false);
-    const [tvMuted, setTvMuted] = useState(true);
+    const [tvMuted, setTvMuted] = useState(false);
     const [ytInputOpen, setYtInputOpen] = useState(false);
     const [ytInputValue, setYtInputValue] = useState('');
     const { t } = useTranslation();
@@ -64,8 +64,8 @@ export function RightLivePanel({
     const tvVideoRef2 = useRef<HTMLVideoElement>(null);
     const ytIframeRef = useRef<HTMLIFrameElement>(null);
 
-    // ★ tvVideoUrl değiştiğinde tvPaused ve tvMuted'ı sıfırla
-    useEffect(() => { setTvPaused(false); setTvMuted(true); }, [tvVideoUrl]);
+    // ★ tvVideoUrl değiştiğinde tvPaused'ı sıfırla
+    useEffect(() => { setTvPaused(false); setTvMuted(false); }, [tvVideoUrl]);
 
     // Apply tvVolume to direct video element
     useEffect(() => {
@@ -178,7 +178,7 @@ export function RightLivePanel({
                                     <>
                                     <iframe
                                         ref={ytIframeRef}
-                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=1&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
+                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=0&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
                                         title="TV Video"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
@@ -192,27 +192,6 @@ export function RightLivePanel({
                                             }
                                         }}
                                     />
-                                    {/* Sessiz başladı — tıkla sesi aç overlay */}
-                                    {tvMuted && (
-                                        <button
-                                            onClick={() => {
-                                                if (ytIframeRef.current?.contentWindow) {
-                                                    const vol = Math.round(Math.max(0, Math.min(1, tvVolume)) * 100);
-                                                    ytIframeRef.current.contentWindow.postMessage(
-                                                        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
-                                                    );
-                                                    ytIframeRef.current.contentWindow.postMessage(
-                                                        JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*'
-                                                    );
-                                                }
-                                                setTvMuted(false);
-                                            }}
-                                            className="absolute bottom-2 right-2 z-[5] flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-medium hover:bg-black/90 transition-all border border-white/20 animate-pulse"
-                                            title="Sesi Aç"
-                                        >
-                                            🔇 Sesi Aç
-                                        </button>
-                                    )}
                                     </>
                                 ) : (
                                     <video
