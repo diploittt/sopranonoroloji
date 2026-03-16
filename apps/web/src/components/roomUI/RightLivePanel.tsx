@@ -53,6 +53,7 @@ export function RightLivePanel({
     const [expandedStream, setExpandedStream] = useState<MediaStream | null>(null);
     const [expandedUsername, setExpandedUsername] = useState<string>('');
     const [tvPaused, setTvPaused] = useState(false);
+    const [tvMuted, setTvMuted] = useState(true);
     const [ytInputOpen, setYtInputOpen] = useState(false);
     const [ytInputValue, setYtInputValue] = useState('');
     const { t } = useTranslation();
@@ -63,8 +64,8 @@ export function RightLivePanel({
     const tvVideoRef2 = useRef<HTMLVideoElement>(null);
     const ytIframeRef = useRef<HTMLIFrameElement>(null);
 
-    // ★ tvVideoUrl değiştiğinde tvPaused'ı sıfırla
-    useEffect(() => { setTvPaused(false); }, [tvVideoUrl]);
+    // ★ tvVideoUrl değiştiğinde tvPaused ve tvMuted'ı sıfırla
+    useEffect(() => { setTvPaused(false); setTvMuted(true); }, [tvVideoUrl]);
 
     // Apply tvVolume to direct video element
     useEffect(() => {
@@ -174,6 +175,7 @@ export function RightLivePanel({
                             {tvVideoUrl && !speakerStream ? (
                                 /* Video Yayını — TV boşta iken */
                                 isYoutubeUrl ? (
+                                    <>
                                     <iframe
                                         ref={ytIframeRef}
                                         src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=1&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
@@ -182,9 +184,11 @@ export function RightLivePanel({
                                         allowFullScreen
                                         className="absolute inset-0 w-full h-full z-[1]"
                                         style={{ border: 'none' }}
-                                        onLoad={() => {
-                                            // Autoplay muted başlatıldı — 1.5s sonra sesi aç
-                                            setTimeout(() => {
+                                    />
+                                    {/* Sessiz başladı — tıkla sesi aç overlay */}
+                                    {tvMuted && (
+                                        <button
+                                            onClick={() => {
                                                 if (ytIframeRef.current?.contentWindow) {
                                                     const vol = Math.round(Math.max(0, Math.min(1, tvVolume)) * 100);
                                                     ytIframeRef.current.contentWindow.postMessage(
@@ -194,9 +198,15 @@ export function RightLivePanel({
                                                         JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*'
                                                     );
                                                 }
-                                            }, 1500);
-                                        }}
-                                    />
+                                                setTvMuted(false);
+                                            }}
+                                            className="absolute bottom-2 right-2 z-[5] flex items-center gap-1 px-2 py-1 rounded-full bg-black/70 text-white text-[9px] font-medium hover:bg-black/90 transition-all border border-white/20 animate-pulse"
+                                            title="Sesi Aç"
+                                        >
+                                            🔇 Sesi Aç
+                                        </button>
+                                    )}
+                                    </>
                                 ) : (
                                     <video
                                         ref={tvVideoRef2}
@@ -257,7 +267,7 @@ export function RightLivePanel({
                             <div className="absolute top-2 left-2 z-40">
                                 <div className="flex items-center gap-1.5 px-2 py-0.5 bg-red-600/90 rounded-full shadow-lg border border-red-500/50">
                                     <span className="text-[8px]">▶</span>
-                                    <span className="text-[8px] font-bold text-white tracking-wide">{isYoutubeUrl ? 'YouTube' : 'Video'}</span>
+                                    <span className="text-[8px] font-bold text-white tracking-wide">Video</span>
                                 </div>
                             </div>
                         )}
@@ -277,7 +287,7 @@ export function RightLivePanel({
 
             <div className="mt-2 px-8 text-center shrink-0">
                 <p className="text-[10px] text-gray-500 leading-relaxed font-medium">
-                    {speakerStream ? (speakerUsername ? `${speakerUsername} ${t.broadcasting}.` : t.liveConnectionActive) : tvVideoUrl ? (isYoutubeUrl ? 'YouTube yayını devam ediyor.' : 'Video yayını devam ediyor.') : t.waitingStream}
+                    {speakerStream ? (speakerUsername ? `${speakerUsername} ${t.broadcasting}.` : t.liveConnectionActive) : tvVideoUrl ? 'Video yayını devam ediyor.' : t.waitingStream}
                 </p>
             </div>
 
