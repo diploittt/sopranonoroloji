@@ -8,7 +8,7 @@
     "scripts": {
         "dev:web": "npm run dev -w apps/web",
         "dev:api": "npm run start:dev -w apps/api",
-        "dev:mobile": "npm run start -w apps/mobile",
+        "dev:mobile": "npm run cap:open -w apps/mobile",
         "dev:peer": "npx peerjs --port 9000 --path /peerjs",
         "dev": "set NODE_OPTIONS=--max-http-header-size=32768&& concurrently \"npm run dev:web\" \"npm run dev:api\" \"npm run dev:peer\"",
         "build": "npm run build --workspaces",
