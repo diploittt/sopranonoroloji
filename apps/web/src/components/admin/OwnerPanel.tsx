@@ -170,13 +170,13 @@ export default function OwnerPanel() {
                 const tenantSlug = result.provision.tenant?.slug;
                 const accessLink = `${window.location.origin}/t/${tenantSlug}`;
                 const embedCode = `<iframe src="${window.location.origin}/embed/${tenantSlug}" width="100%" height="1000" frameborder="0" allow="camera; microphone; fullscreen; display-capture" style="border:none;border-radius:12px;max-width:1300px;"></iframe>`;
-                const loginInfo = `Email: ${result.provision.ownerEmail}\nÅifre: ${result.provision.ownerPassword}`;
-                addToast(`âœ… SipariÅŸ ONAYLANDI â€” MÃ¼ÅŸteri otomatik oluÅŸturuldu!\n\nğŸ”— EriÅŸim Linki: ${accessLink}\nğŸ‘¤ ${loginInfo}`, 'success');
+                const loginInfo = `Email: ${result.provision.ownerEmail}\nŞifre: ${result.provision.ownerPassword}`;
+                addToast(`✅ Sipariş ONAYLANDI — Müşteri otomatik oluşturuldu!\n\nğŸ”— Erişim Linki: ${accessLink}\nğŸ‘¤ ${loginInfo}`, 'success');
                 // Copy all info to clipboard automatically
-                const allInfo = `--- MÃœÅTERÄ° BÄ°LGÄ°LERÄ° ---\nEriÅŸim Linki: ${accessLink}\nEmbed Kodu: ${embedCode}\n${loginInfo}\nAccess Code: ${result.provision.tenant?.accessCode || 'â€”'}`;
+                const allInfo = `--- MÃœŞTERİ BİLGİLERİ ---\nErişim Linki: ${accessLink}\nEmbed Kodu: ${embedCode}\n${loginInfo}\nAccess Code: ${result.provision.tenant?.accessCode || '—'}`;
                 navigator.clipboard.writeText(allInfo).catch(() => {});
             } else if (result.provisionError) {
-                addToast(`âš ï¸ SipariÅŸ onaylandÄ± fakat provision hatasÄ±: ${result.provisionError}`, 'error');
+                addToast(`âš ️ Sipariş onaylandı fakat provision hatası: ${result.provisionError}`, 'error');
             } else {
                 addToast(`Sipariş durumu ${status === 'APPROVED' ? 'ONAYLANDI' : 'REDDEDİLDİ'} olarak güncellendi.`, 'success');
             }
@@ -242,7 +242,7 @@ export default function OwnerPanel() {
                 socket.on('admin:new_order', (data: any) => {
                     setPendingOrderCount(data.pendingCount || 0);
                     const name = data.order?.firstName ? `${data.order.firstName} ${data.order.lastName || ''}`.trim() : 'Bilinmeyen';
-                    addToast(`ğŸ›’ Yeni sipariÅŸ: ${name} â€” ${data.order?.packageName || 'Paket'}`, 'success');
+                    addToast(`ğŸ›’ Yeni sipariş: ${name} — ${data.order?.packageName || 'Paket'}`, 'success');
                     fetchInlineOrders();
                 });
             }, 500);
@@ -303,7 +303,7 @@ export default function OwnerPanel() {
     const [newHelper, setNewHelper] = useState({ displayName: '', email: '', password: '', role: 'admin' });
     const [addingHelper, setAddingHelper] = useState(false);
 
-    // Åifre deÄŸiÅŸtirme state
+    // Şifre değiştirme state
     const [passwordEditId, setPasswordEditId] = useState<string | null>(null);
     const [newPassword, setNewPassword] = useState('');
     const [savingPassword, setSavingPassword] = useState(false);
@@ -428,7 +428,7 @@ export default function OwnerPanel() {
 
     const handleChangePassword = async (userId: string) => {
         if (!newPassword || newPassword.length < 4) {
-            addToast('Åifre en az 4 karakter olmalÄ±!', 'error');
+            addToast('Şifre en az 4 karakter olmalı!', 'error');
             return;
         }
         setSavingPassword(true);
@@ -439,12 +439,12 @@ export default function OwnerPanel() {
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                 body: JSON.stringify({ password: newPassword })
             });
-            if (!res.ok) throw new Error('Åifre gÃ¼ncellenemedi');
-            addToast('Åifre baÅŸarÄ±yla gÃ¼ncellendi ğŸ”‘', 'success');
+            if (!res.ok) throw new Error('Şifre güncellenemedi');
+            addToast('Şifre başarıyla güncellendi ğŸ”‘', 'success');
             setPasswordEditId(null);
             setNewPassword('');
         } catch (error) {
-            addToast('Åifre gÃ¼ncellenemedi!', 'error');
+            addToast('Şifre güncellenemedi!', 'error');
         } finally {
             setSavingPassword(false);
         }
@@ -509,7 +509,7 @@ export default function OwnerPanel() {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             if (!res.ok) throw new Error('Silme başarısız');
-            addToast('YardÄ±mcÄ± silindi ğŸ—‘ï¸', 'success');
+            addToast('Yardımcı silindi ğŸ—‘️', 'success');
             loadHqMembers();
         } catch (error) {
             addToast('Yardımcı silinemedi!', 'error');
@@ -603,10 +603,10 @@ export default function OwnerPanel() {
             yearlyDiscount: '2 Ay Hediye ğŸ',
         },
         banks: [
-            { bank: 'VakÄ±fBank', name: 'Soprano BiliÅŸim A.Å.', iban: 'TR12 0001 5001 5800 7307 6543 21' },
-            { bank: 'Ä°ÅŸ BankasÄ±', name: 'Soprano BiliÅŸim A.Å.', iban: 'TR34 0006 4000 0011 2345 6789 01' },
-            { bank: 'Halkbank', name: 'Soprano BiliÅŸim A.Å.', iban: 'TR56 0001 2009 8760 0010 0001 23' },
-            { bank: 'Akbank', name: 'Soprano BiliÅŸim A.Å.', iban: 'TR78 0004 6006 1388 8000 0123 45' },
+            { bank: 'VakıfBank', name: 'Soprano Bilişim A.Ş.', iban: 'TR12 0001 5001 5800 7307 6543 21' },
+            { bank: 'İş Bankası', name: 'Soprano Bilişim A.Ş.', iban: 'TR34 0006 4000 0011 2345 6789 01' },
+            { bank: 'Halkbank', name: 'Soprano Bilişim A.Ş.', iban: 'TR56 0001 2009 8760 0010 0001 23' },
+            { bank: 'Akbank', name: 'Soprano Bilişim A.Ş.', iban: 'TR78 0004 6006 1388 8000 0123 45' },
         ],
         contact: { phone: '', whatsapp: '', email: '', address: '' },
         roomConfig: {
@@ -656,16 +656,16 @@ export default function OwnerPanel() {
                 { label: 'REHBER', section: 'rehber', visible: true },
                 { label: 'FİYATLAR', section: 'fiyatlar', visible: true },
                 { label: 'REFERANSLAR', section: 'referanslar', visible: true },
-                { label: 'Ä°LETÄ°ÅÄ°M', section: 'iletisim', visible: true },
+                { label: 'İLETİŞİM', section: 'iletisim', visible: true },
             ],
             loginBg: 'rgba(30,41,59,0.85)', loginCardBorder: 'rgba(255,255,255,0.15)',
             loginAccentColor: '#38bdf8',
             showCookieConsent: true, showPackages: true, showReferences: true, showGuide: true,
             featureCards: [
                 { icon: 'ğŸ¤', title: 'Kristal Ses', desc: 'HD kalitesinde kesintisiz sesli sohbet' },
-                { icon: 'ğŸ“¹', title: 'HD Kamera', desc: 'YÃ¼ksek Ã§Ã¶zÃ¼nÃ¼rlÃ¼klÃ¼ video gÃ¶rÃ¼ÅŸme' },
-                { icon: 'ğŸ‘¥', title: 'Topluluk', desc: 'Binlerce aktif kullanÄ±cÄ± ile sohbet' },
-                { icon: 'ğŸ›¡ï¸', title: 'GÃ¼venlik', desc: 'GeliÅŸmiÅŸ moderasyon ve gÃ¼venlik araÃ§larÄ±' },
+                { icon: 'ğŸ“¹', title: 'HD Kamera', desc: 'Yüksek çözünürlüklü video görüşme' },
+                { icon: 'ğŸ‘¥', title: 'Topluluk', desc: 'Binlerce aktif kullanıcı ile sohbet' },
+                { icon: 'ğŸ›¡️', title: 'Güvenlik', desc: 'Gelişmiş moderasyon ve güvenlik araçları' },
             ],
         },
     });
@@ -848,7 +848,7 @@ export default function OwnerPanel() {
         a.download = `musteriler_${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-        showToast('CSV dosyasÄ± indirildi ğŸ“¥');
+        showToast('CSV dosyası indirildi ğŸ“¥');
     };
 
     const toggleDrawer = (drawer: keyof typeof drawers, isOpen: boolean) => {
@@ -1048,7 +1048,7 @@ export default function OwnerPanel() {
                                 <div className="absolute right-0 top-12 w-96 max-h-[480px] overflow-y-auto rounded-xl border border-white/10 bg-[#0f111a]/95 backdrop-blur-xl shadow-2xl z-50 animate-in fade-in slide-in-from-top-2 duration-200">
                                     <div className="p-4 border-b border-white/5 flex items-center justify-between">
                                         <div className="flex items-center gap-2">
-                                            <span className="text-sm font-bold text-white">ğŸ“© Ä°letiÅŸim MesajlarÄ±</span>
+                                            <span className="text-sm font-bold text-white">ğŸ“© İletişim Mesajları</span>
                                             {unreadCount > 0 && <span className="text-[10px] font-bold px-2 py-0.5 bg-red-500/10 text-red-400 border border-red-500/20 rounded-full">{unreadCount} yeni</span>}
                                         </div>
                                         <button onClick={() => setShowNotifPanel(false)} className="text-gray-400 hover:text-white transition-colors text-xs">Kapat</button>
@@ -1087,7 +1087,7 @@ export default function OwnerPanel() {
                 <div className="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar" style={{ background: 'linear-gradient(180deg, rgba(15,20,35,0.75) 0%, rgba(20,25,40,0.7) 50%, rgba(15,20,35,0.75) 100%)' }}>
 
                     {activeView === 'hqMembers' ? (
-                        /* â•â•â•â•â•â•â•â•â•â• PANEL YÃ–NETÄ°MÄ° VIEW â•â•â•â•â•â•â•â•â•â•â• */
+                        /* â•â•â•â•â•â•â•â•â•â• PANEL YÖNETİMİ VIEW â•â•â•â•â•â•â•â•â•â•â• */
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1242,13 +1242,13 @@ export default function OwnerPanel() {
                                             />
                                         </div>
                                         <div className="space-y-1.5">
-                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Åifre</label>
+                                            <label className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Şifre</label>
                                             <input
                                                 type="password"
                                                 value={newHelper.password}
                                                 onChange={e => setNewHelper(prev => ({ ...prev, password: e.target.value }))}
                                                 className="w-full px-3 py-2.5 rounded-xl bg-[#0a0c14] border border-white/10 text-white text-sm focus:border-cyan-500/50 outline-none transition"
-                                                placeholder="Åifre belirle"
+                                                placeholder="Şifre belirle"
                                             />
                                         </div>
                                     </div>
@@ -1335,11 +1335,11 @@ export default function OwnerPanel() {
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center justify-end gap-2">
-                                                                    {/* Åifre DeÄŸiÅŸtir */}
+                                                                    {/* Şifre Değiştir */}
                                                                     <button
                                                                         onClick={() => { setPasswordEditId(passwordEditId === member.id ? null : member.id); setNewPassword(''); }}
                                                                         className={`p-1.5 rounded-lg transition-colors border ${passwordEditId === member.id ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' : 'bg-white/5 hover:bg-amber-500/10 text-gray-400 hover:text-amber-400 border-white/5 hover:border-amber-500/20'}`}
-                                                                        title="Åifre DeÄŸiÅŸtir"
+                                                                        title="Şifre Değiştir"
                                                                     >
                                                                         <KeyRound className="w-3.5 h-3.5" />
                                                                     </button>
@@ -1364,13 +1364,13 @@ export default function OwnerPanel() {
                                                                 </div>
                                                             </td>
                                                         </tr>
-                                                        {/* Åifre DeÄŸiÅŸtirme SatÄ±rÄ± */}
+                                                        {/* Şifre Değiştirme Satırı */}
                                                         {passwordEditId === member.id && (
                                                             <tr className="bg-amber-500/[0.03]">
                                                                 <td colSpan={6} className="px-6 py-3">
                                                                     <div className="flex items-center gap-3 flex-wrap">
                                                                         <KeyRound className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                                                                        <span className="text-xs text-amber-400 font-semibold flex-shrink-0">{member.displayName} â€” Yeni Åifre:</span>
+                                                                        <span className="text-xs text-amber-400 font-semibold flex-shrink-0">{member.displayName} — Yeni Şifre:</span>
                                                                         <input
                                                                             type="text"
                                                                             placeholder="Yeni şifre girin..."
@@ -1405,7 +1405,7 @@ export default function OwnerPanel() {
                             </div>
                         </div>
                     ) : activeView === 'contactMessages' ? (
-                        /* â•â•â•â•â•â•â•â•â•â• Ä°LETÄ°ÅÄ°M MESAJLARI VIEW â•â•â•â•â•â•â•â•â•â•â• */
+                        /* â•â•â•â•â•â•â•â•â•â• İLETİŞİM MESAJLARI VIEW â•â•â•â•â•â•â•â•â•â•â• */
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1523,7 +1523,7 @@ export default function OwnerPanel() {
                             </div>
                         </div>
                     ) : activeView === 'orders' ? (
-                        /* â•â•â•â•â•â•â•â•â•â• SÄ°PARÄ°ÅLER VIEW â•â•â•â•â•â•â•â•â•â•â• */
+                        /* â•â•â•â•â•â•â•â•â•â• SİPARİŞLER VIEW â•â•â•â•â•â•â•â•â•â•â• */
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1575,7 +1575,7 @@ export default function OwnerPanel() {
                                                 borderRadius: 18, overflow: 'hidden',
                                                 boxShadow: isPending ? '0 4px 30px rgba(251,191,36,0.05)' : 'none',
                                             }}>
-                                                {/* â”€â”€â”€ SÄ°PARÄ°Å Ã–ZETÄ° â”€â”€â”€ */}
+                                                {/* ─── SİPARİŞ ÖZETİ ─── */}
                                                 <div style={{
                                                     padding: '16px 20px',
                                                     background: isPending ? 'linear-gradient(135deg, rgba(251,191,36,0.05), transparent)' : isApproved ? 'linear-gradient(135deg, rgba(52,211,153,0.05), transparent)' : 'linear-gradient(135deg, rgba(239,68,68,0.03), transparent)',
@@ -1583,7 +1583,7 @@ export default function OwnerPanel() {
                                                     display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                                 }}>
                                                     <div>
-                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }}>â­ SÄ°PARÄ°Å Ã–ZETÄ°</div>
+                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 4 }}>⭐ SİPARİŞ ÖZETİ</div>
                                                         <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
                                                             <span style={{ fontSize: 26, fontWeight: 900, color: '#fff' }}>{displayPrice} ₺</span>
                                                             <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{isYearly ? '/yıl' : '/ay'}</span>
@@ -1609,18 +1609,18 @@ export default function OwnerPanel() {
                                                         background: !isYearly ? 'linear-gradient(135deg, rgba(56,189,248,0.2), rgba(56,189,248,0.08))' : 'rgba(255,255,255,0.02)',
                                                         color: !isYearly ? '#38bdf8' : '#475569',
                                                         border: !isYearly ? '1px solid rgba(56,189,248,0.2)' : '1px solid rgba(255,255,255,0.04)',
-                                                    }}>ğŸ’³ AylÄ±k Ã–deme</div>
+                                                    }}>ğŸ’³ Aylık Ödeme</div>
                                                     <div style={{
                                                         flex: 1, padding: '7px 0', borderRadius: 8, textAlign: 'center', fontSize: 11, fontWeight: 700,
                                                         background: isYearly ? 'linear-gradient(135deg, rgba(52,211,153,0.2), rgba(52,211,153,0.08))' : 'rgba(255,255,255,0.02)',
                                                         color: isYearly ? '#34d399' : '#475569',
                                                         border: isYearly ? '1px solid rgba(52,211,153,0.2)' : '1px solid rgba(255,255,255,0.04)',
-                                                    }}>ğŸ YÄ±llÄ±k {isYearly && <span style={{ fontSize: 9, background: 'rgba(52,211,153,0.15)', padding: '1px 6px', borderRadius: 6, marginLeft: 4 }}>2 AY HEDÄ°YE</span>}</div>
+                                                    }}>ğŸ Yıllık {isYearly && <span style={{ fontSize: 9, background: 'rgba(52,211,153,0.15)', padding: '1px 6px', borderRadius: 6, marginLeft: 4 }}>2 AY HEDİYE</span>}</div>
                                                 </div>
 
-                                                {/* â”€â”€â”€ KÄ°ÅÄ°SEL BÄ°LGÄ°LER â”€â”€â”€ */}
+                                                {/* ─── KİŞİSEL BİLGİLER ─── */}
                                                 <div style={{ padding: '6px 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#7b9fef', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>ğŸ‘¤ KÄ°ÅÄ°SEL BÄ°LGÄ°LER</div>
+                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#7b9fef', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>ğŸ‘¤ KİŞİSEL BİLGİLER</div>
                                                     {[
                                                         { icon: 'ğŸ‘¤', value: `${order.firstName || ''} ${order.lastName || ''}`.trim() || '-' },
                                                         { icon: 'ğŸ“§', value: order.email || '-' },
@@ -1641,7 +1641,7 @@ export default function OwnerPanel() {
                                                 {/* ─── LOGO ─── */}
                                                 {(order.logoUrl || order.logoFileName) && (
                                                     <div style={{ padding: '0 20px 10px' }}>
-                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>ğŸ¨ MÃœÅTERÄ° LOGOSU</div>
+                                                        <div style={{ fontSize: 8, fontWeight: 800, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>ğŸ¨ MÃœŞTERİ LOGOSU</div>
                                                         <div style={{ padding: '8px 14px', borderRadius: 10, background: 'rgba(52,211,153,0.04)', border: '1px solid rgba(52,211,153,0.15)', fontSize: 11, color: '#34d399', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
                                                             <CheckCircle className="w-3.5 h-3.5" /> {order.logoFileName || order.logoUrl || 'Logo yüklendi'}
                                                         </div>
@@ -1650,7 +1650,7 @@ export default function OwnerPanel() {
 
                                                 {/* ─── HOSTİNG TERCİHİ ─── */}
                                                 <div style={{ padding: '0 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>ğŸŒ HOSTÄ°NG TERCÄ°HÄ°</div>
+                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8 }}>ğŸŒ HOSTİNG TERCİHİ</div>
                                                     <div style={{ display: 'flex', gap: 8 }}>
                                                         <div style={{
                                                             flex: 1, padding: '10px 14px', borderRadius: 12, textAlign: 'center',
@@ -1659,7 +1659,7 @@ export default function OwnerPanel() {
                                                         }}>
                                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                                                                 {isSoprano && <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#38bdf8', boxShadow: '0 0 6px #38bdf8' }} />}
-                                                                <span style={{ fontSize: 12, fontWeight: 800, color: isSoprano ? '#38bdf8' : '#475569' }}>ğŸ™ï¸ SopranoChat</span>
+                                                                <span style={{ fontSize: 12, fontWeight: 800, color: isSoprano ? '#38bdf8' : '#475569' }}>ğŸ™️ SopranoChat</span>
                                                             </div>
                                                             <div style={{ fontSize: 9, color: '#64748b', marginTop: 2 }}>sopranochat.com üzerinden</div>
                                                         </div>
@@ -1679,20 +1679,20 @@ export default function OwnerPanel() {
                                                     {isSoprano && order.roomName && (
                                                         <div style={{ marginTop: 8, padding: '8px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)', fontSize: 12, color: '#38bdf8', fontWeight: 700 }}>
                                                             {order.roomName}
-                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>ğŸ  sopranochat.com Ã¼zerinde odanÄ±z bu isimle oluÅŸturulacak</div>
+                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>ğŸ  sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
                                                         </div>
                                                     )}
                                                     {!isSoprano && order.customDomain && (
                                                         <div style={{ marginTop: 8, padding: '8px 14px', borderRadius: 10, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.05)', fontSize: 12, color: '#fbbf24', fontWeight: 700 }}>
                                                             {order.customDomain}
-                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>ğŸŒ Bu domain'e embed kodu saÄŸlanacak</div>
+                                                            <div style={{ fontSize: 9, color: '#475569', fontWeight: 500, marginTop: 2 }}>ğŸŒ Bu domain'e embed kodu sağlanacak</div>
                                                         </div>
                                                     )}
                                                 </div>
 
                                                 {/* ─── ÖDEME KODU ─── */}
                                                 <div style={{ padding: '0 20px 12px' }}>
-                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>ğŸ’³ Ã–DEME KODU (AÃ‡IKLAMAYA YAZILACAK)</div>
+                                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 6 }}>ğŸ’³ ÖDEME KODU (AÇIKLAMAYA YAZILACAK)</div>
                                                     <div style={{
                                                         padding: '10px 16px', borderRadius: 12,
                                                         background: 'linear-gradient(135deg, rgba(56,189,248,0.05), rgba(56,189,248,0.02))',
@@ -1714,8 +1714,8 @@ export default function OwnerPanel() {
                                                     {order.details && typeof order.details === 'object' && (
                                                         <span style={{ color: '#64748b' }}>
                                                             {(order.details as any).rooms && `ğŸ  ${(order.details as any).rooms}`}
-                                                            {(order.details as any).capacity && ` Â· ğŸ‘¥ ${(order.details as any).capacity}`}
-                                                            {(order.details as any).camera && ` Â· ğŸ“· ${(order.details as any).camera}`}
+                                                            {(order.details as any).capacity && ` · ğŸ‘¥ ${(order.details as any).capacity}`}
+                                                            {(order.details as any).camera && ` · ğŸ“· ${(order.details as any).camera}`}
                                                         </span>
                                                     )}
                                                 </div>
@@ -1762,7 +1762,7 @@ export default function OwnerPanel() {
                             )}
                         </div>
                     ) : activeView === 'logs' ? (
-                        /* â•â•â•â•â•â•â•â•â•â• SÄ°STEM LOGLARI VIEW â•â•â•â•â•â•â•â•â•â•â• */
+                        /* â•â•â•â•â•â•â•â•â•â• SİSTEM LOGLARI VIEW â•â•â•â•â•â•â•â•â•â•â• */
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1846,7 +1846,7 @@ export default function OwnerPanel() {
                             </div>
                         </div>
                     ) : activeView === 'customers' ? (
-                        /* â•â•â•â•â•â•â•â•â•â• MÃœÅTERÄ°LER VIEW â•â•â•â•â•â•â•â•â•â•â• */
+                        /* â•â•â•â•â•â•â•â•â•â• MÃœŞTERİLER VIEW â•â•â•â•â•â•â•â•â•â•â• */
                         <div className="space-y-6">
                             {/* Header */}
                             <div className="flex items-center justify-between flex-wrap gap-4">
@@ -1880,7 +1880,7 @@ export default function OwnerPanel() {
                                             <div className="absolute right-0 top-12 w-36 rounded-xl border border-white/10 bg-[#0f111a]/95 backdrop-blur-xl shadow-2xl z-50 overflow-hidden">
                                                 {(['ALL', 'ACTIVE', 'PASSIVE'] as const).map(f => (
                                                     <button key={f} onClick={() => { setStatusFilter(f); setShowFilterDropdown(false); }} className={`w-full px-4 py-2.5 text-left text-sm transition-colors ${statusFilter === f ? 'bg-amber-500/10 text-amber-400 font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}>
-                                                        {f === 'ALL' ? 'TÃ¼mÃ¼' : f === 'ACTIVE' ? 'ğŸŸ¢ Aktif' : 'ğŸ”´ Pasif'}
+                                                        {f === 'ALL' ? 'Tümü' : f === 'ACTIVE' ? 'ğŸŸ¢ Aktif' : 'ğŸ”´ Pasif'}
                                                     </button>
                                                 ))}
                                             </div>
@@ -2055,7 +2055,7 @@ export default function OwnerPanel() {
                                                     {deleteConfirmId === systemTenantId && (
                                                         <div className="flex items-center gap-2 mt-2 animate-in fade-in duration-150">
                                                             <span className="text-xs text-red-400 font-semibold">Emin misiniz?</span>
-                                                            <button onClick={() => { deleteTenant(systemTenantId!); setDeleteConfirmId(null); addToast('System Tenant silindi ğŸ—‘ï¸', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
+                                                            <button onClick={() => { deleteTenant(systemTenantId!); setDeleteConfirmId(null); addToast('System Tenant silindi ğŸ—‘️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
                                                             <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-xs rounded-md hover:bg-white/10 transition">Hayır</button>
                                                         </div>
                                                     )}
@@ -2198,7 +2198,7 @@ export default function OwnerPanel() {
                                                                 {deleteConfirmId === t.id && (
                                                                     <div className="flex items-center gap-2 mt-2 animate-in fade-in duration-150">
                                                                         <span className="text-xs text-red-400 font-semibold">Emin misiniz?</span>
-                                                                        <button onClick={() => { deleteTenant(t.id); setDeleteConfirmId(null); addToast('MÃ¼ÅŸteri silindi ğŸ—‘ï¸', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
+                                                                        <button onClick={() => { deleteTenant(t.id); setDeleteConfirmId(null); addToast('Müşteri silindi ğŸ—‘️', 'success'); }} className="px-2 py-1 bg-red-500 text-white text-xs rounded-md font-bold hover:bg-red-400 transition">Evet</button>
                                                                         <button onClick={() => setDeleteConfirmId(null)} className="px-2 py-1 bg-white/5 text-gray-400 text-xs rounded-md hover:bg-white/10 transition">Hayır</button>
                                                                     </div>
                                                                 )}
@@ -2472,7 +2472,7 @@ export default function OwnerPanel() {
                                                                 </div>
                                                                 <div>
                                                                     <label className="text-[10px] text-gray-400 block mb-1">Hesap Sahibi</label>
-                                                                    <input value={b.name} onChange={(e) => { const arr = [...siteConfig.banks]; arr[i] = { ...arr[i], name: e.target.value }; setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/40" placeholder="Soprano BiliÅŸim A.Å." />
+                                                                    <input value={b.name} onChange={(e) => { const arr = [...siteConfig.banks]; arr[i] = { ...arr[i], name: e.target.value }; setSiteConfig((p: any) => ({ ...p, banks: arr })); }} className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-500/40" placeholder="Soprano Bilişim A.Ş." />
                                                                 </div>
                                                                 <div>
                                                                     <label className="text-[10px] text-gray-400 block mb-1">IBAN</label>
@@ -2491,7 +2491,7 @@ export default function OwnerPanel() {
                                             </div>
                                         )}
 
-                                        {/* â”€â”€ Ä°LETÄ°ÅÄ°M â”€â”€ */}
+                                        {/* ── İLETİŞİM ── */}
                                         {settingsTab === 'contact' && (
                                             <div className="owner-glossy">
                                                 <div className="p-5 border-b border-white/5">
@@ -2710,7 +2710,7 @@ export default function OwnerPanel() {
                                                 {/* Navigasyon Menüsü */}
                                                 <div className="owner-glossy">
                                                     <div className="p-5 border-b border-white/5">
-                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ§­ Navigasyon MenÃ¼sÃ¼</h2>
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ§­ Navigasyon Menüsü</h2>
                                                         <p className="text-xs text-gray-400 mt-1">Header'daki menü öğelerini özelleştirin</p>
                                                     </div>
                                                     <div className="p-5 space-y-2">
@@ -2720,7 +2720,7 @@ export default function OwnerPanel() {
                                                             { label: 'REHBER', section: 'rehber', visible: true },
                                                             { label: 'FİYATLAR', section: 'fiyatlar', visible: true },
                                                             { label: 'REFERANSLAR', section: 'referanslar', visible: true },
-                                                            { label: 'Ä°LETÄ°ÅÄ°M', section: 'iletisim', visible: true },
+                                                            { label: 'İLETİŞİM', section: 'iletisim', visible: true },
                                                         ]).map((item: any, i: number) => (
                                                             <div key={i} className={`flex items-center gap-3 p-3 rounded-xl transition-all border ${item.visible !== false ? 'bg-white/[0.02] border-white/5' : 'bg-red-500/5 border-red-500/10 opacity-60'}`}>
                                                                 <button onClick={() => {
@@ -2749,7 +2749,7 @@ export default function OwnerPanel() {
                                                 <div className="owner-glossy">
                                                     <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                                         <div>
-                                                            <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸƒ Ã–zellik KartlarÄ±</h2>
+                                                            <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸƒ Özellik Kartları</h2>
                                                             <p className="text-xs text-gray-400 mt-1">Ana sayfadaki özellik kartlarının içerikleri</p>
                                                         </div>
                                                         <button onClick={() => {
@@ -2794,15 +2794,15 @@ export default function OwnerPanel() {
                                                 {/* Bölüm Görünürlüğü */}
                                                 <div className="owner-glossy">
                                                     <div className="p-5 border-b border-white/5">
-                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ‘ï¸ BÃ¶lÃ¼m GÃ¶rÃ¼nÃ¼rlÃ¼ÄŸÃ¼</h2>
+                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ‘️ Bölüm Görünürlüğü</h2>
                                                         <p className="text-xs text-gray-400 mt-1">Ana sayfadaki bölümleri açıp kapatın</p>
                                                     </div>
                                                     <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-3">
                                                         {[
                                                             { key: 'showPackages', label: 'ğŸ’° Fiyat Paketleri' },
-                                                            { key: 'showReferences', label: 'â­ Referanslar' },
+                                                            { key: 'showReferences', label: '⭐ Referanslar' },
                                                             { key: 'showGuide', label: 'ğŸ“– Rehber' },
-                                                            { key: 'showCookieConsent', label: 'ğŸª Ã‡erez OnayÄ±' },
+                                                            { key: 'showCookieConsent', label: 'ğŸª Çerez Onayı' },
                                                         ].map(item => (
                                                             <button key={item.key} onClick={() => setSiteConfig((p: any) => ({ ...p, homepage: { ...(p.homepage || {}), [item.key]: !(p.homepage || {})[item.key] } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border text-left ${siteConfig.homepage?.[item.key] !== false ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/5 border-red-500/10'}`}>
                                                                 <div className="flex items-center justify-between">
@@ -2903,11 +2903,11 @@ export default function OwnerPanel() {
                                                     {/* Sub-tabs */}
                                                     <div className="flex items-center gap-1 bg-white/[0.02] border border-white/5 rounded-xl p-1 overflow-x-auto">
                                                         {[
-                                                            { id: 'design' as const, label: 'ğŸ¨ TasarÄ±m' },
+                                                            { id: 'design' as const, label: 'ğŸ¨ Tasarım' },
                                                             { id: 'toolbar' as const, label: 'ğŸ”§ Toolbar' },
                                                             { id: 'permissions' as const, label: 'ğŸ‘¥ Yetkiler' },
                                                             { id: 'chat' as const, label: 'ğŸ’¬ Chat' },
-                                                            { id: 'layout' as const, label: 'ğŸ“ YerleÅŸim' },
+                                                            { id: 'layout' as const, label: 'ğŸ“ Yerleşim' },
                                                             { id: 'media' as const, label: 'ğŸ“» Medya' },
                                                         ].map(sub => (
                                                             <button key={sub.id} onClick={() => setRoomConfigTab(sub.id)} className={`px-3 py-2 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${roomConfigTab === sub.id ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}>
@@ -2921,7 +2921,7 @@ export default function OwnerPanel() {
                                                         <div className="space-y-4">
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
-                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ¨ Oda TasarÄ±m EditÃ¶rÃ¼</h2>
+                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ¨ Oda Tasarım Editörü</h2>
                                                                     <p className="text-xs text-gray-400 mt-1">Arka plan, renkler ve genel görünüm ayarları</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
@@ -3000,7 +3000,7 @@ export default function OwnerPanel() {
                                                                                 </div>
                                                                                 <div className="flex items-start gap-2 justify-end">
                                                                                     <div className="px-2.5 py-1 rounded-lg border" style={{ background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}20`, borderColor: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40` }}>
-                                                                                        <span className="text-[9px] text-gray-300">HoÅŸ geldin ğŸ‘‹</span>
+                                                                                        <span className="text-[9px] text-gray-300">Hoş geldin ğŸ‘‹</span>
                                                                                     </div>
                                                                                 </div>
                                                                             </div>
@@ -3041,7 +3041,7 @@ export default function OwnerPanel() {
                                                         <div className="space-y-4">
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
-                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ”§ Toolbar YapÄ±landÄ±rmasÄ±</h2>
+                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ”§ Toolbar Yapılandırması</h2>
                                                                     <p className="text-xs text-gray-400 mt-1">Alt çubuktaki butonları açıp kapatın ve sıralayın</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
@@ -3050,15 +3050,15 @@ export default function OwnerPanel() {
                                                                         <label className="text-xs font-bold text-gray-400 mb-3 block">Buton Görünürlüğü</label>
                                                                         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                                             {[
-                                                                                { key: 'showMic', label: 'ğŸ¤ Mikrofon', desc: 'KonuÅŸma butonu' },
+                                                                                { key: 'showMic', label: 'ğŸ¤ Mikrofon', desc: 'Konuşma butonu' },
                                                                                 { key: 'showCamera', label: 'ğŸ“· Kamera', desc: 'Video butonu' },
-                                                                                { key: 'showEmoji', label: 'ğŸ˜Š Emoji', desc: 'Emoji seÃ§ici' },
-                                                                                { key: 'showSticker', label: 'ğŸ¯ Sticker', desc: 'Sticker seÃ§ici' },
+                                                                                { key: 'showEmoji', label: 'ğŸ˜Š Emoji', desc: 'Emoji seçici' },
+                                                                                { key: 'showSticker', label: 'ğŸ¯ Sticker', desc: 'Sticker seçici' },
                                                                                 { key: 'showGif', label: 'ğŸ¬ GIF', desc: 'GIF arama' },
-                                                                                { key: 'showVolume', label: 'ğŸ”Š Ses', desc: 'Ses kontrolÃ¼' },
-                                                                                { key: 'showSettings', label: 'âš™ï¸ Ayarlar', desc: 'KullanÄ±cÄ± ayarlarÄ±' },
+                                                                                { key: 'showVolume', label: 'ğŸ”Š Ses', desc: 'Ses kontrolü' },
+                                                                                { key: 'showSettings', label: 'âš™️ Ayarlar', desc: 'Kullanıcı ayarları' },
                                                                                 { key: 'showHandRaise', label: '✋ El Kaldır', desc: 'Söz isteme' },
-                                                                                { key: 'showThemeSwitcher', label: 'ğŸ¨ Tema', desc: 'Tema deÄŸiÅŸtirici' },
+                                                                                { key: 'showThemeSwitcher', label: 'ğŸ¨ Tema', desc: 'Tema değiştirici' },
                                                                             ].map(item => (
                                                                                 <button key={item.key} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), [item.key]: !(p.roomConfig?.toolbar || {})[item.key] } } }))} className={`p-3 rounded-xl text-left transition-all border ${siteConfig.roomConfig?.toolbar?.[item.key] !== false ? 'bg-green-500/10 border-green-500/20 hover:border-green-500/40' : 'bg-red-500/5 border-red-500/10 hover:border-red-500/30'}`}>
                                                                                     <div className="flex items-center justify-between mb-1">
@@ -3087,7 +3087,7 @@ export default function OwnerPanel() {
                                                                     <div>
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Toolbar Pozisyonu</label>
                                                                         <div className="grid grid-cols-2 gap-2">
-                                                                            {[{ v: 'bottom', l: 'â¬‡ï¸ Alt' }, { v: 'top', l: 'â¬†ï¸ Ãœst' }].map(opt => (
+                                                                            {[{ v: 'bottom', l: 'â¬‡️ Alt' }, { v: 'top', l: 'â¬†️ Üst' }].map(opt => (
                                                                                 <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, toolbar: { ...(p.roomConfig?.toolbar || {}), position: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.toolbar?.position || 'bottom') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
@@ -3105,7 +3105,7 @@ export default function OwnerPanel() {
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5 flex items-center justify-between">
                                                                     <div>
-                                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ‘¥ Rol BazlÄ± Yetkiler</h2>
+                                                                        <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ‘¥ Rol Bazlı Yetkiler</h2>
                                                                         <p className="text-xs text-gray-400 mt-1">Her rol için izin verilebilecek eylemleri belirleyin</p>
                                                                     </div>
                                                                 </div>
@@ -3135,13 +3135,13 @@ export default function OwnerPanel() {
                                                                                 { key: 'emoji', label: 'ğŸ˜Š Emoji', builtin: true },
                                                                                 { key: 'sticker', label: 'ğŸ¯ Sticker', builtin: true },
                                                                                 { key: 'gif', label: 'ğŸ¬ GIF', builtin: true },
-                                                                                { key: 'dm', label: 'âœ‰ï¸ Ã–zel Mesaj', builtin: true },
+                                                                                { key: 'dm', label: 'âœ‰️ Özel Mesaj', builtin: true },
                                                                                 { key: 'profile', label: 'ğŸ‘¤ Profil', builtin: true },
-                                                                                { key: 'changeNick', label: 'âœï¸ Nick DeÄŸiÅŸtir', builtin: true },
-                                                                                { key: 'kick', label: 'ğŸ¦¶ KullanÄ±cÄ± At', builtin: true },
+                                                                                { key: 'changeNick', label: 'âœ️ Nick Değiştir', builtin: true },
+                                                                                { key: 'kick', label: 'ğŸ¦¶ Kullanıcı At', builtin: true },
                                                                                 { key: 'ban', label: 'ğŸš« Yasakla', builtin: true },
                                                                                 { key: 'mute', label: 'ğŸ”‡ Sustur', builtin: true },
-                                                                                { key: 'manageRooms', label: 'ğŸ  Oda YÃ¶netimi', builtin: true },
+                                                                                { key: 'manageRooms', label: 'ğŸ  Oda Yönetimi', builtin: true },
                                                                                 ...(siteConfig.roomConfig?.customPermissions || []).map((cp: any) => ({ key: cp.key, label: `${cp.icon || '⚡'} ${cp.label}`, builtin: false })),
                                                                             ].map(perm => (
                                                                                 <tr key={perm.key} className="border-b border-white/[0.03] hover:bg-white/[0.02] transition-colors">
@@ -3199,7 +3199,7 @@ export default function OwnerPanel() {
                                                                         </div>
                                                                         <div>
                                                                             <label className="text-[10px] font-bold text-gray-400 mb-1 block uppercase tracking-wider">İkon</label>
-                                                                            <input id="newPermIcon" type="text" placeholder="Ã–r: ğŸ“¢" defaultValue="âš¡" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-indigo-500/50" />
+                                                                            <input id="newPermIcon" type="text" placeholder="Ör: ğŸ“¢" defaultValue="⚡" className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2.5 text-xs text-white outline-none focus:border-indigo-500/50" />
                                                                         </div>
                                                                     </div>
                                                                     <button onClick={() => {
@@ -3231,7 +3231,7 @@ export default function OwnerPanel() {
                                                         <div className="space-y-4">
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
-                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ’¬ Chat & Mesaj AyarlarÄ±</h2>
+                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ’¬ Chat & Mesaj Ayarları</h2>
                                                                     <p className="text-xs text-gray-400 mt-1">Mesaj limiti, font ayarları ve görünüm</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
@@ -3261,7 +3261,7 @@ export default function OwnerPanel() {
                                                                     <div>
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Mesaj Baloncuk Stili</label>
                                                                         <div className="grid grid-cols-3 gap-2">
-                                                                            {[{ v: 'modern', l: 'ğŸŸ£ Modern' }, { v: 'classic', l: 'ğŸ”µ Klasik' }, { v: 'minimal', l: 'âšª Minimal' }].map(opt => (
+                                                                            {[{ v: 'modern', l: 'ğŸŸ£ Modern' }, { v: 'classic', l: 'ğŸ”µ Klasik' }, { v: 'minimal', l: '⚪ Minimal' }].map(opt => (
                                                                                 <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, chat: { ...(p.roomConfig?.chat || {}), bubbleStyle: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.chat?.bubbleStyle || 'modern') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
@@ -3271,10 +3271,10 @@ export default function OwnerPanel() {
                                                                     {/* Toggle Ayarlar */}
                                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                                                         {[
-                                                                            { key: 'antiFlood', label: 'ğŸ›¡ï¸ Anti-Flood' },
-                                                                            { key: 'showTimestamps', label: 'ğŸ• Zaman DamgasÄ±' },
+                                                                            { key: 'antiFlood', label: 'ğŸ›¡️ Anti-Flood' },
+                                                                            { key: 'showTimestamps', label: 'ğŸ• Zaman Damgası' },
                                                                             { key: 'showAvatars', label: 'ğŸ‘¤ Avatarlar' },
-                                                                            { key: 'showRoleIcons', label: 'ğŸ… Rol Ä°konlarÄ±' },
+                                                                            { key: 'showRoleIcons', label: 'ğŸ… Rol İkonları' },
                                                                         ].map(item => (
                                                                             <button key={item.key} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, chat: { ...(p.roomConfig?.chat || {}), [item.key]: !(p.roomConfig?.chat || {})[item.key] } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border text-left ${siteConfig.roomConfig?.chat?.[item.key] !== false ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/5 border-red-500/10'}`}>
                                                                                 <div className="flex items-center justify-between">
@@ -3291,12 +3291,12 @@ export default function OwnerPanel() {
                                                         </div>
                                                     )}
 
-                                                    {/* â”€â”€ YERLEÅÄ°M â”€â”€ */}
+                                                    {/* ── YERLEŞİM ── */}
                                                     {roomConfigTab === 'layout' && (
                                                         <div className="space-y-4">
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
-                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ“ YerleÅŸim AyarlarÄ±</h2>
+                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ“ Yerleşim Ayarları</h2>
                                                                     <p className="text-xs text-gray-400 mt-1">Panel boyutları ve düzen ayarları</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
@@ -3331,7 +3331,7 @@ export default function OwnerPanel() {
                                                                     <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                                                                         {[
                                                                             { key: 'showRadioPlayer', label: 'ğŸ“» Radyo Player' },
-                                                                            { key: 'showRoomTabs', label: 'ğŸ”– Oda TablarÄ±' },
+                                                                            { key: 'showRoomTabs', label: 'ğŸ”– Oda Tabları' },
                                                                         ].map(item => (
                                                                             <button key={item.key} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, layout: { ...(p.roomConfig?.layout || {}), [item.key]: !(p.roomConfig?.layout || {})[item.key] } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border text-left ${siteConfig.roomConfig?.layout?.[item.key] !== false ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/5 border-red-500/10'}`}>
                                                                                 <div className="flex items-center justify-between">
@@ -3364,7 +3364,7 @@ export default function OwnerPanel() {
                                                         <div className="space-y-4">
                                                             <div className="owner-glossy">
                                                                 <div className="p-5 border-b border-white/5">
-                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ“» Medya & EriÅŸim</h2>
+                                                                    <h2 className="text-lg font-bold text-white flex items-center gap-2">ğŸ“» Medya & Erişim</h2>
                                                                     <p className="text-xs text-gray-400 mt-1">Radyo, video ve medya yapılandırması</p>
                                                                 </div>
                                                                 <div className="p-5 space-y-5">
@@ -3381,7 +3381,7 @@ export default function OwnerPanel() {
                                                                         <button onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, media: { ...(p.roomConfig?.media || {}), allowYoutube: !(p.roomConfig?.media || {}).allowYoutube } } }))} className={`p-4 rounded-xl text-xs font-bold transition-all border text-left ${siteConfig.roomConfig?.media?.allowYoutube !== false ? 'bg-green-500/10 border-green-500/20' : 'bg-red-500/5 border-red-500/10'}`}>
                                                                             <div className="flex items-center justify-between">
                                                                                 <div>
-                                                                                    <div className="text-white mb-0.5">ğŸ¬ YouTube Ä°zni</div>
+                                                                                    <div className="text-white mb-0.5">ğŸ¬ YouTube İzni</div>
                                                                                     <div className="text-[10px] text-gray-400">Kullanıcılar YouTube video paylaşabilir</div>
                                                                                 </div>
                                                                                 <div className={`w-8 h-4 rounded-full transition-all relative ${siteConfig.roomConfig?.media?.allowYoutube !== false ? 'bg-green-500' : 'bg-gray-700'}`}>
@@ -3394,7 +3394,7 @@ export default function OwnerPanel() {
                                                                     <div>
                                                                         <label className="text-xs font-bold text-gray-400 mb-2 block">Sticker Paketi</label>
                                                                         <div className="grid grid-cols-3 gap-2">
-                                                                            {[{ v: 'default', l: 'ğŸ“¦ VarsayÄ±lan' }, { v: 'premium', l: 'âœ¨ Premium' }, { v: 'custom', l: 'ğŸ¨ Ã–zel' }].map(opt => (
+                                                                            {[{ v: 'default', l: 'ğŸ“¦ Varsayılan' }, { v: 'premium', l: '✨ Premium' }, { v: 'custom', l: 'ğŸ¨ Özel' }].map(opt => (
                                                                                 <button key={opt.v} onClick={() => setSiteConfig((p: any) => ({ ...p, roomConfig: { ...p.roomConfig, media: { ...(p.roomConfig?.media || {}), stickerPacks: opt.v } } }))} className={`p-3 rounded-xl text-xs font-bold transition-all border ${(siteConfig.roomConfig?.media?.stickerPacks || 'default') === opt.v ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-white/[0.02] text-gray-400 border-white/5 hover:border-white/10'}`}>
                                                                                     {opt.l}
                                                                                 </button>
@@ -3410,7 +3410,7 @@ export default function OwnerPanel() {
                                                 <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
                                                     <div className="owner-glossy">
                                                         <div className="p-3 border-b border-white/5 flex items-center justify-between">
-                                                            <span className="text-xs font-bold text-gray-400 flex items-center gap-2">ğŸ‘ï¸ CanlÄ± Ã–nizleme</span>
+                                                            <span className="text-xs font-bold text-gray-400 flex items-center gap-2">ğŸ‘️ Canlı Önizleme</span>
                                                             <span className="text-[9px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
                                                         </div>
                                                         {/* Mini Oda Önizleme — Gerçek Oda Görünümü */}
@@ -3448,7 +3448,7 @@ export default function OwnerPanel() {
                                                                     <div className="flex-1 p-1 space-y-0.5 overflow-hidden">
                                                                         {[
                                                                             { name: 'Admin', color: '#ef4444', badge: 'ğŸ‘‘', selected: true },
-                                                                            { name: 'OperatÃ¶r', color: '#f59e0b', badge: 'â­' },
+                                                                            { name: 'Operatör', color: '#f59e0b', badge: '⭐' },
                                                                             { name: 'VIP_User', color: '#a855f7', badge: 'ğŸ’' },
                                                                             { name: 'Üye1', color: '#22c55e', badge: '' },
                                                                             { name: 'Üye2', color: '#3b82f6', badge: '' },
@@ -3542,7 +3542,7 @@ export default function OwnerPanel() {
                                                                             <div>
                                                                                 <div className="text-right"><span className="text-[7px] font-bold" style={{ color: siteConfig.roomConfig?.design?.accentColor || '#6366f1' }}>Ben</span></div>
                                                                                 <div className="px-2 py-1 rounded-lg mt-0.5 border" style={{ background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}15`, borderColor: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}30` }}>
-                                                                                    <span className="text-white/80" style={{ fontSize: `${Math.max(7, Math.min(10, (siteConfig.roomConfig?.chat?.fontSize || 14) * 0.65))}px` }}>Harika, teÅŸekkÃ¼rler! ğŸ‰</span>
+                                                                                    <span className="text-white/80" style={{ fontSize: `${Math.max(7, Math.min(10, (siteConfig.roomConfig?.chat?.fontSize || 14) * 0.65))}px` }}>Harika, teşekkürler! ğŸ‰</span>
                                                                                 </div>
                                                                             </div>
                                                                             <div className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" style={{ background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40` }}></div>
@@ -3576,7 +3576,7 @@ export default function OwnerPanel() {
                                                                             </div>
                                                                             <div className="px-2.5 py-1 rounded-lg flex items-center gap-1" style={{ background: `${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}`, boxShadow: `0 0 8px ${siteConfig.roomConfig?.design?.accentColor || '#6366f1'}40` }}>
                                                                                 <span className="text-[6px] font-bold text-white">GÖNDER</span>
-                                                                                <span className="text-[6px] text-white/70">â¤</span>
+                                                                                <span className="text-[6px] text-white/70">➤</span>
                                                                             </div>
                                                                         </div>
                                                                     </div>
@@ -3614,7 +3614,7 @@ export default function OwnerPanel() {
                                         <div className="w-[380px] flex-shrink-0 sticky top-4 self-start hidden xl:block">
                                             <div className="owner-glossy">
                                                 <div className="p-3 border-b border-white/5 flex items-center justify-between">
-                                                    <span className="text-xs font-bold text-gray-400 flex items-center gap-2">ğŸ‘ï¸ Ana Sayfa Ã–nizleme</span>
+                                                    <span className="text-xs font-bold text-gray-400 flex items-center gap-2">ğŸ‘️ Ana Sayfa Önizleme</span>
                                                     <span className="text-[9px] text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Gerçek zamanlı</span>
                                                 </div>
                                                 {/* Mini Ana Sayfa — Gerçek Retro Tasarımla Eşleşen Ön İzleme */}
@@ -3646,7 +3646,7 @@ export default function OwnerPanel() {
                                                             <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
                                                                 {(siteConfig.homepage?.navItems || [
                                                                     { label: 'HOME', section: 'home' }, { label: 'ODALAR', section: '_odalar' }, { label: 'REHBER', section: 'rehber' },
-                                                                    { label: 'FÄ°YATLAR', section: 'fiyatlar' }, { label: 'Ä°LETÄ°ÅÄ°M', section: 'iletisim' }
+                                                                    { label: 'FİYATLAR', section: 'fiyatlar' }, { label: 'İLETİŞİM', section: 'iletisim' }
                                                                 ]).filter((n: any) => n.visible !== false).slice(0, 4).map((n: any, i: number) => (
                                                                     <span key={i} style={{ fontSize: 5, fontWeight: 700, color: 'rgba(255,255,255,0.6)', letterSpacing: 0.5 }}>{n.label}</span>
                                                                 ))}
@@ -3851,7 +3851,7 @@ export default function OwnerPanel() {
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-2">
                                                             <span className={`text-xs font-medium px-2 py-0.5 rounded border ${cameraOn ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
-                                                                {cameraOn ? 'ğŸ“¹ KameralÄ±' : 'ğŸ’¬ Mesaj'}
+                                                                {cameraOn ? 'ğŸ“¹ Kameralı' : 'ğŸ’¬ Mesaj'}
                                                             </span>
                                                             <span className="text-[10px] text-gray-400">x{t.roomLimit || 1} Oda</span>
                                                         </div>
@@ -4053,7 +4053,7 @@ export default function OwnerPanel() {
                                                                     headers: { Authorization: `Bearer ${token}` },
                                                                 });
                                                                 if (res.ok) {
-                                                                    addToast(`${t.displayName || t.name} mÃ¼ÅŸterisine Ã¶deme hatÄ±rlatmasÄ± gÃ¶nderildi ğŸ“©`, 'success');
+                                                                    addToast(`${t.displayName || t.name} müşterisine ödeme hatırlatması gönderildi ğŸ“©`, 'success');
                                                                     setOverdueTenants(prev => prev.map(x => x.id === t.id ? { ...x, paymentReminderAt: new Date().toISOString() } : x));
                                                                 } else { addToast('Gönderilemedi', 'error'); }
                                                             } catch { addToast('Gönderilemedi', 'error'); }
@@ -4290,7 +4290,7 @@ export default function OwnerPanel() {
                                                 try {
                                                     const token = sessionStorage.getItem('soprano_admin_token');
                                                     const res = await fetch(`${API_URL}/admin/announcement`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ message: announcementText.trim() }) });
-                                                    if (res.ok) { showToast('Duyuru yayÄ±nlandÄ±! ğŸ“¢'); setAnnouncementText(''); try { const r = await fetch(`${API_URL}/admin/announcements`, { headers: { Authorization: `Bearer ${token}` } }); if (r.ok) { const d = await r.json(); setPastAnnouncements(d); setNotifications(d); } } catch { } }
+                                                    if (res.ok) { showToast('Duyuru yayınlandı! ğŸ“¢'); setAnnouncementText(''); try { const r = await fetch(`${API_URL}/admin/announcements`, { headers: { Authorization: `Bearer ${token}` } }); if (r.ok) { const d = await r.json(); setPastAnnouncements(d); setNotifications(d); } } catch { } }
                                                     else showToast('Duyuru gönderilemedi!');
                                                 } catch { showToast('Duyuru gönderilemedi!'); } finally { setAnnouncementSending(false); }
                                             }}
@@ -4333,7 +4333,7 @@ export default function OwnerPanel() {
                                                                     <span className="text-[10px] text-gray-400">{new Date(ann.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                                                     <div className="flex items-center gap-1">
                                                                         <button onClick={() => { setEditingAnnouncementId(ann.id); setEditAnnouncementText(ann.message); }} className="p-1 rounded-md bg-white/5 hover:bg-amber-500/20 text-gray-400 hover:text-amber-400 transition-colors" title="Düzenle"><Pencil className="w-3 h-3" /></button>
-                                                                        <button onClick={() => { setOrderConfirm({ isOpen: true, title: 'Duyuru Sil', message: 'Bu duyuru kalÄ±cÄ± olarak silinecek. Emin misiniz?', type: 'danger', onConfirm: async () => { try { const token = sessionStorage.getItem('soprano_admin_token'); const res = await fetch(`${API_URL}/admin/announcements/${ann.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (res.ok) { setPastAnnouncements(prev => prev.filter(a => a.id !== ann.id)); addToast('Duyuru silindi ğŸ—‘ï¸', 'success'); } else { addToast('Silinemedi', 'error'); } } catch { addToast('Silinemedi', 'error'); } } }); }} className="p-1 rounded-md bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors" title="Sil"><Trash2 className="w-3 h-3" /></button>
+                                                                        <button onClick={() => { setOrderConfirm({ isOpen: true, title: 'Duyuru Sil', message: 'Bu duyuru kalıcı olarak silinecek. Emin misiniz?', type: 'danger', onConfirm: async () => { try { const token = sessionStorage.getItem('soprano_admin_token'); const res = await fetch(`${API_URL}/admin/announcements/${ann.id}`, { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }); if (res.ok) { setPastAnnouncements(prev => prev.filter(a => a.id !== ann.id)); addToast('Duyuru silindi ğŸ—‘️', 'success'); } else { addToast('Silinemedi', 'error'); } } catch { addToast('Silinemedi', 'error'); } } }); }} className="p-1 rounded-md bg-white/5 hover:bg-red-500/20 text-gray-400 hover:text-red-400 transition-colors" title="Sil"><Trash2 className="w-3 h-3" /></button>
                                                                     </div>
                                                                 </div>
                                                             </>
@@ -4460,7 +4460,7 @@ export default function OwnerPanel() {
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 4px; }
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
-                /* â•â•â• Glossy Panel â€” kart/tablo container â•â•â• */
+                /* â•â•â• Glossy Panel — kart/tablo container â•â•â• */
                 .owner-glossy-panel {
                     background:
                         radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%),
