@@ -184,6 +184,13 @@ export function RightLivePanel({
                                         allowFullScreen
                                         className="absolute inset-0 w-full h-full z-[1]"
                                         style={{ border: 'none' }}
+                                        onLoad={() => {
+                                            if (ytIframeRef.current?.contentWindow) {
+                                                ytIframeRef.current.contentWindow.postMessage(
+                                                    JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
+                                                );
+                                            }
+                                        }}
                                     />
                                     {/* Sessiz başladı — tıkla sesi aç overlay */}
                                     {tvMuted && (

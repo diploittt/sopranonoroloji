@@ -3325,11 +3325,12 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                         <div style={{ display: 'flex', gap: 4, marginBottom: 14, padding: '3px', background: 'rgba(0,0,0,0.25)', borderRadius: 10, transition: 'all 0.4s ease' }}>
                                                             {([['profil', '👤'], ['ayarlar', '⚙️'], ['mesajlar', '💬']] as const).map(([tab, icon]) => (
                                                                 <button key={tab} onClick={() => setProfileTab(tab as any)} style={{
-                                                                    flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer',
-                                                                    textTransform: 'uppercase', letterSpacing: 1, transition: 'all 0.25s ease',
+                                                                    flex: 1, padding: '4px 0', fontSize: 8, fontWeight: 800, border: 'none', borderRadius: 6, cursor: 'pointer',
+                                                                    textTransform: 'uppercase', letterSpacing: 0.5, transition: 'all 0.25s ease',
                                                                     background: profileTab === tab ? 'rgba(56,189,248,0.2)' : 'transparent',
                                                                     color: profileTab === tab ? '#7dd3fc' : 'rgba(255,255,255,0.4)',
-                                                                }}>{icon} {tab === 'profil' ? 'Profil' : tab === 'ayarlar' ? 'Ayarlar' : 'Mesajlar'}</button>
+                                                                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '2px'
+                                                                }}><span>{icon}</span> <span>{tab === 'profil' ? 'Profil' : tab === 'ayarlar' ? 'Ayarlar' : 'Mesajlar'}</span></button>
                                                             ))}
                                                         </div>
                                                     )}
