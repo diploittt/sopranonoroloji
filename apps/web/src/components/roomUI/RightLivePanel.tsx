@@ -176,12 +176,26 @@ export function RightLivePanel({
                                 isYoutubeUrl ? (
                                     <iframe
                                         ref={ytIframeRef}
-                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=0&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
+                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=1&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
                                         title="TV Video"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
                                         className="absolute inset-0 w-full h-full z-[1]"
                                         style={{ border: 'none' }}
+                                        onLoad={() => {
+                                            // Autoplay muted başlatıldı — 1.5s sonra sesi aç
+                                            setTimeout(() => {
+                                                if (ytIframeRef.current?.contentWindow) {
+                                                    const vol = Math.round(Math.max(0, Math.min(1, tvVolume)) * 100);
+                                                    ytIframeRef.current.contentWindow.postMessage(
+                                                        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
+                                                    );
+                                                    ytIframeRef.current.contentWindow.postMessage(
+                                                        JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*'
+                                                    );
+                                                }
+                                            }, 1500);
+                                        }}
                                     />
                                 ) : (
                                     <video
