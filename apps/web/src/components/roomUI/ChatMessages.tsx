@@ -428,7 +428,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                     style={{ width: 320, maxWidth: '100%' }}>
                                                     <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
                                                         <iframe
-                                                            src={`https://www.youtube.com/embed/${youtubeId}`}
+                                                            src={`https://www.youtube.com/embed/${youtubeId}?controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&playsinline=1`}
                                                             title="YouTube"
                                                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                                             allowFullScreen
