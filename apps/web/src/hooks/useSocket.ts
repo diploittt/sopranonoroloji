@@ -317,6 +317,21 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:settings-updated', (data: any) => {
             console.log('[Room Settings] Updated:', data);
             setRoomSettings(data);
+            // Also update rooms array so header tabs reflect changes (buttonColor, name, etc.)
+            if (data.roomId) {
+                setRooms(prev => prev.map(room =>
+                    room.id === data.roomId
+                        ? {
+                            ...room,
+                            ...(data.name !== undefined && { name: data.name }),
+                            ...(data.isLocked !== undefined && { isLocked: data.isLocked }),
+                            ...(data.isVipRoom !== undefined && { isVipRoom: data.isVipRoom }),
+                            ...(data.isMeetingRoom !== undefined && { isMeetingRoom: data.isMeetingRoom }),
+                            ...(data.buttonColor !== undefined && { buttonColor: data.buttonColor }),
+                        }
+                        : room
+                ));
+            }
         });
 
         // Gerçek zamanlı oda katılımcı sayısı güncellemesi

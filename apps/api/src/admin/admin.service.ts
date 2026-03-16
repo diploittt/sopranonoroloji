@@ -1671,6 +1671,7 @@ export class AdminService implements OnModuleInit {
         hasPassword: !!(updated.password && updated.password.trim()),
         themeId: updated.themeId || null,
         metadata: updated.metadata || null,
+        buttonColor: updated.buttonColor || null,
       });
     } catch (e) {
       console.error('Failed to broadcast room settings:', e);
