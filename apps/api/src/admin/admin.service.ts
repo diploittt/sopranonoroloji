@@ -933,6 +933,36 @@ export class AdminService implements OnModuleInit {
       });
     } catch { /* audit_log table might not exist yet */ }
 
+    // ── Ziyaretçi İstatistikleri ──────────────────────────────
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const [totalUsers, todayVisitors, totalVisitorsAllTime] = await Promise.all([
+      // Toplam kayıtlı üye sayısı
+      this.prisma.user.count().catch(() => 0),
+      // Bugün giriş yapan benzersiz kullanıcı sayısı
+      this.prisma.user.count({
+        where: { lastLoginAt: { gte: todayStart } },
+      }).catch(() => 0),
+      // Tüm zamanlar — en az 1 kez login yapmış kullanıcılar
+      this.prisma.user.count({
+        where: { lastLoginAt: { not: null } },
+      }).catch(() => 0),
+    ]);
+
+    // Misafir girişleri — şu an online olan misafirler
+    let guestOnline = 0;
+    let totalRoomEntries = 0;
+    const participantsMap2 = (this.chatGateway as any).participants;
+    if (participantsMap2) {
+      for (const [, p] of participantsMap2) {
+        totalRoomEntries++;
+        if (p.guestId || (p.userId && p.userId.startsWith('guest_'))) {
+          guestOnline++;
+        }
+      }
+    }
+
     return {
       onlineUsers: onlineCount,
       activeSpeakers,
@@ -947,6 +977,12 @@ export class AdminService implements OnModuleInit {
       },
       roomUserCounts,
       recentLogs,
+      // Ziyaretçi istatistikleri
+      totalUsers,
+      totalVisits: totalVisitorsAllTime,
+      todayVisitors,
+      guestEntries: guestOnline,
+      roomEntries: totalRoomEntries,
     };
   }
 
@@ -2424,7 +2460,7 @@ export class AdminService implements OnModuleInit {
       'guestProfile', 'guestPrivateMessage', 'guestPrivateRoomInvite',
       'guestCamera', 'guestWebcam1v1', 'guestAnimation',
       'theme', 'primaryColor', 'accentColor', 'backgroundImage',
-      'logoName', 'logoUrl', 'logoTextSize', 'logoTextColor', 'logoTextColor2',
+      'logoName', 'logoUrl', 'logoTextSize', 'logoTextColor', 'logoTextColor2', 'logoTextFont',
       'logoPosition', 'logoImageSize', 'logoOffsetX', 'logoOffsetY', 'logoEffect',
       'textOffsetX', 'textOffsetY', 'textEffect',
       'allowedDomains',

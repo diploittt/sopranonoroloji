@@ -2142,10 +2142,12 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}
                                 <style>{`
                                     @import url('https://fonts.cdnfonts.com/css/cooper-black');
+                                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Roboto:wght@400;700;900&family=Outfit:wght@400;700;900&family=Poppins:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Bebas+Neue&family=Oswald:wght@400;700&family=Righteous&family=Permanent+Marker&family=Pacifico&family=Aref+Ruqaa:wght@400;700&display=swap');
                                     body {
                                         background: #c4c9ee !important;
                                         background-attachment: fixed !important;
                                     }
+
                                     body > main, .room-container {
                                         padding-top: 0 !important;
                                         align-items: flex-start !important;
@@ -2791,15 +2793,30 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
                                             return (
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                                                    {ss.tenantLogoUrl && (
-                                                        <img src={ss.tenantLogoUrl} alt={logoName} style={{ maxHeight: 40, maxWidth: 120, objectFit: 'contain', filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))' }} />
-                                                    )}
+                                                    {(bp?.logoUrl || ss.tenantLogoUrl || ss.logoUrl) && (() => {
+                                                        const imgSize = bp?.logoImageSize || ss.logoImageSize || 40;
+                                                        const imgOffX = bp?.logoOffsetX || ss.logoOffsetX || 0;
+                                                        const imgOffY = bp?.logoOffsetY || ss.logoOffsetY || 0;
+                                                        return (
+                                                            <img src={bp?.logoUrl || ss.tenantLogoUrl || ss.logoUrl} alt={logoName} style={{
+                                                                height: imgSize, width: 'auto', maxWidth: imgSize * 3,
+                                                                objectFit: 'contain',
+                                                                filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.4))',
+                                                                transform: `translate(${imgOffX}px, ${imgOffY}px)`,
+                                                                transition: 'all 0.2s ease',
+                                                            }} />
+                                                        );
+                                                    })()}
+                                                    {(() => {
+                                                        const txtOX = bp?.textOffsetX || ss.textOffsetX || 0;
+                                                        const txtOY = bp?.textOffsetY || ss.textOffsetY || 0;
+                                                        return (
                                                     <span style={{
                                                         fontSize: logoTextSize || 18,
                                                         fontWeight: 900,
                                                         fontFamily: logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif",
                                                         letterSpacing: '0.5px',
-                                                        transform: 'scaleY(1.05)',
+                                                        transform: `scaleY(1.05) translate(${txtOX}px, ${txtOY}px)`,
                                                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4))',
                                                         transition: 'all 0.3s ease',
                                                         ...(color2 ? {
@@ -2819,6 +2836,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     }}>
                                                         {logoName}
                                                     </span>
+                                                    ); })()}
                                                     {bp && (
                                                         <span style={{ fontSize: 7, fontWeight: 800, letterSpacing: '0.12em', color: '#818cf8', background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 4, padding: '1px 5px', animation: 'pulse 2s ease-in-out infinite' }}>ÖNİZLEME</span>
                                                     )}

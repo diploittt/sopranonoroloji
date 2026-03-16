@@ -8720,9 +8720,25 @@ export default function OwnerPanel() {
 
                                             </div>
 
-                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.totalVisits?.toLocaleString('tr-TR') || '—'}</div>
+                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.totalVisits?.toLocaleString('tr-TR') || '0'}</div>
 
-                                            <div className="text-[10px] text-gray-400 mt-1">Tüm zamanlar</div>
+                                            <div className="text-[10px] text-gray-400 mt-1">Giriş yapmış tüm üyeler</div>
+
+                                        </div>
+
+                                        <div className="p-4 rounded-xl bg-white/[0.02] border border-cyan-500/10" style={{ background: 'linear-gradient(135deg, rgba(6,182,212,0.04) 0%, transparent 100%)' }}>
+
+                                            <div className="flex items-center gap-2 mb-2">
+
+                                                <Activity className="w-4 h-4 text-cyan-400" />
+
+                                                <span className="text-[10px] text-cyan-400/80 uppercase tracking-wider font-bold">Bugünkü Ziyaretçi</span>
+
+                                            </div>
+
+                                            <div className="text-2xl font-black text-cyan-300">{(adminStats as any)?.todayVisitors?.toLocaleString('tr-TR') || '0'}</div>
+
+                                            <div className="text-[10px] text-gray-400 mt-1">Bugün giriş yapan üye</div>
 
                                         </div>
 
@@ -8736,9 +8752,9 @@ export default function OwnerPanel() {
 
                                             </div>
 
-                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.totalUsers?.toLocaleString('tr-TR') || '—'}</div>
+                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.totalUsers?.toLocaleString('tr-TR') || '0'}</div>
 
-                                            <div className="text-[10px] text-gray-400 mt-1">Toplam kayıt</div>
+                                            <div className="text-[10px] text-gray-400 mt-1">Toplam kayıtlı</div>
 
                                         </div>
 
@@ -8748,29 +8764,29 @@ export default function OwnerPanel() {
 
                                                 <Users2 className="w-4 h-4 text-amber-400" />
 
-                                                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Misafir Giriş</span>
+                                                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Misafir (Şu An)</span>
 
                                             </div>
 
-                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.guestEntries?.toLocaleString('tr-TR') || '—'}</div>
+                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.guestEntries?.toLocaleString('tr-TR') || '0'}</div>
 
-                                            <div className="text-[10px] text-gray-400 mt-1">Misafir olarak giren</div>
+                                            <div className="text-[10px] text-gray-400 mt-1">Online misafir sayısı</div>
 
                                         </div>
 
-                                        <div className="p-4 rounded-xl bg-white/[0.02] border border-white/5">
+                                        <div className="col-span-2 p-4 rounded-xl bg-white/[0.02] border border-white/5">
 
                                             <div className="flex items-center gap-2 mb-2">
 
                                                 <LayoutGrid className="w-4 h-4 text-purple-400" />
 
-                                                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Oda Giriş</span>
+                                                <span className="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Oda Girişleri (Şu An)</span>
 
                                             </div>
 
-                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.roomEntries?.toLocaleString('tr-TR') || '—'}</div>
+                                            <div className="text-2xl font-black text-white">{(adminStats as any)?.roomEntries?.toLocaleString('tr-TR') || '0'}</div>
 
-                                            <div className="text-[10px] text-gray-400 mt-1">Toplam oda giriş</div>
+                                            <div className="text-[10px] text-gray-400 mt-1">Şu an tüm odalardaki toplam kişi</div>
 
                                         </div>
 

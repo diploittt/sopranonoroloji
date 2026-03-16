@@ -505,6 +505,7 @@ model SystemSettings {
   logoTextSize    String?                      // Logo yazı boyutu (örn: "1.3rem", "1.6rem")
   logoTextColor   String?                      // Logo yazı rengi (hex, örn: "#f0d88a")
   logoTextColor2  String?                      // Logo yazı ikinci renk (gradient için)
+  logoTextFont    String?                      // Logo yazı fontu (örn: "'Righteous', cursive")
   logoPosition    String?        @default("left") // Logo konumu: "left", "center"
   logoImageSize   Int?           @default(112)    // Logo resim yüksekliği (px)
   logoOffsetX     Int?           @default(0)      // Logo resim yatay kaydırma (px)

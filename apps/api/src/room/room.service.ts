@@ -272,6 +272,8 @@ export class RoomService {
         logoTextColor: true,
         logoTextColor2: true,
         logoTextSize: true,
+        logoTextFont: true,
+        logoUrl: true,
       },
     });
 
@@ -282,13 +284,14 @@ export class RoomService {
       slug: tenant.slug,
       domain: tenant.domain,
       status: tenant.status,
-      logoUrl: tenant.logoUrl,
+      logoUrl: sysSettings?.logoUrl || tenant.logoUrl,
       rooms,
       // Branding ayarları (admin panelinden gelen)
       logoName: sysSettings?.logoName || null,
       logoTextColor: sysSettings?.logoTextColor || null,
       logoTextColor2: sysSettings?.logoTextColor2 || null,
       logoTextSize: sysSettings?.logoTextSize || null,
+      logoTextFont: sysSettings?.logoTextFont || null,
     };
   }
 

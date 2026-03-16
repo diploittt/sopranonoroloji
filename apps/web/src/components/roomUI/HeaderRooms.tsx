@@ -372,15 +372,15 @@ export function HeaderRooms({
                                         padding: '0 18px',
                                         borderRadius: 14,
                                         background: isActive
-                                            ? 'linear-gradient(160deg, rgba(147,141,210,0.35) 0%, rgba(178,175,220,0.2) 50%, rgba(200,198,235,0.12) 100%)'
+                                            ? `linear-gradient(160deg, ${hexToRgba(btnColor, 0.25)} 0%, ${hexToRgba(btnColor, 0.12)} 50%, ${hexToRgba(btnColor, 0.06)} 100%)`
                                             : isHovered
-                                                ? 'linear-gradient(160deg, rgba(147,141,210,0.12) 0%, rgba(178,175,220,0.06) 100%)'
-                                                : 'linear-gradient(160deg, rgba(147,141,210,0.06) 0%, rgba(178,175,220,0.03) 100%)',
+                                                ? `linear-gradient(160deg, ${hexToRgba(btnColor, 0.1)} 0%, ${hexToRgba(btnColor, 0.04)} 100%)`
+                                                : `linear-gradient(160deg, ${hexToRgba(btnColor, 0.05)} 0%, ${hexToRgba(btnColor, 0.02)} 100%)`,
                                         border: isActive
-                                            ? '1px solid rgba(165,160,220,0.35)'
-                                            : `1px solid ${isHovered ? 'rgba(165,160,220,0.18)' : 'rgba(165,160,220,0.08)'}`,
+                                            ? `1px solid ${hexToRgba(btnColor, 0.35)}`
+                                            : `1px solid ${isHovered ? hexToRgba(btnColor, 0.18) : hexToRgba(btnColor, 0.08)}`,
                                         boxShadow: isActive
-                                            ? '0 4px 24px rgba(147,141,210,0.15), inset 0 1px 0 rgba(255,255,255,0.08)'
+                                            ? `0 4px 24px ${hexToRgba(btnColor, 0.15)}, inset 0 1px 0 rgba(255,255,255,0.08)`
                                             : isHovered ? 'inset 0 1px 0 rgba(255,255,255,0.04)' : 'none',
                                         backdropFilter: 'blur(12px)',
                                     }}
@@ -389,13 +389,13 @@ export function HeaderRooms({
                                         <span className="text-[13px] font-bold tracking-wide truncate max-w-full" style={{ color: isActive ? '#e8e6f4' : isHovered ? '#c8c5e0' : '#a09cb8', transition: 'color 0.3s' }}>
                                             {room.name}
                                         </span>
-                                        <span className="text-[10px] flex items-center gap-1 font-medium" style={{ color: isActive ? 'rgba(190,185,230,0.9)' : '#6b6890', transition: 'color 0.3s' }}>
+                                        <span className="text-[10px] flex items-center gap-1 font-medium" style={{ color: isActive ? hexToRgba(btnColor, 0.9) : '#6b6890', transition: 'color 0.3s' }}>
                                             {room.isLocked && <Lock className="w-2.5 h-2.5" />}
                                             {room.isVipRoom ? t.vip : `${visibleCount} ${t.people}`}
                                         </span>
                                     </div>
                                     {isActive && (
-                                        <div className="absolute -bottom-px left-1/2 -translate-x-1/2 rounded-full" style={{ width: 28, height: 2.5, background: 'linear-gradient(90deg, transparent, rgba(165,160,220,0.8), transparent)', boxShadow: '0 2px 12px rgba(165,160,220,0.4)' }} />
+                                        <div className="absolute -bottom-px left-1/2 -translate-x-1/2 rounded-full" style={{ width: 28, height: 2.5, background: `linear-gradient(90deg, transparent, ${btnColor}, transparent)`, boxShadow: `0 2px 12px ${hexToRgba(btnColor, 0.4)}` }} />
                                     )}
                                 </button>
                             );

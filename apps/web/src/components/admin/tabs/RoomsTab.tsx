@@ -16,13 +16,7 @@ interface RoomsTabProps {
     systemSettings?: Record<string, any> | null;
 }
 
-// Mevcut temalar
-const AVAILABLE_THEMES = [
-    { id: '', label: 'Varsayılan (Modern)', emoji: '🌙' },
-    { id: 'midnight', label: 'Midnight', emoji: '🌌' },
-    { id: 'telegraph-1910', label: 'Telegraph 1910', emoji: '📡' },
-    { id: 'hasbihal-islamic', label: 'Hasbihal İslâmî', emoji: '🕌' },
-];
+
 
 interface DBRoom {
     id: string;
@@ -411,12 +405,6 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 <label>Şifre</label>
                                 <input type="password" value={formPassword} onChange={e => setFormPassword(e.target.value)} placeholder="Şifresiz" />
                             </div>
-                            {isRoomAdmin && (
-                                <div className="admin-form-group">
-                                    <label>Max Katılımcı</label>
-                                    <input type="number" value={formMax} onChange={e => setFormMax(e.target.value ? Number(e.target.value) : '')} placeholder="Sınırsız" />
-                                </div>
-                            )}
                         </div>
 
                         <div className="admin-form-group">
@@ -441,22 +429,12 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                             />
                         </div>
 
-                        {isRoomAdmin && systemSettings?.packageType === 'CAMERA' && (
-                            <div className="admin-form-row">
-                                <div className="admin-form-group">
-                                    <label>Mikrofon Limiti</label>
-                                    <input type="number" value={formMicLimit} onChange={e => setFormMicLimit(e.target.value ? Number(e.target.value) : '')} placeholder="Sınırsız" />
-                                </div>
-                                <div className="admin-form-group">
-                                    <label>Kamera Limiti</label>
-                                    <input type="number" value={formCameraLimit} onChange={e => setFormCameraLimit(e.target.value ? Number(e.target.value) : '')} placeholder="Sınırsız" />
-                                </div>
-                            </div>
-                        )}
+
 
                         <div className="admin-divider" />
 
-                        {/* Oda Ayarları (Checkbox'lar) */}
+                        {/* Oda Ayarları (GodMaster Only) */}
+                        {isGodMaster && (
                         <div className="admin-perms-section">
                             <div className="admin-perms-title">
                                 <Home style={{ width: 12, height: 12 }} />
@@ -511,48 +489,9 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                 )}
                             </div>
                         </div>
-
-                        {/* ─── Oda Teması (GodMaster Only) ─── */}
-                        {isRoomAdmin && (
-                            <div className="admin-perms-section" style={{ marginTop: 4 }}>
-                                <div className="admin-perms-title">
-                                    <Palette style={{ width: 12, height: 12 }} />
-                                    Oda Teması
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginTop: 4 }}>
-                                    {AVAILABLE_THEMES.map(t => (
-                                        <div
-                                            key={t.id}
-                                            onClick={() => setFormTheme(t.id)}
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 8,
-                                                padding: '8px 12px',
-                                                borderRadius: 8,
-                                                cursor: 'pointer',
-                                                border: formTheme === t.id
-                                                    ? '1.5px solid rgba(37,99,235,0.35)'
-                                                    : '1px solid rgba(148,163,184,0.15)',
-                                                background: formTheme === t.id
-                                                    ? 'rgba(37,99,235,0.1)'
-                                                    : 'rgba(226,232,240,0.4)',
-                                                transition: 'all 0.2s',
-                                            }}
-                                        >
-                                            <span style={{ fontSize: 16 }}>{t.emoji}</span>
-                                            <span style={{
-                                                fontSize: 11,
-                                                fontWeight: formTheme === t.id ? 700 : 500,
-                                                color: formTheme === t.id ? '#a3bfff' : 'rgba(30,41,59,0.6)',
-                                            }}>
-                                                {t.label}
-                                            </span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
                         )}
+
+
 
 
 

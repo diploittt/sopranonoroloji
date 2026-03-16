@@ -231,7 +231,7 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
 
     const currentRolePerms = rolePermissions[selectedRole] || DEFAULT_ROLE_PERMS[selectedRole] || {};
 
-    const BRANDING_KEYS = ['logoName', 'logoTextSize', 'logoTextColor', 'logoTextColor2', 'logoTextFont', 'logoPosition'];
+    const BRANDING_KEYS = ['logoName', 'logoTextSize', 'logoTextColor', 'logoTextColor2', 'logoTextFont', 'logoPosition', 'logoUrl', 'logoImageSize', 'logoOffsetX', 'logoOffsetY', 'textOffsetX', 'textOffsetY'];
 
     const dispatchBrandingPreview = useCallback((s: Record<string, any>) => {
         const detail: Record<string, any> = {};
@@ -331,57 +331,6 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
 
                                             return (
                                                 <div style={{ marginBottom: 16 }}>
-                                                    <div style={{
-                                                        fontSize: 11, fontWeight: 700, color: '#475569',
-                                                        letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 6,
-                                                    }}>🔍 Sol üst logo alanı canlı önizlemesi</div>
-
-                                                    {/* Canlı Önizleme Kutusu */}
-                                                    <div style={{
-                                                        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-                                                        borderRadius: 12, padding: '14px 16px', marginBottom: 12,
-                                                        border: '1px solid rgba(255,255,255,0.08)',
-                                                        display: 'flex', flexDirection: 'column',
-                                                        alignItems: logoPosition === 'center' ? 'center' : 'flex-start',
-                                                        gap: 8, minHeight: 80,
-                                                    }}>
-                                                        {logoUrl ? (
-                                                            <img
-                                                                src={logoUrl}
-                                                                alt="Logo önizleme"
-                                                                style={{
-                                                                    maxWidth: logoImageSize,
-                                                                    maxHeight: logoImageSize * 0.8,
-                                                                    objectFit: 'contain',
-                                                                    filter: 'drop-shadow(0 2px 8px rgba(0,0,0,0.5))',
-                                                                    transform: `translate(${offsetX}px, ${offsetY}px)`,
-                                                                    transition: 'all 0.3s ease',
-                                                                }}
-                                                            />
-                                                        ) : (
-                                                            <div style={{
-                                                                width: 48, height: 48, borderRadius: 12,
-                                                                background: 'rgba(255,255,255,0.06)',
-                                                                border: '1px dashed rgba(255,255,255,0.15)',
-                                                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                                color: 'rgba(255,255,255,0.25)', fontSize: 20,
-                                                            }}>🖼️</div>
-                                                        )}
-                                                        <span style={{
-                                                            fontSize: logoTextSize,
-                                                            fontWeight: 800,
-                                                            fontFamily: logoTextFont,
-                                                            letterSpacing: '-0.02em',
-                                                            ...(logoTextColor2 ? {
-                                                                backgroundImage: `linear-gradient(135deg, ${logoTextColor}, ${logoTextColor2})`,
-                                                                WebkitBackgroundClip: 'text',
-                                                                WebkitTextFillColor: 'transparent',
-                                                                backgroundClip: 'text',
-                                                            } : {
-                                                                color: logoTextColor,
-                                                            }),
-                                                        }}>{logoName}</span>
-                                                    </div>
 
                                                     {/* Dışarıdan Logo URL'si */}
                                                     <div style={{
@@ -770,28 +719,6 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                                                             </select>
                                                         </div>
 
-                                                        {/* Yazı Boyutu Slider */}
-                                                        <div className="admin-form-group">
-                                                            <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                                                <span>Yazı Boyutu</span>
-                                                                <span style={{ fontSize: 10, fontWeight: 700, color: '#6366f1', background: 'rgba(99,102,241,0.12)', padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace' }}>
-                                                                    {settings.logoTextSize || '1.4rem'}
-                                                                </span>
-                                                            </label>
-                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                                                                <span style={{ fontSize: 11, color: '#334155' }}>0.8</span>
-                                                                <input
-                                                                    type="range"
-                                                                    min={0.8}
-                                                                    max={3}
-                                                                    step={0.1}
-                                                                    value={parseFloat(String(settings.logoTextSize || '1.4').replace('rem', ''))}
-                                                                    onChange={e => updateSetting('logoTextSize', e.target.value + 'rem')}
-                                                                    style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
-                                                                />
-                                                                <span style={{ fontSize: 11, color: '#334155' }}>3.0</span>
-                                                            </div>
-                                                        </div>
 
                                                         {/* Pozisyon */}
                                                         <div className="admin-form-group">
@@ -885,6 +812,285 @@ export function SettingsTab({ socket, systemSettings }: SettingsTabProps) {
                             <p style={{ lineHeight: 1.7 }}>{activeSection.description}</p>
                         </div>
 
+
+                        {/* ═══ BRANDING sağ panel: Logo Resmi Boyut & Konum Ayarları ═══ */}
+                        {activeSection.key === 'branding' && (() => {
+                            const logoImageSize = settings.logoImageSize || 60;
+                            const offsetX = settings.logoOffsetX || 0;
+                            const offsetY = settings.logoOffsetY || 0;
+                            const txtOffX = settings.textOffsetX || 0;
+                            const txtOffY = settings.textOffsetY || 0;
+
+                            return (
+                                <div style={{ marginTop: 16 }}>
+                                    <div style={{
+                                        fontSize: 10, fontWeight: 700, color: '#475569',
+                                        letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 10,
+                                    }}>📐 Logo Resmi Konum & Boyut Ayarları</div>
+
+                                    {/* ── Logo Boyutu ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>🔍 Logo Boyutu</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{logoImageSize}px</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 24, textAlign: 'right' }}>20</span>
+                                            <input
+                                                type="range"
+                                                min={20}
+                                                max={200}
+                                                value={logoImageSize}
+                                                onChange={e => updateSetting('logoImageSize', Number(e.target.value))}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>200</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('logoImageSize', 60)}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── X Offset ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>↔️ Yatay Konum (X)</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{offsetX}px</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28, textAlign: 'right' }}>-100</span>
+                                            <input
+                                                type="range"
+                                                min={-100}
+                                                max={100}
+                                                value={offsetX}
+                                                onChange={e => updateSetting('logoOffsetX', Number(e.target.value))}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>100</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('logoOffsetX', 0)}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Y Offset ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>↕️ Dikey Konum (Y)</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{offsetY}px</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28, textAlign: 'right' }}>-50</span>
+                                            <input
+                                                type="range"
+                                                min={-50}
+                                                max={50}
+                                                value={offsetY}
+                                                onChange={e => updateSetting('logoOffsetY', Number(e.target.value))}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>50</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('logoOffsetY', 0)}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Ayırıcı ── */}
+                                    <div style={{ height: 1, background: 'rgba(100,116,139,0.15)', margin: '16px 0' }} />
+
+                                    <div style={{
+                                        fontSize: 10, fontWeight: 700, color: '#475569',
+                                        letterSpacing: '0.1em', textTransform: 'uppercase' as const, marginBottom: 10,
+                                    }}>✏️ Metin Logo Konum Ayarları</div>
+
+                                    {/* ── Metin Boyutu ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>🔤 Yazı Boyutu</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{settings.logoTextSize || '1.4rem'}</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 24, textAlign: 'right' }}>0.8</span>
+                                            <input
+                                                type="range"
+                                                min={0.8}
+                                                max={3}
+                                                step={0.1}
+                                                value={parseFloat(String(settings.logoTextSize || '1.4').replace('rem', ''))}
+                                                onChange={e => updateSetting('logoTextSize', e.target.value + 'rem')}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>3.0</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('logoTextSize', '1.4rem')}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Metin X Offset ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>↔️ Yazı Yatay (X)</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{txtOffX}px</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28, textAlign: 'right' }}>-100</span>
+                                            <input
+                                                type="range"
+                                                min={-100}
+                                                max={100}
+                                                value={txtOffX}
+                                                onChange={e => updateSetting('textOffsetX', Number(e.target.value))}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>100</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('textOffsetX', 0)}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Metin Y Offset ── */}
+                                    <div style={{ marginBottom: 14 }}>
+                                        <label style={{
+                                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                            fontSize: 12, fontWeight: 600, color: '#334155', marginBottom: 6,
+                                        }}>
+                                            <span>↕️ Yazı Dikey (Y)</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 700, color: '#6366f1',
+                                                background: 'rgba(99,102,241,0.12)',
+                                                padding: '2px 8px', borderRadius: 4, fontFamily: 'monospace',
+                                            }}>{txtOffY}px</span>
+                                        </label>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28, textAlign: 'right' }}>-50</span>
+                                            <input
+                                                type="range"
+                                                min={-50}
+                                                max={50}
+                                                value={txtOffY}
+                                                onChange={e => updateSetting('textOffsetY', Number(e.target.value))}
+                                                style={{ flex: 1, accentColor: '#6366f1', height: 6, cursor: 'pointer' }}
+                                            />
+                                            <span style={{ fontSize: 11, color: '#64748b', width: 28 }}>50</span>
+                                            <button
+                                                type="button"
+                                                onClick={() => updateSetting('textOffsetY', 0)}
+                                                style={{
+                                                    background: 'rgba(226,232,240,0.6)',
+                                                    border: '1px solid rgba(100,116,139,0.2)',
+                                                    borderRadius: 4, color: '#475569',
+                                                    fontSize: 11, padding: '3px 6px', cursor: 'pointer',
+                                                }}
+                                                title="Sıfırla"
+                                            >↺</button>
+                                        </div>
+                                    </div>
+
+                                    {/* ── Tümünü Sıfırla ── */}
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            updateSetting('logoImageSize', 60);
+                                            updateSetting('logoOffsetX', 0);
+                                            updateSetting('logoOffsetY', 0);
+                                            updateSetting('textOffsetX', 0);
+                                            updateSetting('textOffsetY', 0);
+                                            showStatus('success', 'Tüm konum ayarları sıfırlandı.');
+                                        }}
+                                        style={{
+                                            width: '100%', padding: '8px 12px',
+                                            fontSize: 11, fontWeight: 600,
+                                            background: 'rgba(100,116,139,0.06)',
+                                            border: '1px solid rgba(100,116,139,0.15)',
+                                            borderRadius: 8, color: '#64748b',
+                                            cursor: 'pointer', transition: 'all 0.2s',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                                        }}
+                                    >
+                                        🔄 Tüm Konum Ayarlarını Sıfırla
+                                    </button>
+                                </div>
+                            );
+                        })()}
 
                         {/* Setting Descriptions */}
                         <div style={{ marginTop: 16 }}>

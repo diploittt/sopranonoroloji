@@ -268,30 +268,35 @@ export function RightLivePanel({
             </div>
 
 
-            {/* --- TV Controls (Operator+) --- */}
-            {userLevel >= 3 && (
+            {/* --- TV Pause (herkes) — sadece kendi yerel oynatıcısını etkiler --- */}
+            {tvVideoUrl && !speakerStream && (
                 <div className="px-3 mt-2 shrink-0">
+                    <button
+                        onClick={() => {
+                            if (isYoutubeUrl && ytIframeRef.current?.contentWindow) {
+                                ytIframeRef.current.contentWindow.postMessage(
+                                    JSON.stringify({ event: 'command', func: tvPaused ? 'playVideo' : 'pauseVideo' }),
+                                    '*'
+                                );
+                            }
+                            if (!isYoutubeUrl && tvVideoRef2.current) {
+                                tvPaused ? tvVideoRef2.current.play() : tvVideoRef2.current.pause();
+                            }
+                            setTvPaused(!tvPaused);
+                        }}
+                        className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 border border-amber-500/20 transition-all"
+                    >
+                        {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                    </button>
+                </div>
+            )}
+
+            {/* --- TV Controls (Operator+): Durdur & Video Başlat --- */}
+            {userLevel >= 3 && (
+                <div className="px-3 mt-1 shrink-0">
                     {tvVideoUrl && !speakerStream ? (
-                        <div className="flex flex-col gap-1">
-                            {/* Duraklat / Devam Et butonu */}
-                            <button
-                                onClick={() => {
-                                    if (isYoutubeUrl && ytIframeRef.current?.contentWindow) {
-                                        ytIframeRef.current.contentWindow.postMessage(
-                                            JSON.stringify({ event: 'command', func: tvPaused ? 'playVideo' : 'pauseVideo' }),
-                                            '*'
-                                        );
-                                    }
-                                    if (!isYoutubeUrl && tvVideoRef2.current) {
-                                        tvPaused ? tvVideoRef2.current.play() : tvVideoRef2.current.pause();
-                                    }
-                                    setTvPaused(!tvPaused);
-                                }}
-                                className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 border border-amber-500/20 transition-all"
-                            >
-                                {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
-                            </button>
-                            {/* Durdur butonu — aynı veya üst rütbe durdurabilir (GodMaster, Owner) */}
+                        <>
+                            {/* Durdur butonu — aynı veya üst rütbe durdurabilir */}
                             {userLevel >= tvBroadcastLevel && (
                                 <button
                                     onClick={() => onSetTvVideo?.(null)}
@@ -300,7 +305,7 @@ export function RightLivePanel({
                                     ■ Yayını Durdur
                                 </button>
                             )}
-                        </div>
+                        </>
                     ) : !speakerStream ? (
                         ytInputOpen ? (
                             <div className="flex gap-1">

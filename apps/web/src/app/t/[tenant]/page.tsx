@@ -427,6 +427,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
         <>
             <style>{`
                 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+                @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&family=Roboto:wght@400;700;900&family=Outfit:wght@400;700;900&family=Poppins:wght@400;700;900&family=Montserrat:wght@400;700;900&family=Playfair+Display:wght@400;700;900&family=Bebas+Neue&family=Oswald:wght@400;700&family=Righteous&family=Permanent+Marker&family=Pacifico&family=Aref+Ruqaa:wght@400;700&display=swap');
+                @import url('https://fonts.cdnfonts.com/css/cooper-black');
                 body { margin: 0; padding: 0; }
                 .login-wall {
                     min-height: 100vh;
@@ -608,10 +610,10 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                             transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}>
                         {(() => {
-                            const hasCustomBranding = tenantInfo?.logoName || tenantInfo?.logoTextColor || tenantInfo?.logoTextFont || tenantInfo?.logoUrl;
+                            const isCustomBranded = tenantInfo?.logoName || tenantInfo?.logoTextColor || tenantInfo?.logoTextFont || tenantInfo?.logoUrl;
 
                             // ═══ VARSAYILAN SOPRANOCHAT LOGOSU — anasayfadaki ile birebir aynı ═══
-                            if (!hasCustomBranding) {
+                            if (!isCustomBranded) {
                                 return (
                                     <h1 className="retro-logo-text" style={{ margin: 0 }}>
                                         <span className="retro-logo-soprano">Soprano</span>
@@ -623,34 +625,52 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                                 );
                             }
 
-                            // ═══ MÜŞTERİ BRANDING LOGOSU ═══
+                            // ═══ MÜŞTERİ BRANDING LOGOSU — chatroom header ile birebir aynı ═══
                             const text = tenantInfo?.logoName || tenantInfo?.displayName || tenantInfo?.name || 'SopranoChat';
-                            const color1 = tenantInfo?.logoTextColor || '#ffffff';
-                            const color2 = tenantInfo?.logoTextColor2 || '';
-                            const font = tenantInfo?.logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif";
-                            const size = tenantInfo?.logoTextSize || (tenantInfo?.logoUrl ? '1.8rem' : '2.2rem');
+                            const logoTextColor = tenantInfo?.logoTextColor || '';
+                            const logoTextColor2 = tenantInfo?.logoTextColor2 || '';
+                            const logoTextFont = tenantInfo?.logoTextFont || '';
+                            const logoTextSize = tenantInfo?.logoTextSize || '';
+                            const color1 = logoTextColor || '#38d9d9';
+                            const color2 = logoTextColor2;
+                            const hasCustomBranding = (tenantInfo?.logoName && tenantInfo?.logoName !== 'SopranoChat') || logoTextColor || logoTextFont;
 
                             return (
-                                <div style={{ marginTop: tenantInfo?.logoUrl ? -30 : 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                    {tenantInfo?.logoUrl && (
-                                        <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{ maxHeight: 120, maxWidth: 300, objectFit: 'contain', filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))' }} />
-                                    )}
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                                    {tenantInfo?.logoUrl && (() => {
+                                        const imgSize = 120;
+                                        return (
+                                            <img src={tenantInfo.logoUrl} alt={tenantInfo.displayName || tenantInfo.name} style={{
+                                                height: imgSize, width: 'auto', maxWidth: imgSize * 3,
+                                                objectFit: 'contain',
+                                                filter: 'drop-shadow(0 6px 20px rgba(0,0,0,0.5))',
+                                                transition: 'all 0.2s ease',
+                                            }} />
+                                        );
+                                    })()}
                                     <h1 style={{
                                         margin: tenantInfo?.logoUrl ? '6px 0 0' : 0, textAlign: 'center',
-                                        fontSize: size, fontFamily: font, fontWeight: 900,
+                                        fontSize: logoTextSize || (tenantInfo?.logoUrl ? '1.8rem' : '2.2rem'),
+                                        fontWeight: 900,
+                                        fontFamily: logoTextFont || "'Cooper Black', 'Arial Rounded MT Bold', serif",
                                         letterSpacing: '0.5px',
                                         transform: 'scaleY(1.05)',
                                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.6)) drop-shadow(1px 1px 0 rgba(0,0,0,0.4))',
+                                        transition: 'all 0.3s ease',
                                         ...(color2 ? {
                                             backgroundImage: `linear-gradient(135deg, ${color1}, ${color2})`,
                                             WebkitBackgroundClip: 'text',
                                             WebkitTextFillColor: 'transparent',
                                             backgroundClip: 'text',
-                                        } : {
+                                        } as React.CSSProperties : hasCustomBranding ? {
                                             background: `linear-gradient(180deg, ${color1} 0%, ${color1}dd 35%, ${color1}99 70%, ${color1}cc 100%)`,
                                             WebkitBackgroundClip: 'text',
                                             WebkitTextFillColor: 'transparent',
-                                        }),
+                                        } as React.CSSProperties : {
+                                            background: 'linear-gradient(180deg, #ffffff 0%, #dde4ee 35%, #b8c2d4 70%, #ccd4e4 100%)',
+                                            WebkitBackgroundClip: 'text',
+                                            WebkitTextFillColor: 'transparent',
+                                        } as React.CSSProperties),
                                     }}>{text}</h1>
                                 </div>
                             );
