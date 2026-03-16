@@ -3104,17 +3104,18 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                             </div>
                                                             {/* Cinsiyet seçimine göre avatarlar otomatik açılır */}
                                                             <div style={{
-                                                                maxHeight: guestGender ? 200 : 0,
+                                                                maxHeight: guestGender ? 300 : 0,
                                                                 opacity: guestGender ? 1 : 0,
                                                                 overflow: 'hidden',
                                                                 transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                                                                 marginTop: guestGender ? 4 : 0,
                                                             }}>
                                                                 <div key={guestGender} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out' }}>
-                                                                    {(guestGender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
-                                                                        guestGender === 'Kadın' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
-                                                                            ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
-                                                                    ).map((av) => (
+                                                                    {[
+                                                                        '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                        '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                        '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+                                                                    ].map((av) => (
                                                                         <button key={av} type="button" onClick={() => setSelectedAvatar(av)} style={{
                                                                             padding: 3, border: 'none', borderRadius: '50%', cursor: 'pointer',
                                                                             background: 'transparent', transition: 'all 0.25s ease',
@@ -3352,13 +3353,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                     </button>
                                                                     <div style={{ display: showAvatarPicker ? 'block' : 'none', marginTop: 8 }}>
                                                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-                                                                            {(user.gender === 'Erkek' ? ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png'] :
-                                                                                user.gender === 'Kadın' || user.gender === 'Kadin' ? ['/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png'] :
-                                                                                    user.gender === 'Belirsiz' ? ['/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png'] :
-                                                                                        ['/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
-                                                                                            '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
-                                                                                            '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png']
-                                                                            ).map((av) => (
+                                                                            {[
+                                                                                '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
+                                                                                '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
+                                                                                '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
+                                                                            ].map((av) => (
                                                                                 <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); }} style={{
                                                                                     padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
                                                                                     background: 'transparent', transition: 'all 0.25s ease',
