@@ -4259,64 +4259,6 @@ export default function OwnerPanel() {
                                     </div>
                                 </div>
 
-                                {/* Anlık Sistem Logları */}
-                                <div className="owner-glossy">
-                                    <div className="p-5 border-b border-white/5 flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <ScrollText className="w-4 h-4 text-yellow-400" />
-                                            <span className="text-sm font-bold text-white">Anlık Loglar</span>
-                                        </div>
-                                        <button onClick={() => setActiveView('logs')} className="text-xs text-gray-400 hover:text-yellow-400 transition-colors">Tümü →</button>
-                                    </div>
-                                    <div className="divide-y divide-white/[0.03] max-h-[320px] overflow-y-auto custom-scrollbar">
-                                        {(!adminStats.recentLogs || adminStats.recentLogs.length === 0) ? (
-                                            <div className="px-5 py-8 text-center text-gray-400 text-sm">Son kayıt yok</div>
-                                        ) : adminStats.recentLogs.map((log: any) => (
-                                            <div key={log.id} className="px-5 py-3 hover:bg-white/[0.02] transition-colors">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${log.event?.includes('login') ? 'bg-green-500/10 text-green-400 border-green-500/20' :
-                                                        log.event?.includes('error') || log.event?.includes('fail') ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                                            log.event?.includes('update') || log.event?.includes('settings') ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                                                log.event?.includes('create') || log.event?.includes('tenant') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                                                    'bg-gray-500/10 text-gray-400 border-gray-500/20'
-                                                        }`}>{log.event}</span>
-                                                    <span className="text-[9px] text-gray-400 font-mono">{new Date(log.createdAt).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
-                                                </div>
-                                                {log.metadata && (
-                                                    <div className="text-[10px] text-gray-400 truncate font-mono">{typeof log.metadata === 'object' ? JSON.stringify(log.metadata).substring(0, 80) : String(log.metadata).substring(0, 80)}</div>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Hızlı Erişim */}
-                                <div className="owner-glossy">
-                                    <div className="p-5 border-b border-white/5">
-                                        <div className="flex items-center gap-2">
-                                            <Zap className="w-4 h-4 text-amber-400" />
-                                            <span className="text-sm font-bold text-white">Hızlı Erişim</span>
-                                        </div>
-                                    </div>
-                                    <div className="p-5 grid grid-cols-2 gap-3">
-                                        <button onClick={() => setActiveView('customers')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-amber-500/10 border border-white/5 hover:border-amber-500/20 transition-all group">
-                                            <Users className="w-5 h-5 text-gray-400 group-hover:text-[#7b9fef] transition-colors" />
-                                            <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Müşteriler</span>
-                                        </button>
-                                        <button onClick={() => toggleDrawer('newClient', true)} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-green-500/10 border border-white/5 hover:border-green-500/20 transition-all group">
-                                            <UserPlus className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors" />
-                                            <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Yeni Müşteri</span>
-                                        </button>
-                                        <button onClick={() => { const el = document.getElementById('inline-announcement-card'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.boxShadow = '0 0 30px rgba(99,102,241,0.4)'; setTimeout(() => { el.style.boxShadow = ''; }, 2000); } }} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/20 transition-all group">
-                                            <Megaphone className="w-5 h-5 text-gray-400 group-hover:text-indigo-400 transition-colors" />
-                                            <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Duyuru Yayınla</span>
-                                        </button>
-                                        <button onClick={() => setActiveView('logs')} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-yellow-500/10 border border-white/5 hover:border-yellow-500/20 transition-all group">
-                                            <ScrollText className="w-5 h-5 text-gray-400 group-hover:text-yellow-400 transition-colors" />
-                                            <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Sistem Logları</span>
-                                        </button>
-                                    </div>
-                                </div>
 
                                 {/* ── Duyuru Yönetimi (Inline) ── */}
                                 <div id="inline-announcement-card" className="owner-glossy" style={{ transition: 'box-shadow 0.5s ease' }}>
