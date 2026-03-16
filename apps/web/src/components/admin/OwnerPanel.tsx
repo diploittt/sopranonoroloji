@@ -1027,7 +1027,7 @@ export default function OwnerPanel() {
                     </div>
 
                     <div className="flex items-center gap-3 ml-6">
-                        <button onClick={() => toggleDrawer('announcement', true)} className="hidden md:flex items-center gap-2 owner-btn-3d owner-btn-3d-gold" style={{ padding: '8px 16px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
+                        <button onClick={() => { const el = document.getElementById('inline-announcement-card'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.boxShadow = '0 0 30px rgba(99,102,241,0.4)'; setTimeout(() => { el.style.boxShadow = ''; }, 2000); } }} className="hidden md:flex items-center gap-2 owner-btn-3d owner-btn-3d-gold" style={{ padding: '8px 16px', borderRadius: 10, fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1 }}>
                             <Megaphone className="w-4 h-4" />
                             Duyuru
                         </button>
@@ -4307,7 +4307,7 @@ export default function OwnerPanel() {
                                             <UserPlus className="w-5 h-5 text-gray-400 group-hover:text-green-400 transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Yeni MÃ¼ÅŸteri</span>
                                         </button>
-                                        <button onClick={() => toggleDrawer('announcement', true)} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/20 transition-all group">
+                                        <button onClick={() => { const el = document.getElementById('inline-announcement-card'); if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); el.style.boxShadow = '0 0 30px rgba(99,102,241,0.4)'; setTimeout(() => { el.style.boxShadow = ''; }, 2000); } }} className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/[0.02] hover:bg-indigo-500/10 border border-white/5 hover:border-indigo-500/20 transition-all group">
                                             <Megaphone className="w-5 h-5 text-gray-400 group-hover:text-indigo-400 transition-colors" />
                                             <span className="text-xs text-gray-400 group-hover:text-white transition-colors font-medium">Duyuru YayÄ±nla</span>
                                         </button>
@@ -4319,7 +4319,7 @@ export default function OwnerPanel() {
                                 </div>
 
                                 {/* â”€â”€ Duyuru YÃ¶netimi (Inline) â”€â”€ */}
-                                <div className="owner-glossy">
+                                <div id="inline-announcement-card" className="owner-glossy" style={{ transition: 'box-shadow 0.5s ease' }}>
                                     <div className="p-5 border-b border-white/5">
                                         <div className="flex items-center gap-2">
                                             <Megaphone className="w-4 h-4 text-indigo-400" />
