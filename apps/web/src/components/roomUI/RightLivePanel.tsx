@@ -53,7 +53,8 @@ export function RightLivePanel({
     const [expandedStream, setExpandedStream] = useState<MediaStream | null>(null);
     const [expandedUsername, setExpandedUsername] = useState<string>('');
     const [tvPaused, setTvPaused] = useState(false);
-    const [tvMuted, setTvMuted] = useState(false);
+    const [tvMuted, setTvMuted] = useState(true);
+    const [ytUserUnmuted, setYtUserUnmuted] = useState(false);
     const [ytInputOpen, setYtInputOpen] = useState(false);
     const [ytInputValue, setYtInputValue] = useState('');
     const { t } = useTranslation();
@@ -65,7 +66,7 @@ export function RightLivePanel({
     const ytIframeRef = useRef<HTMLIFrameElement>(null);
 
     // ★ tvVideoUrl değiştiğinde tvPaused'ı sıfırla
-    useEffect(() => { setTvPaused(false); setTvMuted(false); }, [tvVideoUrl]);
+    useEffect(() => { setTvPaused(false); setTvMuted(true); setYtUserUnmuted(false); }, [tvVideoUrl]);
 
     // Apply tvVolume to direct video element
     useEffect(() => {
@@ -178,7 +179,7 @@ export function RightLivePanel({
                                     <>
                                     <iframe
                                         ref={ytIframeRef}
-                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=0&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
+                                        src={`https://www.youtube.com/embed/${extractYoutubeId(tvVideoUrl)}?autoplay=1&mute=1&loop=1&enablejsapi=1&controls=0&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3&disablekb=1&playsinline=1&origin=${typeof window !== 'undefined' ? window.location.origin : ''}`}
                                         title="TV Video"
                                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                         allowFullScreen
@@ -186,9 +187,24 @@ export function RightLivePanel({
                                         style={{ border: 'none' }}
                                         onLoad={() => {
                                             if (ytIframeRef.current?.contentWindow) {
+                                                // Start playing
                                                 ytIframeRef.current.contentWindow.postMessage(
                                                     JSON.stringify({ event: 'command', func: 'playVideo', args: [] }), '*'
                                                 );
+                                                // Auto-unmute after 1.5s (works after user interaction with page)
+                                                setTimeout(() => {
+                                                    if (ytIframeRef.current?.contentWindow) {
+                                                        ytIframeRef.current.contentWindow.postMessage(
+                                                            JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
+                                                        );
+                                                        const vol = Math.round(Math.max(0, Math.min(1, tvVolume)) * 100);
+                                                        ytIframeRef.current.contentWindow.postMessage(
+                                                            JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*'
+                                                        );
+                                                        setTvMuted(false);
+                                                        setYtUserUnmuted(true);
+                                                    }
+                                                }, 1500);
                                             }
                                         }}
                                     />
@@ -297,6 +313,34 @@ export function RightLivePanel({
                         className="w-full px-3 py-1.5 rounded-lg text-[10px] font-medium bg-amber-600/20 text-amber-300 hover:bg-amber-600/30 border border-amber-500/20 transition-all"
                     >
                         {tvPaused ? '▶ Devam Et' : '⏸ Duraklat'}
+                    </button>
+                    {/* Sesi Aç/Kapat butonu */}
+                    <button
+                        onClick={() => {
+                            if (isYoutubeUrl && ytIframeRef.current?.contentWindow) {
+                                if (tvMuted) {
+                                    ytIframeRef.current.contentWindow.postMessage(
+                                        JSON.stringify({ event: 'command', func: 'unMute', args: [] }), '*'
+                                    );
+                                    const vol = Math.round(Math.max(0, Math.min(1, tvVolume)) * 100);
+                                    ytIframeRef.current.contentWindow.postMessage(
+                                        JSON.stringify({ event: 'command', func: 'setVolume', args: [vol] }), '*'
+                                    );
+                                } else {
+                                    ytIframeRef.current.contentWindow.postMessage(
+                                        JSON.stringify({ event: 'command', func: 'mute', args: [] }), '*'
+                                    );
+                                }
+                            }
+                            if (!isYoutubeUrl && tvVideoRef2.current) {
+                                tvVideoRef2.current.muted = !tvMuted;
+                            }
+                            setTvMuted(!tvMuted);
+                            setYtUserUnmuted(!tvMuted ? false : true);
+                        }}
+                        className={`w-full mt-1 px-3 py-1.5 rounded-lg text-[10px] font-medium transition-all ${tvMuted ? 'bg-green-600/20 text-green-300 hover:bg-green-600/30 border border-green-500/20' : 'bg-red-600/20 text-red-300 hover:bg-red-600/30 border border-red-500/20'}`}
+                    >
+                        {tvMuted ? '🔊 Sesi Aç' : '🔇 Sesi Kapat'}
                     </button>
                 </div>
             )}
