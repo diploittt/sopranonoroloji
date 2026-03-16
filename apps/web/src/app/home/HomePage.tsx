@@ -324,19 +324,25 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
     // ★ Fetch müşteri tenant verileri — Müşteri Platformları + Referanslar
     useEffect(() => {
+        let intervalId: ReturnType<typeof setInterval> | null = null;
+        let failed = false;
         const fetchTenants = () => {
+            if (failed) return;
             fetch(`${API_URL}/rooms/public/tenants`)
-                .then(r => r.ok ? r.json() : null)
+                .then(r => {
+                    if (!r.ok) { failed = true; if (intervalId) clearInterval(intervalId); return null; }
+                    return r.json();
+                })
                 .then(data => {
                     if (data) {
                         setSopranoChatCustomers(data.sopranoChatCustomers || []);
                         setOwnDomainCustomers(data.ownDomainCustomers || []);
                     }
-                }).catch(() => { });
+                }).catch(() => { failed = true; if (intervalId) clearInterval(intervalId); });
         };
         fetchTenants();
-        const interval = setInterval(fetchTenants, 30000);
-        return () => clearInterval(interval);
+        intervalId = setInterval(fetchTenants, 30000);
+        return () => { if (intervalId) clearInterval(intervalId); };
     }, []);
 
     const handleLogin = async (e: React.FormEvent) => {
