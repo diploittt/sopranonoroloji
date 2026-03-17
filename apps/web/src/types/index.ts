@@ -45,6 +45,7 @@ export interface Message {
 export interface RoomState {
     users: User[];
     messages: Message[];
+    rooms?: any[];
     currentUser: User | null;
     localStream: MediaStream | null;
     remoteStreams: { peerId: string; stream: MediaStream; username?: string }[];

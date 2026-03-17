@@ -9,6 +9,7 @@ import {
 
 interface AboutTabProps {
     socket: Socket | null;
+    onlineUsersOverride?: number; // ★ Real-time count from socket participants
 }
 
 interface TenantInfo {
@@ -47,7 +48,7 @@ const PACKAGE_MAP: Record<string, { label: string; icon: React.ReactNode; desc: 
     NO_CAMERA: { label: 'Yalnızca Ses', icon: <Headphones className="w-4 h-4" />, desc: 'Sesli sohbet' },
 };
 
-export function AboutTab({ socket }: AboutTabProps) {
+export function AboutTab({ socket, onlineUsersOverride }: AboutTabProps) {
     const [info, setInfo] = useState<TenantInfo | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -214,7 +215,7 @@ export function AboutTab({ socket }: AboutTabProps) {
                 {/* ─── İstatistikler Grid ─── */}
                 <div className="grid grid-cols-3 gap-3">
                     <StatCard icon={<Users className="w-4 h-4" />} label="Toplam Kullanıcı" value={stats.totalUsers} color="indigo" />
-                    <StatCard icon={<Zap className="w-4 h-4" />} label="Çevrimiçi" value={stats.onlineUsers} color="emerald" />
+                    <StatCard icon={<Zap className="w-4 h-4" />} label="Çevrimiçi" value={onlineUsersOverride ?? stats.onlineUsers} color="emerald" />
                     <StatCard icon={<Home className="w-4 h-4" />} label="Toplam Oda" value={stats.meetingRooms ? `${stats.totalRooms}+${stats.meetingRooms}` : stats.totalRooms} color="purple" />
                 </div>
 

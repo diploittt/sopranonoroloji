@@ -125,7 +125,7 @@ interface SpeakerState {
   role: string;
   startedAt: number;
   duration: number; // ms
-  timer: ReturnType<typeof setTimeout>;
+  timer: ReturnType<typeof setTimeout> | null; // null = unlimited
 }
 
 /** In-memory state for an active duel (Eristik Düello Arenası) */
@@ -3122,9 +3122,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         // 2. Assign mic to the ACTOR (person who clicked)
         const micDuration = this.getMicDuration(actor.role, actor.tenantId);
         const micStartedAt = Date.now();
-        const micTimer = setTimeout(() => {
-          this.releaseSpeaker(actor.roomId, 'timer_expired');
-        }, micDuration);
+        // null = unlimited (no auto-release timer)
+        const micTimer = micDuration != null
+          ? setTimeout(() => {
+              this.releaseSpeaker(actor.roomId, 'timer_expired');
+            }, micDuration)
+          : null;
 
         const actorSpeakerState: SpeakerState = {
           socketId: client.id,
@@ -3132,7 +3135,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           displayName: actor.displayName,
           role: actor.role,
           startedAt: micStartedAt,
-          duration: micDuration,
+          duration: micDuration ?? 0,
           timer: micTimer,
         };
         this.roomSpeakers.set(actor.roomId, actorSpeakerState);
@@ -4305,15 +4308,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
-  /** Get mic duration based on role — reads from tenant settings with hardcoded fallbacks */
-  private getMicDuration(role: string, tenantId?: string): number {
+  /** Get mic duration based on role — reads from tenant settings with hardcoded fallbacks.
+   * Returns null if no duration is configured (= unlimited).
+   */
+  private getMicDuration(role: string, tenantId?: string): number | null {
     const settings = tenantId ? this.tenantSettings.get(tenantId) : null;
     const roleLevel = getRoleLevel(role);
 
     if (settings) {
-      // Admin+ → unlimited (or admin duration)
+      // Admin+ → use admin duration or unlimited
       if (roleLevel >= ROLE_HIERARCHY['admin'] && settings.micDurationAdmin != null) {
-        return settings.micDurationAdmin * 1000; // seconds → ms
+        return settings.micDurationAdmin * 1000;
       }
       // VIP
       if (roleLevel >= ROLE_HIERARCHY['vip'] && settings.micDurationVip != null) {
@@ -4327,12 +4332,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (settings.micDurationGuest != null) {
         return settings.micDurationGuest * 1000;
       }
+      // Settings exist but no duration configured for this role → unlimited
+      return null;
     }
 
-    // Fallback to hardcoded values
-    return roleLevel >= MEMBER_LEVEL
-      ? MIC_DURATION_MEMBER
-      : MIC_DURATION_GUEST;
+    // No settings at all → unlimited (don't apply a default limit)
+    return null;
   }
 
   /** Release the current speaker for a room */

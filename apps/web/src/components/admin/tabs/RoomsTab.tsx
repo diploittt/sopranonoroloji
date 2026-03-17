@@ -14,6 +14,7 @@ interface RoomsTabProps {
     socket: Socket | null;
     currentUser: User | null;
     systemSettings?: Record<string, any> | null;
+    socketRooms?: any[]; // ★ Real-time room data from socket
 }
 
 
@@ -51,7 +52,7 @@ function ToastPortal({ msg }: { msg: { type: 'success' | 'error'; text: string }
     );
 }
 
-export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps) {
+export function RoomsTab({ socket, currentUser, systemSettings, socketRooms = [] }: RoomsTabProps) {
     const { selectedRoomId, setSelectedRoomId } = useAdminPanelStore();
     const isGodMaster = currentUser?.role?.toLowerCase() === 'godmaster';
     const isRoomAdmin = isGodMaster || ['owner', 'superadmin', 'admin'].includes(currentUser?.role?.toLowerCase() || '');
@@ -295,7 +296,9 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                         </td>
                                         <td>
                                             {(() => {
-                                                const online = room._count?.participants ?? 0;
+                                                // ★ Real-time: socketRooms öncelikli, sonra DB _count
+                                                const socketRoom = socketRooms.find((r: any) => r.slug === room.slug || r.id === room.id || r.name === room.name);
+                                                const online = socketRoom?.userCount ?? socketRoom?.participants ?? room._count?.participants ?? 0;
                                                 const isClosed = room.status?.toUpperCase() === 'CLOSED';
                                                 let statusColor = '#6b7280';
                                                 let statusShadow = 'none';
@@ -319,7 +322,11 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                             })()}
                                         </td>
                                         <td style={{ textAlign: 'center', color: '#334155', fontSize: 12, fontWeight: 600 }}>
-                                            {(room._count?.participants ?? 0)}{room.maxParticipants ? `/${room.maxParticipants}` : ''}
+                                            {(() => {
+                                                const socketRoom = socketRooms.find((r: any) => r.slug === room.slug || r.id === room.id || r.name === room.name);
+                                                const online = socketRoom?.userCount ?? socketRoom?.participants ?? room._count?.participants ?? 0;
+                                                return `${online}${room.maxParticipants ? `/${room.maxParticipants}` : ''}`;
+                                            })()}
                                         </td>
                                     </tr>
                                 ))}
@@ -498,7 +505,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                         <div className="admin-divider" />
 
                         {/* Inline Confirm — GodMaster only */}
-                        {isRoomAdmin && confirmDelete === selectedRoom.id ? (
+                        {isGodMaster && confirmDelete === selectedRoom.id ? (
                             <div className="admin-inline-confirm">
                                 <span>"{selectedRoom.name}" odası silinecek. Emin misiniz?</span>
                                 <button className="admin-btn admin-btn-danger admin-btn-sm" onClick={executeDelete}>Evet, Sil</button>
@@ -541,7 +548,7 @@ export function RoomsTab({ socket, currentUser, systemSettings }: RoomsTabProps)
                                         <><Lock style={{ width: 13, height: 13 }} /> Odayı Kapat</>
                                     )}
                                 </button>
-                                {isRoomAdmin && (
+                                {isGodMaster && (
                                     <button className="admin-btn admin-btn-danger" onClick={() => setConfirmDelete(selectedRoom.id)}>
                                         <Trash2 style={{ width: 13, height: 13 }} />
                                         Sil

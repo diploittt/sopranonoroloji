@@ -289,11 +289,11 @@ export function AdminPanelWindow({ socket, users, currentUser, roomState, system
                     <div className="absolute inset-x-0 top-0 h-[1px] z-10" style={{ background: 'linear-gradient(90deg, transparent, rgba(148,163,184,0.1), transparent)' }} />
 
                     {activeTab === 'users' && <UsersTab socket={socket} users={users} currentUser={currentUser} />}
-                    {activeTab === 'rooms' && <RoomsTab socket={socket} currentUser={currentUser} systemSettings={systemSettings} />}
+                    {activeTab === 'rooms' && <RoomsTab socket={socket} currentUser={currentUser} systemSettings={systemSettings} socketRooms={roomState?.rooms || []} />}
 
                     {activeTab === 'bans' && <BansTab socket={socket} />}
                     {activeTab === 'ipbans' && <IpBansTab socket={socket} />}
-                    {activeTab === 'about' && <AboutTab socket={socket} />}
+                    {activeTab === 'about' && <AboutTab socket={socket} onlineUsersOverride={users?.length ?? 0} />}
                     {activeTab === 'words' && <WordsTab socket={socket} />}
                     {activeTab === 'logs' && <LogsTab socket={socket} />}
                     {activeTab === 'settings' && <SettingsTab socket={socket} systemSettings={systemSettings} />}
