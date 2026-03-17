@@ -1329,7 +1329,51 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 {/* Nudge shake class applied via globals.css */}
                 <main className={`app-background h-screen w-full flex items-start justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
 
-                    {/* ★ ONE2ONE ROOM — Sanal bire bir oda ★ */}
+                    {/* ★★ TOKEN GUARD — Token yoksa tam ekran uyarı + yönlendirme ★★ */}
+                    {typeof window !== 'undefined' && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
+                        <div className="fixed inset-0 z-[9999999] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(15,17,30,0.98) 0%, rgba(20,22,40,0.99) 100%)', backdropFilter: 'blur(32px)' }}>
+                            <div style={{ textAlign: 'center', maxWidth: 420, padding: 48 }}>
+                                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1.5px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 36 }}>🔐</div>
+                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 10 }}>Giriş Gerekli</h2>
+                                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28, lineHeight: 1.7 }}>
+                                    Bu odaya giriş yapabilmek için üye girişi veya misafir girişi yapmanız gerekiyor.
+                                </p>
+                                <button onClick={() => { const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/); window.location.href = tenantMatch ? `/t/${tenantMatch[1]}` : '/'; }}
+                                    style={{ padding: '12px 40px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))', color: 'rgba(252,165,165,0.9)', fontWeight: 600, fontSize: 13 }}>
+                                    Ana Sayfaya Dön
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ★★ ROOM ERROR OVERLAY — room:error geldi (yasaklı nick, ban, şifre hatalı vb.) ★★ */}
+                    {room.state.roomError && (
+                        <div className="fixed inset-0 z-[9999998] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(15,17,30,0.98) 0%, rgba(20,22,40,0.99) 100%)', backdropFilter: 'blur(32px)' }}>
+                            <div style={{ textAlign: 'center', maxWidth: 440, padding: 48 }}>
+                                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1.5px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 36 }}>
+                                    {(room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? '👤'
+                                        : room.state.roomError.code === 'VIP_ONLY' ? '⭐'
+                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? '🚷'
+                                        : '⚠️'}
+                                </div>
+                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 10 }}>
+                                    {(room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? 'İsim Kullanımda'
+                                        : room.state.roomError.code === 'VIP_ONLY' ? 'VIP Odası'
+                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? 'Oda Dolu'
+                                        : 'Odaya Girilemiyor'}
+                                </h2>
+                                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.7 }}>
+                                    {room.state.roomError.message || 'Bu odaya giriş yapılamıyor.'}
+                                </p>
+                                <button onClick={() => { const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/); window.location.href = tenantMatch ? `/t/${tenantMatch[1]}` : '/'; }}
+                                    style={{ padding: '12px 40px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))', color: 'rgba(252,165,165,0.9)', fontWeight: 600, fontSize: 13 }}>
+                                    Ana Sayfaya Dön
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+
                     {isOne2OneRoom ? (
                         <One2OneRoomView
                             currentUser={room.state.currentUser}

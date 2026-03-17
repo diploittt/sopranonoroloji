@@ -1,22 +1,20 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
-import { PrismaNeon } from '@prisma/adapter-neon';
-import { neonConfig, Pool } from '@neondatabase/serverless';
-import ws from 'ws';
-
-// Use WebSocket constructor for Node.js (required for @neondatabase/serverless in non-edge environments)
-neonConfig.webSocketConstructor = ws;
-
-const connectionString =
-  process.env.DATABASE_URL ||
-  'postgresql://neondb_owner:npg_Cl3YEjuNFxV1@ep-solitary-brook-agbxat72-pooler.c-2.eu-central-1.aws.neon.tech/neondb?sslmode=require';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { Pool } from 'pg';
 
 @Injectable()
 export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy {
   constructor() {
-    const adapter = new PrismaNeon({ connectionString });
+    const connectionString = process.env.DATABASE_URL || '';
+    const isLocal = connectionString.includes('localhost') || connectionString.includes('127.0.0.1');
+    const pool = new Pool({
+      connectionString,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
+    });
+    const adapter = new PrismaPg(pool);
     super({ adapter });
   }
 

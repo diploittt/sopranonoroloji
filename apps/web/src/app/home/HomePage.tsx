@@ -1198,7 +1198,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     50% { box-shadow: 0 0 16px var(--badge-color, rgba(56,189,248,0.7)), 0 0 30px var(--badge-color, rgba(56,189,248,0.25)); }
                 }
                 .antigravity-float {
-                    animation: floatY 3s ease-in-out infinite;
+                    /* float animation kaldırıldı — card zıplama sorunu */
                 }
                 .badge-glow {
                     animation: badgePulseGlow 2s ease-in-out infinite;
