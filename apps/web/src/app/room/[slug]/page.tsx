@@ -1884,10 +1884,19 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 currentName={room.state.currentUser?.username || ''}
                                 onClose={() => setIsChangeNameOpen(false)}
                                 onSubmit={(newName) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-name', { newName });
-                                        addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
+                                    try {
+                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                            const raw = sessionStorage.getItem(key);
+                                            if (raw) { const u = JSON.parse(raw); u.displayName = newName; u.username = newName; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                            const rawL = localStorage.getItem(key);
+                                            if (rawL) { const u = JSON.parse(rawL); u.displayName = newName; u.username = newName; localStorage.setItem(key, JSON.stringify(u)); }
+                                        }
+                                        window.dispatchEvent(new Event('auth-change'));
+                                    } catch {}
+                                    if (room.state.currentUser?.userId) {
+                                        room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { displayName: newName });
                                     }
+                                    if (room.socket) { room.socket.emit('status:change-name', { newName }); }
                                 }}
                             />
 
@@ -1919,10 +1928,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 onClose={() => setIsGodMasterProfileOpen(false)}
                                 currentUser={room.state.currentUser}
                                 onChangeName={(newName) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-name', { newName });
-                                        addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
-                                    }
+                                    try {
+                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                            const raw = sessionStorage.getItem(key);
+                                            if (raw) { const u = JSON.parse(raw); u.displayName = newName; u.username = newName; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                            const rawL = localStorage.getItem(key);
+                                            if (rawL) { const u = JSON.parse(rawL); u.displayName = newName; u.username = newName; localStorage.setItem(key, JSON.stringify(u)); }
+                                        }
+                                        window.dispatchEvent(new Event('auth-change'));
+                                    } catch {}
+                                    if (room.state.currentUser?.userId) { room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { displayName: newName }); }
+                                    if (room.socket) { room.socket.emit('status:change-name', { newName }); }
                                 }}
                                 onChangeAvatar={(avatarUrl) => {
                                     // GodMaster modal: sessionStorage + localStorage her ikisine de kaydet (flash bug önleme)
@@ -1944,10 +1960,16 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     }
                                 }}
                                 onChangeNameColor={(color) => {
-                                    if (room.socket) {
-                                        room.socket.emit('status:change-name-color', { color });
-                                        addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
-                                    }
+                                    try {
+                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                            const raw = sessionStorage.getItem(key);
+                                            if (raw) { const u = JSON.parse(raw); u.nameColor = color; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                            const rawL = localStorage.getItem(key);
+                                            if (rawL) { const u = JSON.parse(rawL); u.nameColor = color; localStorage.setItem(key, JSON.stringify(u)); }
+                                        }
+                                        window.dispatchEvent(new Event('auth-change'));
+                                    } catch {}
+                                    if (room.socket) { room.socket.emit('status:change-name-color', { color }); }
                                 }}
                                 onChangeIcon={(icon) => {
                                     // Store GodMaster icon in localStorage and emit to backend
@@ -2925,10 +2947,17 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     isProfileOpen={isProfileOpen}
                                     onCloseProfile={() => setIsProfileOpen(false)}
                                     onChangeName={(newName) => {
-                                        if (room.socket) {
-                                            room.socket.emit('status:change-name', { newName });
-                                            addToast('success', 'İsim Değiştirildi', `Yeni isminiz: ${newName}`);
-                                        }
+                                        try {
+                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                const raw = sessionStorage.getItem(key);
+                                                if (raw) { const u = JSON.parse(raw); u.displayName = newName; u.username = newName; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                                const rawL = localStorage.getItem(key);
+                                                if (rawL) { const u = JSON.parse(rawL); u.displayName = newName; u.username = newName; localStorage.setItem(key, JSON.stringify(u)); }
+                                            }
+                                            window.dispatchEvent(new Event('auth-change'));
+                                        } catch {}
+                                        if (room.state.currentUser?.userId) { room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { displayName: newName }); }
+                                        if (room.socket) { room.socket.emit('status:change-name', { newName }); }
                                     }}
                                     onChangeAvatar={(avatarUrl) => {
                                                     // sessionStorage + localStorage her ikisine de kaydet (flash bug önleme)
@@ -2950,10 +2979,16 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     }
                                                 }}
                                     onChangeNameColor={(color) => {
-                                        if (room.socket) {
-                                            room.socket.emit('status:change-name-color', { color });
-                                            addToast('success', 'Renk Değiştirildi', 'İsim renginiz güncellendi.');
-                                        }
+                                        try {
+                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                const raw = sessionStorage.getItem(key);
+                                                if (raw) { const u = JSON.parse(raw); u.nameColor = color; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                                const rawL = localStorage.getItem(key);
+                                                if (rawL) { const u = JSON.parse(rawL); u.nameColor = color; localStorage.setItem(key, JSON.stringify(u)); }
+                                            }
+                                            window.dispatchEvent(new Event('auth-change'));
+                                        } catch {}
+                                        if (room.socket) { room.socket.emit('status:change-name-color', { color }); }
                                     }}
                                     onChangePassword={(oldPass, newPass) => {
                                         if (room.socket) {

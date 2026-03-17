@@ -38,8 +38,8 @@ export const MENU_REGISTRY: Record<MenuContext, MenuItem[]> = {
         { id: 'copy', label: 'Kopyala', icon: 'Copy', action: 'copy' },
         { id: 'select_all', label: 'Tümünü Seç', icon: 'Square', action: 'select_all' },
         { id: 'sep1', label: '-', divider: true },
-        { id: 'freeze_chat_local', label: 'Yazıları Durdur (Yerel)', icon: 'Pause', action: 'freeze_chat_local' },
-        { id: 'clear_text_local', label: 'Yazıları Temizle (Yerel)', icon: 'Trash2', action: 'clear_text_local' },
+        { id: 'freeze_chat_local', label: 'Yazıları Durdur', icon: 'Pause', action: 'freeze_chat_local' },
+        { id: 'clear_text_local', label: 'Yazıları Temizle', icon: 'Trash2', action: 'clear_text_local' },
 
         { id: 'sep_mem1', label: '-', divider: true },
 
@@ -66,7 +66,7 @@ export const MENU_REGISTRY: Record<MenuContext, MenuItem[]> = {
         { id: 'private_message_vip', label: 'Özel mesaj', icon: 'MessageSquare', action: 'user.privateMessage', minRole: Role.Vip, excludeSelf: true },
 
         { id: 'sep1', label: '-', divider: true },
-        { id: 'ignore', label: 'Engelle (Yerel)', icon: 'Slash', action: 'ignore', excludeSelf: true },
+        { id: 'ignore', label: 'Engelle', icon: 'Slash', action: 'ignore', excludeSelf: true },
     ]
 };
 
