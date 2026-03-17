@@ -376,6 +376,8 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
         try {
             const res = await fetch(`${API_URL}/auth/guest`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: guestNick.trim(), gender: guestGender }) });
             const data = await res.json();
+            // ★ NestJS hata formatı: { statusCode, message } — data.error değil!
+            if (!res.ok) { setGuestError(data.message || data.error || 'Giriş başarısız.'); return; }
             if (data.error) { setGuestError(data.error); return; }
             sessionStorage.setItem(AUTH_TOKEN_KEY, data.access_token);
             const avatarUrl = selectedAvatar || generateGenderAvatar(guestNick.trim(), guestGender);
@@ -387,6 +389,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
             router.push(`${tenantPrefix}/room/${firstSlug}`);
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
     };
+
 
     const handleMemberLogin = async () => {
         if (!memberUsername.trim() || !memberPassword) { setMemberError('Kullanıcı adı ve şifre gerekli.'); return; }
