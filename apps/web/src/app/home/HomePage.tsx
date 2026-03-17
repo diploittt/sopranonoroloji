@@ -420,13 +420,16 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                         if (field === 'displayName') { stored.displayName = value; stored.username = value; }
                         if (field === 'gender') stored.gender = value;
                         sessionStorage.setItem(key, JSON.stringify(stored));
+                        // ★ Cross-tab senkronizasyon: localStorage'a da yaz
+                        // useSocket.ts storage event'ini dinliyor ve emitProfileUpdate çağırıyor
+                        // Bu sayede farklı tab'daki chat odası da profil güncellemesini alır
+                        localStorage.setItem(key, JSON.stringify(stored));
                     }
                 }
             } catch {}
             window.dispatchEvent(new Event('auth-change'));
 
-            // ★ Direkt socket emit — auth-change event'i farklı sayfa/route'da çalışmayabilir
-            // window.__sopranoSocket üzerinden aktif chat odası socket'ine doğrudan gönder
+            // Aynı tab'daki socket için direkt emit (farklı sayfa/route'da olsak bile)
             try {
                 const sock = (window as any).__sopranoSocket;
                 if (sock?.connected) {

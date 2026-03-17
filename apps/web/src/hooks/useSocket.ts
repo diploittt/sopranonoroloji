@@ -504,12 +504,27 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
         // Cross-tab: diğer tab'da localStorage değiştiğinde
         const handleStorageChange = (e: StorageEvent) => {
-            if ((e.key === 'soprano_auth_token' || e.key === 'soprano_auth_user' || e.key === 'soprano_tenant_user') && e.newValue) {
+            if ((e.key === 'soprano_auth_user' || e.key === 'soprano_tenant_user') && e.newValue) {
                 console.log('[useSocket] Storage changed in another tab:', e.key);
-                emitProfileUpdate();
+                if (!socket.connected) return;
+                try {
+                    // ★ e.newValue'dan direkt oku — her tab'ın sessionStorage'ı izole
+                    const u = JSON.parse(e.newValue);
+                    socket.emit('user:profileUpdate', {
+                        displayName: u.displayName || u.username,
+                        avatar: u.avatar,
+                        nameColor: u.nameColor || null,
+                    });
+                    console.log('[useSocket] Cross-tab profile update emitted:', u.displayName || u.username);
+                    // Bu tab'ın sessionStorage'ını da güncelle (gezinme senkronizasyonu için)
+                    try { sessionStorage.setItem(e.key, e.newValue); } catch {}
+                } catch (err) {
+                    console.warn('[useSocket] Cross-tab profile sync error:', err);
+                }
             }
         };
         window.addEventListener('storage', handleStorageChange);
+
 
         // Aynı tab: HomePage'de setAuthUser() çağrıldığında dispatch edilen event
         const handleAuthChange = () => {
