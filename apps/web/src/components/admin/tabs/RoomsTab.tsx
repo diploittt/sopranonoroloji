@@ -296,9 +296,9 @@ export function RoomsTab({ socket, currentUser, systemSettings, socketRooms = []
                                         </td>
                                         <td>
                                             {(() => {
-                                                // ★ Real-time: socketRooms öncelikli, sonra DB _count
+                                                // ★ Real-time: socketRooms öncelikli (participantCount), sonra DB _count
                                                 const socketRoom = socketRooms.find((r: any) => r.slug === room.slug || r.id === room.id || r.name === room.name);
-                                                const online = socketRoom?.userCount ?? socketRoom?.participants ?? room._count?.participants ?? 0;
+                                                const online = socketRoom?.participantCount ?? room._count?.participants ?? 0;
                                                 const isClosed = room.status?.toUpperCase() === 'CLOSED';
                                                 let statusColor = '#6b7280';
                                                 let statusShadow = 'none';
@@ -324,7 +324,7 @@ export function RoomsTab({ socket, currentUser, systemSettings, socketRooms = []
                                         <td style={{ textAlign: 'center', color: '#334155', fontSize: 12, fontWeight: 600 }}>
                                             {(() => {
                                                 const socketRoom = socketRooms.find((r: any) => r.slug === room.slug || r.id === room.id || r.name === room.name);
-                                                const online = socketRoom?.userCount ?? socketRoom?.participants ?? room._count?.participants ?? 0;
+                                                const online = socketRoom?.participantCount ?? room._count?.participants ?? 0;
                                                 return `${online}${room.maxParticipants ? `/${room.maxParticipants}` : ''}`;
                                             })()}
                                         </td>

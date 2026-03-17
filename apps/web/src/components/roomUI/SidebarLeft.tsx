@@ -944,13 +944,14 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                     >{(() => { const avSrc = user.avatar || generateGenderAvatar(user.displayName || user.username || '?'); return <img src={avSrc} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} />; })()}</div>
 
 
-                                                    {/* ═══ FORCE OPERATOR ICON — GodMaster hariç TÜM roller aynı operatör ikonu ═══ */}
+                                                    {/* ╒╒╒ FORCE OPERATOR ICON — Sadece yetkili roller (vip+) ╒╒╒ */}
                                                     {room.state.systemSettings?.forceOperatorIcon && (() => {
                                                         const r = user.role?.toLowerCase();
-                                                        // GodMaster kendi badge'ını zaten yukarıda gösteriyor
+                                                        // GodMaster kendi badge'ini yukarıda gösteriyor
                                                         if (r === 'godmaster') return null;
-                                                        // Guest hariç tüm roller için operatör ikonu göster
-                                                        if (r === 'guest') return null;
+                                                        // Yalnızca vip ve üzerı için göster (member ve guest hariç)
+                                                        const authorizedRoles = ['owner', 'superadmin', 'super_admin', 'admin', 'moderator', 'operator', 'dj', 'vip'];
+                                                        if (!authorizedRoles.includes(r || '')) return null;
                                                         return (
                                                             <div className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-gradient-to-br from-emerald-500 to-green-700 rounded-full flex items-center justify-center shadow-lg border border-emerald-400/50 z-10" title={t.roleOperator}>
                                                                 <Shield className="w-3 h-3 text-white" />
@@ -1293,6 +1294,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                                             onClick={() => {
                                                 room.actions.changeStatus(key);
+                                                // ★ Status'u sessionStorage'a kaydet — oda geçişinde korunsun
+                                                if (typeof window !== 'undefined') sessionStorage.setItem('soprano_user_status', key);
                                                 if (currentUser?.isStealth) room.actions.toggleStealth();
                                                 if (isGodMaster && currentUser?.visibilityMode !== 'visible') room.actions.setGodmasterVisibility('visible');
                                                 setShowStatusMenu(false);
@@ -1326,7 +1329,12 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                     }}
                                                     onMouseEnter={e => e.currentTarget.style.background = '#f1f5f9'}
                                                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
-                                                    onClick={() => { room.actions.changeStatus(key); setShowStatusMenu(false); }}
+                                                    onClick={() => {
+                                                        room.actions.changeStatus(key);
+                                                        // ★ Status'u sessionStorage'a kaydet
+                                                        if (typeof window !== 'undefined') sessionStorage.setItem('soprano_user_status', key);
+                                                        setShowStatusMenu(false);
+                                                    }}
                                                 >
                                                     <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{emoji}</span>
                                                     <span style={{ fontSize: 11, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
