@@ -2515,6 +2515,45 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this._doBroadcastParticipants(participant.roomId);
   }
 
+  // ═══════════ Profile Update (Hesap Paneli → Room sync) ═══════════
+  // Bu event, Hesap Paneli'nde avatar/isim değişikliği yapıldığında
+  // useSocket.ts tarafından otomatik olarak emit edilir.
+  @SubscribeMessage('user:profileUpdate')
+  async handleProfileUpdate(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: { displayName?: string; avatar?: string; nameColor?: string },
+  ) {
+    const participant = this.participants.get(client.id);
+    if (!participant) return;
+
+    let changed = false;
+
+    if (payload.avatar?.trim() && payload.avatar !== participant.avatar) {
+      participant.avatar = payload.avatar.trim();
+      if (client.data.user) client.data.user.avatar = payload.avatar.trim();
+      changed = true;
+    }
+
+    if (payload.displayName?.trim() && payload.displayName !== participant.displayName) {
+      participant.displayName = payload.displayName.trim();
+      if (client.data.user) client.data.user.displayName = payload.displayName.trim();
+      changed = true;
+    }
+
+    if (payload.nameColor !== undefined && payload.nameColor !== participant.nameColor) {
+      participant.nameColor = payload.nameColor || null;
+      if (client.data.user) client.data.user.nameColor = payload.nameColor || null;
+      changed = true;
+    }
+
+    if (changed) {
+      this.logger.log(
+        `[profileUpdate] ${participant.displayName} updated profile (avatar=${!!payload.avatar}, name=${!!payload.displayName})`,
+      );
+      this._doBroadcastParticipants(participant.roomId);
+    }
+  }
+
   // ═══════════ Change Avatar ═══════════
   @SubscribeMessage('status:change-avatar')
   async handleChangeAvatar(
