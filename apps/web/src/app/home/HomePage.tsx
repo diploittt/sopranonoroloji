@@ -541,18 +541,19 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     background-attachment: fixed;
                     font-family: 'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif;
                     color: #f8fafc;
-                    min-height: 100vh;
-                    overflow-x: hidden;
-                    overflow-y: scroll;
+                    height: 100vh;
+                    overflow: hidden;
+                    display: flex;
+                    justify-content: center;
                 }
 
                 .main-content {
                     width: 100%;
-                    max-width: 1200px;
+                    max-width: 1600px;
+                    height: 100vh;
                     margin: 0 auto;
                     position: relative;
                     background-color: ${branding?.siteConfig?.homepage?.mainBg || '#7a7e9e'};
-                    padding-bottom: 32px;
                     border-left: 14px solid rgba(255,255,255,0.85);
                     border-right: 14px solid rgba(255,255,255,0.85);
                     border-bottom: 14px solid rgba(255,255,255,0.85);
@@ -563,8 +564,21 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                         4px 0 15px rgba(0,0,0,0.18);
                     display: flex;
                     flex-direction: column;
-                    align-items: center;
+                    overflow: hidden;
                 }
+
+                /* OwnerPanel mantığı: sadece iç alan scroll eder */
+                .home-scroll-area {
+                    flex: 1;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                    scrollbar-width: thin;
+                    scrollbar-color: rgba(255,255,255,0.15) transparent;
+                }
+                .home-scroll-area::-webkit-scrollbar { width: 4px; }
+                .home-scroll-area::-webkit-scrollbar-track { background: transparent; }
+                .home-scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+                .home-scroll-area::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
                 .retro-logo-text {
                     font-family: 'Cooper Black', 'Arial Rounded MT Bold', serif;
@@ -1570,6 +1584,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                         <p style={{ color: '#64748b', fontSize: 12, fontWeight: 500, marginTop: 16, letterSpacing: 1, textTransform: 'uppercase' }}>Demo Oturumu Aktif</p>
                     </div>
                 )}
+                <div className="home-scroll-area">
                 <main style={{
                     width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0,
                     transition: 'transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease, filter 0.6s ease',
@@ -4429,6 +4444,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                         </div>
                     </footer>
                 </main>
+                </div>{/* home-scroll-area */}
             </div>
 
             {/* CHECKOUT MODAL */}
