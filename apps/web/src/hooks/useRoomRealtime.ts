@@ -445,12 +445,10 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             setClearedUserIds(prev => new Map(prev).set(data.userId, Date.now()));
         };
 
-        const onChatCleared = (data: { by: string }) => {
-            // This is "Clear Chat Global"
-            // We need to clear ALL messages.
-            // Again, depends on useSocket.
+        const onChatCleared = (_data: { by: string }) => {
             setForceClearTimestamp(Date.now());
-            setToastMessage({ type: 'info', title: 'Sohbet Temizlendi', message: `${data.by} sohbeti temizledi.` });
+            // Toast sadece aksiyon yapan kişiye backend room:toast event'i ile gösterilir
+            // Diğer kullanıcılara toast gösterilmez
         };
 
         socket.on('mic:acquired', onMicAcquired);
@@ -769,6 +767,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         setIsChatLocked(false);
         setIsCurrentUserMuted(false);
         setIsCurrentUserGagged(false);
+        // ★ Profil flash bug: oda geçişinde temizle — stale state anlık görünmesin
+        setClearedUserIds(new Map());
+        setForceClearTimestamp(0);
     }, [slug]);
 
     // Cleanup on unmount
@@ -1078,6 +1079,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         // Local Chat Actions
         clearLocalChat: () => {
             setForceClearTimestamp(Date.now());
+            // sessionStorage cache'i de temizle (F5'te geri gelmesin)
+            try {
+                const cacheKey = `soprano_room_messages_${slug}`;
+                sessionStorage.removeItem(cacheKey);
+            } catch { }
         },
         toggleLocalChatStop: () => {
             setIsLocalChatStopped(prev => {

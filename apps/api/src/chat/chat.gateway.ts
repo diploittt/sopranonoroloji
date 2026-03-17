@@ -42,6 +42,7 @@ interface InMemoryParticipant {
   visibilityMode?: 'hidden' | 'visible' | 'disguised'; // GodMaster only
   disguisedName?: string; // Display name when in disguised mode
   nameColor?: string;
+  gender?: string;
   godmasterIcon?: string;
   permissions?: Record<string, boolean>; // Bireysel kullanıcı yetkileri (admin panelinden atanır)
   platform?: 'web' | 'mobile' | 'embed'; // Bağlanan cihaz platformu
@@ -1487,8 +1488,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       guestId: user.sub.startsWith('guest_') ? user.sub : undefined,
       displayName: user.displayName || user.username,
       avatar:
-        user.avatar ||
-        payload.avatar ||
+        payload.avatar ||    // ★ Frontend sessionStorage'dan (her zaman güncel)
+        user.avatar ||       // JWT'den (genellikle boş — JWT avatar içermez)
         undefined,
       role: user.role || 'guest',
       socketId: client.id,
@@ -1498,6 +1499,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       isStealth: initialStealth,
       status: initialStealth ? 'stealth' : 'online',
       nameColor: user.nameColor || undefined,
+      gender: payload.gender || user.gender || undefined,
       visibilityMode: isGodMasterRole ? (initialVisibilityMode || this.godmasterVisibility.get(user.sub) || 'visible') : undefined,
       disguisedName: initialDisguiseName,
       godmasterIcon: isGodMasterRole ? (payload.godmasterIcon || undefined) : undefined,
@@ -2664,6 +2666,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(actor.roomId).emit('room:clear-user-messages', {
         userId: payload.targetUserId,
       });
+      // ★ Backend'de de kullanıcı mesajlarını sil — F5'te geri gelmesin
+      const existingMsgs = this.roomMessages.get(actor.roomId);
+      if (existingMsgs) {
+        const filtered = existingMsgs.filter((m: any) => m.sender !== payload.targetUserId && m.senderName !== payload.targetUserId);
+        this.roomMessages.set(actor.roomId, filtered);
+      }
       client.emit('room:toast', {
         type: 'success',
         title: 'Mesajlar',
@@ -2707,6 +2715,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.server.to(actor.roomId).emit('room:chat-cleared', {
         by: actor.displayName,
       });
+      // ★ Backend'de de tüm mesajları sil — F5'te geri gelmesin
+      this.roomMessages.delete(actor.roomId);
       client.emit('room:toast', {
         type: 'success',
         title: 'Sohbet',

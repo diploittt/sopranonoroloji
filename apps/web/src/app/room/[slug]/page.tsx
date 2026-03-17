@@ -884,47 +884,36 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         switch (item.action) {
             case 'muteUser':
                 room.socket?.emit('admin:userAction', { action: 'mute', targetUserId: targetId });
-                addToast('success', 'Susturuldu', `${targetName} susturuldu.`);
                 break;
             case 'unmuteUser':
                 room.socket?.emit('admin:userAction', { action: 'mute', targetUserId: targetId, value: false });
-                addToast('success', 'Ses Açıldı', `${targetName} sesi açıldı.`);
                 break;
             case 'kickUser':
                 room.socket?.emit('admin:userAction', { action: 'kick', targetUserId: targetId });
-                addToast('success', 'Atıldı', `${targetName} odadan atıldı.`);
                 break;
             case 'hardKickUser':
                 room.socket?.emit('admin:userAction', { action: 'hard_kick', targetUserId: targetId });
-                addToast('success', 'Zorla Atıldı', `${targetName} zorla atıldı.`);
                 break;
             case 'gagUser':
                 room.socket?.emit('admin:userAction', { action: 'gag', targetUserId: targetId });
-                addToast('success', 'Yazı Yasağı', `${targetName} yazı yasağı verildi.`);
                 break;
             case 'ungagUser':
                 room.socket?.emit('admin:userAction', { action: 'gag', targetUserId: targetId, value: false });
-                addToast('success', 'Yazı Yasağı Kaldırıldı', `${targetName} yazı yasağı kaldırıldı.`);
                 break;
             case 'banUser':
                 room.socket?.emit('admin:userAction', { action: 'ban', targetUserId: targetId, duration });
-                addToast('success', 'Yasaklandı', `${targetName} yasaklandı.`);
                 break;
             case 'unbanUser':
                 room.socket?.emit('admin:userAction', { action: 'unban', targetUserId: targetId });
-                addToast('success', 'Yasak Kaldırıldı', `${targetName} yasağı kaldırıldı.`);
                 break;
             case 'blockCamera':
                 room.socket?.emit('admin:userAction', { action: 'cam_block', targetUserId: targetId });
-                addToast('success', 'Kamera Engellendi', `${targetName} kamerası engellendi.`);
                 break;
             case 'unblockCamera':
                 room.socket?.emit('admin:userAction', { action: 'cam_block', targetUserId: targetId, value: false });
-                addToast('success', 'Kamera Açıldı', `${targetName} kamera izni verildi.`);
                 break;
             case 'exitBrowser':
                 room.socket?.emit('admin:userAction', { action: 'exit_browser', targetUserId: targetId });
-                addToast('success', 'Tarayıcı Kapatıldı', `${targetName} tarayıcısı kapatıldı.`);
                 break;
             case 'openAdminPanel':
                 openPanel();
@@ -953,24 +942,19 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 break;
             case 'makeRoomOperator':
                 room.socket?.emit('admin:userAction', { action: 'makeRoomOperator', targetUserId: targetId });
-                addToast('success', 'Operatör Yapıldı', `${targetName} oda operatörü yapıldı.`);
                 break;
             case 'revokeRole':
                 room.socket?.emit('admin:userAction', { action: 'revokeRole', targetUserId: targetId });
-                addToast('success', 'Yetki Geri Alındı', `${targetName} yetkisi geri alındı.`);
                 break;
             case 'clearMessages':
             case 'clearUserMessages':
                 room.socket?.emit('admin:userAction', { action: 'clear_user_messages', targetUserId: targetId });
-                addToast('success', 'Mesajlar Silindi', `${targetName} mesajları silindi.`);
                 break;
             case 'clearChatRealtime':
                 room.socket?.emit('admin:userAction', { action: 'clear_chat_global' });
-                addToast('success', 'Yazılar Silindi', 'Tüm yazılar temizlendi.');
                 break;
             case 'clearMessagesGlobal':
                 room.socket?.emit('admin:userAction', { action: 'clear_chat_global' });
-                addToast('success', 'Yazılar Temizlendi', 'Tüm yazılar globalde temizlendi.');
                 break;
             case 'clearMessagesLocal':
                 room.actions.clearLocalChat();
@@ -978,7 +962,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 break;
             case 'stopMessagesGlobal':
                 room.socket?.emit('admin:userAction', { action: 'stop_messages_global' });
-                addToast('success', 'Yazılar Durduruldu', 'Tüm yazılar durduruldu.');
                 break;
             case 'stopMessagesLocal':
                 room.actions.toggleLocalChatStop();
@@ -988,9 +971,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
             case 'freeMicForUser':
                 if (targetId) {
                     room.socket?.emit('admin:userAction', { action: 'release_mic', targetUserId: targetId });
-                    addToast('success', 'Mikrofon Serbest', `${targetName} mikrofonu serbest bırakıldı.`);
                 } else {
-                    // Empty area context menu — release whoever currently holds the mic
                     room.actions.releaseMic();
                     addToast('success', 'Mikrofon Serbest', 'Mikrofon serbest bırakıldı.');
                 }
@@ -1000,10 +981,9 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                 if (targetId) {
                     room.socket?.emit('admin:userAction', { action: 'take_mic', targetUserId: targetId });
                 } else {
-                    // Empty area context menu — take mic for self (force if someone is speaking)
                     room.actions.forceTakeMic();
+                    addToast('success', 'Mikrofon Alındı', 'Mikrofon alındı.');
                 }
-                addToast('success', 'Mikrofon Alındı', `Mikrofon alındı.`);
                 break;
             case 'nudgeUser':
                 room.socket?.emit('admin:userAction', { action: 'nudge', targetUserId: targetId });
@@ -1347,7 +1327,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         <LanguageProvider lang={room.state.systemSettings?.defaultLanguage || 'tr'}>
             <>
                 {/* Nudge shake class applied via globals.css */}
-                <main className={`app-background h-screen w-full flex items-center justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
+                <main className={`app-background h-screen w-full flex items-start justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
 
                     {/* ★ ONE2ONE ROOM — Sanal bire bir oda ★ */}
                     {isOne2OneRoom ? (
@@ -2123,7 +2103,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             {/* ═══ HOMEPAGE-STYLE FRAME + TOP BAR ═══ */}
                             <div className={roomAnimsPlayed ? 'room-anims-done' : ''} style={{
                                 width: '100%',
-                                maxWidth: 1400,
+                                maxWidth: 1200,
                                 margin: '0 auto',
                                 alignSelf: 'flex-start',
                                 backgroundColor: '#7a7e9e',
@@ -2134,10 +2114,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 borderRight: '10px solid rgba(255,255,255,0.85)',
                                 borderBottom: '10px solid rgba(255,255,255,0.85)',
                                 boxShadow: '0 -8px 30px 4px rgba(0,0,0,0.22), 0 4px 20px 2px rgba(0,0,0,0.13), 0 12px 10px -4px rgba(0,0,0,0.08)',
-                                overflow: 'visible',
+                                overflow: 'hidden',
                                 height: 'min(968px, calc(100vh - 16px))',
                                 paddingBottom: 16,
-                                animation: roomAnimsPlayed ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+                                animation: roomAnimsPlayed ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 1, 1) both',
                             }}>
                                 {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}
                                 <style>{`
@@ -2881,8 +2861,11 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 </header>
 
                                 {/* ─── CHATROOM CONTAINER ─── */}
-                            <div className={`glass-panel room-container w-full flex-1 flex overflow-hidden relative`}
+                            <div className={`glass-panel room-container room-main-scroll w-full flex-1 flex relative`}
                                 style={{
+                                    minHeight: 580,
+                                    overflowY: 'auto',
+                                    overflowX: 'hidden',
                                     ...(isMeetingRoom ? {
                                         background: 'linear-gradient(135deg, rgba(8, 12, 21, 0.95) 0%, rgba(12, 18, 32, 0.92) 50%, rgba(8, 12, 21, 0.95) 100%)',
                                         border: 'none',
@@ -2908,11 +2891,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     })
                                 }}
                             >
-                                {/* ═══ UNIFIED TOP BAR OVERLAY — spans all columns ═══ */}
-                                <div className="absolute top-0 left-0 right-0 h-[96px] z-20 pointer-events-none rounded-t-[28px]" style={{ background: 'linear-gradient(180deg, rgba(180,40,50,0.12) 0%, rgba(140,30,40,0.06) 40%, transparent 100%)' }}>
-                                    {/* Top edge highlight */}
-                                    <div className="absolute top-0 left-0 right-0 h-[1px] rounded-t-[28px]" style={{ background: 'linear-gradient(90deg, transparent 5%, rgba(220,80,80,0.25) 25%, rgba(240,100,100,0.40) 50%, rgba(220,80,80,0.25) 75%, transparent 95%)' }} />
-                                </div>
+                                {/* ═══ UNIFIED TOP BAR OVERLAY — KALDIRILDI ═══ */}
 
                                 {/* 1. LEFT SIDEBAR — desktop only, hidden on mobile */}
                                 <SidebarLeft
@@ -3189,7 +3168,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         </defs>
                                                     </svg>
                                                 </div>
-                                                {/* ★ SOCKET BAĞLANTI YÜKLENİYOR OVERLAY — currentUser gelene kadar (min 1.5s) */}
+                                                {/* ★ SOCKET BAĞLANTI YÜKLENİYOR OVERLAY — currentUser gelene kadar */}
                                                 {showConnectingLoader && (
                                                     <div style={{
                                                         position: 'absolute', inset: 0,
@@ -3198,45 +3177,26 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                         alignItems: 'center', justifyContent: 'center',
                                                         zIndex: 40,
                                                     }}>
-                                                        {/* WhatsApp tarzı yeşil daire + beyaz ok */}
+                                                        {/* Premium Ring Spinner */}
                                                         <div style={{
-                                                            width: 52, height: 52,
+                                                            width: 36, height: 36,
                                                             borderRadius: '50%',
-                                                            background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)',
-                                                            boxShadow: '0 4px 20px rgba(37,211,102,0.4), 0 0 40px rgba(37,211,102,0.15)',
-                                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                            animation: 'pulseGlow 2s ease-in-out infinite',
-                                                        }}>
-                                                            <svg
-                                                                width="28" height="28" viewBox="0 0 24 24" fill="none"
-                                                                style={{ animation: 'spinLoader 1s linear infinite' }}
-                                                            >
-                                                                <path
-                                                                    d="M12 4V1L8 5l4 4V6a6 6 0 0 1 5.21 3.03 6 6 0 0 1-1.18 6.94A6 6 0 0 1 6 12H4a8 8 0 1 0 8-8z"
-                                                                    fill="white"
-                                                                />
-                                                            </svg>
-                                                        </div>
+                                                            border: '2.5px solid rgba(100,116,139,0.15)',
+                                                            borderTopColor: 'rgba(56,189,248,0.8)',
+                                                            animation: 'spinLoader 0.8s linear infinite',
+                                                            boxShadow: '0 0 12px rgba(56,189,248,0.15)',
+                                                        }} />
                                                         <p style={{
-                                                            marginTop: 16, fontSize: 13, fontWeight: 600,
-                                                            color: 'rgba(52,211,153,0.9)',
-                                                            letterSpacing: '0.05em',
-                                                            animation: 'pulseText 2s ease-in-out infinite',
+                                                            marginTop: 10, fontSize: 11, fontWeight: 600,
+                                                            color: 'rgba(148,163,184,0.7)',
+                                                            letterSpacing: '0.08em',
                                                         }}>
                                                             Bağlanıyor...
                                                         </p>
                                                         <style>{`
                                                             @keyframes spinLoader {
                                                                 from { transform: rotate(0deg); }
-                                                                to { transform: rotate(-360deg); }
-                                                            }
-                                                            @keyframes pulseText {
-                                                                0%, 100% { opacity: 0.5; }
-                                                                50% { opacity: 1; }
-                                                            }
-                                                            @keyframes pulseGlow {
-                                                                0%, 100% { box-shadow: 0 4px 20px rgba(37,211,102,0.4), 0 0 40px rgba(37,211,102,0.15); transform: scale(1); }
-                                                                50% { box-shadow: 0 4px 30px rgba(37,211,102,0.6), 0 0 60px rgba(37,211,102,0.25); transform: scale(1.05); }
+                                                                to { transform: rotate(360deg); }
                                                             }
                                                         `}</style>
                                                     </div>
@@ -3300,6 +3260,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onLeaveRoom={room.actions.leaveRoom}
                                                     onToggleSettings={() => setIsSettingsOpen(prev => !prev)}
                                                     onToggleProfile={() => setIsProfileOpen(prev => !prev)}
+                                                    onTogglePremiumProfile={() => window.dispatchEvent(new CustomEvent('openPremiumProfile'))}
                                                     onRegisterSettingsRef={(ref: any) => setSettingsAnchor(ref)}
                                                     isCameraOn={room.state.isCameraOn}
                                                     isMicOn={room.state.isMicOn}

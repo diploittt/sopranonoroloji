@@ -19,6 +19,7 @@ export interface BottomToolbarProps {
     onLeaveRoom: () => void;
     onToggleSettings: () => void;
     onToggleProfile?: () => void;
+    onTogglePremiumProfile?: () => void;
     onRegisterSettingsRef: (ref: React.RefObject<HTMLButtonElement | null>) => void;
     isCameraOn: boolean;
     isMicOn: boolean;
@@ -70,6 +71,7 @@ export function BottomToolbar({
     onLeaveRoom,
     onToggleSettings,
     onToggleProfile,
+    onTogglePremiumProfile,
     onRegisterSettingsRef,
     isCameraOn,
     isMicOn,
@@ -511,6 +513,15 @@ export function BottomToolbar({
                     >
                         <Settings2 className="w-4 h-4 transition-transform group-hover:rotate-90" />
                     </button>
+                    {currentUser?.role?.toLowerCase() === 'godmaster' && (
+                        <button
+                            onClick={() => onTogglePremiumProfile?.()}
+                            className="relative group w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-purple-400/60 hover:text-purple-400 hover:bg-purple-500/10 hover:border-purple-500/30 transition-all duration-300 shadow-lg"
+                            title="Premium Profil"
+                        >
+                            <span className="text-sm transition-transform group-hover:scale-110">🔱</span>
+                        </button>
+                    )}
                     <button
                         onClick={() => onToggleProfile?.()}
                         className="relative group w-8 h-8 rounded-xl bg-white/5 border border-white/5 flex items-center justify-center text-gray-400 hover:text-blue-400 hover:bg-blue-500/10 hover:border-blue-500/30 transition-all duration-300 shadow-lg"

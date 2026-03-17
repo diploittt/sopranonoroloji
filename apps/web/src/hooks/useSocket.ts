@@ -162,19 +162,19 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:joined', (data: { messages: any[], participants: any[], rooms?: RoomInfo[], roomSettings?: any, systemSettings?: any, userPermissions?: Record<string, boolean> }) => {
             console.log('Joined room:', data);
             console.log('[useSocket] room:joined systemSettings:', data.systemSettings ? 'EXISTS' : 'NULL');
-            // ★ DB mesajlarını frontend SocketMessage formatına normalize et
-            // Backend getMessages(): { id, content, userId, user: { id, displayName, avatarUrl }, createdAt }
-            // Frontend bekliyor: { id, content, sender, senderName, senderAvatar, createdAt }
-            const normalizedMessages = (data.messages || []).map((m: any) => ({
-                ...m,
-                // sender = userId (güvenilir eşleştirme için)
-                sender: m.sender || m.userId || m.user?.id || '',
-                // senderName = displayName (kullanıcı adı gösterimi için)
-                senderName: m.senderName || m.user?.displayName || m.sender || '',
-                // senderAvatar = avatarUrl
-                senderAvatar: m.senderAvatar || m.user?.avatarUrl || undefined,
-            }));
-            setMessages(normalizedMessages);
+            // ★ Mesaj mantığı: Odaya ilk girişte eski diyaloglar gösterilmez.
+            // Sadece oturum içinde odalar arası geçişte mesajlar sessionStorage'dan korunur.
+            // Çıkışta (session end) tüm cache otomatik temizlenir.
+            const targetRoomId = currentRoomRef.current || roomId;
+            const cacheKey = `soprano_room_messages_${targetRoomId}`;
+            try {
+                const cached = sessionStorage.getItem(cacheKey);
+                if (cached) {
+                    setMessages(JSON.parse(cached));
+                } else {
+                    setMessages([]);
+                }
+            } catch { setMessages([]); }
             // ★ room:joined = kesin truth — her zaman sunucudan gelen listeyi kabul et
             setParticipants(data.participants || []);
             if (data.rooms) setRooms(data.rooms);
@@ -238,7 +238,18 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         });
 
         socket.on('chat:message', (message: any) => {
-            setMessages((prev) => [...prev, message]);
+            setMessages((prev) => {
+                const updated = [...prev, message];
+                // ★ Mesajı sessionStorage cache'ine kaydet (oda geçişlerinde korunması için)
+                try {
+                    const cacheRoomId = currentRoomRef.current || roomId;
+                    const cacheKey = `soprano_room_messages_${cacheRoomId}`;
+                    // Son 200 mesajı cache'le (bellek tasarrufu)
+                    const toCache = updated.slice(-200);
+                    sessionStorage.setItem(cacheKey, JSON.stringify(toCache));
+                } catch { /* sessionStorage full — silent */ }
+                return updated;
+            });
         });
 
         // Emoji reaction updates — her kullanıcı bir mesaja sadece 1 emoji atabilir
@@ -298,6 +309,26 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             setMessages((prev) => [...prev, giftMsg]);
         });
 
+        // ★ Mesaj silme — sessionStorage cache'i de temizle (F5'te geri gelmesin)
+        socket.on('room:chat-cleared', () => {
+            const cacheKey = `soprano_room_messages_${currentRoomRef.current || roomId}`;
+            sessionStorage.removeItem(cacheKey);
+            setMessages([]);
+        });
+
+        socket.on('room:clear-user-messages', (data: { userId: string }) => {
+            const cacheKey = `soprano_room_messages_${currentRoomRef.current || roomId}`;
+            try {
+                const cached = sessionStorage.getItem(cacheKey);
+                if (cached) {
+                    const msgs = JSON.parse(cached);
+                    const filtered = msgs.filter((m: any) => m.sender !== data.userId && m.senderName !== data.userId);
+                    sessionStorage.setItem(cacheKey, JSON.stringify(filtered));
+                }
+            } catch { sessionStorage.removeItem(cacheKey); }
+            setMessages(prev => prev.filter((m: any) => m.sender !== data.userId && m.senderName !== data.userId));
+        });
+
         socket.on('room:participant-joined', (participant: any) => {
             console.log('[room:participant-joined]', participant.displayName, participant.userId);
             setParticipants((prev) => {
@@ -320,10 +351,11 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 return next;
             });
 
-            // ★ PROFİL SENKRONİZASYONU — Backend (DB truth) → sessionStorage
-            // deferredDbRefresh DB'den avatar/displayName çekip participant'ı düzeltir,
-            // ardından room:participants broadcast yapar. Bu broadcast'taki güncel veriyi
-            // sessionStorage'a yansıtarak hesap paneli ↔ oda profili senkronunu sağlarız.
+            // ★ PROFİL SENKRONİZASYONU — Backend → sessionStorage
+            // NOT: Avatar senkronizasyonu YAPILMAZ! Frontend sessionStorage her zaman
+            // avatar için kaynak-doğruluktur (handleProfileUpdate optimistik güncelleme).
+            // Sunucudan gelen eski avatar, kullanıcının yeni seçtiğini ezebilir.
+            // Sadece displayName ve nameColor senkronize edilir.
             try {
                 const authUser = JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null');
                 const tenantUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null');
@@ -336,7 +368,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                             if (raw) {
                                 const stored = JSON.parse(raw);
                                 let changed = false;
-                                if (me.avatar && me.avatar !== stored.avatar) { stored.avatar = me.avatar; changed = true; }
+                                // ★ Avatar SYNC YAPILMAZ — sessionStorage her zaman günceldir
                                 if (me.displayName && me.displayName !== stored.displayName) { stored.displayName = me.displayName; stored.username = me.displayName; changed = true; }
                                 if (me.nameColor && me.nameColor !== stored.nameColor) { stored.nameColor = me.nameColor; changed = true; }
                                 if (changed) {

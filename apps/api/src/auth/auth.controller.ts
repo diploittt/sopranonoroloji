@@ -75,6 +75,7 @@ export class AuthController {
       avatar?: string;
       email?: string;
       password?: string;
+      gender?: string;
     },
   ) {
     return this.authService.updateProfile(req.user, body);

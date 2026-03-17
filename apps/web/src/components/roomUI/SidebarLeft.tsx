@@ -99,6 +99,13 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
     const [showGodMasterModal, setShowGodMasterModal] = useState(false);
     const isGodMasterUser = currentUser?.role?.toLowerCase() === 'godmaster';
 
+    // Listen for 'openPremiumProfile' event from BottomToolbar
+    useEffect(() => {
+        const handler = () => setShowGodMasterModal(true);
+        window.addEventListener('openPremiumProfile', handler);
+        return () => window.removeEventListener('openPremiumProfile', handler);
+    }, []);
+
     // ═══ Branding Live Preview (from admin SettingsTab) ═══
     const [brandingPreview, setBrandingPreview] = useState<Record<string, any> | null>(null);
     useEffect(() => {
@@ -1530,29 +1537,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                 }
             `}</style>
 
-                {/* ═══ GODMASTER PREMIUM TOOLBAR BUTTON ═══ */}
-                {isGodMasterUser && (
-                    <button
-                        onClick={() => setShowGodMasterModal(true)}
-                        className="group mt-1 cursor-pointer"
-                        style={{
-                            width: '100%',
-                            padding: '6px 0',
-                            background: 'linear-gradient(135deg, rgba(217,70,239,0.15) 0%, rgba(168,85,247,0.22) 100%)',
-                            border: '1px solid rgba(217,70,239,0.3)',
-                            borderRadius: 10,
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                            color: '#e879f9',
-                            fontSize: 9, fontWeight: 800, letterSpacing: '1.5px', textTransform: 'uppercase' as const,
-                            transition: 'all 0.3s ease',
-                            boxShadow: '0 2px 10px rgba(217,70,239,0.12), inset 0 1px 0 rgba(255,255,255,0.08)',
-                        }}
-                        onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(217,70,239,0.25) 0%, rgba(168,85,247,0.35) 100%)'; e.currentTarget.style.boxShadow = '0 4px 16px rgba(217,70,239,0.25), inset 0 1px 0 rgba(255,255,255,0.15)'; }}
-                        onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(217,70,239,0.15) 0%, rgba(168,85,247,0.22) 100%)'; e.currentTarget.style.boxShadow = '0 2px 10px rgba(217,70,239,0.12), inset 0 1px 0 rgba(255,255,255,0.08)'; }}
-                    >
-                        🔱 Premium Profil
-                    </button>
-                )}
+                {/* ═══ openPremiumProfile event listener ═══ */}
+
 
                 {/* MIC REQUEST BUTTON — toplantı odasında gizle (toolbar'da mic toggle var) */}
                 {!isMeetingRoom && <>

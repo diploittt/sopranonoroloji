@@ -374,7 +374,7 @@ export class AuthService {
             reqUser.email ||
             `${reqUser.provider}_${reqUser.providerId}@soprano.chat`,
           displayName: reqUser.displayName || 'Social User',
-          avatarUrl: reqUser.avatar,
+          avatarUrl: reqUser.avatar && !reqUser.avatar.startsWith('http') ? reqUser.avatar : `/avatars/neutral_${Math.floor(Math.random() * 4) + 1}.png`,
           role: 'member',
           tenantId: tenant.id,
           isOnline: true,
@@ -389,7 +389,8 @@ export class AuthService {
       if (reqUser.provider === 'google' && !user.googleId) updateData.googleId = reqUser.providerId;
       if (reqUser.provider === 'facebook' && !user.facebookId) updateData.facebookId = reqUser.providerId;
       if (reqUser.provider === 'apple' && !user.appleId) updateData.appleId = reqUser.providerId;
-      if (reqUser.avatar && !user.avatarUrl) updateData.avatarUrl = reqUser.avatar;
+      if (reqUser.avatar && !reqUser.avatar.startsWith('http') && !user.avatarUrl) updateData.avatarUrl = reqUser.avatar;
+      if (!user.avatarUrl) updateData.avatarUrl = `/avatars/neutral_${Math.floor(Math.random() * 4) + 1}.png`;
 
       if (Object.keys(updateData).length > 0) {
         user = await this.prisma.user.update({
@@ -409,6 +410,7 @@ export class AuthService {
       avatar?: string;
       email?: string;
       password?: string;
+      gender?: string;
     },
   ) {
     const updatedUser = { ...user };
@@ -424,6 +426,7 @@ export class AuthService {
         updatedUser.username = data.displayName;
       }
       if (data.avatar) updatedUser.avatar = data.avatar;
+      if (data.gender) updatedUser.gender = data.gender;
       // Guests can't persist nameColor easily without DB, but we can update payload
       if ((data as any).nameColor) updatedUser.nameColor = (data as any).nameColor;
     } else {
@@ -433,6 +436,7 @@ export class AuthService {
         if (data.displayName) updateData.displayName = data.displayName;
         if (data.avatar) updateData.avatarUrl = data.avatar;
         if ((data as any).nameColor) updateData.nameColor = (data as any).nameColor;
+        if (data.gender) updateData.gender = data.gender;
         if (data.email) {
           updateData.email = data.email;
           // Also update payload
@@ -448,6 +452,7 @@ export class AuthService {
         if (dbUser.displayName) updatedUser.displayName = dbUser.displayName;
         if (dbUser.avatarUrl) updatedUser.avatar = dbUser.avatarUrl;
         if (dbUser.nameColor) updatedUser.nameColor = dbUser.nameColor;
+        if (dbUser.gender) updatedUser.gender = dbUser.gender;
         if (dbUser.email) updatedUser.email = dbUser.email; // Ensure email in payload if needed
 
         // Preserve the actual role from DB (don't force 'member' — that breaks GodMaster/Owner/Admin roles)
@@ -459,6 +464,7 @@ export class AuthService {
         if (data.avatar) updatedUser.avatar = data.avatar;
         if (data.email) updatedUser.email = data.email;
         if ((data as any).nameColor) updatedUser.nameColor = (data as any).nameColor;
+        if (data.gender) updatedUser.gender = data.gender;
       }
     }
 

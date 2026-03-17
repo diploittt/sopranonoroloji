@@ -20,16 +20,25 @@ function CallbackHandler() {
                 const user = JSON.parse(userStr);
                 // Store JWT
                 sessionStorage.setItem(AUTH_TOKEN_KEY, token);
+
+                const avatar = user.avatar || '';
+
                 // Store user for local auth system
                 setAuthUser({
                     userId: user.sub,
                     username: user.displayName || user.username,
-                    avatar: user.avatar || `/avatars/neutral_1.png`,
+                    avatar: avatar || `/avatars/neutral_1.png`,
                     isMember: user.isMember ?? true,
                     role: user.role || "member",
                 });
-                // Redirect to homepage
-                router.push("/");
+
+                // New social login user? → homepage with account panel open
+                const isDefaultAvatar = !avatar || avatar.includes('neutral_');
+                if (isDefaultAvatar && !user.gender) {
+                    router.push("/?openProfile=true");
+                } else {
+                    router.push("/");
+                }
             } catch (e) {
                 console.error("Auth callback error:", e);
                 router.push("/?error=auth_failed");

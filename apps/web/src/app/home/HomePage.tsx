@@ -207,6 +207,29 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const [activeSection, setActiveSection] = useState(initialRoomsMode ? 'odalar' : 'home');
     const [guideOpen, setGuideOpen] = useState<string | null>(null);
 
+    // ★ Sosyal giriş profil düzenleme toast modal state
+    const [showProfileSetup, setShowProfileSetup] = useState(false);
+    const [setupGender, setSetupGender] = useState('');
+    const [setupAvatar, setSetupAvatar] = useState('');
+    const [setupName, setSetupName] = useState('');
+    const [setupSaving, setSetupSaving] = useState(false);
+
+    // ★ Google/Facebook ile giriş sonrası profil toast modal açma
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('openProfile') === 'true' && user) {
+                window.history.replaceState({}, '', window.location.pathname);
+                setShowProfileSetup(true);
+                setShowAvatarPicker(true);
+                setTimeout(() => {
+                    const el = document.getElementById('hesap-paneli');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
+            }
+        }
+    }, [user]);
+
     const openCheckout = (name: string, price: number, period: string) => {
         setCheckoutPlan({ name, price, period });
         setShowCheckout(true);
@@ -377,8 +400,32 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
         } catch { setMemberError('Bağlantı hatası.'); } finally { setMemberLoading(false); }
     };
 
-    const handleProfileUpdate = async (field: 'displayName' | 'avatar' | 'email' | 'password', value: string) => {
+    const handleProfileUpdate = async (field: 'displayName' | 'avatar' | 'email' | 'password' | 'gender', value: string) => {
         setProfileSaving(true); setProfileMsg('');
+
+        // ★ OPTIMISTIC UPDATE — UI ve sessionStorage'ı hemen güncelle (API yanıtını bekleme)
+        if (user && (field === 'avatar' || field === 'gender' || field === 'displayName')) {
+            const optimisticUser = { ...user, [field]: value };
+            if (field === 'displayName') { (optimisticUser as any).username = value; }
+            setUser(optimisticUser); setAuthUser(optimisticUser);
+            if (field === 'avatar') setSelectedAvatar(value);
+
+            // sessionStorage'ı da hemen güncelle — buildJoinPayload bunu okur
+            try {
+                for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                    const raw = sessionStorage.getItem(key);
+                    if (raw) {
+                        const stored = JSON.parse(raw);
+                        if (field === 'avatar') stored.avatar = value;
+                        if (field === 'displayName') { stored.displayName = value; stored.username = value; }
+                        if (field === 'gender') stored.gender = value;
+                        sessionStorage.setItem(key, JSON.stringify(stored));
+                    }
+                }
+            } catch {}
+            window.dispatchEvent(new Event('auth-change'));
+        }
+
         try {
             const token = sessionStorage.getItem(AUTH_TOKEN_KEY);
             const res = await fetch(`${API_URL}/auth/update-profile`, {
@@ -391,32 +438,37 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 if (result.access_token) {
                     sessionStorage.setItem(AUTH_TOKEN_KEY, result.access_token);
                 }
-                // Backend'den dönen user bilgisiyle state'i güncelle
+                // Backend'den dönen user bilgisiyle state'i nihai güncelle
                 if (result.user && user) {
                     const u = { ...user, ...result.user };
                     setUser(u); setAuthUser(u);
                     if (field === 'avatar') setSelectedAvatar(value);
-                    // ★ HER İKİ sessionStorage key'ini de güncelle — useSocket buildJoinPayload
-                    // tenor_tenant_user'ı önceliklendirdiği için sadece setAuthUser yetmez
+                    // ★ Backend sonucuyla sessionStorage'ı kesinleştir
                     try {
                         for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
                             const raw = sessionStorage.getItem(key);
                             if (raw) {
                                 const stored = JSON.parse(raw);
-                                if (field === 'avatar') stored.avatar = value;
-                                if (field === 'displayName') { stored.displayName = value; stored.username = value; }
-                                if (field === 'email') stored.email = value;
+                                if (field === 'avatar') stored.avatar = result.user.avatar || value;
+                                if (field === 'displayName') { stored.displayName = result.user.displayName || value; stored.username = result.user.displayName || value; }
+                                if (field === 'email') stored.email = result.user.email || value;
+                                if (field === 'gender') stored.gender = result.user.gender || value;
                                 sessionStorage.setItem(key, JSON.stringify(stored));
                             }
                         }
                     } catch {}
-                    // ★ Tüm bileşenlere profil değişikliğini bildir
                     window.dispatchEvent(new Event('auth-change'));
                 }
                 setProfileMsg('✅ Güncellendi!');
                 setTimeout(() => setProfileMsg(''), 2000);
-            } else { setProfileMsg('❌ Güncelleme başarısız.'); }
-        } catch { setProfileMsg('❌ Bağlantı hatası.'); } finally { setProfileSaving(false); }
+            } else {
+                console.error('[handleProfileUpdate] API failed:', res.status, res.statusText);
+                setProfileMsg('❌ Güncelleme başarısız.');
+            }
+        } catch (err) {
+            console.error('[handleProfileUpdate] Network error:', err);
+            setProfileMsg('❌ Bağlantı hatası.');
+        } finally { setProfileSaving(false); }
     };
 
     const handleRegister = async () => {
@@ -472,7 +524,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
                 .main-content {
                     width: 100%;
-                    max-width: 1400px;
+                    max-width: 1200px;
                     margin: 0 auto;
                     position: relative;
                     background-color: ${branding?.siteConfig?.homepage?.mainBg || '#7a7e9e'};
@@ -3058,6 +3110,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             <h3 style={{ fontSize: roomsMode ? 9 : 11, fontWeight: 900, color: '#fff', textTransform: 'uppercase', letterSpacing: 2, marginBottom: roomsMode ? 0 : 10, display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)', transition: 'font-size 0.8s ease, margin-bottom 0.8s ease, max-height 0.8s ease, opacity 0.6s ease', overflow: 'hidden', maxHeight: roomsMode ? 0 : 30, opacity: roomsMode ? 0 : 1 }}>
                                                 <User style={{ width: 18, height: 18, color: user ? '#fbbf24' : '#38bdf8' }} /> Hesap Paneli
                                             </h3>
+                                            <div id="hesap-paneli" />
 
                                             {!user ? (
                                                 <>
@@ -3147,6 +3200,33 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                             <button type="submit" className="btn-3d btn-3d-blue" style={{ width: '100%', padding: '10px 0', fontSize: 11, gap: 6 }} disabled={guestLoading}>
                                                                 <LogIn style={{ width: 14, height: 14 }} /> {guestLoading ? 'Giriş yapılıyor...' : 'Misafir Giriş'}
                                                             </button>
+
+                                                            {/* ─── Sosyal Giriş Ayırıcı (Misafir) ─── */}
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, margin: '2px 0' }}>
+                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
+                                                                <span style={{ fontSize: 9, fontWeight: 700, color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', letterSpacing: 2, whiteSpace: 'nowrap' }}>veya</span>
+                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent)' }} />
+                                                            </div>
+
+                                                            {/* ─── Google & Facebook Butonları (Misafir) ─── */}
+                                                            <div style={{ display: 'flex', gap: 8 }}>
+                                                                <button type="button" onClick={() => { window.location.href = `${API_URL}/auth/google`; }}
+                                                                    style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'rgba(255,255,255,0.06)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 2px 8px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, fontWeight: 700, color: '#e2e8f0', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.12)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; e.currentTarget.style.transform = 'none'; }}
+                                                                >
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                                                                    Google
+                                                                </button>
+                                                                <button type="button" onClick={() => { window.location.href = `${API_URL}/auth/facebook`; }}
+                                                                    style={{ flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', cursor: 'pointer', background: 'rgba(24,119,242,0.15)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08), 0 2px 8px rgba(0,0,0,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, fontSize: 10, fontWeight: 700, color: '#93c5fd', transition: 'all 0.2s', fontFamily: 'inherit' }}
+                                                                    onMouseEnter={e => { e.currentTarget.style.background = 'rgba(24,119,242,0.25)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                                                                    onMouseLeave={e => { e.currentTarget.style.background = 'rgba(24,119,242,0.15)'; e.currentTarget.style.transform = 'none'; }}
+                                                                >
+                                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                                                                    Facebook
+                                                                </button>
+                                                            </div>
                                                         </form>
                                                     ) : (
                                                         <div style={{ position: 'relative', overflow: 'hidden', minHeight: 320 }}>
@@ -3353,6 +3433,33 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     {/* Profil Tab */}
                                                     {profileTab === 'profil' && !roomsMode && (
                                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+
+                                                            {/* ★ Sosyal Login — Profil Kurulum Bildirimi */}
+                                                            {showProfileSetup && (
+                                                                <div style={{ background: 'linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.1))', border: '1px solid rgba(99,102,241,0.3)', borderRadius: 10, padding: '10px 12px', animation: 'fadeIn 0.4s ease' }}>
+                                                                    <p style={{ fontSize: 10, fontWeight: 700, color: '#c4b5fd', margin: 0, lineHeight: 1.5 }}>🎙️ Hoş geldin! Sohbete başlamadan önce cinsiyetini ve avatarını seç.</p>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Cinsiyet Seçimi */}
+                                                            {user.isMember && (
+                                                                <div>
+                                                                    <label style={{ fontSize: 9, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, display: 'block', marginBottom: 5 }}>Cinsiyet</label>
+                                                                    <div style={{ display: 'flex', gap: 4 }}>
+                                                                        {['Erkek', 'Kadın', 'Belirtme'].map(g => (
+                                                                            <button key={g} type="button" onClick={() => handleProfileUpdate('gender', g)} style={{
+                                                                                flex: 1, padding: '6px 0', fontSize: 9, fontWeight: 700, border: 'none', borderRadius: 8, cursor: 'pointer',
+                                                                                background: (user as any).gender === g ? (g === 'Erkek' ? 'rgba(56,189,248,0.25)' : g === 'Kadın' ? 'rgba(244,114,182,0.25)' : 'rgba(148,163,184,0.25)') : 'rgba(0,0,0,0.2)',
+                                                                                color: (user as any).gender === g ? (g === 'Erkek' ? '#7dd3fc' : g === 'Kadın' ? '#f9a8d4' : '#cbd5e1') : 'rgba(255,255,255,0.35)',
+                                                                                transition: 'all 0.2s',
+                                                                            }}>
+                                                                                {g === 'Erkek' ? '♂ Erkek' : g === 'Kadın' ? '♀ Kadın' : '⭐ Belirtme'}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+
                                                             {/* Avatar Değiştir */}
                                                             {user.isMember && (
                                                                 <div>
@@ -3372,7 +3479,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                                 '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
                                                                                 '/avatars/neutral_1.png', '/avatars/neutral_2.png', '/avatars/neutral_3.png', '/avatars/neutral_4.png',
                                                                             ].map((av) => (
-                                                                                <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); }} style={{
+                                                                                <button key={av} type="button" onClick={() => { handleProfileUpdate('avatar', av); setShowAvatarPicker(false); if (showProfileSetup) setShowProfileSetup(false); }} style={{
                                                                                     padding: 2, border: 'none', borderRadius: '50%', cursor: 'pointer',
                                                                                     background: 'transparent', transition: 'all 0.25s ease',
                                                                                     transform: user.avatar === av ? 'scale(1.15)' : 'scale(1)',

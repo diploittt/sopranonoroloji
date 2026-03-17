@@ -45,13 +45,16 @@ const THEMES_3D = ['purple', 'gold', 'cyan', 'fire', 'emerald', 'royal'];
 // ═══ GIF Library ═══
 interface SavedGif { id: string; name: string; dataUri: string; savedAt: number; }
 function loadGifLibrary(): SavedGif[] { try { return JSON.parse(localStorage.getItem(LIBRARY_KEY) || '[]'); } catch { return []; } }
-function saveGifToLibrary(name: string, dataUri: string): SavedGif[] {
+function saveGifToLibrary(name: string, dataUri: string): { library: SavedGif[]; error?: string } {
     const lib = loadGifLibrary();
-    if (lib.some(g => g.dataUri === dataUri)) return lib;
+    if (lib.some(g => g.dataUri === dataUri)) return { library: lib };
     lib.unshift({ id: `gif_${Date.now()}`, name, dataUri, savedAt: Date.now() });
-    if (lib.length > 20) lib.pop();
-    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(lib)); } catch { }
-    return lib;
+    if (lib.length > 5) lib.pop();
+    try { localStorage.setItem(LIBRARY_KEY, JSON.stringify(lib)); } catch {
+        lib.shift(); // Eklenen GIF'i geri al
+        return { library: loadGifLibrary(), error: 'Kütüphane dolu! Eski GIF\'leri silip tekrar deneyin.' };
+    }
+    return { library: lib };
 }
 function removeGifFromLibrary(id: string): SavedGif[] {
     const lib = loadGifLibrary().filter(g => g.id !== id);
@@ -193,7 +196,12 @@ export function GodMasterProfileModal({
     };
     const handleSaveGif = () => {
         if (!gifPreview) return;
-        setGifLibrary(saveGifToLibrary(gifFileName || 'GIF', gifPreview));
+        const result = saveGifToLibrary(gifFileName || 'GIF', gifPreview);
+        if (result.error) {
+            setError(result.error);
+            return;
+        }
+        setGifLibrary(result.library);
         onChangeAvatar(gifPreview);
         setSuccess('GIF kaydedildi! 🎉');
         setTimeout(() => { setSuccess(''); onClose(); }, 1000);
