@@ -758,9 +758,11 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 username: currentUser.displayName || currentUser.username || socketSelf.displayName,
                 avatar: currentUser.avatar || socketSelf.avatar,
                 nameColor: (currentUser as any).nameColor || (socketSelf as any).nameColor,
-                // Socket-specific fields: backend öncelikli
-                isStealth: socketSelf.isStealth ?? false,
-                status: socketSelf.status || 'online',
+                // ★ STATUS: currentUser state'i öncelikli (flash bug fix)
+                // room:participants geldiğinde socketSelf.status overwrite etmemeli
+                status: (currentUser as any).status || socketSelf.status || 'online',
+                isStealth: (currentUser as any).isStealth ?? socketSelf.isStealth ?? false,
+                // Diğer socket-specific fields: backend öncelikli
                 isMuted: socketSelf.isMuted ?? false,
                 isGagged: socketSelf.isGagged ?? false,
                 isCamBlocked: socketSelf.isCamBlocked ?? false,
@@ -773,6 +775,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         }
         return { ...currentUser, permissions: userPermissions || currentUser.permissions };
     }, [currentUser, socketParticipants, userPermissions]);
+
 
     // ─── Reset mic/speaker state when slug (room) changes ───
     // When the socket reconnects for a new room, React state persists.
