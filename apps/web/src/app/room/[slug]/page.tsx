@@ -252,9 +252,9 @@ const CHAT_AREA_ITEMS: ContextMenuItem[] = [
     { id: 'select-all', label: 'Tümünü Seç', icon: '✅', action: 'selectAll', description: 'Tüm mesajları seç' },
     { id: 'paste', label: 'Yapıştır', icon: '📌', action: 'paste', description: 'Panodan yapıştır' },
     { id: 'stop-text', label: 'Yazıları Durdur', icon: '⏸️', action: 'stopMessagesGlobal', scope: 'global', confirm: true, confirmMessage: 'Tüm yazılar durdurulacak. Emin misiniz?' },
-    { id: 'stop-text-local', label: 'Yazıları Durdur (Yerel)', icon: '⏸️', action: 'stopMessagesLocal', scope: 'local' },
+    { id: 'stop-text-local', label: 'Yazıları Durdur', icon: '⏸️', action: 'stopMessagesLocal', scope: 'local' },
     { id: 'clear-text-global', label: 'Yazıları Temizle', icon: '🗑️', action: 'clearMessagesGlobal', scope: 'global', confirm: true, confirmMessage: 'Tüm yazılar temizlenecek. Emin misiniz?' },
-    { id: 'clear-text-local', label: 'Yazıları Temizle (Yerel)', icon: '🗑️', action: 'clearMessagesLocal', scope: 'local' },
+    { id: 'clear-text-local', label: 'Yazıları Temizle', icon: '🗑️', action: 'clearMessagesLocal', scope: 'local' },
     { id: 'users', label: 'Kullanıcılar', icon: '👥', action: 'showAllUsers', description: 'Tüm kullanıcılar' },
     { id: 'room-monitor', label: 'Odaları Gözetle', icon: '🏠', action: 'openRoomMonitor', description: 'Kim nerede, hangi odada' },
 ];
