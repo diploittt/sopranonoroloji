@@ -3201,7 +3201,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                 transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
                                                                 marginTop: guestGender ? 4 : 0,
                                                             }}>
-                                                                <div key={guestGender} style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, animation: 'avatarFadeIn 0.4s ease-out', animationFillMode: 'forwards' }}>
                                                                     {[
                                                                         '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
                                                                         '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
@@ -3279,7 +3279,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                         maxHeight: showMemberAvatars ? 200 : 0, opacity: showMemberAvatars ? 1 : 0, overflow: 'hidden',
                                                                         transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)', marginTop: showMemberAvatars ? 6 : 0,
                                                                     }}>
-                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, animation: 'avatarFadeIn 0.4s ease-out' }}>
+                                                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, animation: 'avatarFadeIn 0.4s ease-out', animationFillMode: 'forwards' }}>
                                                                             {[
                                                                                 '/avatars/male_1.png', '/avatars/male_2.png', '/avatars/male_3.png', '/avatars/male_4.png',
                                                                                 '/avatars/female_1.png', '/avatars/female_2.png', '/avatars/female_3.png', '/avatars/female_4.png',
