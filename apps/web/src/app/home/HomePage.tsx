@@ -381,6 +381,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
             const avatarUrl = selectedAvatar || generateGenderAvatar(guestNick.trim(), guestGender);
             const u: AuthUser = { userId: data.user.sub, username: data.user.username, avatar: avatarUrl, isMember: false, role: 'guest' as const, gender: guestGender };
             setAuthUser(u); setUser(u);
+            // ★ Giriş sonrası otomatik oda yönlendirmesi
+            const firstSlug = dbRooms.length > 0 ? dbRooms[0].slug : (initialSlug || 'genel-sohbet');
+            const tenantPrefix = initialTenant && initialTenant !== 'system' ? `/t/${initialTenant}` : '';
+            router.push(`${tenantPrefix}/room/${firstSlug}`);
         } catch { setGuestError('Bağlantı hatası.'); } finally { setGuestLoading(false); }
     };
 
@@ -396,6 +400,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 const memberAvatar = selectedAvatar || data.user?.avatar || generateGenderAvatar(memberUsername.trim(), memberGender || undefined);
                 const u: AuthUser = { userId: data.user?.sub || memberUsername.trim(), username: data.user?.displayName || memberUsername.trim(), avatar: memberAvatar, isMember: true, role: (data.user?.role || 'member') as any, gender: (memberGender || 'Belirsiz') as any, email: data.user?.username || '' };
                 setAuthUser(u); setUser(u); setEditName(u.username); setEditEmail(u.email || data.user?.username || ''); window.dispatchEvent(new Event('auth-change'));
+                // ★ Giriş sonrası otomatik oda yönlendirmesi
+                const firstSlug = dbRooms.length > 0 ? dbRooms[0].slug : (initialSlug || 'genel-sohbet');
+                const tenantPrefix = initialTenant && initialTenant !== 'system' ? `/t/${initialTenant}` : '';
+                router.push(`${tenantPrefix}/room/${firstSlug}`);
             } else { setMemberError(data.message || 'Giriş başarısız.'); }
         } catch { setMemberError('Bağlantı hatası.'); } finally { setMemberLoading(false); }
     };

@@ -634,21 +634,30 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
     // 3. User & Message Mapping
     const users: User[] = useMemo(() => {
+        // ★ Kendi profil verisi için sessionStorage öncelikli — Hesap Paneli değişiklikleri anlık yansısın
+        const authUser = getAuthUser();
         return socketParticipants.map((p: SocketParticipant) => {
-            const authUser = getAuthUser();
             const isSelf = authUser && p.userId === authUser.userId;
             // Check if this user has a video track — local or remote
             const hasLocalVideo = isSelf ? isCameraOn : false;
             const hasRemoteVideo = !isSelf && mediaRemoteStreams.some(s => s.userId === p.userId && s.kind === 'video');
             const hasVideoTrack = hasLocalVideo || hasRemoteVideo;
+            // ★ Kendi avatarı: sessionStorage öncelikli (Hesap Paneli değişiklikleri)
+            // Diğer kullanıcılar: backend participant verisi kullan
+            const resolvedAvatar = isSelf
+                ? (authUser?.avatar || p.avatar || '/avatars/neutral_1.png')
+                : (p.avatar || '/avatars/neutral_1.png');
+            const resolvedName = isSelf
+                ? (authUser?.displayName || authUser?.username || p.displayName)
+                : p.displayName;
             return {
                 id: p.userId,
                 userId: p.userId,
                 socketId: p.socketId,
-                username: p.displayName,
-                displayName: p.displayName,
+                username: resolvedName,
+                displayName: resolvedName,
                 avatar: (() => {
-                    const av = p.avatar;
+                    const av = resolvedAvatar;
                     if (!av) return `/avatars/neutral_1.png`;
                     // GIF avatarlar sadece GodMaster'a özel
                     const isGif = av.toLowerCase().endsWith('.gif') || av.startsWith('data:image/gif');
@@ -668,12 +677,12 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 isGagged: p.isGagged,
                 isCamBlocked: p.isCamBlocked,
                 isBanned: p.isBanned,
-                nameColor: (p as any).nameColor,
+                nameColor: isSelf ? ((authUser as any)?.nameColor || (p as any).nameColor) : (p as any).nameColor,
                 godmasterIcon: (p as any).godmasterIcon,
                 platform: (p as any).platform || 'web',
             };
         });
-    }, [socketParticipants, currentSpeaker, isCameraOn, mediaRemoteStreams]);
+    }, [socketParticipants, currentSpeaker, isCameraOn, mediaRemoteStreams, currentUser]);
 
     const messages: Message[] = useMemo(() => {
         return socketMessages
@@ -716,6 +725,14 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     useEffect(() => {
         const user = ensureAuthUser();
         if (user) setCurrentUser(user);
+
+        // ★ auth-change: Hesap Paneli profil güncellemesini dinle
+        const handleAuthChange = () => {
+            const updated = getAuthUser();
+            if (updated) setCurrentUser(updated);
+        };
+        window.addEventListener('auth-change', handleAuthChange);
+        return () => window.removeEventListener('auth-change', handleAuthChange);
     }, []);
 
     // ─── Bonus toast (oda giriş, günlük, VIP haftalık) ───
@@ -728,16 +745,20 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     // Merge static auth user with live socket participant data (for isStealth, isMuted, etc.)
     const mergedCurrentUser = useMemo(() => {
         if (!currentUser) return null;
+        // ★ Kendi profil verisi için currentUser (sessionStorage'dan) öncelikli
+        // Backend participant verisi sadece socket-specific alanlarda öncelikli
         const socketSelf = socketParticipants.find(
             (p: SocketParticipant) => p.userId === currentUser.userId || p.displayName === currentUser.username
         );
         if (socketSelf) {
             return {
                 ...currentUser,
-                displayName: socketSelf.displayName || currentUser.displayName || currentUser.username,
-                username: socketSelf.displayName || currentUser.username,
-                avatar: socketSelf.avatar || currentUser.avatar,
-                nameColor: (socketSelf as any).nameColor || currentUser.nameColor,
+                // ★ Display fields: currentUser (sessionStorage) öncelikli
+                displayName: currentUser.displayName || currentUser.username || socketSelf.displayName,
+                username: currentUser.displayName || currentUser.username || socketSelf.displayName,
+                avatar: currentUser.avatar || socketSelf.avatar,
+                nameColor: (currentUser as any).nameColor || (socketSelf as any).nameColor,
+                // Socket-specific fields: backend öncelikli
                 isStealth: socketSelf.isStealth ?? false,
                 status: socketSelf.status || 'online',
                 isMuted: socketSelf.isMuted ?? false,
