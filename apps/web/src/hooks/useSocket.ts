@@ -192,34 +192,20 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 setUserPermissions(data.userPermissions);
             }
 
-            // ★ AVATAR/PROFİL SENKRONİZASYONU — Backend (DB truth) → sessionStorage
-            // Oda girişinde backend'den gelen participant bilgisi DB'den geliyor (deferredDbRefresh).
-            // Bu veriyi sessionStorage'a yansıtarak hesap paneli ile oda profili arasında
-            // tek doğru kaynak (DB) kullanılmasını sağlıyoruz.
+            // ★ sessionStorage → backend: Odaya (yeniden) katılınca frontend'in güncel profilini gönder
+            // Backend'in in-memory datası ile sessionStorage senkronize olsun
+            // (hesap paneli değişikliklerini yeni odaya taşır)
             try {
-                const authUser = JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null');
-                const tenantUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null');
-                const myUserId = tenantUser?.userId || authUser?.userId;
-                if (myUserId && data.participants) {
-                    const me = data.participants.find((p: any) => p.userId === myUserId);
-                    if (me) {
-                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
-                            const raw = sessionStorage.getItem(key);
-                            if (raw) {
-                                const stored = JSON.parse(raw);
-                                let changed = false;
-                                if (me.avatar && me.avatar !== stored.avatar) { stored.avatar = me.avatar; changed = true; }
-                                if (me.displayName && me.displayName !== stored.displayName) { stored.displayName = me.displayName; stored.username = me.displayName; changed = true; }
-                                if (me.nameColor && me.nameColor !== stored.nameColor) { stored.nameColor = me.nameColor; changed = true; }
-                                if (changed) {
-                                    sessionStorage.setItem(key, JSON.stringify(stored));
-                                    console.log(`[useSocket] Synced profile from backend → sessionStorage (${key})`);
-                                }
-                            }
-                        }
-                    }
+                const userJson = sessionStorage.getItem('soprano_auth_user') || sessionStorage.getItem('soprano_tenant_user');
+                if (userJson && socket.connected) {
+                    const u = JSON.parse(userJson);
+                    socket.emit('user:profileUpdate', {
+                        displayName: u.displayName || u.username,
+                        avatar: u.avatar,
+                        nameColor: u.nameColor || null,
+                    });
                 }
-            } catch (e) { /* silent */ }
+            } catch { /* silent */ }
         });
 
         // Bireysel yetki canlı güncelleme — admin panelinden değişiklik yapıldığında
