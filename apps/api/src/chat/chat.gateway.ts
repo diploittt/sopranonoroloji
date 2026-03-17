@@ -1313,6 +1313,47 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.log(`[BAN CHECK] Ban blocking disabled (banBlockEntry=false), allowing user ${user.sub}`);
     }
 
+    // ─── GUEST NICKNAME DUPLICATE CHECK ──────────────────────────────────
+    // Misafir kullanıcıların aynı odadaki mevcut üyelerle nick çakışmasını engelle
+    if (user.role === 'guest' || user.isGuest) {
+      const guestDisplayName = user.displayName || user.username;
+      if (guestDisplayName) {
+        // 1) Odada aynı isimde başka biri var mı?
+        const nickConflict = Array.from(this.participants.values()).find(
+          (p) =>
+            p.roomId === roomId &&
+            p.userId !== user.sub &&
+            p.displayName?.toLowerCase() === guestDisplayName.toLowerCase(),
+        );
+        if (nickConflict) {
+          client.emit('room:error', {
+            message: `"${guestDisplayName}" ismi bu odada zaten kullanılıyor. Lütfen farklı bir isim seçin.`,
+            code: 'NICK_TAKEN',
+          });
+          return;
+        }
+        // 2) Bu tenanta kayıtlı üye aynı displayName'e sahip mi?
+        try {
+          const memberConflict = await this.prisma.user.findFirst({
+            where: {
+              tenantId: effectiveTenantId,
+              displayName: { equals: guestDisplayName, mode: 'insensitive' },
+            },
+            select: { id: true },
+          });
+          if (memberConflict) {
+            client.emit('room:error', {
+              message: `"${guestDisplayName}" ismi kayıtlı bir üyeye ait. Lütfen farklı bir isim seçin.`,
+              code: 'NICK_RESERVED',
+            });
+            return;
+          }
+        } catch (e) {
+          this.logger.warn(`[NICK CHECK] DB check failed: ${e.message}`);
+        }
+      }
+    }
+
     // ─── ROOM ACCESS CHECKS (password, lock, capacity, VIP) ──
     const userRole = (user.role || 'guest').toLowerCase();
     // GodMaster bypasses all room restrictions

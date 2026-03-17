@@ -172,6 +172,21 @@ export class AuthService {
 
     const guestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
     const guestAvatar = avatar || generateGenderAvatar(username, gender);
+
+    // ★ Aynı kullanıcı adı ile üye kaydı varsa engelle
+    if (tenant) {
+      const existingMember = await this.prisma.user.findFirst({
+        where: {
+          tenantId: tenant.id,
+          displayName: { equals: username, mode: 'insensitive' },
+        },
+        select: { id: true },
+      });
+      if (existingMember) {
+        throw new ConflictException('Bu kullanıcı adı kayıtlı bir üyeye ait. Farklı bir isim seçin.');
+      }
+    }
+
     const jwtPayload = {
       username: username,
       sub: guestId,

@@ -1048,7 +1048,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     sessionStorage.removeItem('soprano_session_visibility');
                 }
             }
-            // Optimistic local update
+            // ★ Optimistic local update — HEM currentUser state HEM participants güncelle
+            // currentUser.status güncellenmeden mergedCurrentUser flash yapıyor
+            setCurrentUser((prev: any) => prev ? { ...prev, status: newStatus, isStealth } : prev);
             if (mergedCurrentUser?.userId) {
                 updateParticipantLocally(mergedCurrentUser.userId, {
                     isStealth,
