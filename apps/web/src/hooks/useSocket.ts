@@ -162,15 +162,21 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:joined', (data: { messages: any[], participants: any[], rooms?: RoomInfo[], roomSettings?: any, systemSettings?: any, userPermissions?: Record<string, boolean> }) => {
             console.log('Joined room:', data);
             console.log('[useSocket] room:joined systemSettings:', data.systemSettings ? 'EXISTS' : 'NULL');
-            // Merge instead of replace — prevent UI flash on reconnect
-            if (data.messages && data.messages.length > 0) {
-                setMessages(data.messages);
-            }
-            // ★ room:joined = kesin truth — kullanıcı yeni bağlandığında sunucudan gelen
-            // liste her zaman kabul edilmeli (kick sonrası yeniden girişte stale data'yı önler)
-            if (data.participants && data.participants.length > 0) {
-                setParticipants(data.participants);
-            }
+            // ★ DB mesajlarını frontend SocketMessage formatına normalize et
+            // Backend getMessages(): { id, content, userId, user: { id, displayName, avatarUrl }, createdAt }
+            // Frontend bekliyor: { id, content, sender, senderName, senderAvatar, createdAt }
+            const normalizedMessages = (data.messages || []).map((m: any) => ({
+                ...m,
+                // sender = userId (güvenilir eşleştirme için)
+                sender: m.sender || m.userId || m.user?.id || '',
+                // senderName = displayName (kullanıcı adı gösterimi için)
+                senderName: m.senderName || m.user?.displayName || m.sender || '',
+                // senderAvatar = avatarUrl
+                senderAvatar: m.senderAvatar || m.user?.avatarUrl || undefined,
+            }));
+            setMessages(normalizedMessages);
+            // ★ room:joined = kesin truth — her zaman sunucudan gelen listeyi kabul et
+            setParticipants(data.participants || []);
             if (data.rooms) setRooms(data.rooms);
             if (data.roomSettings) {
                 setRoomSettings(data.roomSettings);
@@ -185,6 +191,35 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             if (data.userPermissions) {
                 setUserPermissions(data.userPermissions);
             }
+
+            // ★ AVATAR/PROFİL SENKRONİZASYONU — Backend (DB truth) → sessionStorage
+            // Oda girişinde backend'den gelen participant bilgisi DB'den geliyor (deferredDbRefresh).
+            // Bu veriyi sessionStorage'a yansıtarak hesap paneli ile oda profili arasında
+            // tek doğru kaynak (DB) kullanılmasını sağlıyoruz.
+            try {
+                const authUser = JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null');
+                const tenantUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null');
+                const myUserId = tenantUser?.userId || authUser?.userId;
+                if (myUserId && data.participants) {
+                    const me = data.participants.find((p: any) => p.userId === myUserId);
+                    if (me) {
+                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                            const raw = sessionStorage.getItem(key);
+                            if (raw) {
+                                const stored = JSON.parse(raw);
+                                let changed = false;
+                                if (me.avatar && me.avatar !== stored.avatar) { stored.avatar = me.avatar; changed = true; }
+                                if (me.displayName && me.displayName !== stored.displayName) { stored.displayName = me.displayName; stored.username = me.displayName; changed = true; }
+                                if (me.nameColor && me.nameColor !== stored.nameColor) { stored.nameColor = me.nameColor; changed = true; }
+                                if (changed) {
+                                    sessionStorage.setItem(key, JSON.stringify(stored));
+                                    console.log(`[useSocket] Synced profile from backend → sessionStorage (${key})`);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* silent */ }
         });
 
         // Bireysel yetki canlı güncelleme — admin panelinden değişiklik yapıldığında
@@ -284,9 +319,36 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 if (prevKey === nextKey) return prev; // No change — skip re-render
                 return next;
             });
-            // NOT: Burada localStorage'a yazma yapılmaz — callback'ler zaten setAuthUser ile güncelliyor.
-            // Eski kod burada room:participants'tan gelen veriyi localStorage'a yazıyordu ama backend henüz
-            // profil değişikliğini işlemeden önceki broadcast eski veriyi içeriyordu → titreme sorunu.
+
+            // ★ PROFİL SENKRONİZASYONU — Backend (DB truth) → sessionStorage
+            // deferredDbRefresh DB'den avatar/displayName çekip participant'ı düzeltir,
+            // ardından room:participants broadcast yapar. Bu broadcast'taki güncel veriyi
+            // sessionStorage'a yansıtarak hesap paneli ↔ oda profili senkronunu sağlarız.
+            try {
+                const authUser = JSON.parse(sessionStorage.getItem('soprano_auth_user') || 'null');
+                const tenantUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || 'null');
+                const myUserId = tenantUser?.userId || authUser?.userId;
+                if (myUserId && data.participants) {
+                    const me = data.participants.find((p: any) => p.userId === myUserId);
+                    if (me) {
+                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                            const raw = sessionStorage.getItem(key);
+                            if (raw) {
+                                const stored = JSON.parse(raw);
+                                let changed = false;
+                                if (me.avatar && me.avatar !== stored.avatar) { stored.avatar = me.avatar; changed = true; }
+                                if (me.displayName && me.displayName !== stored.displayName) { stored.displayName = me.displayName; stored.username = me.displayName; changed = true; }
+                                if (me.nameColor && me.nameColor !== stored.nameColor) { stored.nameColor = me.nameColor; changed = true; }
+                                if (changed) {
+                                    sessionStorage.setItem(key, JSON.stringify(stored));
+                                    window.dispatchEvent(new Event('auth-change'));
+                                    console.log(`[useSocket] room:participants synced profile → sessionStorage (${key})`);
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* silent */ }
         });
 
         // ★ NOTE: user-status-changed, room:user-banned, room:user-unbanned are handled

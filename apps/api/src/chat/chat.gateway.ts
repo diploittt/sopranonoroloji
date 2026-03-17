@@ -194,6 +194,16 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   /** Active YouTube TV URLs: roomId -> { url, setBy, setByLevel, setByRole } */
   private roomYoutubeUrls = new Map<string, { url: string; setBy: string; setByLevel: number; setByRole: string }>();
 
+  /** ★ In-memory chat messages per room — DB yerine bellekte tutulur.
+   *  Herkes odadan çıkınca 5dk sonra otomatik temizlenir. Oda değişiminde korunur. */
+  private roomMessages = new Map<string, any[]>();
+  private readonly MAX_ROOM_MESSAGES = 100; // Oda başına max mesaj
+  /** Geciktirilmiş mesaj temizleme timer'ları: roomId -> timeout */
+  private roomMessageCleanupTimers = new Map<string, NodeJS.Timeout>();
+  /** ★ Odada daha önce mesaj görmüş kullanıcılar: roomId -> Set<userId>
+   *  Yeni katılan = boş chat, geri dönen = mesajları görür */
+  private roomUserSeen = new Map<string, Set<string>>();
+
   /** Duel reaction cooldowns: "duelId:userId" -> timestamp */
   private _duelReactionCooldowns = new Map<string, number>();
 
@@ -210,6 +220,33 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       roomMap.set(userId, {});
     }
     return roomMap.get(userId)!;
+  }
+
+  /** ★ Geciktirilmiş mesaj temizleme — oda boşaldığında 5dk bekle, biri gelmezse sil */
+  private scheduleRoomMessageCleanup(roomId: string, roomSlug: string) {
+    // Mevcut timer varsa iptal et (reset)
+    this.cancelRoomMessageCleanup(roomId);
+    const timer = setTimeout(() => {
+      // 5dk sonra hâlâ boşsa temizle
+      const stillEmpty = !Array.from(this.participants.values()).some(p => p.roomId === roomId);
+      if (stillEmpty) {
+        this.roomMessages.delete(roomId);
+        this.roomUserSeen.delete(roomId); // Kullanıcı takibini de temizle
+        this.logger.log(`[ROOM CLEANUP] Messages cleared for empty room ${roomSlug} (5min TTL expired)`);
+      }
+      this.roomMessageCleanupTimers.delete(roomId);
+    }, 5 * 60 * 1000); // 5 dakika
+    this.roomMessageCleanupTimers.set(roomId, timer);
+    this.logger.log(`[ROOM CLEANUP] Scheduled 5min cleanup for room ${roomSlug}`);
+  }
+
+  /** ★ Biri odaya katıldığında temizleme timer'ını iptal et */
+  private cancelRoomMessageCleanup(roomId: string) {
+    const existingTimer = this.roomMessageCleanupTimers.get(roomId);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+      this.roomMessageCleanupTimers.delete(roomId);
+    }
   }
 
   /** Helper: set a moderation flag */
@@ -938,6 +975,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       this.participants.delete(client.id);
+
+      // ★ Oda boşsa mesajları 5dk sonra temizle (kullanıcı geri dönebilir)
+      const roomStillHasUsers = Array.from(this.participants.values()).some(p => p.roomId === participant.roomId);
+      if (!roomStillHasUsers) {
+        this.scheduleRoomMessageCleanup(participant.roomId, participant.roomSlug);
+      }
+
       this.server.to(participant.roomId).emit('room:participant-left', {
         userId: participant.userId,
         socketId: client.id,
@@ -1009,6 +1053,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Remove from participants
     this.participants.delete(client.id);
+
+    // ★ Oda boşsa mesajları 5dk sonra temizle (kullanıcı geri dönebilir)
+    const roomStillHasUsersAfterLeave = Array.from(this.participants.values()).some(p => p.roomId === participant.roomId);
+    if (!roomStillHasUsersAfterLeave) {
+      this.scheduleRoomMessageCleanup(participant.roomId, participant.roomSlug);
+    }
 
     // Broadcast updated participant list and room counts
     this._doBroadcastParticipants(participant.roomId);
@@ -1591,6 +1641,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // Remove old participant entry
       this.participants.delete(client.id);
 
+      // ★ Eski oda boşsa mesaj temizleme zamanla (5dk TTL)
+      const oldRoomStillHasUsers = Array.from(this.participants.values()).some(p => p.roomId === oldParticipant.roomId);
+      if (!oldRoomStillHasUsers) {
+        this.scheduleRoomMessageCleanup(oldParticipant.roomId, oldParticipant.roomSlug);
+      }
+
       // Broadcast updated counts for old room's tenant
       this.broadcastRoomCounts(oldParticipant.tenantId);
 
@@ -1632,6 +1688,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // *** KRİTİK: Socket.IO adapter room'una katıl ***
     client.join(scopedRoom);
+
+    // ★ Yeni odaya katılırken bekleyen temizleme timer'ını iptal et
+    this.cancelRoomMessageCleanup(scopedRoom);
 
     this.logger.log(
       `[Room Join Debug] Socket: ${client.id} | UserID: ${participant.userId} | GuestID: ${participant.guestId} | Role: ${participant.role} | Room: ${scopedRoom} | isBanned: ${participant.isBanned || false}`,
@@ -1683,11 +1742,22 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     });
 
     const [messagesResult, roomsResult, themeResult, roomSettingsResult] = await Promise.all([
-      // 1) Messages
-      this.chatService.getMessages(roomId).then(m => m.reverse()).catch(e => {
-        this.logger.warn(`Could not load messages for room "${roomId}": ${e.message}`);
-        return [] as any[];
-      }),
+      // 1) ★ Messages — bellekten al, AMA sadece daha önce bu odada olanlara göster
+      (() => {
+        const userId = participant.userId || participant.guestId || '';
+        const seen = this.roomUserSeen.get(scopedRoom);
+        const isReturningUser = seen?.has(userId) || false;
+        if (isReturningUser) {
+          // Geri dönen kullanıcı — mesajları göster
+          return Promise.resolve(this.roomMessages.get(scopedRoom) || []);
+        }
+        // Yeni katılan — boş chat göster, kullanıcıyı "görmüş" olarak işaretle
+        if (!this.roomUserSeen.has(scopedRoom)) {
+          this.roomUserSeen.set(scopedRoom, new Set());
+        }
+        this.roomUserSeen.get(scopedRoom)!.add(userId);
+        return Promise.resolve([]);
+      })(),
       // 2) Room list
       this.roomService.findAll(user.tenantId).then(dbRooms =>
         dbRooms.map((r: any) => ({
@@ -2112,20 +2182,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     // Try to persist to DB (may fail if room doesn't exist in DB)
+    // ★ Guest kullanıcılar için DB kaydetme ATLANIYOR (User tablosunda kayıtlı değiller → FK hatası)
     let message: any = null;
-    try {
-      message = await this.chatService.sendMessage(
-        payload.roomId,
-        user.sub,
-        filteredContent,
-        // @ts-ignore
-        payload.type || 'TEXT',
-      );
-    } catch (e) {
-      // If DB save fails, create a transient message object
-      this.logger.warn(
-        `Could not persist message for room "${payload.roomId}": ${e.message}`,
-      );
+    const isGuestUser = user.sub?.startsWith('guest_');
+    if (isGuestUser) {
+      // Guest mesajları DB'ye kaydedilmez — sadece bellekte anlık yayınlanır
       message = {
         id: `msg_${Date.now()}`,
         content: filteredContent,
@@ -2133,18 +2194,74 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         type: payload.type || 'TEXT',
         createdAt: new Date().toISOString(),
       };
+    } else {
+      try {
+        // ★ Slug → DB Room ID çözümle (Message.roomId FK olarak Room.id referans eder)
+        const sender = this.participants.get(client.id);
+        const tenantIdForRoom = sender?.tenantId || user.tenantId;
+        const dbRoom = await this.prisma.room.findFirst({
+          where: { tenantId: tenantIdForRoom, slug: payload.roomId },
+          select: { id: true },
+        });
+        const dbRoomId = dbRoom?.id || payload.roomId;
+
+        message = await this.chatService.sendMessage(
+          dbRoomId,
+          user.sub,
+          filteredContent,
+          // @ts-ignore
+          payload.type || 'TEXT',
+        );
+      } catch (e) {
+        // If DB save fails, create a transient message object
+        this.logger.warn(
+          `Could not persist message for room "${payload.roomId}": ${e.message}`,
+        );
+        message = {
+          id: `msg_${Date.now()}`,
+          content: filteredContent,
+          sender: user.sub,
+          type: payload.type || 'TEXT',
+          createdAt: new Date().toISOString(),
+        };
+      }
     }
 
     // Broadcast to room (including sender)
     // Use participant's scoped roomId for tenant isolation
     const sender = this.participants.get(client.id);
     const broadcastTarget = sender?.roomId || payload.roomId;
-    this.server.to(broadcastTarget).emit('chat:message', {
+    const fullMessage = {
       ...message,
+      sender: user.sub, // userId — frontend isMe kontrolü için
       senderName: sender?.displayName || user.displayName || user.username,
       senderAvatar: sender?.avatar || user.avatar || null,
       senderNameColor: sender?.nameColor || (user as any).nameColor || null,
+    };
+
+    // ★ Belleğe ekle — oda değişiminde mesajlar korunur
+    if (!this.roomMessages.has(broadcastTarget)) {
+      this.roomMessages.set(broadcastTarget, []);
+    }
+    const roomMsgs = this.roomMessages.get(broadcastTarget)!;
+    roomMsgs.push(fullMessage);
+    // FIFO: max mesaj sınırını aş→ eskisini sil
+    if (roomMsgs.length > this.MAX_ROOM_MESSAGES) {
+      roomMsgs.shift();
+    }
+
+    // ★ Mesajı gören herkesi "görmüş" olarak işaretle — oda değiştirip geri dönerlerse mesajları görür
+    if (!this.roomUserSeen.has(broadcastTarget)) {
+      this.roomUserSeen.set(broadcastTarget, new Set());
+    }
+    const seenSet = this.roomUserSeen.get(broadcastTarget)!;
+    this.participants.forEach(p => {
+      if (p.roomId === broadcastTarget) {
+        seenSet.add(p.userId || p.guestId || '');
+      }
     });
+
+    this.server.to(broadcastTarget).emit('chat:message', fullMessage);
   }
 
   @SubscribeMessage('chat:typing')
@@ -2362,6 +2479,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Notify the user
     client.emit('room:name-changed', { oldName, newName });
+
+    // ★ Session update — frontend sessionStorage/state'ini güncelle
+    client.emit('auth:session-update', { displayName: newName });
 
     // Persist name change to DB (non-guest users only)
     try {

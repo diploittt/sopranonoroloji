@@ -396,6 +396,20 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     const u = { ...user, ...result.user };
                     setUser(u); setAuthUser(u);
                     if (field === 'avatar') setSelectedAvatar(value);
+                    // ★ HER İKİ sessionStorage key'ini de güncelle — useSocket buildJoinPayload
+                    // tenor_tenant_user'ı önceliklendirdiği için sadece setAuthUser yetmez
+                    try {
+                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                            const raw = sessionStorage.getItem(key);
+                            if (raw) {
+                                const stored = JSON.parse(raw);
+                                if (field === 'avatar') stored.avatar = value;
+                                if (field === 'displayName') { stored.displayName = value; stored.username = value; }
+                                if (field === 'email') stored.email = value;
+                                sessionStorage.setItem(key, JSON.stringify(stored));
+                            }
+                        }
+                    } catch {}
                     // ★ Tüm bileşenlere profil değişikliğini bildir
                     window.dispatchEvent(new Event('auth-change'));
                 }
@@ -2254,7 +2268,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                 <>
                                                     <div style={{ paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid rgba(255,255,255,0.2)' }}>
                                                         <h3 style={{ fontSize: 18, fontWeight: 900, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>
-                                                            <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Müşteri Platformları
+                                                            <Users style={{ width: 24, height: 24, color: '#38bdf8' }} /> Topluluk Platformları
                                                         </h3>
                                                         <p style={{ fontSize: 12, color: '#94a3b8', marginTop: 6, fontWeight: 500 }}>SopranoChat altyapısıyla çalışan sohbet odalarına katılanlar.</p>
                                                     </div>
@@ -2262,7 +2276,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                                                         {sopranoChatCustomers.length === 0 ? (
                                                             <div style={{ padding: '24px 16px', textAlign: 'center', color: '#64748b', fontSize: 12, fontWeight: 500 }}>
-                                                                Henüz müşteri platformu bulunmuyor.
+                                                                Henüz topluluk platformu bulunmuyor.
                                                             </div>
                                                         ) : sopranoChatCustomers.map((p, i) => {
                                                             const colors = ['#fbbf24', '#a78bfa', '#38bdf8', '#34d399', '#f472b6', '#fb923c'];

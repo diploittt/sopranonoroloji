@@ -850,7 +850,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                     let avatarSrc = `/avatars/neutral_1.png`;
                                                     if (isSelf) {
                                                         try {
-                                                            const customAvatar = localStorage.getItem('soprano_custom_avatar');
+                                                            const customAvatar = sessionStorage.getItem('soprano_custom_avatar');
                                                             if (customAvatar) avatarSrc = customAvatar;
                                                         } catch (e) { }
                                                     }
@@ -991,8 +991,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
 
                                                     {/* Online/Status indicator — konuşmacı ikonu artık avatar üzerinde gösterilmiyor */}
                                                     {!hasStatusIcons && !isSpeaker && (
-                                                        <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center" title={getStatusLabel(user.status)}>
-                                                            <span className="text-[10px] leading-none drop-shadow-lg">{getStatusEmoji(user.status)}</span>
+                                                        <div className="absolute -bottom-0.5 -right-0.5 z-10 flex items-center justify-center" title={getStatusLabel(user.status)}>
+                                                            <span className="text-[14px] leading-none drop-shadow-lg">{getStatusEmoji(user.status)}</span>
                                                         </div>
                                                     )}
 
@@ -1235,7 +1235,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                             onClick={() => setShowStatusMenu(!showStatusMenu)}
                         >
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                <span style={{ fontSize: 12, lineHeight: 1 }}>{getStatusEmoji(currentUser?.status as string)}</span>
+                                <span style={{ fontSize: 14, lineHeight: 1 }}>{getStatusEmoji(currentUser?.status as string)}</span>
                                 <div style={{
                                     width: 6, height: 6, borderRadius: '50%',
                                     background: currentUser?.status === 'busy' ? '#ef4444'
@@ -1291,8 +1291,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                 setShowStatusMenu(false);
                                             }}
                                         >
-                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{emoji}</span>
-                                            <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
+                                            <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{emoji}</span>
+                                            <span style={{ fontSize: 11, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
                                             {isActive && <span style={{ marginLeft: 'auto', fontSize: 8, color, fontWeight: 900 }}>●</span>}
                                         </button>
                                     );
@@ -1321,8 +1321,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                                     onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
                                                     onClick={() => { room.actions.changeStatus(key); setShowStatusMenu(false); }}
                                                 >
-                                                    <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>{emoji}</span>
-                                                    <span style={{ fontSize: 10, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
+                                                    <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>{emoji}</span>
+                                                    <span style={{ fontSize: 11, fontWeight: isActive ? 800 : 600, color: isActive ? color : '#475569' }}>{label}</span>
                                                     {isActive && <span style={{ marginLeft: 'auto', fontSize: 8, color, fontWeight: 900 }}>●</span>}
                                                 </button>
                                             );
@@ -1346,8 +1346,8 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                                             onMouseLeave={e => { if (!currentUser?.isStealth) e.currentTarget.style.background = 'transparent'; }}
                                             onClick={() => { room.actions.toggleStealth(); setShowStatusMenu(false); }}
                                         >
-                                            <span style={{ fontSize: 10, width: 14, textAlign: 'center' }}>👻</span>
-                                            <span style={{ fontSize: 10, fontWeight: currentUser?.isStealth ? 800 : 600, color: currentUser?.isStealth ? '#1e293b' : '#475569' }}>{t.statusInvisible}</span>
+                                            <span style={{ fontSize: 13, width: 18, textAlign: 'center' }}>👻</span>
+                                            <span style={{ fontSize: 11, fontWeight: currentUser?.isStealth ? 800 : 600, color: currentUser?.isStealth ? '#1e293b' : '#475569' }}>{t.statusInvisible}</span>
                                             {currentUser?.isStealth && <span style={{ marginLeft: 'auto', fontSize: 8, color: '#1e293b', fontWeight: 900 }}>●</span>}
                                         </button>
                                     </>

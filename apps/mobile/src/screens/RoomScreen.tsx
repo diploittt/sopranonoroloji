@@ -2,21 +2,21 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, ScrollView,
   StyleSheet, Image, FlatList, KeyboardAvoidingView, Platform,
-  Dimensions,
+  Dimensions, Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { COLORS, SHADOWS, ROLE_CONFIG, getAvatarUrl } from '../constants';
 import { connectSocket, getSocket, disconnectSocket } from '../services/socket';
+import { Ionicons } from '@expo/vector-icons';
 import type { RootStackParamList } from '../../App';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Room'>;
 type RoomUser = { userId: string; displayName?: string; username?: string; avatar?: string; role?: string; status?: string; nameColor?: string };
 type ChatMessage = { id: string; userId: string; username: string; avatar?: string; role?: string; text: string; timestamp: number; type?: string; nameColor?: string };
-
-type TabKey = 'chat' | 'users' | 'stage';
 
 export default function RoomScreen({ navigation, route }: Props) {
   const { slug, token, user } = route.params;
@@ -24,7 +24,6 @@ export default function RoomScreen({ navigation, route }: Props) {
   const [roomUsers, setRoomUsers] = useState<RoomUser[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState('');
-  const [activeTab, setActiveTab] = useState<TabKey>('chat');
   const chatRef = useRef<FlatList>(null);
 
   const addSystemMessage = useCallback((text: string) => {
@@ -36,34 +35,24 @@ export default function RoomScreen({ navigation, route }: Props) {
 
   useEffect(() => {
     const socket = connectSocket(token);
-
     socket.emit('room:join', { roomId: slug });
 
-    socket.on('room:info', (data: any) => {
-      if (data.name) setRoomName(data.name);
-    });
-
+    socket.on('room:info', (data: any) => { if (data.name) setRoomName(data.name); });
     socket.on('room:participants', (data: any) => {
       const users = data?.participants || data;
       if (Array.isArray(users)) setRoomUsers(users);
     });
-
     socket.on('room:participant-joined', (u: RoomUser) => {
-      setRoomUsers(prev => {
-        if (prev.find(p => p.userId === u.userId)) return prev;
-        return [...prev, u];
-      });
+      setRoomUsers(prev => prev.find(p => p.userId === u.userId) ? prev : [...prev, u]);
       addSystemMessage(`${u.displayName || u.username} odaya katıldı`);
     });
-
     socket.on('room:participant-left', (data: { userId: string }) => {
       setRoomUsers(prev => {
         const leaving = prev.find(p => p.userId === data.userId);
-        if (leaving) addSystemMessage(`${leaving.displayName || leaving.username} odadan ayrıldı`);
+        if (leaving) addSystemMessage(`${leaving.displayName || leaving.username} ayrıldı`);
         return prev.filter(p => p.userId !== data.userId);
       });
     });
-
     socket.on('chat:message', (msg: any) => {
       setMessages(prev => [...prev, {
         id: msg.id || `${Date.now()}-${Math.random()}`,
@@ -77,408 +66,362 @@ export default function RoomScreen({ navigation, route }: Props) {
         nameColor: msg.senderNameColor || msg.nameColor,
       }]);
     });
-
     socket.on('chat:history', (history: ChatMessage[]) => {
       if (Array.isArray(history)) setMessages(history);
     });
 
-    return () => {
-      socket.emit('room:leave', { roomId: slug });
-      disconnectSocket();
-    };
+    return () => { socket.emit('room:leave', { roomId: slug }); disconnectSocket(); };
   }, [slug, token]);
 
   const sendMessage = () => {
     if (!inputText.trim()) return;
     const socket = getSocket();
-    if (socket) {
-      socket.emit('chat:send', { roomId: slug, content: inputText.trim() });
-      setInputText('');
-    }
+    if (socket) { socket.emit('chat:send', { roomId: slug, content: inputText.trim() }); setInputText(''); }
   };
 
   const getRoleInfo = (role?: string) => ROLE_CONFIG[(role || 'guest').toLowerCase()] || ROLE_CONFIG.guest;
   const isOwnMessage = (msg: ChatMessage) => msg.userId === user?.sub;
+  const sortedUsers = [...roomUsers].sort((a, b) => getRoleInfo(b.role).level - getRoleInfo(a.role).level);
 
-  // ═══ RENDER ═══
+  // ═══ RENDERS ═══
 
-  const renderMessage = ({ item }: { item: ChatMessage }) => {
-    if (item.type === 'system') {
-      return (
-        <View style={r.systemMsg}>
-          <Text style={r.systemMsgText}>— {item.text} —</Text>
-        </View>
-      );
-    }
-
-    const own = isOwnMessage(item);
-    const roleInfo = getRoleInfo(item.role);
-
+  const renderUserChip = ({ item }: { item: RoomUser }) => {
+    const ri = getRoleInfo(item.role);
     return (
-      <View style={[r.msgRow, own && r.msgRowOwn]}>
-        {!own && (
-          <Image source={{ uri: getAvatarUrl(item.avatar || '') }} style={r.msgAvatar} />
-        )}
-        <View style={[r.msgBubble, own ? r.msgBubbleOwn : r.msgBubbleOther]}>
-          {!own && (
-            <View style={r.msgHeader}>
-              <Text style={[r.msgSender, { color: item.nameColor || roleInfo.color }]}>
-                {roleInfo.icon} {item.username}
-              </Text>
-              <Text style={r.msgRole}>{roleInfo.label}</Text>
-            </View>
-          )}
-          <Text style={r.msgText}>{item.text}</Text>
-          <Text style={r.msgTime}>
-            {new Date(item.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
-          </Text>
+      <View style={r.userChip}>
+        <View style={r.userChipAvatarWrap}>
+          <Image source={{ uri: getAvatarUrl(item.avatar || '') }} style={r.userChipAvatar} />
+          <View style={[r.userChipOnline, { backgroundColor: item.status === 'stealth' ? '#f59e0b' : '#10b981' }]} />
         </View>
-        {own && (
-          <Image source={{ uri: getAvatarUrl(user?.avatar || '') }} style={r.msgAvatar} />
-        )}
+        <Text style={[r.userChipName, { color: item.nameColor || ri.color }]} numberOfLines={1}>
+          {item.displayName || item.username}
+        </Text>
+        <Text style={r.userChipRole}>{ri.icon}</Text>
       </View>
     );
   };
 
-  const renderUser = ({ item }: { item: RoomUser }) => {
-    const roleInfo = getRoleInfo(item.role);
+  const renderMessage = ({ item }: { item: ChatMessage }) => {
+    if (item.type === 'system') {
+      return (
+        <View style={r.sysMsg}>
+          <LinearGradient colors={['transparent', 'rgba(56,189,248,0.06)', 'transparent']} start={{x:0,y:0}} end={{x:1,y:0}} style={r.sysMsgBg}>
+            <Text style={r.sysMsgText}>⸺ {item.text} ⸺</Text>
+          </LinearGradient>
+        </View>
+      );
+    }
+    const own = isOwnMessage(item);
+    const ri = getRoleInfo(item.role);
     return (
-      <View style={r.userCard}>
-        <View style={r.userAvatarWrap}>
-          <Image source={{ uri: getAvatarUrl(item.avatar || '') }} style={r.userAvatar} />
-          <View style={r.onlineDot} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <View style={r.userNameRow}>
-            <Text style={[r.userName, { color: item.nameColor || roleInfo.color }]}>
-              {item.displayName || item.username}
-            </Text>
-            <View style={[r.roleBadge, { backgroundColor: `${roleInfo.color}20`, borderColor: `${roleInfo.color}40` }]}>
-              <Text style={[r.roleBadgeText, { color: roleInfo.color }]}>{roleInfo.icon} {roleInfo.label}</Text>
+      <View style={[r.msgRow, own && r.msgRowOwn]}>
+        {!own && <Image source={{ uri: getAvatarUrl(item.avatar || '') }} style={r.msgAvatar} />}
+        <View style={[r.msgBubble, own ? r.msgBubbleOwn : r.msgBubbleOther]}>
+          {!own && (
+            <View style={r.msgHead}>
+              <Text style={[r.msgName, { color: item.nameColor || ri.color }]}>{ri.icon} {item.username}</Text>
+              <View style={[r.msgRoleBadge, { backgroundColor: `${ri.color}15`, borderColor: `${ri.color}30` }]}>
+                <Text style={[r.msgRoleText, { color: ri.color }]}>{ri.label}</Text>
+              </View>
             </View>
-          </View>
-          <Text style={r.userStatus}>{item.status === 'stealth' ? '👻 Görünmez' : '🟢 Çevrimiçi'}</Text>
+          )}
+          <Text style={r.msgText}>{item.text}</Text>
+          <Text style={r.msgTime}>{new Date(item.timestamp).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}</Text>
         </View>
+        {own && <Image source={{ uri: getAvatarUrl(user?.avatar || '') }} style={r.msgAvatar} />}
       </View>
     );
   };
 
   const now = new Date();
-  const dateStr = `Bugün ${now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
+  const dateStr = `${now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} ${now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`;
 
   return (
-    <View style={r.container}>
+    <View style={r.root}>
       <StatusBar style="light" />
+      <View style={r.bg} />
 
-      {/* ═══ TOP BAR ═══ */}
-      <View style={r.topBar}>
+      {/* ═══ METALLIC TOP BAR ═══ */}
+      <LinearGradient colors={['#5a6070', '#3d4250', '#1e222e', '#282c3a', '#3a3f50']}
+        locations={[0, 0.15, 0.5, 0.75, 1]} style={r.topBar}>
+        {/* Top shine */}
+        <LinearGradient colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'transparent']}
+          style={r.topBarShine} />
+
         <TouchableOpacity onPress={() => navigation.goBack()} style={r.backBtn}>
-          <Text style={r.backText}>←</Text>
+          <LinearGradient colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.04)']} style={r.iconBtn}>
+            <Ionicons name="chevron-back" size={20} color="#94a3b8" />
+          </LinearGradient>
         </TouchableOpacity>
+
         <View style={r.topBarCenter}>
-          <Text style={r.topBarLogo}>Soprano</Text>
-          <Text style={r.topBarLogoAccent}>Chat</Text>
+          <Image source={require('../../assets/icon.png')} style={{ width: 28, height: 28, borderRadius: 7 }} />
+          <Text style={r.logoSoprano}>Soprano<Text style={r.logoChat}>Chat</Text></Text>
         </View>
-        <View style={r.topBarInfo}>
-          <Text style={r.roomNameText} numberOfLines={1}>{roomName}</Text>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Rooms', { token, user })}>
+          <LinearGradient colors={['rgba(255,255,255,0.1)', 'rgba(255,255,255,0.04)']} style={r.iconBtn}>
+            <Ionicons name="home-outline" size={18} color="#94a3b8" />
+          </LinearGradient>
+        </TouchableOpacity>
+      </LinearGradient>
+
+      {/* ═══ ROOM NAV TABS ═══ */}
+      <View style={r.roomNav}>
+        <View style={[r.roomNavTab, r.roomNavTabActive]}>
+          <Text style={[r.roomNavText, r.roomNavTextActive]}>{roomName.toUpperCase()}</Text>
+        </View>
+        <View style={r.roomNavTab}>
+          <Text style={r.roomNavText}>ODALAR</Text>
         </View>
       </View>
 
-      {/* ═══ ROOM TABS (Alt Bar) ═══ */}
-      <View style={r.tabBar}>
-        {([
-          { key: 'chat' as TabKey, icon: '💬', label: 'Sohbet' },
-          { key: 'users' as TabKey, icon: '👥', label: `Kullanıcılar (${roomUsers.length})` },
-          { key: 'stage' as TabKey, icon: '📺', label: 'Kürsü' },
-        ]).map(tab => (
-          <TouchableOpacity key={tab.key}
-            style={[r.tabItem, activeTab === tab.key && r.tabItemActive]}
-            onPress={() => setActiveTab(tab.key)}>
-            <Text style={r.tabIcon}>{tab.icon}</Text>
-            <Text style={[r.tabLabel, activeTab === tab.key && r.tabLabelActive]}>{tab.label}</Text>
-          </TouchableOpacity>
-        ))}
+      {/* ═══ HORIZONTAL USER STRIP ═══ */}
+      <View style={r.userStrip}>
+        <View style={r.userStripHeader}>
+          <View style={r.onlineBadge}>
+            <View style={r.onlinePulse} />
+            <Text style={r.onlineText}>ÇEVRİMİÇİ</Text>
+          </View>
+          <Text style={r.userCount}>{roomUsers.length}</Text>
+        </View>
+        <FlatList data={sortedUsers} renderItem={renderUserChip} keyExtractor={i => i.userId}
+          horizontal showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }} />
       </View>
 
-      {/* ═══ CONTENT ═══ */}
-      {activeTab === 'chat' && (
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-          {/* Chat Header */}
-          <View style={r.chatHeader}>
-            <View style={r.chatHeaderDot} />
-            <Text style={r.chatHeaderText}>{roomName} • {dateStr}</Text>
-          </View>
+      {/* ═══ CHAT AREA ═══ */}
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        {/* Chat header */}
+        <View style={r.chatHeader}>
+          <View style={r.chatHeaderDot} />
+          <Text style={r.chatHeaderText}>{roomName} • {dateStr}</Text>
+        </View>
 
-          {/* Messages */}
-          <FlatList
-            ref={chatRef}
-            data={messages}
-            renderItem={renderMessage}
-            keyExtractor={item => item.id}
-            style={r.chatList}
-            contentContainerStyle={{ paddingVertical: 12, paddingHorizontal: 12 }}
-            onContentSizeChange={() => chatRef.current?.scrollToEnd({ animated: true })}
-            showsVerticalScrollIndicator={false}
-          />
+        {/* Messages */}
+        <FlatList ref={chatRef} data={messages} renderItem={renderMessage}
+          keyExtractor={i => i.id} style={r.chatList}
+          contentContainerStyle={{ padding: 14, paddingBottom: 6 }}
+          onContentSizeChange={() => chatRef.current?.scrollToEnd({ animated: true })}
+          showsVerticalScrollIndicator={false} />
 
-          {/* Control Bar */}
-          <View style={r.controlBar}>
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>✋</Text></TouchableOpacity>
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>📷</Text></TouchableOpacity>
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>🔊</Text></TouchableOpacity>
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>😊</Text></TouchableOpacity>
-            <View style={{ flex: 1 }} />
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>⚙️</Text></TouchableOpacity>
-            <TouchableOpacity style={r.controlBtn}><Text style={r.controlIcon}>🎤</Text></TouchableOpacity>
-          </View>
-
-          {/* Input Bar */}
-          <View style={r.inputBar}>
-            <TextInput
-              style={r.chatInput}
-              value={inputText}
-              onChangeText={setInputText}
-              placeholder="Mesajınızı buraya yazın..."
-              placeholderTextColor={COLORS.textMuted}
-              onSubmitEditing={sendMessage}
-              returnKeyType="send"
-            />
-            <TouchableOpacity style={r.sendBtn} onPress={sendMessage}>
-              <Text style={r.sendBtnText}>GÖNDER ▷</Text>
+        {/* ═══ CONTROL BAR ═══ */}
+        <View style={r.controlBar}>
+          {[
+            { icon: 'hand-left-outline' as const, label: 'El' },
+            { icon: 'videocam-outline' as const, label: 'Kam' },
+            { icon: 'volume-high-outline' as const, label: 'Ses' },
+            { icon: 'happy-outline' as const, label: 'Emoji' },
+          ].map((b, i) => (
+            <TouchableOpacity key={i} style={r.ctrlBtn}>
+              <LinearGradient colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
+                style={r.ctrlBtnInner}>
+                <Ionicons name={b.icon} size={18} color="#94a3b8" />
+              </LinearGradient>
             </TouchableOpacity>
-          </View>
-        </KeyboardAvoidingView>
-      )}
-
-      {activeTab === 'users' && (
-        <View style={{ flex: 1 }}>
-          <View style={r.usersHeader}>
-            <Text style={r.usersTitle}>ÇEVRİMİÇİ ({roomUsers.length})</Text>
-          </View>
-          <FlatList
-            data={[...roomUsers].sort((a, b) => {
-              const la = getRoleInfo(a.role).level;
-              const lb = getRoleInfo(b.role).level;
-              return lb - la;
-            })}
-            renderItem={renderUser}
-            keyExtractor={item => item.userId}
-            contentContainerStyle={{ padding: 12 }}
-            showsVerticalScrollIndicator={false}
-          />
-
-          {/* Mikrofon Butonu */}
+          ))}
+          <View style={{ flex: 1 }} />
+          <TouchableOpacity style={r.ctrlBtn}>
+            <LinearGradient colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)']}
+              style={r.ctrlBtnInner}>
+              <Ionicons name="settings-outline" size={18} color="#94a3b8" />
+            </LinearGradient>
+          </TouchableOpacity>
+          {/* MIC BUTTON */}
           <TouchableOpacity style={r.micBtn}>
-            <Text style={r.micBtnIcon}>🎤</Text>
-            <Text style={r.micBtnText}>MİKROFON AL</Text>
+            <LinearGradient colors={['#10b981', '#059669']} style={r.micBtnInner}>
+              <Ionicons name="mic" size={22} color="#0a0f1d" />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
-      )}
 
-      {activeTab === 'stage' && (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16 }}>
-          {/* Kürsü / TV */}
-          <View style={[r.stagePanel, SHADOWS.card]}>
-            <Text style={r.stageTitle}>📺 KÜRSÜ</Text>
-            <View style={r.tvArea}>
-              <Text style={r.tvPlaceholder}>TV / YouTube yayını burada görünecek</Text>
-            </View>
+        {/* ═══ INPUT BAR ═══ */}
+        <View style={r.inputBar}>
+          <View style={r.inputWrap}>
+            <TextInput style={r.chatInput} value={inputText} onChangeText={setInputText}
+              placeholder="Mesajınızı buraya yazın..." placeholderTextColor="#4a5568"
+              onSubmitEditing={sendMessage} returnKeyType="send" />
           </View>
-
-          {/* Canlı Yayın */}
-          <View style={[r.stagePanel, SHADOWS.card]}>
-            <View style={r.liveBadgeRow}>
-              <View style={r.liveBadge}>
-                <Text style={r.liveBadgeText}>🔴 CANLI YAYIN</Text>
-              </View>
-            </View>
-            <Text style={r.stageSub}>Yayın akışı bekleniyor...</Text>
-          </View>
-
-          {/* Radyo */}
-          <View style={[r.stagePanel, SHADOWS.card]}>
-            <Text style={r.stageTitle}>📻 RADYO</Text>
-            <View style={r.radioRow}>
-              <Text style={r.radioChannel}>🎵 Power FM</Text>
-              <Text style={r.radioGenre}>POP / DANCE</Text>
-            </View>
-            <View style={r.radioControls}>
-              <TouchableOpacity style={r.radioBtn}><Text style={r.radioBtnText}>⏮</Text></TouchableOpacity>
-              <TouchableOpacity style={[r.radioBtn, r.radioBtnPlay]}><Text style={r.radioBtnText}>▶</Text></TouchableOpacity>
-              <TouchableOpacity style={r.radioBtn}><Text style={r.radioBtnText}>⏭</Text></TouchableOpacity>
-            </View>
-            <TouchableOpacity style={r.radioChannelsBtn}>
-              <Text style={r.radioChannelsBtnText}>🎵 KANALLAR</Text>
-            </TouchableOpacity>
-          </View>
-        </ScrollView>
-      )}
+          <TouchableOpacity onPress={sendMessage} style={r.sendBtn}>
+            <LinearGradient colors={['#7b9fef', '#5a7fd4']} style={r.sendBtnInner}>
+              <Ionicons name="send" size={16} color="#0a0f1d" />
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
     </View>
   );
 }
 
 const r = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.bg },
+  root: { flex: 1, backgroundColor: '#2d3548' },
+  bg: { ...StyleSheet.absoluteFillObject, backgroundColor: '#2d3548' },
 
-  // Top Bar
+  // ═══ TOP BAR (Metallic) ═══
   topBar: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingTop: 50, paddingBottom: 10, paddingHorizontal: 14,
-    backgroundColor: 'rgba(7,11,20,0.95)', borderBottomWidth: 1, borderBottomColor: COLORS.borderLight,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingTop: 14, paddingBottom: 8, paddingHorizontal: 16,
+    borderBottomLeftRadius: 20, borderBottomRightRadius: 20,
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.5)', borderTopWidth: 0,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 20,
+    elevation: 12,
   },
-  backBtn: { padding: 8 },
-  backText: { fontSize: 20, color: COLORS.textSecondary, fontWeight: '700' },
-  topBarCenter: { flexDirection: 'row', alignItems: 'baseline', marginLeft: 8 },
-  topBarLogo: { fontSize: 16, fontWeight: '900', color: COLORS.white },
-  topBarLogoAccent: { fontSize: 16, fontWeight: '900', color: '#fbbf24' },
-  topBarInfo: { flex: 1, marginLeft: 12 },
-  roomNameText: { fontSize: 12, color: COLORS.textSecondary, fontWeight: '600' },
+  topBarShine: {
+    position: 'absolute', top: 0, left: '10%', right: '10%', height: '35%',
+    borderBottomLeftRadius: 999, borderBottomRightRadius: 999,
+  },
+  backBtn: {},
+  homeBtn: {},
+  iconBtn: {
+    width: 38, height: 38, borderRadius: 12, justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  iconBtnText: { fontSize: 20, color: '#94a3b8', fontWeight: '700' },
 
-  // Tab Bar
-  tabBar: {
-    flexDirection: 'row', backgroundColor: 'rgba(7,11,20,0.9)',
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+  topBarCenter: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  logoSoprano: {
+    fontSize: 18, fontFamily: 'Fraunces-Black',
+    color: '#dde4ee',
+    textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 4,
   },
-  tabItem: {
-    flex: 1, alignItems: 'center', paddingVertical: 10, gap: 2,
-    borderBottomWidth: 2, borderBottomColor: 'transparent',
+  logoChat: {
+    fontSize: 18, fontFamily: 'Fraunces-Black', color: '#5ec8c8',
   },
-  tabItemActive: { borderBottomColor: COLORS.cyan },
-  tabIcon: { fontSize: 16 },
-  tabLabel: { fontSize: 9, fontWeight: '700', color: COLORS.textMuted, letterSpacing: 0.5 },
-  tabLabelActive: { color: COLORS.cyan },
 
-  // Chat Tab
+  // ═══ ROOM NAV ═══
+  roomNav: {
+    flexDirection: 'row', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 6, gap: 8,
+  },
+  roomNavTab: {
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.04)', borderWidth: 1, borderColor: 'transparent',
+  },
+  roomNavTabActive: {
+    backgroundColor: 'rgba(94,200,200,0.1)', borderColor: 'rgba(94,200,200,0.3)',
+  },
+  roomNavText: { fontSize: 10, fontWeight: '700', color: '#4a5568', letterSpacing: 1.5 },
+  roomNavTextActive: { color: '#5ec8c8' },
+
+  // ═══ USER STRIP (Horizontal) ═══
+  userStrip: {
+    paddingTop: 8, paddingBottom: 10,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.04)',
+  },
+  userStripHeader: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, marginBottom: 8,
+  },
+  onlineBadge: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  onlinePulse: {
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981',
+    shadowColor: '#10b981', shadowOffset: { width: 0, height: 0 }, shadowOpacity: 0.6, shadowRadius: 4,
+  },
+  onlineText: { fontSize: 9, fontWeight: '800', color: '#475569', letterSpacing: 2 },
+  userCount: {
+    fontSize: 11, fontWeight: '900', color: '#5ec8c8',
+    backgroundColor: 'rgba(94,200,200,0.1)', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 10,
+  },
+
+  userChip: {
+    alignItems: 'center', width: 58, gap: 3,
+  },
+  userChipAvatarWrap: { position: 'relative' },
+  userChipAvatar: {
+    width: 42, height: 42, borderRadius: 21,
+    borderWidth: 2, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  userChipOnline: {
+    position: 'absolute', bottom: 0, right: -1,
+    width: 12, height: 12, borderRadius: 6,
+    borderWidth: 2, borderColor: '#0d1220',
+  },
+  userChipName: { fontSize: 8, fontWeight: '700', textAlign: 'center' },
+  userChipRole: { fontSize: 10 },
+
+  // ═══ CHAT ═══
   chatHeader: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, backgroundColor: 'rgba(7,11,20,0.6)',
-    borderBottomWidth: 1, borderBottomColor: COLORS.border,
+    paddingVertical: 6,
+    borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.03)',
   },
-  chatHeaderDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: COLORS.textMuted },
-  chatHeaderText: { fontSize: 11, color: COLORS.textMuted, fontWeight: '600' },
-  chatList: { flex: 1, backgroundColor: 'rgba(7,11,20,0.4)' },
+  chatHeaderDot: { width: 5, height: 5, borderRadius: 3, backgroundColor: '#334155' },
+  chatHeaderText: { fontSize: 10, color: '#334155', fontWeight: '600' },
+  chatList: { flex: 1 },
 
   // Messages
-  systemMsg: { alignItems: 'center', paddingVertical: 6 },
-  systemMsgText: { fontSize: 10, color: COLORS.textMuted, fontWeight: '500', fontStyle: 'italic' },
+  sysMsg: { paddingVertical: 4, marginVertical: 2 },
+  sysMsgBg: { paddingVertical: 4, paddingHorizontal: 16, borderRadius: 12 },
+  sysMsgText: { fontSize: 10, color: '#475569', fontWeight: '500', textAlign: 'center', fontStyle: 'italic' },
 
-  msgRow: { flexDirection: 'row', marginBottom: 10, alignItems: 'flex-end', gap: 8 },
-  msgRowOwn: { flexDirection: 'row', justifyContent: 'flex-end' },
-  msgAvatar: { width: 32, height: 32, borderRadius: 16 },
-  msgBubble: { maxWidth: '72%', borderRadius: 14, padding: 10 },
+  msgRow: { flexDirection: 'row', marginBottom: 8, alignItems: 'flex-end', gap: 8 },
+  msgRowOwn: { justifyContent: 'flex-end' },
+  msgAvatar: {
+    width: 30, height: 30, borderRadius: 15,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.08)',
+  },
+  msgBubble: { maxWidth: '72%', borderRadius: 16, padding: 10 },
   msgBubbleOwn: {
-    backgroundColor: COLORS.msgOwn, borderWidth: 1, borderColor: COLORS.msgOwnBorder,
+    backgroundColor: 'rgba(123,159,239,0.12)',
+    borderWidth: 1, borderColor: 'rgba(123,159,239,0.25)',
     borderBottomRightRadius: 4,
   },
   msgBubbleOther: {
-    backgroundColor: COLORS.msgOther, borderWidth: 1, borderColor: COLORS.msgOtherBorder,
+    backgroundColor: 'rgba(26,35,58,0.5)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
     borderBottomLeftRadius: 4,
   },
-  msgHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  msgSender: { fontSize: 11, fontWeight: '800' },
-  msgRole: { fontSize: 8, color: COLORS.textMuted, fontWeight: '600', opacity: 0.7 },
-  msgText: { fontSize: 13, color: COLORS.textPrimary, lineHeight: 19, fontWeight: '400' },
-  msgTime: { fontSize: 9, color: COLORS.textMuted, marginTop: 4, textAlign: 'right' },
+  msgHead: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 },
+  msgName: { fontSize: 11, fontWeight: '800' },
+  msgRoleBadge: { paddingHorizontal: 5, paddingVertical: 1, borderRadius: 4, borderWidth: 1 },
+  msgRoleText: { fontSize: 7, fontWeight: '700' },
+  msgText: { fontSize: 13, color: '#e2e8f0', lineHeight: 19 },
+  msgTime: { fontSize: 8, color: '#475569', marginTop: 3, textAlign: 'right' },
 
-  // Control Bar
+  // ═══ CONTROL BAR ═══
   controlBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 6,
-    backgroundColor: 'rgba(7,11,20,0.85)', borderTopWidth: 1, borderTopColor: COLORS.border,
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 12, paddingVertical: 8,
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(13,18,32,0.95)',
   },
-  controlBtn: {
-    padding: 6, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.06)',
+  ctrlBtn: {},
+  ctrlBtnInner: {
+    width: 36, height: 36, borderRadius: 10,
+    justifyContent: 'center', alignItems: 'center',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  controlIcon: { fontSize: 16 },
+  ctrlIcon: { fontSize: 16 },
 
-  // Input Bar
-  inputBar: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    paddingHorizontal: 10, paddingVertical: 8,
-    backgroundColor: 'rgba(7,11,20,0.9)',
-    borderTopWidth: 1, borderTopColor: COLORS.border,
-  },
-  chatInput: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 12,
-    paddingHorizontal: 14, paddingVertical: 10, fontSize: 13,
-    color: COLORS.white, fontWeight: '400',
-    borderWidth: 1, borderColor: COLORS.border,
-  },
-  sendBtn: {
-    backgroundColor: COLORS.indigo, paddingHorizontal: 16, paddingVertical: 11, borderRadius: 10,
-    shadowColor: COLORS.indigo, shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.4, shadowRadius: 6,
-    elevation: 4,
-  },
-  sendBtnText: { fontSize: 11, fontWeight: '800', color: COLORS.white, letterSpacing: 1 },
-
-  // Users Tab
-  usersHeader: {
-    paddingHorizontal: 16, paddingVertical: 12,
-    backgroundColor: 'rgba(7,11,20,0.6)', borderBottomWidth: 1, borderBottomColor: COLORS.border,
-  },
-  usersTitle: { fontSize: 12, fontWeight: '900', color: COLORS.white, letterSpacing: 2 },
-
-  userCard: {
-    flexDirection: 'row', alignItems: 'center', gap: 12,
-    padding: 12, marginBottom: 6, borderRadius: 12,
-    backgroundColor: 'rgba(0,0,0,0.2)', borderWidth: 1, borderColor: COLORS.border,
-  },
-  userAvatarWrap: { position: 'relative' },
-  userAvatar: { width: 42, height: 42, borderRadius: 21 },
-  onlineDot: {
-    position: 'absolute', bottom: 0, right: 0,
-    width: 12, height: 12, borderRadius: 6, backgroundColor: COLORS.green,
-    borderWidth: 2, borderColor: COLORS.bg,
-  },
-  userNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  userName: { fontSize: 13, fontWeight: '700' },
-  roleBadge: { paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1 },
-  roleBadgeText: { fontSize: 8, fontWeight: '700' },
-  userStatus: { fontSize: 10, color: COLORS.textMuted, fontWeight: '500', marginTop: 2 },
-
-  micBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
-    marginHorizontal: 16, marginBottom: 16, paddingVertical: 14, borderRadius: 14,
-    backgroundColor: COLORS.emerald,
-    shadowColor: COLORS.emerald, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 12,
+  micBtn: {},
+  micBtnInner: {
+    width: 42, height: 42, borderRadius: 12,
+    justifyContent: 'center', alignItems: 'center',
+    shadowColor: '#10b981', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.4, shadowRadius: 10,
     elevation: 6,
   },
-  micBtnIcon: { fontSize: 20 },
-  micBtnText: { fontSize: 14, fontWeight: '900', color: COLORS.white, letterSpacing: 2 },
+  micIcon: { fontSize: 20 },
 
-  // Stage Tab
-  stagePanel: {
-    backgroundColor: COLORS.bgPanel, borderRadius: 14, padding: 16, marginBottom: 14,
-    borderWidth: 1, borderColor: COLORS.borderLight,
+  // ═══ INPUT BAR ═══
+  inputBar: {
+    flexDirection: 'row', alignItems: 'center', gap: 8,
+    paddingHorizontal: 12, paddingTop: 10, paddingBottom: 34,
+    backgroundColor: 'rgba(13,18,32,0.98)',
+    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.04)',
   },
-  stageTitle: { fontSize: 13, fontWeight: '900', color: COLORS.white, letterSpacing: 2, marginBottom: 12 },
-  stageSub: { fontSize: 11, color: COLORS.textMuted, fontWeight: '500', textAlign: 'center', paddingVertical: 16 },
-  tvArea: {
-    height: 180, borderRadius: 12, backgroundColor: 'rgba(0,0,0,0.4)',
-    justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: COLORS.border,
+  inputWrap: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.3)', borderRadius: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  tvPlaceholder: { fontSize: 12, color: COLORS.textMuted, fontWeight: '500' },
-  liveBadgeRow: { alignItems: 'center', marginBottom: 8 },
-  liveBadge: {
-    paddingHorizontal: 14, paddingVertical: 5, borderRadius: 8,
-    backgroundColor: 'rgba(239,68,68,0.15)', borderWidth: 1, borderColor: 'rgba(239,68,68,0.3)',
+  chatInput: {
+    paddingHorizontal: 16, paddingVertical: 11, fontSize: 13, color: '#e2e8f0',
   },
-  liveBadgeText: { fontSize: 10, fontWeight: '800', color: COLORS.red, letterSpacing: 1.5 },
-
-  // Radio
-  radioRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
-  radioChannel: { fontSize: 13, fontWeight: '700', color: COLORS.white },
-  radioGenre: { fontSize: 10, fontWeight: '600', color: COLORS.gold },
-  radioControls: { flexDirection: 'row', justifyContent: 'center', gap: 12, marginBottom: 12 },
-  radioBtn: {
-    width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.08)',
-    justifyContent: 'center', alignItems: 'center',
+  sendBtn: {},
+  sendBtnInner: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 16, paddingVertical: 12, borderRadius: 12,
+    shadowColor: '#7b9fef', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 10,
+    elevation: 6,
   },
-  radioBtnPlay: { backgroundColor: COLORS.cyan, width: 46, height: 46, borderRadius: 23 },
-  radioBtnText: { fontSize: 16, color: COLORS.white },
-  radioChannelsBtn: {
-    paddingVertical: 10, borderRadius: 10, alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.05)', borderWidth: 1, borderColor: COLORS.border,
-  },
-  radioChannelsBtnText: { fontSize: 10, fontWeight: '700', color: COLORS.textSecondary, letterSpacing: 1.5 },
+  sendText: { fontSize: 11, fontWeight: '800', color: '#0a0f1d', letterSpacing: 1 },
+  sendArrow: { fontSize: 12, color: 'rgba(10,15,29,0.6)' },
 });

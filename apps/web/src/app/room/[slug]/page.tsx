@@ -2130,13 +2130,13 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                borderLeft: '14px solid rgba(255,255,255,0.85)',
-                                borderRight: '14px solid rgba(255,255,255,0.85)',
-                                borderBottom: '14px solid rgba(255,255,255,0.85)',
+                                borderLeft: '10px solid rgba(255,255,255,0.85)',
+                                borderRight: '10px solid rgba(255,255,255,0.85)',
+                                borderBottom: '10px solid rgba(255,255,255,0.85)',
                                 boxShadow: '0 -8px 30px 4px rgba(0,0,0,0.22), 0 4px 20px 2px rgba(0,0,0,0.13), 0 12px 10px -4px rgba(0,0,0,0.08)',
                                 overflow: 'visible',
-                                height: 968,
-                                paddingBottom: 32,
+                                height: 'min(968px, calc(100vh - 16px))',
+                                paddingBottom: 16,
                                 animation: roomAnimsPlayed ? 'none' : 'roomEntranceZoom 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
                             }}>
                                 {/* ─── HOMEPAGE-EXACT PREMIUM HEADER CSS ─── */}

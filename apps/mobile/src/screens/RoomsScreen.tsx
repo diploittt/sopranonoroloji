@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, ScrollView, StyleSheet,
-  Image, ActivityIndicator, RefreshControl,
+  Image, ActivityIndicator, RefreshControl, Alert,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
+import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { COLORS, SHADOWS, ROLE_CONFIG } from '../constants';
+import { COLORS, ROLE_CONFIG, getAvatarUrl } from '../constants';
 import { fetchRooms } from '../services/api';
+import { clearSession } from '../../App';
 import type { RootStackParamList } from '../../App';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Rooms'>;
@@ -19,125 +21,126 @@ export default function RoomsScreen({ navigation, route }: Props) {
   const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => { loadRooms(); }, []);
-
   const loadRooms = async () => {
-    try {
-      const data = await fetchRooms(token);
-      if (Array.isArray(data)) setRooms(data);
-    } catch (e) { console.log('Rooms fetch error:', e); }
+    try { const d = await fetchRooms(token); if (Array.isArray(d)) setRooms(d); }
+    catch (e) { console.log('Rooms err:', e); }
     setLoading(false);
   };
+  const onRefresh = async () => { setRefreshing(true); await loadRooms(); setRefreshing(false); };
+  const enterRoom = (room: any) => navigation.navigate('Room', { slug: room.slug, token, user });
+  const ri = ROLE_CONFIG[user?.role || 'guest'] || ROLE_CONFIG.guest;
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadRooms();
-    setRefreshing(false);
+  const handleLogout = () => {
+    Alert.alert('Çıkış', 'Oturumu sonlandırmak istiyor musunuz?', [
+      { text: 'İptal', style: 'cancel' },
+      { text: 'Çıkış Yap', style: 'destructive', onPress: async () => {
+        await clearSession();
+        navigation.reset({ index: 0, routes: [{ name: 'Home' }] });
+      }},
+    ]);
   };
-
-  const enterRoom = (room: any) => {
-    navigation.navigate('Room', { slug: room.slug, token, user });
-  };
-
-  const roleConfig = ROLE_CONFIG[user?.role || 'guest'] || ROLE_CONFIG.guest;
 
   return (
-    <View style={{ flex: 1 }}>
-      <StatusBar style="dark" />
-      <LinearGradient colors={[COLORS.gradientStart, COLORS.gradientMid, COLORS.gradientEnd]} style={StyleSheet.absoluteFill} />
+    <View style={{ flex: 1, backgroundColor: '#2d3548' }}>
+      <StatusBar style="light" />
 
-      {/* Üst Bar */}
-      <View style={s.topBar}>
-        <View style={s.topBarLeft}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn}>
-            <Text style={s.backText}>← Çıkış</Text>
-          </TouchableOpacity>
-        </View>
-        <View style={s.topBarCenter}>
-          <Text style={s.topBarLogo}>Soprano</Text>
-          <Text style={s.topBarLogoAccent}>Chat</Text>
-        </View>
-        <View style={s.topBarRight}>
-          <View style={s.userBadge}>
-            <Text style={[s.userBadgeText, { color: roleConfig.color }]}>
-              {roleConfig.icon} {user?.displayName || user?.username || 'Kullanıcı'}
-            </Text>
+      {/* ═══ METALLIC HEADER ═══ */}
+      <LinearGradient colors={['#5a6070', '#3d4250', '#1e222e', '#282c3a', '#3a3f50']}
+        locations={[0, 0.15, 0.5, 0.75, 1]} style={s.header}>
+        <LinearGradient colors={['rgba(255,255,255,0.08)', 'rgba(255,255,255,0.02)', 'transparent']}
+          style={s.headerShine} />
+
+        <View style={s.logoArea}>
+          <Image source={require('../../assets/icon.png')} style={s.logoIcon} />
+          <View>
+            <Text style={s.logoS}>Soprano<Text style={s.logoC}>Chat</Text></Text>
+            <Text style={{ fontSize: 8, color: '#64748b', letterSpacing: 1 }}>Senin Sesin</Text>
           </View>
         </View>
-      </View>
 
-      <ScrollView
-        contentContainerStyle={s.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={COLORS.cyan} />}
-      >
-        {/* Başlık */}
-        <View style={s.headerSection}>
-          <Text style={s.sectionTitle}>🚪 ODALAR</Text>
-          <Text style={s.sectionSubtitle}>Bir oda seçin ve sohbete katılın</Text>
+        {/* User avatar + dropdown */}
+        <TouchableOpacity style={s.profileBtn} onPress={handleLogout}>
+          <Image source={{ uri: getAvatarUrl(user?.avatar || '') }} style={s.profileAvatar} />
+          <View style={s.profileOnline} />
+        </TouchableOpacity>
+      </LinearGradient>
+
+      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#5ec8c8" />}>
+
+        <View style={s.sectionHead}>
+          <Ionicons name="home" size={16} color="#5ec8c8" />
+          <Text style={s.sectionTitle}>ODALAR</Text>
+          <Text style={s.sectionSub}>Bir oda seçin ve sohbete katılın</Text>
         </View>
 
         {loading ? (
-          <View style={s.loadingState}>
-            <ActivityIndicator color={COLORS.cyan} size="large" />
-            <Text style={s.loadingText}>Odalar yükleniyor...</Text>
+          <View style={{ padding: 40, alignItems: 'center', gap: 10 }}>
+            <ActivityIndicator color="#5ec8c8" size="large" />
+            <Text style={{ fontSize: 12, color: '#4a5568' }}>Odalar yükleniyor...</Text>
           </View>
         ) : rooms.length === 0 ? (
-          <View style={[s.glassPanel, SHADOWS.panel]}>
-            <Text style={s.emptyText}>Aktif oda bulunamadı</Text>
-            <TouchableOpacity style={s.defaultRoomBtn} onPress={() => enterRoom({ slug: 'genel-sohbet' })}>
-              <Text style={s.defaultRoomBtnText}>🚪 Genel Sohbet'e Gir</Text>
+          <View style={s.panel}>
+            <Ionicons name="chatbubble-ellipses-outline" size={28} color="#334155" style={{ textAlign: 'center', marginBottom: 8 }} />
+            <Text style={{ fontSize: 12, color: '#4a5568', textAlign: 'center', marginBottom: 14 }}>Aktif oda bulunamadı</Text>
+            <TouchableOpacity onPress={() => enterRoom({ slug: 'genel-sohbet' })}>
+              <LinearGradient colors={['#5ec8c8', '#3a9e9e']} style={s.enterBtn}>
+                <Ionicons name="enter-outline" size={16} color="#0a0f1d" />
+                <Text style={s.enterBtnText}>Genel Sohbet'e Gir</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         ) : (
-          rooms.map((room: any, index: number) => {
-            const isVip = room.isVipRoom;
-            const isLocked = room.isLocked;
-            const buttonColor = room.buttonColor || COLORS.indigo;
-            const participantCount = room.participantCount || room._count?.participants || 0;
-
+          rooms.map((room: any, i: number) => {
+            const p = room.participantCount || room._count?.participants || 0;
             return (
-              <TouchableOpacity key={room.id || index} style={[s.roomCard, SHADOWS.card]} onPress={() => enterRoom(room)}>
-                <View style={s.roomCardGlow} />
-
-                <View style={s.roomHeader}>
-                  <View style={s.roomNameRow}>
-                    <Text style={s.roomName}>{room.name}</Text>
-                    {isVip && <View style={s.vipBadge}><Text style={s.vipBadgeText}>💎 VIP</Text></View>}
-                    {isLocked && <Text style={s.lockIcon}>🔒</Text>}
+              <TouchableOpacity key={room.id || i} onPress={() => enterRoom(room)} activeOpacity={0.7}>
+                <View style={s.roomCard}>
+                  <LinearGradient colors={['rgba(94,200,200,0.06)', 'transparent']} style={s.roomCardShine} />
+                  <View style={s.roomInfo}>
+                    <View style={s.roomNameRow}>
+                      <Ionicons name="chatbubbles" size={16} color="#5ec8c8" />
+                      <Text style={s.roomName}>{room.name}</Text>
+                      {room.isVipRoom && (
+                        <View style={s.vipBadge}>
+                          <Ionicons name="diamond" size={10} color="#fbbf24" />
+                          <Text style={s.vipText}>VIP</Text>
+                        </View>
+                      )}
+                      {room.isLocked && <Ionicons name="lock-closed" size={12} color="#f59e0b" />}
+                    </View>
+                    <View style={s.roomStats}>
+                      <View style={s.onlineDot} />
+                      <Text style={s.roomStatText}>{p} çevrimiçi</Text>
+                    </View>
                   </View>
-                  <Text style={s.roomSlug}>{room.slug}</Text>
-                </View>
-
-                <View style={s.roomFooter}>
-                  <View style={s.roomStats}>
-                    <View style={s.onlineDot} />
-                    <Text style={s.roomStatText}>{participantCount} çevrimiçi</Text>
-                  </View>
-                  <View style={[s.enterBtn, { backgroundColor: buttonColor }]}>
-                    <Text style={s.enterBtnText}>GİR →</Text>
-                  </View>
+                  <LinearGradient colors={['#5ec8c8', '#3a9e9e']} style={s.goBtn}>
+                    <Text style={s.goBtnText}>GİR</Text>
+                    <Ionicons name="arrow-forward" size={14} color="#0a0f1d" />
+                  </LinearGradient>
                 </View>
               </TouchableOpacity>
             );
           })
         )}
 
-        {/* Her zaman varsayılan oda */}
         {rooms.length > 0 && !rooms.find(r => r.slug === 'genel-sohbet') && (
-          <TouchableOpacity style={[s.roomCard, SHADOWS.card, { borderColor: COLORS.borderCyan }]} onPress={() => enterRoom({ slug: 'genel-sohbet', name: 'Genel Sohbet' })}>
-            <View style={[s.roomCardGlow, { backgroundColor: COLORS.cyanGlow }]} />
-            <View style={s.roomHeader}>
-              <Text style={s.roomName}>💬 Genel Sohbet</Text>
-              <Text style={s.roomSlug}>genel-sohbet</Text>
-            </View>
-            <View style={s.roomFooter}>
-              <View style={s.roomStats}>
-                <View style={s.onlineDot} />
-                <Text style={s.roomStatText}>Varsayılan oda</Text>
+          <TouchableOpacity onPress={() => enterRoom({ slug: 'genel-sohbet', name: 'Genel Sohbet' })} activeOpacity={0.7}>
+            <View style={[s.roomCard, { borderColor: 'rgba(94,200,200,0.2)' }]}>
+              <View style={s.roomInfo}>
+                <View style={s.roomNameRow}>
+                  <Ionicons name="chatbubble" size={16} color="#5ec8c8" />
+                  <Text style={s.roomName}>Genel Sohbet</Text>
+                </View>
+                <View style={s.roomStats}>
+                  <View style={s.onlineDot} />
+                  <Text style={s.roomStatText}>Varsayılan oda</Text>
+                </View>
               </View>
-              <View style={[s.enterBtn, { backgroundColor: COLORS.cyan }]}>
-                <Text style={s.enterBtnText}>GİR →</Text>
-              </View>
+              <LinearGradient colors={['#5ec8c8', '#3a9e9e']} style={s.goBtn}>
+                <Text style={s.goBtnText}>GİR</Text>
+                <Ionicons name="arrow-forward" size={14} color="#0a0f1d" />
+              </LinearGradient>
             </View>
           </TouchableOpacity>
         )}
@@ -147,72 +150,70 @@ export default function RoomsScreen({ navigation, route }: Props) {
 }
 
 const s = StyleSheet.create({
-  scrollContent: { paddingBottom: 40, paddingTop: 8 },
-
-  // Top Bar
-  topBar: {
+  header: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-    paddingTop: 50, paddingBottom: 12, paddingHorizontal: 16,
-    backgroundColor: 'rgba(7, 11, 20, 0.92)', borderBottomWidth: 1, borderBottomColor: COLORS.borderLight,
+    paddingTop: 40, paddingBottom: 12, paddingHorizontal: 16,
+    borderBottomLeftRadius: 22, borderBottomRightRadius: 22,
+    borderWidth: 1, borderColor: 'rgba(0,0,0,0.5)', borderTopWidth: 0,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.5, shadowRadius: 20, elevation: 12,
   },
-  topBarLeft: { width: 70 },
-  topBarCenter: { flexDirection: 'row', alignItems: 'baseline' },
-  topBarRight: { width: 70, alignItems: 'flex-end' },
-  topBarLogo: { fontSize: 18, fontWeight: '900', color: COLORS.white },
-  topBarLogoAccent: { fontSize: 18, fontWeight: '900', color: '#fbbf24' },
-  backBtn: { paddingVertical: 4 },
-  backText: { fontSize: 12, fontWeight: '700', color: COLORS.textSecondary },
-  userBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8, backgroundColor: 'rgba(255,255,255,0.06)' },
-  userBadgeText: { fontSize: 10, fontWeight: '700' },
-
-  // Sections
-  headerSection: { paddingHorizontal: 20, paddingVertical: 16 },
-  sectionTitle: { fontSize: 14, fontWeight: '900', color: COLORS.bg, letterSpacing: 2, opacity: 0.7 },
-  sectionSubtitle: { fontSize: 12, color: COLORS.bg, opacity: 0.5, marginTop: 4, fontWeight: '500' },
-
-  // Glass Panel
-  glassPanel: {
-    marginHorizontal: 16, marginBottom: 14, padding: 20,
-    backgroundColor: COLORS.bgPanel, borderRadius: 18,
-    borderWidth: 1, borderColor: COLORS.borderLight,
+  headerShine: {
+    position: 'absolute', top: 0, left: '10%', right: '10%', height: '35%',
+    borderBottomLeftRadius: 999, borderBottomRightRadius: 999,
   },
 
-  // Room Card
+  logoArea: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  logoIcon: { width: 32, height: 32, borderRadius: 8 },
+  logoS: {
+    fontSize: 18, fontFamily: 'Fraunces-Black', color: '#dde4ee',
+    textShadowColor: 'rgba(0,0,0,0.6)', textShadowOffset: { width: 1, height: 2 }, textShadowRadius: 4,
+  },
+  logoC: {
+    fontSize: 18, fontFamily: 'Fraunces-Black', color: '#5ec8c8',
+  },
+
+  profileBtn: { position: 'relative' },
+  profileAvatar: {
+    width: 36, height: 36, borderRadius: 18,
+    borderWidth: 2, borderColor: 'rgba(94,200,200,0.3)',
+  },
+  profileOnline: {
+    position: 'absolute', bottom: 0, right: -2,
+    width: 12, height: 12, borderRadius: 6,
+    backgroundColor: '#10b981', borderWidth: 2, borderColor: '#1e222e',
+  },
+
+  scroll: { paddingBottom: 30, paddingTop: 14 },
+  sectionHead: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', paddingHorizontal: 18, marginBottom: 12, gap: 6 },
+  sectionTitle: { fontSize: 13, fontWeight: '900', color: '#e2e8f0', letterSpacing: 2 },
+  sectionSub: { width: '100%', fontSize: 11, color: '#4a5568', fontWeight: '500', marginTop: -2 },
+
+  panel: {
+    marginHorizontal: 14, padding: 18, borderRadius: 16,
+    backgroundColor: 'rgba(15,20,35,0.85)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+  },
   roomCard: {
-    marginHorizontal: 16, marginBottom: 14, padding: 18,
-    backgroundColor: COLORS.bgPanel, borderRadius: 16,
-    borderWidth: 1, borderColor: COLORS.borderLight,
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    marginHorizontal: 14, marginBottom: 10, padding: 14, borderRadius: 14,
+    backgroundColor: 'rgba(15,20,35,0.85)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
     overflow: 'hidden',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
   },
-  roomCardGlow: {
-    position: 'absolute', top: -1, left: -1, right: -1, height: 2,
-    backgroundColor: COLORS.borderGlow,
-  },
-  roomHeader: { marginBottom: 14 },
+  roomCardShine: { position: 'absolute', top: 0, left: 0, right: 0, height: 2 },
+  roomInfo: { flex: 1, gap: 4 },
   roomNameRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  roomName: { fontSize: 16, fontWeight: '800', color: COLORS.white },
-  roomSlug: { fontSize: 11, color: COLORS.textMuted, fontWeight: '600', marginTop: 3 },
-  vipBadge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, backgroundColor: 'rgba(251,191,36,0.15)' },
-  vipBadgeText: { fontSize: 9, fontWeight: '700', color: COLORS.gold },
-  lockIcon: { fontSize: 14 },
-
-  roomFooter: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  roomName: { fontSize: 15, fontWeight: '800', color: '#e2e8f0' },
+  vipBadge: { flexDirection: 'row', alignItems: 'center', gap: 3, backgroundColor: 'rgba(251,191,36,0.1)', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 },
+  vipText: { fontSize: 8, fontWeight: '700', color: '#fbbf24' },
   roomStats: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  onlineDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: COLORS.green },
-  roomStatText: { fontSize: 11, color: COLORS.textSecondary, fontWeight: '600' },
-  enterBtn: {
-    paddingHorizontal: 20, paddingVertical: 10, borderRadius: 10,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
+  onlineDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: '#10b981' },
+  roomStatText: { fontSize: 10, color: '#64748b', fontWeight: '600' },
+  goBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10,
+    shadowColor: '#5ec8c8', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 6, elevation: 4,
   },
-  enterBtnText: { fontSize: 11, fontWeight: '900', color: COLORS.white, letterSpacing: 1.5 },
-
-  // States
-  loadingState: { padding: 40, alignItems: 'center', gap: 12 },
-  loadingText: { fontSize: 13, color: COLORS.bg, fontWeight: '500', opacity: 0.5 },
-  emptyText: { fontSize: 13, color: COLORS.textMuted, fontWeight: '500', textAlign: 'center', marginBottom: 16 },
-  defaultRoomBtn: {
-    backgroundColor: COLORS.cyan, paddingVertical: 14, borderRadius: 12, alignItems: 'center',
-    shadowColor: COLORS.cyan, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 8, elevation: 4,
-  },
-  defaultRoomBtnText: { fontSize: 13, fontWeight: '800', color: COLORS.white, letterSpacing: 1 },
+  goBtnText: { fontSize: 10, fontWeight: '900', color: '#0a0f1d', letterSpacing: 1.5 },
+  enterBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 14, borderRadius: 12 },
+  enterBtnText: { fontSize: 12, fontWeight: '800', color: '#0a0f1d', letterSpacing: 1 },
 });

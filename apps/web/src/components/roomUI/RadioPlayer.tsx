@@ -87,6 +87,16 @@ export function RadioPlayer() {
         audio.addEventListener('error', () => {
             setIsLoading(false);
             setIsPlaying(false);
+            // Auto-skip to next station after a brief delay
+            setTimeout(() => {
+                const failedIdx = RADIO_STATIONS.findIndex(s => s.url === audio.src);
+                if (failedIdx >= 0) {
+                    const nextIdx = (failedIdx + 1) % RADIO_STATIONS.length;
+                    const nextStation = RADIO_STATIONS[nextIdx];
+                    audio.src = nextStation.url;
+                    audio.play().catch(() => {});
+                }
+            }, 2000);
         });
         audio.addEventListener('pause', () => {
             setIsPlaying(false);

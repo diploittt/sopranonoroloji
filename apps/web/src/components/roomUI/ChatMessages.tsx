@@ -187,11 +187,16 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
             const user = room.state.users.find(u => u.username === msgOrUsername.sender);
             const userRole = user?.role?.toLowerCase();
 
-            // GodMaster special mode › no avatar
+            // GodMaster special mode — GIF avatars should show as chat avatar
             if (userRole === 'godmaster') {
                 const avatar = user?.avatar || msgOrUsername.avatar;
+                if (!avatar) return `/avatars/neutral_1.png`;
+                // GodMaster GIF avatars: show the GIF as chat avatar
+                if (avatar.toLowerCase().endsWith('.gif') || avatar.startsWith('data:image/gif')) {
+                    return avatar;
+                }
                 const result = resolveAvatar(avatar, msgOrUsername.sender);
-                if (result === null) return null;
+                if (result === null) return `/avatars/neutral_1.png`;
                 return result;
             }
 
@@ -289,7 +294,11 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                         return true;
                     })
                     .map((msg, i, filteredMsgs) => {
-                        const isMe = currentUser && (msg.sender === currentUser.username || msg.sender === currentUser.displayName);
+                        const isMe = currentUser && (
+                            msg.sender === currentUser.username ||
+                            msg.sender === currentUser.displayName ||
+                            (msg.senderId && (msg.senderId === currentUser.userId || msg.senderId === (currentUser as any).id))
+                        );
                         const avatarUrl = getAvatarUrl(msg);
                         const stickerMsg = !isSystemMsg(msg) && isSticker(msg.message);
                         const displayMessage = stickerMsg ? getStickerContent(msg.message) : msg.message;
@@ -383,7 +392,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                         {/* Avatar — baş harf placeholder */}
                                         <div className="w-8 flex-shrink-0">
                                             {showHeader ? (
-                                                <div className="w-8 h-8 rounded-full flex items-center justify-center ring-1 ring-white/10 overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase' }}>{(() => { const avUrl = getAvatarUrl(msg); return avUrl ? <img src={avUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (msg.sender || '?').charAt(0); })()}</div>
+                                                <div className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)', fontSize: 12, fontWeight: 800, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', border: `1.5px solid ${msg.nameColor || 'rgba(255,255,255,0.1)'}`, boxShadow: msg.nameColor ? `0 0 6px ${msg.nameColor}40` : 'none' }}>{(() => { const avUrl = getAvatarUrl(msg); return avUrl ? <img src={avUrl} alt="" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }} /> : (msg.sender || '?').charAt(0); })()}</div>
                                             ) : null}
                                         </div>
 
@@ -402,7 +411,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                     >
                                                         {msg.sender}
                                                     </span>
-                                                    <span className="text-[9px] text-gray-600">
+                                                    <span className="text-[9px]" style={{ color: 'rgba(148,163,184,0.6)' }}>
                                                         {formatTime(msg.timestamp)}
                                                     </span>
                                                 </div>
@@ -470,6 +479,7 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                                         fontSize: chatTextSettings.fontSize,
                                                         fontWeight: Number(chatTextSettings.fontWeight),
                                                         color: chatTextSettings.textColor,
+                                                        fontFamily: "'Segoe UI', 'Segoe UI Emoji', 'Apple Color Emoji', 'Noto Color Emoji', sans-serif",
                                                         background: isMe
                                                             ? 'linear-gradient(160deg, rgba(140,160,200,0.18) 0%, rgba(120,140,180,0.12) 100%)'
                                                             : 'linear-gradient(160deg, rgba(140,160,200,0.14) 0%, rgba(120,140,180,0.08) 100%)',

@@ -41,7 +41,7 @@ export default function PlatformsPage() {
                     </button>
                     <div className="flex items-center gap-2">
                         <Store className="w-5 h-5 text-sky-500" />
-                        <span className="font-extrabold text-slate-800">Müşteri Platformları</span>
+                        <span className="font-extrabold text-slate-800">Topluluk Platformları</span>
                     </div>
                 </div>
             </header>
@@ -54,7 +54,7 @@ export default function PlatformsPage() {
                 </div>
                 <div className="max-w-7xl mx-auto relative z-10 text-center">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-slate-800 tracking-tight mb-4">
-                        Müşteri <span style={{ background: 'linear-gradient(135deg, #0ea5e9, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Platformları</span>
+                        Topluluk <span style={{ background: 'linear-gradient(135deg, #0ea5e9, #6366f1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Platformları</span>
                     </h1>
                     <p className="text-lg text-slate-500 font-medium max-w-2xl mx-auto mb-8">
                         SopranoChat altyapısıyla çalışan sohbet odalarına katılın. Her platform kendi benzersiz topluluğunu barındırır.
@@ -86,7 +86,7 @@ export default function PlatformsPage() {
                     <div className="text-center py-20">
                         <Store className="w-12 h-12 text-slate-300 mx-auto mb-4" />
                         <p className="text-slate-400 font-bold">
-                            {search ? 'Aramanızla eşleşen platform bulunamadı.' : 'Henüz müşteri platformu yok.'}
+                            {search ? 'Aramanızla eşleşen platform bulunamadı.' : 'Henüz topluluk platformu yok.'}
                         </p>
                     </div>
                 ) : (

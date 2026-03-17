@@ -32,6 +32,7 @@ export interface User {
 export interface Message {
     id?: string;
     sender: string;
+    senderId?: string; // ★ userId — isMe kontrolü için güvenilir eşleştirme
     message: string;
     type: 'system' | 'user';
     role?: string;

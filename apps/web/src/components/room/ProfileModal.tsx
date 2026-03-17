@@ -310,7 +310,7 @@ export function ProfileModal({
                                 const currentAv = currentUser?.avatar || '';
                                 const isCurrentlyAnimated = currentAv.startsWith('animated:') || currentAv.startsWith('gifnick::');
                                 if (isCurrentlyAnimated) {
-                                    try { localStorage.setItem('soprano_custom_avatar', selectedAvatarUrl); } catch (e) { }
+                                    try { sessionStorage.setItem('soprano_custom_avatar', selectedAvatarUrl); } catch (e) { }
                                     onClose();
                                 } else {
                                     onChangeAvatar(selectedAvatarUrl);
