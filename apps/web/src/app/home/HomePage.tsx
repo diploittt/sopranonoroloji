@@ -549,7 +549,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
                 .main-content {
                     width: 100%;
-                    max-width: 1600px;
+                    max-width: 1200px;
                     height: 100vh;
                     margin: 0 auto;
                     position: relative;
