@@ -145,6 +145,8 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
 
         socketRef.current = socket;
         currentRoomRef.current = roomId;
+        // ★ Global socket referansı — HomePage'den profile update emit etmek için kullanılır
+        (window as any).__sopranoSocket = socket;
 
         socket.on('connect', () => {
             console.log('Socket connected:', socket.id);

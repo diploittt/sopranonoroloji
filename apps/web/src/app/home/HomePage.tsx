@@ -424,6 +424,19 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 }
             } catch {}
             window.dispatchEvent(new Event('auth-change'));
+
+            // ★ Direkt socket emit — auth-change event'i farklı sayfa/route'da çalışmayabilir
+            // window.__sopranoSocket üzerinden aktif chat odası socket'ine doğrudan gönder
+            try {
+                const sock = (window as any).__sopranoSocket;
+                if (sock?.connected) {
+                    sock.emit('user:profileUpdate', {
+                        displayName: field === 'displayName' ? value : (user.displayName || user.username),
+                        avatar: field === 'avatar' ? value : user.avatar,
+                        nameColor: (user as any).nameColor || null,
+                    });
+                }
+            } catch {}
         }
 
         try {
