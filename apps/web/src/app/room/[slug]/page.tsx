@@ -1925,6 +1925,20 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     }
                                 }}
                                 onChangeAvatar={(avatarUrl) => {
+                                    // GodMaster modal: sessionStorage + localStorage her ikisine de kaydet (flash bug önleme)
+                                    try {
+                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                            const raw = sessionStorage.getItem(key);
+                                            if (raw) { const u = JSON.parse(raw); u.avatar = avatarUrl; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                            const rawL = localStorage.getItem(key);
+                                            if (rawL) { const u = JSON.parse(rawL); u.avatar = avatarUrl; localStorage.setItem(key, JSON.stringify(u)); }
+                                        }
+                                        window.dispatchEvent(new Event('auth-change'));
+                                    } catch {}
+                                    // Anlık participant güncelle (oda listesinde hemen yansısın)
+                                    if (room.state.currentUser?.userId) {
+                                        room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { avatar: avatarUrl });
+                                    }
                                     if (room.socket) {
                                         room.socket.emit('status:change-avatar', { avatar: avatarUrl });
                                     }
@@ -2053,21 +2067,22 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     }
                                                 }}
                                                 onChangeAvatar={(avatarUrl) => {
+                                                    // sessionStorage + localStorage her ikisine de kaydet (flash bug önleme)
+                                                    try {
+                                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                            const raw = sessionStorage.getItem(key);
+                                                            if (raw) { const u = JSON.parse(raw); u.avatar = avatarUrl; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                                            const rawL = localStorage.getItem(key);
+                                                            if (rawL) { const u = JSON.parse(rawL); u.avatar = avatarUrl; localStorage.setItem(key, JSON.stringify(u)); }
+                                                        }
+                                                        window.dispatchEvent(new Event('auth-change'));
+                                                    } catch {}
+                                                    // Anlık participant güncelle
+                                                    if (room.state.currentUser?.userId) {
+                                                        room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { avatar: avatarUrl });
+                                                    }
                                                     if (room.socket) {
                                                         room.socket.emit('status:change-avatar', { avatar: avatarUrl });
-                                                        // ★ localStorage senkronizasyonu
-                                                        try {
-                                                            for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
-                                                                const raw = localStorage.getItem(key);
-                                                                if (raw) {
-                                                                    const user = JSON.parse(raw);
-                                                                    user.avatar = avatarUrl;
-                                                                    localStorage.setItem(key, JSON.stringify(user));
-                                                                }
-                                                            }
-                                                            window.dispatchEvent(new Event('auth-change'));
-                                                        } catch {}
-                                                        addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
                                                     }
                                                 }}
                                                 onChangeNameColor={(color) => {
@@ -2916,11 +2931,24 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         }
                                     }}
                                     onChangeAvatar={(avatarUrl) => {
-                                        if (room.socket) {
-                                            room.socket.emit('status:change-avatar', { avatar: avatarUrl });
-                                            addToast('success', 'Avatar Değiştirildi', 'Yeni avatarınız kaydedildi.');
-                                        }
-                                    }}
+                                                    // sessionStorage + localStorage her ikisine de kaydet (flash bug önleme)
+                                                    try {
+                                                        for (const key of ['soprano_auth_user', 'soprano_tenant_user']) {
+                                                            const raw = sessionStorage.getItem(key);
+                                                            if (raw) { const u = JSON.parse(raw); u.avatar = avatarUrl; sessionStorage.setItem(key, JSON.stringify(u)); }
+                                                            const rawL = localStorage.getItem(key);
+                                                            if (rawL) { const u = JSON.parse(rawL); u.avatar = avatarUrl; localStorage.setItem(key, JSON.stringify(u)); }
+                                                        }
+                                                        window.dispatchEvent(new Event('auth-change'));
+                                                    } catch {}
+                                                    // Anlık participant güncelle
+                                                    if (room.state.currentUser?.userId) {
+                                                        room.actions.updateParticipantLocally?.(room.state.currentUser.userId, { avatar: avatarUrl });
+                                                    }
+                                                    if (room.socket) {
+                                                        room.socket.emit('status:change-avatar', { avatar: avatarUrl });
+                                                    }
+                                                }}
                                     onChangeNameColor={(color) => {
                                         if (room.socket) {
                                             room.socket.emit('status:change-name-color', { color });
