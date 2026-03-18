@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:3002';
 
 const nextConfig: NextConfig = {
+  allowedDevOrigins: ['http://localhost:3000', 'http://192.168.1.4:3000', 'http://FIRAT:3000', 'http://firat:3000'],
   async headers() {
     return [
       {
