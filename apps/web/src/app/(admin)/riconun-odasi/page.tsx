@@ -230,10 +230,10 @@ export default function AdminLoginPage() {
                                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     style={{
                                         display: 'block', width: '100%', paddingLeft: 40, paddingRight: 14, paddingTop: 12, paddingBottom: 12,
-                                        borderRadius: 14, fontSize: 13, color: '#fff', outline: 'none',
-                                        background: 'rgba(0,0,0,0.25)',
-                                        border: focused === 'email' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
-                                        boxShadow: focused === 'email' ? 'inset 0 0 20px rgba(255,255,255,0.02)' : 'none',
+                                        borderRadius: 14, fontSize: 13, color: '#e2e8f0', outline: 'none',
+                                        background: '#1a1e2e',
+                                        border: focused === 'email' ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(148,163,184,0.25)',
+                                        boxShadow: focused === 'email' ? '0 0 0 2px rgba(99,102,241,0.15)' : 'inset 0 2px 4px rgba(0,0,0,0.3)',
                                         transition: 'all 0.2s',
                                         boxSizing: 'border-box',
                                     }}
@@ -260,10 +260,10 @@ export default function AdminLoginPage() {
                                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                     style={{
                                         display: 'block', width: '100%', paddingLeft: 40, paddingRight: 44, paddingTop: 12, paddingBottom: 12,
-                                        borderRadius: 14, fontSize: 13, color: '#fff', outline: 'none',
-                                        background: 'rgba(0,0,0,0.25)',
-                                        border: focused === 'password' ? '1px solid rgba(255,255,255,0.2)' : '1px solid rgba(255,255,255,0.08)',
-                                        boxShadow: focused === 'password' ? 'inset 0 0 20px rgba(255,255,255,0.02)' : 'none',
+                                        borderRadius: 14, fontSize: 13, color: '#e2e8f0', outline: 'none',
+                                        background: '#1a1e2e',
+                                        border: focused === 'password' ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(148,163,184,0.25)',
+                                        boxShadow: focused === 'password' ? '0 0 0 2px rgba(99,102,241,0.15)' : 'inset 0 2px 4px rgba(0,0,0,0.3)',
                                         transition: 'all 0.2s',
                                         boxSizing: 'border-box',
                                     }}
@@ -351,14 +351,15 @@ export default function AdminLoginPage() {
                     to { transform: rotate(360deg); }
                 }
                 input::placeholder {
-                    color: rgba(255,255,255,0.15) !important;
+                    color: rgba(148,163,184,0.5) !important;
                 }
                 input:-webkit-autofill,
                 input:-webkit-autofill:hover,
                 input:-webkit-autofill:focus {
-                    -webkit-text-fill-color: white;
-                    -webkit-box-shadow: 0 0 0px 1000px rgba(0,0,0,0.25) inset;
+                    -webkit-text-fill-color: #e2e8f0 !important;
+                    -webkit-box-shadow: 0 0 0px 1000px #1a1e2e inset !important;
                     transition: background-color 5000s ease-in-out 0s;
+                    caret-color: #e2e8f0;
                 }
             `}</style>
         </div>

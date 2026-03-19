@@ -2438,10 +2438,7 @@ export class AdminService implements OnModuleInit {
       logoUrl: settings?.logoUrl || null,
       logoName: settings?.logoName || 'SopranoChat',
       stats: { userCount, roomCount, messageCount, onlineUsers },
-      siteConfig: {
-        pricing: config.pricing || null,
-        banks: config.banks || null,
-      },
+      siteConfig: config,
     };
   }
 
