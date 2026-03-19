@@ -50,7 +50,7 @@ export default function OrdersModal({ isOpen, onClose }: { isOpen: boolean; onCl
         setLoading(true);
         setError('');
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/orders`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -79,7 +79,7 @@ export default function OrdersModal({ isOpen, onClose }: { isOpen: boolean; onCl
 
     const updateStatus = async (id: string, status: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/orders/${id}/status`, {
                 method: 'PATCH',
                 headers: {
@@ -118,7 +118,7 @@ export default function OrdersModal({ isOpen, onClose }: { isOpen: boolean; onCl
             type: 'danger',
             onConfirm: async () => {
                 try {
-                    const token = localStorage.getItem('soprano_admin_token');
+                    const token = sessionStorage.getItem('soprano_admin_token');
                     await fetch(`${API_URL}/admin/orders/${id}`, {
                         method: 'DELETE',
                         headers: { Authorization: `Bearer ${token}` }

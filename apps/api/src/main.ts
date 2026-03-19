@@ -7,10 +7,15 @@ import { PrismaService } from './prisma/prisma.service';
 import { AdminService } from './admin/admin.service';
 import * as bcrypt from 'bcryptjs';
 import { json } from 'express';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const cookieParser = require('cookie-parser');
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
+
+  // Cookie parser for OAuth tenant tracking
+  app.use(cookieParser());
 
   // Increase body size limit for base64 logo uploads
   app.use(json({ limit: '2mb' }));

@@ -4737,9 +4737,17 @@ export default function OwnerPanel() {
 
                                 {[
 
+                                    { id: 'branding' as const, label: 'Marka & Genel', icon: <Settings className="w-4 h-4" /> },
+
+                                    { id: 'homepage' as const, label: 'Ana Sayfa', icon: <LayoutDashboard className="w-4 h-4" /> },
+
+                                    { id: 'theme' as const, label: 'Tema', icon: <LayoutGrid className="w-4 h-4" /> },
+
                                     { id: 'pricing' as const, label: 'Fiyatlar', icon: <Wallet className="w-4 h-4" /> },
 
                                     { id: 'banks' as const, label: 'IBAN', icon: <Briefcase className="w-4 h-4" /> },
+
+                                    { id: 'contact' as const, label: 'İletişim', icon: <Phone className="w-4 h-4" /> },
 
                                 ].map(tab => (
 

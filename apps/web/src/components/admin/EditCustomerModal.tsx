@@ -73,7 +73,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                 // System tenant is excluded from store — fetch directly from API
                 (async () => {
                     try {
-                        const token = localStorage.getItem('soprano_admin_token');
+                        const token = sessionStorage.getItem('soprano_admin_token');
                         const res = await fetch(`${API_URL}/admin/customers/system-tenant`, {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
@@ -141,7 +141,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
 
     const fetchRooms = async (tenantId: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${tenantId}/rooms`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -156,7 +156,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
 
     const fetchOwnerInfo = async (tenantId: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${tenantId}/owner`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -198,7 +198,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
             // System tenant is not included in loadInitialData — re-fetch and re-apply
             if (isSystemTenant) {
                 try {
-                    const token = localStorage.getItem('soprano_admin_token');
+                    const token = sessionStorage.getItem('soprano_admin_token');
                     const res = await fetch(`${API_URL}/admin/customers/system-tenant`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -221,7 +221,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
     const handleResetPassword = async () => {
         if (!tenant) return;
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${tenant.id}/reset-admin-password`, {
                 method: 'POST',
                 headers: {
@@ -247,7 +247,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
         if (!tenant) return;
         try {
             const generatedPw = Math.random().toString(36).slice(-10);
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/customers/${tenant.id}/reset-godmaster-password`, {
                 method: 'POST',
                 headers: {
@@ -763,23 +763,43 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Owner Şifre</label>
+                                        {/* Mevcut şifre gösterimi */}
+                                        {(resetResult?.password || ownerInfo?.password) && (
+                                            <div className="flex items-center gap-2">
+                                                <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 overflow-hidden">
+                                                    <Key className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                                                    <span className="text-[11px] text-emerald-400 font-mono font-medium truncate">{resetResult?.password || ownerInfo?.password}</span>
+                                                </div>
+                                                <button
+                                                    onClick={() => copyToClipboard(resetResult?.password || ownerInfo?.password || '', 'password')}
+                                                    className="p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-500 hover:text-white transition flex-shrink-0"
+                                                    title="Kopyala"
+                                                >
+                                                    {copied === 'password' ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                                                </button>
+                                            </div>
+                                        )}
+                                        {/* Yeni şifre girme + sıfırla */}
                                         <div className="flex items-center gap-2">
-                                            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-amber-700/5 border border-amber-700/20 overflow-hidden">
-                                                <Key className="w-3 h-3 text-[#7b9fef] flex-shrink-0" />
-                                                <span className="text-[11px] text-[#7b9fef] font-mono font-medium truncate">{resetResult?.password || ownerInfo?.password || '••••••'}</span>
+                                            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.06] focus-within:border-amber-600/40 transition">
+                                                <Lock className="w-3 h-3 text-gray-600 flex-shrink-0" />
+                                                <input
+                                                    type="text"
+                                                    value={newPassword}
+                                                    onChange={e => setNewPassword(e.target.value)}
+                                                    className="flex-1 bg-transparent text-[11px] text-white font-mono font-medium focus:outline-none min-w-0"
+                                                    placeholder="Yeni şifre girin veya otomatik..."
+                                                />
                                             </div>
                                             <button
-                                                onClick={() => {
-                                                    const pw = resetResult?.password || ownerInfo?.password;
-                                                    if (pw) copyToClipboard(pw, 'password');
-                                                    else handleResetPassword();
-                                                }}
-                                                className="p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-500 hover:text-white transition flex-shrink-0"
-                                                title={resetResult?.password || ownerInfo?.password ? 'Kopyala' : 'Şifre Sıfırla'}
+                                                onClick={handleResetPassword}
+                                                className="p-2 rounded-lg bg-amber-600/10 border border-amber-600/30 text-amber-400 hover:bg-amber-600/20 transition flex-shrink-0"
+                                                title="Şifre Sıfırla"
                                             >
-                                                {copied === 'password' ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                                                <RefreshCw className="w-3 h-3" />
                                             </button>
                                         </div>
+                                        <p className="text-[8px] text-gray-600">Boş bırakırsanız otomatik şifre üretilir</p>
                                     </div>
                                 </div>
 

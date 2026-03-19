@@ -108,7 +108,7 @@ export default function MemberModal({ isOpen, onClose, tenantId, tenantName }: M
     const loadMembers = async (currentPage: number, searchTerm: string) => {
         setLoading(true);
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             let url: string;
             if (tenantId) {
                 url = `${API_URL}/admin/customers/${tenantId}/members`;
@@ -164,7 +164,7 @@ export default function MemberModal({ isOpen, onClose, tenantId, tenantName }: M
 
     const handleSaveMember = async (userId: string, data: any) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${userId}`, {
                 method: 'PATCH',
                 headers: {
@@ -187,7 +187,7 @@ export default function MemberModal({ isOpen, onClose, tenantId, tenantName }: M
 
     const handleBanMember = async (userId: string, data: any) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/bans`, {
                 method: 'POST',
                 headers: {
@@ -213,7 +213,7 @@ export default function MemberModal({ isOpen, onClose, tenantId, tenantName }: M
 
     const handleDeleteMember = async (id: string) => {
         try {
-            const token = localStorage.getItem('soprano_admin_token');
+            const token = sessionStorage.getItem('soprano_admin_token');
             const res = await fetch(`${API_URL}/admin/users/${id}`, {
                 method: 'DELETE',
                 headers: {

@@ -22,7 +22,7 @@ export default function SystemLogsModal({ isOpen, onClose }: SystemLogsModalProp
         const fetchLogs = async () => {
             setLogLoading(true);
             try {
-                const token = localStorage.getItem('soprano_admin_token');
+                const token = sessionStorage.getItem('soprano_admin_token');
                 const params = new URLSearchParams();
                 params.set('page', String(logPage));
                 params.set('limit', '25');

@@ -7,6 +7,7 @@ import {
   UseGuards,
   Res,
   Req,
+  Query,
   UnauthorizedException,
   BadRequestException,
 } from '@nestjs/common';
@@ -92,17 +93,34 @@ export class AuthController {
   //  GOOGLE OAuth
   // ═══════════════════════════════════════════════
   @Get('google')
+  async googleAuth(@Query('tenantSlug') tenantSlug: string, @Res() res: express.Response) {
+    // Store tenantSlug in a cookie before redirecting to Google
+    if (tenantSlug) {
+      res.cookie('oauth_tenant', tenantSlug, { maxAge: 300000, httpOnly: false, sameSite: 'lax' });
+    }
+    // Redirect to the actual Google OAuth guard endpoint
+    const redirectUrl = tenantSlug
+      ? `/auth/google/redirect?tenantSlug=${encodeURIComponent(tenantSlug)}`
+      : '/auth/google/redirect';
+    res.redirect(redirectUrl);
+  }
+
+  @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuth() {
+  async googleRedirect() {
     // Guard redirects to Google
   }
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
   async googleAuthCallback(@Req() req: any, @Res() res: express.Response) {
-    const result = await this.authService.socialLogin(req.user);
+    const tenantSlug = req.cookies?.oauth_tenant || req.query?.state || '';
+    const result = await this.authService.socialLogin(req.user, tenantSlug);
+    // Clear the cookie
+    res.clearCookie('oauth_tenant');
+    const tenantPath = tenantSlug ? `/t/${tenantSlug}` : '/auth/callback';
     res.redirect(
-      `${FRONTEND_URL}/auth/callback?token=${result.access_token}&user=${encodeURIComponent(JSON.stringify(result.user))}`,
+      `${FRONTEND_URL}${tenantPath}?token=${result.access_token}&user=${encodeURIComponent(JSON.stringify(result.user))}`,
     );
   }
 
@@ -110,17 +128,31 @@ export class AuthController {
   //  FACEBOOK OAuth
   // ═══════════════════════════════════════════════
   @Get('facebook')
+  async facebookAuth(@Query('tenantSlug') tenantSlug: string, @Res() res: express.Response) {
+    if (tenantSlug) {
+      res.cookie('oauth_tenant', tenantSlug, { maxAge: 300000, httpOnly: false, sameSite: 'lax' });
+    }
+    const redirectUrl = tenantSlug
+      ? `/auth/facebook/redirect?tenantSlug=${encodeURIComponent(tenantSlug)}`
+      : '/auth/facebook/redirect';
+    res.redirect(redirectUrl);
+  }
+
+  @Get('facebook/redirect')
   @UseGuards(AuthGuard('facebook'))
-  async facebookAuth() {
+  async facebookRedirect() {
     // Guard redirects to Facebook
   }
 
   @Get('facebook/callback')
   @UseGuards(AuthGuard('facebook'))
   async facebookAuthCallback(@Req() req: any, @Res() res: express.Response) {
-    const result = await this.authService.socialLogin(req.user);
+    const tenantSlug = req.cookies?.oauth_tenant || req.query?.state || '';
+    const result = await this.authService.socialLogin(req.user, tenantSlug);
+    res.clearCookie('oauth_tenant');
+    const tenantPath = tenantSlug ? `/t/${tenantSlug}` : '/auth/callback';
     res.redirect(
-      `${FRONTEND_URL}/auth/callback?token=${result.access_token}&user=${encodeURIComponent(JSON.stringify(result.user))}`,
+      `${FRONTEND_URL}${tenantPath}?token=${result.access_token}&user=${encodeURIComponent(JSON.stringify(result.user))}`,
     );
   }
 

@@ -340,9 +340,17 @@ export class AuthService {
     avatar?: string;
     provider: string;
     providerId: string;
-  }) {
+  }, tenantSlug?: string) {
     if (!reqUser) {
       throw new BadRequestException('Sosyal giriş sağlayıcısından kullanıcı bilgisi alınamadı.');
+    }
+
+    // Resolve target tenant from slug/accessCode
+    let targetTenant: any = null;
+    if (tenantSlug) {
+      targetTenant = await this.prisma.tenant.findFirst({
+        where: { OR: [{ slug: tenantSlug }, { accessCode: tenantSlug }] },
+      });
     }
 
     // Build provider-specific search conditions
@@ -360,13 +368,21 @@ export class AuthService {
       orConditions.push({ email: reqUser.email });
     }
 
-    let user = orConditions.length > 0
-      ? await this.prisma.user.findFirst({ where: { OR: orConditions } })
-      : null;
+    // If we have a target tenant, search within that tenant first
+    let user = null;
+    if (targetTenant && orConditions.length > 0) {
+      user = await this.prisma.user.findFirst({
+        where: { tenantId: targetTenant.id, OR: orConditions },
+      });
+    }
+    // Fallback: search globally (for existing users who may have registered elsewhere)
+    if (!user && orConditions.length > 0) {
+      user = await this.prisma.user.findFirst({ where: { OR: orConditions } });
+    }
 
     if (!user) {
-      // Create new user
-      const tenant =
+      // Create new user — use target tenant or fall back to system/default
+      const tenant = targetTenant ||
         (await this.prisma.tenant.findFirst({ where: { OR: [{ slug: 'system' }, { slug: 'default' }] } })) ||
         (await this.prisma.tenant.create({
           data: {

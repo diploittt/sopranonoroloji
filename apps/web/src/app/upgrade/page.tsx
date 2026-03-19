@@ -54,9 +54,7 @@ function UpgradeContent() {
     };
 
     // Banka bilgilerini branding'den al
-    const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0)
-        ? branding.siteConfig.banks
-        : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+    const banks = branding?.siteConfig?.banks || [];
     const primaryBank = banks[0];
 
     if (request && request.status === 'pending') {

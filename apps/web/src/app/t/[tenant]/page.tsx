@@ -41,6 +41,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
     const [notFound, setNotFound] = useState(false);
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
+    const [oauthCompleted, setOauthCompleted] = useState(false);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -61,6 +62,43 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
         const tenantSlug = tenantInfo?.slug || accessCode;
         router.push(`/t/${tenantSlug}/room/${roomSlug}`);
     };
+
+    // ─── OAuth Callback Handling ─────────────────────────────────
+    // Backend OAuth callback redirects here with ?token=...&user=...
+    useEffect(() => {
+        const token = searchParams.get('token');
+        const userStr = searchParams.get('user');
+        if (token && userStr) {
+            try {
+                const user = JSON.parse(userStr);
+                // Store JWT
+                sessionStorage.setItem('soprano_auth_token', token);
+                // Store user for local auth system
+                setAuthUser({
+                    userId: user.sub,
+                    username: user.displayName || user.username,
+                    avatar: user.avatar || '/avatars/neutral_1.png',
+                    isMember: user.isMember ?? true,
+                    role: user.role || 'member',
+                });
+                // Clean oauth_tenant from localStorage
+                localStorage.removeItem('oauth_tenant');
+                // Remove query params from URL to prevent re-trigger
+                window.history.replaceState({}, '', window.location.pathname);
+                // Flag OAuth as completed — will navigate when tenantInfo loads
+                setOauthCompleted(true);
+            } catch (e) {
+                console.error('OAuth callback error:', e);
+            }
+        }
+    }, [searchParams]);
+
+    // Auto-navigate to room after OAuth + tenantInfo both ready
+    useEffect(() => {
+        if (oauthCompleted && tenantInfo) {
+            navigateToRoom();
+        }
+    }, [oauthCompleted, tenantInfo]);
 
     // AccessCode ile tenant bilgilerini çek
     useEffect(() => {
@@ -365,8 +403,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
     // ─── Loading ─────────────────────────────────────────────────────
     if (loading) {
         return (
-            <div className="min-h-screen bg-[#0f1419] flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-[#06b6d4] animate-spin" />
+            <div style={{ minHeight: '100vh', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Loader2 className="w-8 h-8 text-[#64748b] animate-spin" />
             </div>
         );
     }
@@ -435,14 +473,15 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    background: linear-gradient(180deg, #9ca3cc 0%, #adb5d8 30%, #c5cce8 60%, #dde3f3 100%);
+                    background: linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%);
+                    background-attachment: fixed;
 
                     font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
                     padding: 40px 20px;
                 }
                 .login-frame {
-                    background-color: #7a7e9e;
-                    border: 16px solid rgba(255,255,255,0.88);
+                    background: linear-gradient(180deg, #bcc1dc 0%, #b0b6d5 50%, #a5aace 100%);
+                    border: 14px solid rgba(255,255,255,0.75);
                     box-shadow:
                         0 0 30px rgba(0,0,0,0.2),
                         0 0 60px rgba(0,0,0,0.08),
@@ -610,9 +649,11 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                             transition: 'opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), filter 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
                         }}>
                         {(() => {
-                            const isCustomBranded = tenantInfo?.logoName || tenantInfo?.logoTextColor || tenantInfo?.logoTextFont || tenantInfo?.logoUrl;
+                            const hasLogo = tenantInfo?.logoUrl;
+                            const hasBrandName = tenantInfo?.displayName || tenantInfo?.name;
+                            const isCustomBranded = tenantInfo?.logoName || tenantInfo?.logoTextColor || tenantInfo?.logoTextFont || hasLogo || (hasBrandName && hasBrandName !== 'SopranoChat');
 
-                            // ═══ VARSAYILAN SOPRANOCHAT LOGOSU — anasayfadaki ile birebir aynı ═══
+                            // ═══ VARSAYILAN SOPRANOCHAT LOGOSU — sadece hiçbir branding yoksa ═══
                             if (!isCustomBranded) {
                                 return (
                                     <h1 className="retro-logo-text" style={{ margin: 0 }}>
@@ -780,7 +821,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                                         <div style={{ display: 'flex', gap: 8 }}>
                                             <button
                                                 type="button"
-                                                onClick={() => { window.location.href = `${API_URL}/auth/google`; }}
+                                                onClick={() => { localStorage.setItem('oauth_tenant', accessCode); window.location.href = `${API_URL}/auth/google?tenantSlug=${accessCode}`; }}
                                                 style={{
                                                     flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', cursor: 'pointer',
                                                     background: 'rgba(255,255,255,0.06)', 
@@ -796,7 +837,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => { window.location.href = `${API_URL}/auth/facebook`; }}
+                                                onClick={() => { localStorage.setItem('oauth_tenant', accessCode); window.location.href = `${API_URL}/auth/facebook?tenantSlug=${accessCode}`; }}
                                                 style={{
                                                     flex: 1, padding: '9px 0', borderRadius: 8, border: 'none', cursor: 'pointer',
                                                     background: 'rgba(24,119,242,0.15)',
@@ -863,7 +904,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
 
                     {/* Alt bilgi */}
                     <p style={{ marginTop: 20, fontSize: 11, color: '#1e293b', textAlign: 'center', fontWeight: 500, letterSpacing: 0.5 }}>
-                        Powered by <span style={{ color: '#0f172a', fontWeight: 700 }}>SopranoChat</span>
+                        Powered by <span style={{ color: '#64748b', fontWeight: 700 }}>SopranoChat</span>
                     </p>
                 </div>
             </div>
