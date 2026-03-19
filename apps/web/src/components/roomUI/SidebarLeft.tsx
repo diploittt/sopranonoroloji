@@ -294,7 +294,7 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
 
     return (
         <aside
-            className={`sidebar-left ${isProfileOpen ? 'profile-mode' : ''} ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden ${mobileSidebarOpen ? 'mobile-visible' : ''}`}
+            className={`sidebar-left ${isProfileOpen ? 'profile-mode' : ''} ${isEmbed ? 'w-64' : 'w-80'} flex-shrink-0 flex flex-col min-h-0 border-r border-white/5 z-20 relative max-md:hidden`}
             onContextMenu={onEmptyContextMenu}
         >
 

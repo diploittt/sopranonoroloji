@@ -608,13 +608,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     // ★ Hydration guard — typeof window SSR/client uyumsuzluğunu önler
     const [isMounted, setIsMounted] = useState(false);
     useEffect(() => { setIsMounted(true); }, []);
-
-    // ★ Mobil web tab sistemi — 'chat' | 'participants'
-    const [mobileTab, setMobileTab] = useState<'chat' | 'participants'>('chat');
-    // mobileTab değişince mobileSidebarOpen otomatik senkronize
-    useEffect(() => {
-        setMobileSidebarOpen(mobileTab === 'participants');
-    }, [mobileTab]);
     useEffect(() => {
         if (sessionStorage.getItem('room-anims-played')) {
             setRoomAnimsPlayed(true);
@@ -1344,37 +1337,6 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                         if (!room.state.currentUser) { e.preventDefault(); e.stopPropagation(); }
                     }}
                 >
-
-                    {/* ★★ MOBİL TAB BAR — sadece ≤768px ekranlarda görünür ★★ */}
-                    <div className="mobile-tab-bar" style={{ display: 'none' /* CSS @media override eder */ }}>
-                        <button
-                            className={`mobile-tab-btn${mobileTab === 'chat' ? ' active' : ''}`}
-                            onClick={() => setMobileTab('chat')}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                            </svg>
-                            Sohbet
-                        </button>
-                        <button
-                            className={`mobile-tab-btn${mobileTab === 'participants' ? ' active' : ''}`}
-                            onClick={() => setMobileTab('participants')}
-                        >
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-                            </svg>
-                            Katılımcılar
-                            {(room.state.users?.length ?? 0) > 0 && (
-                                <span style={{
-                                    background: 'rgba(123,159,239,0.25)', color: '#7b9fef',
-                                    borderRadius: 10, padding: '1px 6px', fontSize: 10, fontWeight: 700,
-                                }}>
-                                    {room.state.users.length}
-                                </span>
-                            )}
-                        </button>
-                    </div>
 
                     {/* ★★ TOKEN GUARD MODAL — giriş yapılmamış kullanıcılar için floating modal ★★ */}
                     {isMounted && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
