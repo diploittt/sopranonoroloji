@@ -164,7 +164,8 @@ export function BottomToolbar({
         if (settingsBtnRef.current) {
             onRegisterSettingsRef(settingsBtnRef);
         }
-    }, [onRegisterSettingsRef]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // ★ Sadece mount'ta — onRegisterSettingsRef dependency döngüsünü kırar
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();

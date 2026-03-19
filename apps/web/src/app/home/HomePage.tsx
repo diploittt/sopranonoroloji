@@ -1352,6 +1352,106 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     77% { opacity: 0; transform: translateX(45px) scale(1.3); }
                     100% { opacity: 0; transform: translateX(45px) scale(1.3); }
                 }
+
+                /* ═══════════════════════════════════════════════════════
+                   MOBILE RESPONSIVE — sadece 768px altında devreye girer
+                   Masaüstü layout'a HİÇBİR ETKİSİ yoktur!
+                   ═══════════════════════════════════════════════════════ */
+                @media (max-width: 768px) {
+                    body {
+                        overflow: auto !important;
+                    }
+                    .main-content {
+                        max-width: 100% !important;
+                        border-left: none !important;
+                        border-right: none !important;
+                        border-bottom: none !important;
+                        height: auto !important;
+                        min-height: 100vh;
+                    }
+                    .premium-header {
+                        height: 56px !important;
+                        padding: 0 12px !important;
+                        border-radius: 0 0 16px 16px !important;
+                        width: 100% !important;
+                        flex-wrap: nowrap !important;
+                    }
+                    .header-logo {
+                        position: relative !important;
+                        left: auto !important;
+                    }
+                    .header-logo h1 {
+                        font-size: 24px !important;
+                    }
+                    .header-logo .tagline {
+                        display: none !important;
+                    }
+                    .header-nav {
+                        padding-left: 8px !important;
+                        gap: 2px !important;
+                        flex-wrap: wrap !important;
+                        justify-content: flex-end !important;
+                        flex: 1;
+                    }
+                    .nav-link {
+                        padding: 6px 8px !important;
+                        font-size: 8px !important;
+                        letter-spacing: 1.5px !important;
+                    }
+                    .nav-dot {
+                        display: none !important;
+                    }
+                    .home-scroll-area {
+                        overflow-y: auto !important;
+                        overflow-x: hidden !important;
+                    }
+                    /* Ana içerik alanı — padding küçült */
+                    .hp-main-content {
+                        padding: 16px 12px !important;
+                        gap: 16px !important;
+                    }
+                    /* 2 kolon → alt alta */
+                    .hp-two-col {
+                        flex-direction: column !important;
+                        gap: 16px !important;
+                    }
+                    /* Sağ kolon (içerik) — tam genişlik, minWidth kaldır */
+                    .hp-right-col {
+                        min-width: 0 !important;
+                        flex: 1 1 100% !important;
+                        order: 1 !important;
+                        gap: 16px !important;
+                    }
+                    /* Tablo lambaları mobilde gizle */
+                    .gallery-lamp-svg {
+                        display: none !important;
+                    }
+                    /* Glossy panel kartlar */
+                    .glossy-panel {
+                        border-radius: 16px !important;
+                    }
+                    /* Feature toast kartlar */
+                    .feature-toast {
+                        min-width: 0 !important;
+                    }
+                }
+
+                /* Çok küçük ekranlar (telefon) */
+                @media (max-width: 480px) {
+                    .premium-header {
+                        height: 48px !important;
+                        padding: 0 8px !important;
+                    }
+                    .header-logo h1 {
+                        font-size: 20px !important;
+                    }
+                    .header-nav {
+                        display: none !important;
+                    }
+                    .hp-main-content {
+                        padding: 12px 8px !important;
+                    }
+                }
             `}</style>
 
             <ToastContainer />
@@ -1588,7 +1688,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                     </div>
                 )}
                 <div className="home-scroll-area">
-                <main style={{
+                <main className="hp-main-content" style={{
                     width: '100%', padding: '32px 32px 32px', display: 'flex', flexDirection: 'column', gap: 32, position: 'relative', zIndex: 0,
                     transition: 'transform 0.6s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.5s ease, filter 0.6s ease',
                     transform: (demoPhase === 'cards-out' || demoPhase === 'bar-up' || demoPhase === 'bar-down' || demoPhase === 'lamp-center' || demoPhase === 'active' || demoPhase === 'exit-lamp' || demoPhase === 'exit-bar-up') ? 'translateY(-100vh) scale(0.8)' : (demoPhase === 'exit-bar-down') ? 'translateY(-60vh) scale(0.9)' : 'translateY(0) scale(1)',
@@ -1599,10 +1699,10 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
 
 
                     {activeSection !== 'scene' && (<div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <div style={{ display: 'flex', gap: roomsMode ? 16 : 32, flexWrap: roomsMode ? 'nowrap' as const : 'wrap', alignItems: roomsMode ? 'stretch' : 'flex-start' }}>
+                        <div className="hp-two-col" style={{ display: 'flex', gap: roomsMode ? 16 : 32, flexWrap: roomsMode ? 'nowrap' as const : 'wrap', alignItems: roomsMode ? 'stretch' : 'flex-start' }}>
 
                             {/* SOL ALAN */}
-                            <div style={{ flex: '1 1 60%', minWidth: roomsMode ? 280 : 400, display: 'flex', flexDirection: 'column', gap: roomsMode ? 16 : 32, order: 2, transition: roomsMode ? 'flex 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
+                            <div className="hp-right-col" style={{ flex: '1 1 60%', minWidth: roomsMode ? 280 : 400, display: 'flex', flexDirection: 'column', gap: roomsMode ? 16 : 32, order: 2, transition: roomsMode ? 'flex 0.5s cubic-bezier(0.4,0,0.2,1)' : 'none' }}>
                                 {(activeSection === 'home' || activeSection === 'odalar') && (
                                     <div key={'home-content'} style={roomsMode ? { display: 'flex', flexDirection: 'column' as const, flex: 1, gap: 12, minHeight: 0 } : { display: 'contents' }}>
 

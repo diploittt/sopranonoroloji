@@ -193,21 +193,6 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
             if (data.userPermissions) {
                 setUserPermissions(data.userPermissions);
             }
-
-            // ★ sessionStorage → backend: Odaya (yeniden) katılınca frontend'in güncel profilini gönder
-            // Backend'in in-memory datası ile sessionStorage senkronize olsun
-            // (hesap paneli değişikliklerini yeni odaya taşır)
-            try {
-                const userJson = sessionStorage.getItem('soprano_auth_user') || sessionStorage.getItem('soprano_tenant_user');
-                if (userJson && socket.connected) {
-                    const u = JSON.parse(userJson);
-                    socket.emit('user:profileUpdate', {
-                        displayName: u.displayName || u.username,
-                        avatar: u.avatar,
-                        nameColor: u.nameColor || null,
-                    });
-                }
-            } catch { /* silent */ }
         });
 
         // Bireysel yetki canlı güncelleme — admin panelinden değişiklik yapıldığında
@@ -356,13 +341,14 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                             if (raw) {
                                 const stored = JSON.parse(raw);
                                 let changed = false;
-                                // ★ Avatar SYNC YAPILMAZ — sessionStorage her zaman günceldir
-                                if (me.displayName && me.displayName !== stored.displayName) { stored.displayName = me.displayName; stored.username = me.displayName; changed = true; }
+                                // ★ displayName SYNC YAPILMAZ — GodMaster disguise'ı ezer!
+                                // Backend "Beren" (disguise) gönderirken displayName sync "GodMaster"'ı yazarsa
+                                // bir sonraki profileUpdate "GodMaster" gönderir → sonsuz döngü.
+                                // Sadece nameColor senkronize edilir (GUI'de isim rengi değişimi için).
                                 if (me.nameColor && me.nameColor !== stored.nameColor) { stored.nameColor = me.nameColor; changed = true; }
                                 if (changed) {
                                     sessionStorage.setItem(key, JSON.stringify(stored));
-                                    window.dispatchEvent(new Event('auth-change'));
-                                    console.log(`[useSocket] room:participants synced profile → sessionStorage (${key})`);
+                                    console.log(`[useSocket] room:participants synced nameColor → sessionStorage (${key})`);
                                 }
                             }
                         }
@@ -490,12 +476,14 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
                 const userJson = sessionStorage.getItem('soprano_auth_user') || sessionStorage.getItem('soprano_tenant_user');
                 if (userJson) {
                     const user = JSON.parse(userJson);
+                    // ★ GodMaster disguise kontrolü — gerçek isim yerine disguise adını gönder
+                    const disguiseName = sessionStorage.getItem('soprano_godmaster_disguise_name');
                     socket.emit('user:profileUpdate', {
-                        displayName: user.displayName || user.username,
+                        displayName: disguiseName || user.displayName || user.username,
                         avatar: user.avatar,
                         nameColor: user.nameColor || null,
                     });
-                    console.log('[useSocket] Profile update emitted:', user.displayName || user.username);
+                    console.log('[useSocket] Profile update emitted:', disguiseName || user.displayName || user.username);
                 }
             } catch (err) {
                 console.warn('[useSocket] Profile sync error:', err);

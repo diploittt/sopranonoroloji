@@ -24,16 +24,16 @@ interface SpeakerInfo {
 
 export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     // Read JWT from sessionStorage — pick correct token based on URL context
-    const token = typeof window !== 'undefined'
-        ? (() => {
-            const isTenantPage = window.location.pathname.startsWith('/t/');
-            if (isTenantPage) {
-                // On tenant pages, ONLY use the tenant-specific token — never fall back to system token
-                return sessionStorage.getItem('soprano_tenant_token') || undefined;
-            }
-            return sessionStorage.getItem(AUTH_TOKEN_KEY) || undefined;
-        })()
-        : undefined;
+    // useMemo ile sabitliyoruz: her render'da yeni string oluşmasın, useSocket([token]) sonsuz döngüye girmesin
+    const token = useMemo(() => {
+        if (typeof window === 'undefined') return undefined;
+        const isTenantPage = window.location.pathname.startsWith('/t/');
+        if (isTenantPage) {
+            return sessionStorage.getItem('soprano_tenant_token') || undefined;
+        }
+        return sessionStorage.getItem(AUTH_TOKEN_KEY) || undefined;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // ★ Bağımlılık yok — token oturum açılışında belirlenir ve değişmez
 
     // 1. Core Hooks
     const {

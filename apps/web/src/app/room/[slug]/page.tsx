@@ -604,6 +604,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
 
     // Animasyonlar bir kez oynadıktan sonra tekrarı engelle (SSR-safe)
     const [roomAnimsPlayed, setRoomAnimsPlayed] = useState(false);
+
+    // ★ Hydration guard — typeof window SSR/client uyumsuzluğunu önler
+    const [isMounted, setIsMounted] = useState(false);
+    useEffect(() => { setIsMounted(true); }, []);
     useEffect(() => {
         if (sessionStorage.getItem('room-anims-played')) {
             setRoomAnimsPlayed(true);
@@ -1327,52 +1331,74 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         <LanguageProvider lang={room.state.systemSettings?.defaultLanguage || 'tr'}>
             <>
                 {/* Nudge shake class applied via globals.css */}
-                <main className={`app-background h-screen w-full flex items-start justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}>
+                <main className={`app-background h-screen w-full flex items-start justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}
+                    onContextMenu={(e) => {
+                        // Token yoksa sağ tık tamamen engelle
+                        if (!room.state.currentUser) { e.preventDefault(); e.stopPropagation(); }
+                    }}
+                >
 
-                    {/* ★★ TOKEN GUARD — Token yoksa tam ekran uyarı + yönlendirme ★★ */}
-                    {typeof window !== 'undefined' && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
-                        <div className="fixed inset-0 z-[9999999] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(15,17,30,0.98) 0%, rgba(20,22,40,0.99) 100%)', backdropFilter: 'blur(32px)' }}>
-                            <div style={{ textAlign: 'center', maxWidth: 420, padding: 48 }}>
-                                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1.5px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 36 }}>🔐</div>
-                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 10 }}>Giriş Gerekli</h2>
-                                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', marginBottom: 28, lineHeight: 1.7 }}>
-                                    Bu odaya giriş yapabilmek için üye girişi veya misafir girişi yapmanız gerekiyor.
+                    {/* ★★ TOKEN GUARD MODAL — giriş yapılmamış kullanıcılar için floating modal ★★ */}
+                    {isMounted && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
+                        <div style={{
+                            position: 'fixed', inset: 0, zIndex: 9999999,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            background: 'rgba(0,0,0,0.45)',
+                            backdropFilter: 'blur(6px)',
+                            WebkitBackdropFilter: 'blur(6px)',
+                        }}>
+                            <div style={{
+                                background: 'linear-gradient(145deg, rgba(20,24,40,0.98) 0%, rgba(15,18,32,0.99) 100%)',
+                                border: '1px solid rgba(255,255,255,0.1)',
+                                borderRadius: 20,
+                                padding: '40px 48px',
+                                maxWidth: 400,
+                                width: '90%',
+                                textAlign: 'center',
+                                boxShadow: '0 24px 64px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+                                animation: 'tokenGuardIn 0.25s cubic-bezier(0.22,0.61,0.36,1) both',
+                            }}>
+                                <style>{`
+                                    @keyframes tokenGuardIn {
+                                        from { opacity: 0; transform: scale(0.94) translateY(12px); }
+                                        to   { opacity: 1; transform: scale(1) translateY(0); }
+                                    }
+                                `}</style>
+                                {/* İkon */}
+                                <div style={{
+                                    width: 64, height: 64, borderRadius: 16,
+                                    background: 'rgba(99,102,241,0.12)',
+                                    border: '1px solid rgba(99,102,241,0.25)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    margin: '0 auto 20px', fontSize: 28,
+                                    boxShadow: '0 0 24px rgba(99,102,241,0.15)',
+                                }}>🔐</div>
+                                {/* Başlık */}
+                                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 8px 0' }}>Giriş Gerekli</h2>
+                                {/* Açıklama */}
+                                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', lineHeight: 1.7, margin: '0 0 28px 0' }}>
+                                    Bu odaya erişmek için üye girişi veya misafir girişi yapmanız gerekiyor.
                                 </p>
-                                <button onClick={() => { const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/); window.location.href = tenantMatch ? `/t/${tenantMatch[1]}` : '/'; }}
-                                    style={{ padding: '12px 40px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))', color: 'rgba(252,165,165,0.9)', fontWeight: 600, fontSize: 13 }}>
-                                    Ana Sayfaya Dön
+                                {/* Buton */}
+                                <button
+                                    onClick={() => { const t = window.location.pathname.match(/^\/t\/([^/]+)/); window.location.href = t ? `/t/${t[1]}` : '/'; }}
+                                    style={{
+                                        width: '100%', padding: '12px 0',
+                                        background: 'linear-gradient(135deg, #6366f1 0%, #a855f7 100%)',
+                                        border: 'none', borderRadius: 12,
+                                        color: '#fff', fontSize: 14, fontWeight: 700,
+                                        cursor: 'pointer',
+                                        boxShadow: '0 4px 20px rgba(99,102,241,0.35)',
+                                        transition: 'opacity 0.2s',
+                                    }}
+                                    onMouseEnter={e => (e.currentTarget.style.opacity = '0.85')}
+                                    onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
+                                >
+                                    Giriş Yap
                                 </button>
                             </div>
                         </div>
                     )}
-
-                    {/* ★★ ROOM ERROR OVERLAY — room:error geldi (yasaklı nick, ban, şifre hatalı vb.) ★★ */}
-                    {room.state.roomError && (
-                        <div className="fixed inset-0 z-[9999998] flex items-center justify-center" style={{ background: 'linear-gradient(180deg, rgba(15,17,30,0.98) 0%, rgba(20,22,40,0.99) 100%)', backdropFilter: 'blur(32px)' }}>
-                            <div style={{ textAlign: 'center', maxWidth: 440, padding: 48 }}>
-                                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1.5px solid rgba(239,68,68,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px', fontSize: 36 }}>
-                                    {(room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? '👤'
-                                        : room.state.roomError.code === 'VIP_ONLY' ? '⭐'
-                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? '🚷'
-                                        : '⚠️'}
-                                </div>
-                                <h2 style={{ fontSize: 22, fontWeight: 700, color: '#fff', marginBottom: 10 }}>
-                                    {(room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? 'İsim Kullanımda'
-                                        : room.state.roomError.code === 'VIP_ONLY' ? 'VIP Odası'
-                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? 'Oda Dolu'
-                                        : 'Odaya Girilemiyor'}
-                                </h2>
-                                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.55)', marginBottom: 28, lineHeight: 1.7 }}>
-                                    {room.state.roomError.message || 'Bu odaya giriş yapılamıyor.'}
-                                </p>
-                                <button onClick={() => { const tenantMatch = window.location.pathname.match(/^\/t\/([^/]+)/); window.location.href = tenantMatch ? `/t/${tenantMatch[1]}` : '/'; }}
-                                    style={{ padding: '12px 40px', borderRadius: 12, border: '1px solid rgba(239,68,68,0.3)', cursor: 'pointer', background: 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))', color: 'rgba(252,165,165,0.9)', fontWeight: 600, fontSize: 13 }}>
-                                    Ana Sayfaya Dön
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
 
                     {isOne2OneRoom ? (
                         <One2OneRoomView
@@ -3173,8 +3199,9 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             `}</style>
                                         </div>
                                     )}
-                                    {/* Chat content — or password form if required */}
+                                    {/* Chat content — or access error if required */}
                                     {room.passwordRequired ? (
+                                        // ── Şifreli Oda ──
                                         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                                             <div style={{
                                                 width: 64, height: 64, marginBottom: 8,
@@ -3222,6 +3249,67 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     Giriş Yap
                                                 </button>
                                             </form>
+                                        </div>
+                                    ) : room.state.roomError ? (
+                                        // ── Oda Erişim Hatası (VIP, Dolu, Nick vb.) ──
+                                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 32 }}>
+                                            <div style={{
+                                                width: 64, height: 64, marginBottom: 8,
+                                                background: room.state.roomError.code === 'VIP_ONLY' ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.10)',
+                                                border: room.state.roomError.code === 'VIP_ONLY' ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(239,68,68,0.2)',
+                                                borderRadius: 16,
+                                                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28,
+                                            }}>
+                                                {room.state.roomError.code === 'VIP_ONLY' ? '⭐'
+                                                    : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? '🚷'
+                                                    : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? '👤'
+                                                    : '⚠️'}
+                                            </div>
+                                            <h2 style={{ fontSize: 18, fontWeight: 700, color: '#fff', margin: 0 }}>
+                                                {room.state.roomError.code === 'VIP_ONLY' ? 'VIP Odası'
+                                                    : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? 'Oda Dolu'
+                                                    : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? 'İsim Kullanımda'
+                                                    : 'Odaya Girilemiyor'}
+                                            </h2>
+                                            <p style={{ fontSize: 13, color: '#6b7280', margin: '0 0 16px 0', textAlign: 'center', maxWidth: 280, lineHeight: 1.6 }}>
+                                                {(() => {
+                                                    const msg = room.state.roomError.message || '';
+                                                    const tr: Record<string, string> = {
+                                                        'Authentication required': 'Bu odaya erişmek için giriş yapmanız gerekiyor.',
+                                                        'VIP only': 'Bu oda sadece VIP üyelere açıktır.',
+                                                        'Room is full': 'Oda kapasitesi doldu. Lütfen başka bir odayı deneyin.',
+                                                        'Nick already taken': 'Bu kullanıcı adı başka biri tarafından kullanılıyor.',
+                                                        'Nick is reserved': 'Bu kullanıcı adı kullanılamaz.',
+                                                        'Duplicate connection blocked': 'Aynı hesapla başka bir bağlantı var.',
+                                                    };
+                                                    return tr[msg] || msg || 'Bu odaya giriş yapılamıyor.';
+                                                })()}
+
+                                            </p>
+                                            <button
+                                                onClick={() => {
+                                                    const errorCode = room.state.roomError?.code;
+                                                    const tm = window.location.pathname.match(/^\/t\/([^/]+)/);
+                                                    const tp = tm ? `/t/${tm[1]}` : '';
+                                                    if (errorCode === 'VIP_ONLY' || errorCode === 'ROOM_LIMIT_REACHED') {
+                                                        const fallback = room.state.roomError?.fallbackSlug;
+                                                        if (fallback) { window.location.href = tp ? `${tp}/room/${fallback}` : `/room/${fallback}`; }
+                                                        else {
+                                                            const cur = window.location.pathname.split('/').pop() || '';
+                                                            const other = room.state.rooms?.find((r: any) => r.slug !== cur && !r.isVipRoom);
+                                                            window.location.href = other ? (tp ? `${tp}/room/${other.slug}` : `/room/${other.slug}`) : (tp || '/');
+                                                        }
+                                                    } else { window.location.href = tp || '/'; }
+                                                }}
+                                                style={{
+                                                    padding: '10px 28px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600,
+                                                    background: room.state.roomError.code === 'VIP_ONLY' ? 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(251,191,36,0.08))' : 'linear-gradient(135deg, rgba(239,68,68,0.15), rgba(239,68,68,0.08))',
+                                                    border: room.state.roomError.code === 'VIP_ONLY' ? '1px solid rgba(251,191,36,0.3)' : '1px solid rgba(239,68,68,0.25)',
+                                                    color: room.state.roomError.code === 'VIP_ONLY' ? 'rgba(253,230,138,0.9)' : 'rgba(252,165,165,0.9)',
+                                                }}
+                                            >
+                                                {(room.state.roomError.code === 'VIP_ONLY' || room.state.roomError.code === 'ROOM_LIMIT_REACHED') ? '← Diğer Odalara Git' : '← Giriş Sayfasına Dön'}
+                                            </button>
                                         </div>
                                     ) : (
                                         <>

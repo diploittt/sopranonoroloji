@@ -1800,6 +1800,55 @@ export default function OwnerPanel() {
 
             }
 
+            /* ═══════════════════════════════════════════════════════
+               OWNER PANEL MOBILE RESPONSIVE — 768px altında devreye girer
+               Masaüstü layout'a HİÇ dokunulmaz!
+               ═══════════════════════════════════════════════════════ */
+            @media (max-width: 768px) {
+                .owner-panel-root {
+                    min-height: 100vh;
+                }
+                /* Ana çerçeve — border kaldır */
+                .owner-panel-root > div:first-child {
+                    border-left: none !important;
+                    border-right: none !important;
+                    border-bottom: none !important;
+                    max-width: 100% !important;
+                    height: auto !important;
+                    min-height: 100vh;
+                }
+                /* Sidebar — tamamen gizle, mobilde hamburger olacak */
+                .owner-sidebar {
+                    display: none !important;
+                }
+                /* Header bar compact */
+                .owner-panel-root header {
+                    height: auto !important;
+                    min-height: 48px;
+                    padding: 8px 12px !important;
+                    flex-wrap: wrap;
+                }
+                /* Glossy panels */
+                .owner-glossy {
+                    border-radius: 16px !important;
+                }
+                /* İçerik alanı tam genişlik */
+                .owner-panel-root main,
+                .owner-panel-root .flex-1 {
+                    padding: 8px !important;
+                }
+            }
+
+            /* Çok küçük ekranlar */
+            @media (max-width: 480px) {
+                .owner-panel-root header {
+                    padding: 6px 8px !important;
+                }
+                .owner-glossy {
+                    border-radius: 12px !important;
+                }
+            }
+
         `}</style>
 
         <div className="owner-panel-root" style={{ background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', minHeight: '100vh', display: 'flex', justifyContent: 'center', fontFamily: "'Plus Jakarta Sans', Tahoma, Verdana, Arial, sans-serif" }}>
