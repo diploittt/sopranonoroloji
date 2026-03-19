@@ -414,26 +414,78 @@ export function RoomsTab({ socket, currentUser, systemSettings, socketRooms = []
                             </div>
                         </div>
 
-                        <div className="admin-form-group">
-                            <label>Duyuru / Haberler</label>
+                        {/* ═══ Duyuru / Haberler — Premium Kart ═══ */}
+                        <div style={{
+                            marginTop: 2, padding: '14px 16px', borderRadius: 14,
+                            background: 'linear-gradient(135deg, rgba(251,191,36,0.04) 0%, rgba(245,158,11,0.02) 100%)',
+                            border: '1px solid rgba(251,191,36,0.15)',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                        }}>
+                            {/* Header */}
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+                                <div style={{
+                                    width: 28, height: 28, borderRadius: 8,
+                                    background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.08))',
+                                    border: '1px solid rgba(251,191,36,0.2)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    fontSize: 13, flexShrink: 0,
+                                }}>📢</div>
+                                <span style={{ fontSize: 11, fontWeight: 700, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                                    Duyuru / Haberler
+                                </span>
+                                {formAnnouncement.trim() && (
+                                    <span style={{
+                                        marginLeft: 'auto', fontSize: 9, fontWeight: 700,
+                                        color: '#059669', background: 'rgba(5,150,105,0.08)',
+                                        padding: '2px 8px', borderRadius: 6,
+                                        border: '1px solid rgba(5,150,105,0.15)',
+                                    }}>AKTİF</span>
+                                )}
+                            </div>
+
+                            {/* Textarea */}
                             <textarea
                                 value={formAnnouncement}
                                 onChange={e => setFormAnnouncement(e.target.value)}
-                                placeholder="Oda duyurusu..."
+                                placeholder="Oda duyurusunu buraya yazın... Bu mesaj odaya giren tüm kullanıcılara gösterilir."
                                 rows={3}
                                 style={{
                                     width: '100%',
-                                    background: 'rgba(148,163,184,0.12)',
-                                    border: '1px solid rgba(37,99,235,0.1)',
-                                    borderRadius: 8,
-                                    padding: '8px 12px',
-                                    color: '#0f172a',
+                                    background: '#fff',
+                                    border: '1px solid rgba(251,191,36,0.18)',
+                                    borderRadius: 10,
+                                    padding: '10px 14px',
+                                    color: '#1e293b',
                                     fontSize: 12,
+                                    lineHeight: 1.6,
                                     outline: 'none',
                                     resize: 'vertical',
-                                    transition: 'border-color 0.2s',
+                                    transition: 'border-color 0.2s, box-shadow 0.2s',
+                                    boxSizing: 'border-box',
+                                    fontFamily: 'inherit',
+                                }}
+                                onFocus={e => {
+                                    e.currentTarget.style.borderColor = 'rgba(251,191,36,0.4)';
+                                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(251,191,36,0.08)';
+                                }}
+                                onBlur={e => {
+                                    e.currentTarget.style.borderColor = 'rgba(251,191,36,0.18)';
+                                    e.currentTarget.style.boxShadow = 'none';
                                 }}
                             />
+
+                            {/* Footer — karakter sayacı */}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 6 }}>
+                                <span style={{ fontSize: 9, color: '#94a3b8', fontStyle: 'italic' }}>
+                                    Kaydettikten sonra odadaki kullanıcılara gösterilir
+                                </span>
+                                <span style={{
+                                    fontSize: 9, fontWeight: 600,
+                                    color: formAnnouncement.length > 200 ? '#ef4444' : '#94a3b8',
+                                }}>
+                                    {formAnnouncement.length}/500
+                                </span>
+                            </div>
                         </div>
 
 

@@ -374,18 +374,17 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                                         );
                                     }
                                 })() : isSystemMsg(msg) ? (
-                                    <div className="w-full overflow-hidden my-2" style={{ height: 18 }}>
-                                        <div style={{
-                                            display: 'inline-block',
-                                            whiteSpace: 'nowrap',
-                                            animation: 'marquee 20s linear infinite',
-                                            fontSize: 10,
-                                            fontWeight: 500,
+                                    <div className="w-full flex justify-center my-1">
+                                        <span style={{
+                                            fontSize: 10, fontWeight: 500,
                                             color: 'rgba(148,163,184,0.5)',
-                                            letterSpacing: '0.5px',
+                                            letterSpacing: '0.3px',
+                                            padding: '2px 10px',
+                                            borderRadius: 20,
+                                            background: 'rgba(148,163,184,0.06)',
                                         }}>
-                                            ★ {msg.message} ★
-                                        </div>
+                                            {msg.message}
+                                        </span>
                                     </div>
                                 ) : (
                                     <div className={`flex gap-2.5 group ${isMe ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -660,9 +659,9 @@ export function ChatMessages({ room, messages, currentUser, onContextMenu, roomN
                     })}
             </div>
             <style>{`
-                @keyframes marquee {
-                    0% { transform: translateX(100%); }
-                    100% { transform: translateX(-100%); }
+                @keyframes announceFadeIn {
+                    from { opacity: 0; transform: scale(0.96) translateY(-4px); }
+                    to { opacity: 1; transform: scale(1) translateY(0); }
                 }
             `}</style>
         </div >

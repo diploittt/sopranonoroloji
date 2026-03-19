@@ -3275,48 +3275,57 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             </div>
                                         </div>
                                     )}
-                                    {/* Room Announcement Banner — Marquee */}
+                                    {/* ═══ Room Announcement — Premium Card ═══ */}
                                     {room.state.roomSettings?.announcement && (
                                         <div style={{
-                                            background: 'linear-gradient(90deg, rgba(99,102,241,0.12) 0%, rgba(168,85,247,0.08) 50%, rgba(99,102,241,0.12) 100%)',
-                                            borderBottom: '1px solid rgba(99,102,241,0.15)',
-                                            padding: '10px 0',
-                                            overflow: 'hidden',
+                                            padding: '4px 4px',
                                             flexShrink: 0,
-                                            position: 'relative',
+                                            animation: 'announceSlideIn 0.5s cubic-bezier(0.16,1,0.3,1) both',
                                         }}>
                                             <div style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 12,
-                                                animation: 'marquee-scroll 20s linear infinite',
-                                                whiteSpace: 'nowrap',
-                                                width: 'max-content',
-                                                paddingLeft: '100%',
+                                                position: 'relative',
+                                                overflow: 'hidden',
+                                                borderRadius: 14,
+                                                background: 'linear-gradient(180deg, rgba(50,63,85,0.75) 0%, rgba(40,52,72,0.7) 100%)',
+                                                border: '1px solid rgba(255,255,255,0.1)',
+                                                backdropFilter: 'blur(12px)',
+                                                boxShadow: '0 4px 16px rgba(0,0,0,0.3), 0 1px 4px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.06)',
                                             }}>
-                                                <span style={{ fontSize: 20 }}>📢</span>
-                                                <span style={{
-                                                    fontSize: 15,
-                                                    fontWeight: 700,
-                                                    letterSpacing: '0.3px',
-                                                    background: 'linear-gradient(90deg, #c4b5fd 0%, #a78bfa 30%, #818cf8 60%, #c4b5fd 100%)',
-                                                    WebkitBackgroundClip: 'text',
-                                                    WebkitTextFillColor: 'transparent',
-                                                    backgroundSize: '200% 100%',
-                                                    animation: 'gradient-shift 3s ease infinite',
-                                                }}>{room.state.roomSettings.announcement}</span>
-                                                <span style={{ fontSize: 20 }}>📢</span>
+                                                {/* Accent gradient line */}
+                                                <div style={{
+                                                    position: 'absolute', top: 0, left: 0, right: 0, height: 2,
+                                                    background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.6), rgba(245,158,11,0.4), transparent)',
+                                                }} />
+                                                <div style={{
+                                                    display: 'flex', alignItems: 'center', gap: 10,
+                                                    padding: '7px 14px',
+                                                }}>
+                                                    {/* Icon */}
+                                                    <div style={{
+                                                        width: 26, height: 26, borderRadius: 7, flexShrink: 0,
+                                                        background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.06))',
+                                                        border: '1px solid rgba(251,191,36,0.2)',
+                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                        fontSize: 12,
+                                                        boxShadow: '0 0 8px rgba(251,191,36,0.1)',
+                                                    }}>📢</div>
+                                                    {/* Message */}
+                                                    <p style={{
+                                                        margin: 0, flex: 1,
+                                                        fontSize: 13, fontWeight: 600,
+                                                        color: 'rgba(252,211,77,0.9)',
+                                                        letterSpacing: '0.2px',
+                                                        lineHeight: 1.5,
+                                                        textShadow: '0 0 12px rgba(251,191,36,0.15)',
+                                                    }}>{room.state.roomSettings.announcement}</p>
+                                                </div>
                                             </div>
                                             <style>{`
-                                @keyframes marquee-scroll {
-                                    0% { transform: translateX(0); }
-                                    100% { transform: translateX(-100%); }
-                                }
-                                @keyframes gradient-shift {
-                                    0%, 100% { background-position: 0% 50%; }
-                                    50% { background-position: 100% 50%; }
-                                }
-                            `}</style>
+                                                @keyframes announceSlideIn {
+                                                    from { opacity: 0; transform: translateY(-8px); }
+                                                    to { opacity: 1; transform: translateY(0); }
+                                                }
+                                            `}</style>
                                         </div>
                                     )}
                                     {/* Chat content — or access error if required */}

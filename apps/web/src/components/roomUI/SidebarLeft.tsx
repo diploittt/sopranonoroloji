@@ -1463,63 +1463,156 @@ export function SidebarLeft({ users, currentUser, room, onUserContextMenu, onEmp
                         )}
                     </div>
 
-                    {/* 2. DUYURU BİLDİRİM — Metalik Stil */}
-                    {['owner', 'admin', 'superadmin'].includes(currentUser?.role || '') && (
-                        <div className="relative">
+                    {/* 2. DUYURU BİLDİRİM — Modern Glassmorphism */}
+                    {room.state.announcement && (
+                        <div className="relative" style={{ margin: '2px 0' }}>
                             <button
-                                className={`slim-announce-row ${room.state.hasNewAnnouncement ? 'has-new' : ''}`}
+                                className="group"
                                 onClick={() => {
-                                    if (room.state.announcement) {
-                                        if (showAnnouncementPanel) {
-                                            setShowAnnouncementPanel(false);
-                                        } else {
-                                            setShowAnnouncementPanel(true);
-                                            room.actions.markAnnouncementSeen();
-                                        }
+                                    if (showAnnouncementPanel) {
+                                        setShowAnnouncementPanel(false);
+                                    } else {
+                                        setShowAnnouncementPanel(true);
+                                        room.actions.markAnnouncementSeen();
                                     }
                                 }}
-                                style={{ opacity: room.state.announcement ? 1 : 0.5 }}
+                                style={{
+                                    width: '100%',
+                                    display: 'flex', alignItems: 'center', gap: 8,
+                                    padding: '8px 10px',
+                                    borderRadius: 12,
+                                    border: room.state.hasNewAnnouncement
+                                        ? '1px solid rgba(251,191,36,0.35)'
+                                        : '1px solid rgba(255,255,255,0.08)',
+                                    background: room.state.hasNewAnnouncement
+                                        ? 'linear-gradient(135deg, rgba(251,191,36,0.12) 0%, rgba(245,158,11,0.06) 100%)'
+                                        : 'rgba(255,255,255,0.03)',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.3s ease',
+                                    boxShadow: room.state.hasNewAnnouncement
+                                        ? '0 2px 12px rgba(251,191,36,0.1), inset 0 1px 0 rgba(255,255,255,0.06)'
+                                        : 'inset 0 1px 0 rgba(255,255,255,0.04)',
+                                }}
                             >
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                                    stroke={room.state.hasNewAnnouncement ? '#fbbf24' : '#94a3b8'}
-                                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                                >
-                                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
-                                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
-                                </svg>
-                                <span style={{
-                                    fontSize: 10, fontWeight: 800,
-                                    color: room.state.hasNewAnnouncement ? '#fcd34d' : '#94a3b8',
-                                    letterSpacing: '0.1em', textTransform: 'uppercase',
+                                {/* İkon */}
+                                <div style={{
+                                    width: 28, height: 28, borderRadius: 8,
+                                    background: room.state.hasNewAnnouncement
+                                        ? 'linear-gradient(135deg, rgba(251,191,36,0.25), rgba(245,158,11,0.15))'
+                                        : 'rgba(255,255,255,0.05)',
+                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                    flexShrink: 0,
+                                    border: room.state.hasNewAnnouncement
+                                        ? '1px solid rgba(251,191,36,0.3)'
+                                        : '1px solid rgba(255,255,255,0.06)',
                                 }}>
-                                    {t.announcements}
-                                </span>
+                                    <span style={{
+                                        fontSize: 13,
+                                        filter: room.state.hasNewAnnouncement ? 'drop-shadow(0 0 4px rgba(251,191,36,0.5))' : 'none',
+                                    }}>📢</span>
+                                </div>
+
+                                {/* Metin */}
+                                <div style={{ flex: 1, textAlign: 'left', minWidth: 0 }}>
+                                    <div style={{
+                                        fontSize: 9, fontWeight: 800,
+                                        color: room.state.hasNewAnnouncement ? '#fcd34d' : '#94a3b8',
+                                        letterSpacing: '0.12em', textTransform: 'uppercase',
+                                    }}>
+                                        {t.announcements}
+                                    </div>
+                                    <div style={{
+                                        fontSize: 10, color: '#cbd5e1',
+                                        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                                        marginTop: 1,
+                                    }}>
+                                        {room.state.announcement.message?.substring(0, 40)}...
+                                    </div>
+                                </div>
+
+                                {/* Yeni badge */}
                                 {room.state.hasNewAnnouncement && (
                                     <span style={{
-                                        marginLeft: 'auto', fontSize: 7, fontWeight: 900, color: '#fcd34d',
-                                        padding: '1px 5px', borderRadius: 3,
-                                        background: 'rgba(251,191,36,0.2)', border: '1px solid rgba(251,191,36,0.3)',
+                                        fontSize: 7, fontWeight: 900, color: '#fcd34d',
+                                        padding: '2px 6px', borderRadius: 4,
+                                        background: 'rgba(251,191,36,0.15)',
+                                        border: '1px solid rgba(251,191,36,0.25)',
                                         animation: 'pulse 2s ease-in-out infinite',
+                                        flexShrink: 0, letterSpacing: '0.1em',
                                     }}>YENİ</span>
                                 )}
+
+                                {/* Chevron */}
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
+                                    stroke={room.state.hasNewAnnouncement ? '#fcd34d' : '#64748b'}
+                                    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+                                    style={{
+                                        transition: 'transform 0.3s',
+                                        transform: showAnnouncementPanel ? 'rotate(180deg)' : 'rotate(0)',
+                                        flexShrink: 0,
+                                    }}
+                                >
+                                    <polyline points="6 9 12 15 18 9" />
+                                </svg>
                             </button>
 
+                            {/* Açılır Duyuru Kartı */}
                             {showAnnouncementPanel && room.state.announcement && (
                                 <div style={{
-                                    marginTop: 6, padding: 10, borderRadius: 12,
-                                    background: 'rgba(251,191,36,0.06)', border: '1px solid rgba(251,191,36,0.15)',
+                                    marginTop: 4, borderRadius: 14, overflow: 'hidden',
+                                    background: 'linear-gradient(180deg, rgba(30,41,59,0.95) 0%, rgba(15,23,42,0.9) 100%)',
+                                    backdropFilter: 'blur(20px)',
+                                    border: '1px solid rgba(251,191,36,0.15)',
+                                    boxShadow: '0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.04), inset 0 1px 0 rgba(255,255,255,0.08)',
+                                    animation: 'contentFadeIn 0.3s ease both',
                                 }}>
-                                    <div style={{ display: 'flex', alignItems: 'start', justifyContent: 'space-between', gap: 6, marginBottom: 6 }}>
-                                        <span style={{ fontSize: 9, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#fcd34d' }}>📢 {t.announcement}</span>
+                                    {/* Header */}
+                                    <div style={{
+                                        padding: '10px 14px',
+                                        background: 'linear-gradient(135deg, rgba(251,191,36,0.08) 0%, rgba(245,158,11,0.04) 100%)',
+                                        borderBottom: '1px solid rgba(251,191,36,0.1)',
+                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                            <span style={{ fontSize: 12 }}>📢</span>
+                                            <span style={{
+                                                fontSize: 10, fontWeight: 800,
+                                                color: '#fcd34d', textTransform: 'uppercase',
+                                                letterSpacing: '0.12em',
+                                            }}>{t.announcement}</span>
+                                        </div>
                                         <button onClick={(e) => { e.stopPropagation(); setShowAnnouncementPanel(false); }}
-                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b', padding: 0 }}>
-                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                            style={{
+                                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+                                                borderRadius: 6, cursor: 'pointer', color: '#94a3b8',
+                                                width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                                transition: 'all 0.2s',
+                                            }}>
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                                 <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
                                             </svg>
                                         </button>
                                     </div>
-                                    <p style={{ fontSize: 11, color: '#e2e8f0', lineHeight: 1.5, margin: 0 }}>{room.state.announcement.message}</p>
-                                    <p style={{ fontSize: 8, color: '#64748b', marginTop: 6, margin: '6px 0 0' }}>{new Date(room.state.announcement.createdAt).toLocaleString('tr-TR')}</p>
+
+                                    {/* İçerik */}
+                                    <div style={{ padding: '12px 14px' }}>
+                                        <p style={{
+                                            fontSize: 12, color: '#e2e8f0', lineHeight: 1.6,
+                                            margin: 0, fontWeight: 500,
+                                        }}>{room.state.announcement.message}</p>
+                                        <div style={{
+                                            marginTop: 8, paddingTop: 8,
+                                            borderTop: '1px solid rgba(255,255,255,0.04)',
+                                            display: 'flex', alignItems: 'center', gap: 4,
+                                        }}>
+                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                                            </svg>
+                                            <span style={{ fontSize: 9, color: '#64748b', fontWeight: 600 }}>
+                                                {new Date(room.state.announcement.createdAt).toLocaleString('tr-TR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                            </span>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
                         </div>
