@@ -17,11 +17,20 @@
     --font-logo: 'Fredoka', sans-serif;
 }
 
+html {
+    zoom: 0.90;
+    background: linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%);
+    background-attachment: fixed;
+    min-height: calc(100vh / 0.9);
+}
+
 body {
-    background: var(--background);
+    background: transparent;
     color: var(--foreground);
     font-family: 'Plus Jakarta Sans', sans-serif;
+    min-height: calc(100vh / 0.9);
 }
+
 
 /* ============================================ */
 /*  CHATODASI CUSTOM STYLES                     */
@@ -3751,6 +3760,28 @@ body {
 
     to {
         opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-30px);
     }
 }
 

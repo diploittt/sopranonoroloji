@@ -501,7 +501,7 @@ function getFilteredMenu(
 
 
 // ═══ ROOM ACCESS ERROR — VIP/Locked/Full overlay with auto-redirect ═══
-function RoomAccessError({ message, isVipError, fallbackSlug }: { message: string; isVipError: boolean; fallbackSlug: string | null }) {
+function RoomAccessError({ message, isVipError, fallbackSlug, onNavigate }: { message: string; isVipError: boolean; fallbackSlug: string | null; onNavigate?: (slug: string) => void }) {
     const [countdown, setCountdown] = useState(3);
 
     useEffect(() => {
@@ -510,13 +510,17 @@ function RoomAccessError({ message, isVipError, fallbackSlug }: { message: strin
             setCountdown(prev => {
                 if (prev <= 1) {
                     clearInterval(timer);
-                    // Navigate to fallback room
-                    const currentPath = window.location.pathname;
-                    const tenantMatch = currentPath.match(/^\/t\/([^/]+)/);
-                    if (tenantMatch) {
-                        window.location.href = `/t/${tenantMatch[1]}/room/${fallbackSlug}`;
+                    if (onNavigate) {
+                        onNavigate(fallbackSlug);
                     } else {
-                        window.location.href = `/room/${fallbackSlug}`;
+                        // Fallback: window.location.href
+                        const currentPath = window.location.pathname;
+                        const tenantMatch = currentPath.match(/^\/t\/([^/]+)/);
+                        if (tenantMatch) {
+                            window.location.href = `/t/${tenantMatch[1]}/room/${fallbackSlug}`;
+                        } else {
+                            window.location.href = `/room/${fallbackSlug}`;
+                        }
                     }
                     return 0;
                 }
@@ -524,7 +528,7 @@ function RoomAccessError({ message, isVipError, fallbackSlug }: { message: strin
             });
         }, 1000);
         return () => clearInterval(timer);
-    }, [isVipError, fallbackSlug]);
+    }, [isVipError, fallbackSlug, onNavigate]);
 
     return (
         <div className="h-screen w-full bg-[#0b0d14] flex flex-col items-center justify-center text-white">
@@ -1331,7 +1335,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
         <LanguageProvider lang={room.state.systemSettings?.defaultLanguage || 'tr'}>
             <>
                 {/* Nudge shake class applied via globals.css */}
-                <main className={`app-background h-screen w-full flex items-start justify-center p-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed' }}
+                <main className={`app-background w-full flex items-start justify-center pt-3 pb-1 px-4 overflow-hidden text-slate-200 selection:bg-indigo-500/30`} style={{ perspective: '1200px', background: 'linear-gradient(to bottom, #a3ace5 0%, #c4c9ee 50%, #d8dbf4 100%)', backgroundAttachment: 'fixed', height: 'calc(100vh / 0.9)', minHeight: '100vh' }}
                     onContextMenu={(e) => {
                         // Token yoksa sağ tık tamamen engelle
                         if (!room.state.currentUser) { e.preventDefault(); e.stopPropagation(); }
@@ -3289,17 +3293,25 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                             <button
                                                 onClick={() => {
                                                     const errorCode = room.state.roomError?.code;
-                                                    const tm = window.location.pathname.match(/^\/t\/([^/]+)/);
-                                                    const tp = tm ? `/t/${tm[1]}` : '';
                                                     if (errorCode === 'VIP_ONLY' || errorCode === 'ROOM_LIMIT_REACHED') {
                                                         const fallback = room.state.roomError?.fallbackSlug;
-                                                        if (fallback) { window.location.href = tp ? `${tp}/room/${fallback}` : `/room/${fallback}`; }
-                                                        else {
-                                                            const cur = window.location.pathname.split('/').pop() || '';
-                                                            const other = room.state.rooms?.find((r: any) => r.slug !== cur && !r.isVipRoom);
-                                                            window.location.href = other ? (tp ? `${tp}/room/${other.slug}` : `/room/${other.slug}`) : (tp || '/');
+                                                        if (fallback) {
+                                                            setActiveSlug(fallback);
+                                                            window.history.replaceState(null, '', roomUrl(fallback));
+                                                        } else {
+                                                            const other = room.state.rooms?.find((r: any) => r.slug !== activeSlug && !r.isVipRoom);
+                                                            if (other) {
+                                                                setActiveSlug(other.slug);
+                                                                window.history.replaceState(null, '', roomUrl(other.slug));
+                                                            } else {
+                                                                const tenantMatch2 = window.location.pathname.match(/^\/t\/([^/]+)/);
+                                                                window.location.href = tenantMatch2 ? `/t/${tenantMatch2[1]}` : '/';
+                                                            }
                                                         }
-                                                    } else { window.location.href = tp || '/'; }
+                                                    } else {
+                                                        const tenantMatch2 = window.location.pathname.match(/^\/t\/([^/]+)/);
+                                                        window.location.href = tenantMatch2 ? `/t/${tenantMatch2[1]}` : '/';
+                                                    }
                                                 }}
                                                 style={{
                                                     padding: '10px 28px', borderRadius: 10, cursor: 'pointer', fontSize: 13, fontWeight: 600,

@@ -233,6 +233,11 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
     const openCheckout = (name: string, price: number, period: string) => {
         setCheckoutPlan({ name, price, period });
         setShowCheckout(true);
+        setShowCustomConfig(false);
+        setTimeout(() => {
+            const el = document.getElementById('fiyatlandirma-heading');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
     };
 
     const copyToClipboard = (text: string, label: string) => {
@@ -2089,17 +2094,150 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                         </div>
 
                                                         <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                                            <h3 style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ Fiyatlandırma</h3>
+                                                            <h3 id="fiyatlandirma-heading" style={{ fontSize: 14, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 20, textAlign: 'center' }}>⭐ {showCheckout && checkoutPlan ? 'Sipariş' : 'Fiyatlandırma'}</h3>
+
+                                                            {showCheckout && checkoutPlan && (
+                                                                /* ═══ CHECKOUT PANEL — fiyat kartlarının yerine ═══ */
+                                                                <div style={{ 
+                                                                    animation: 'slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                                }}>
+                                                                    <div className="glossy-panel" style={{ borderRadius: 18, border: '1px solid rgba(251,191,36,0.15)', boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 40px rgba(251,191,36,0.06), inset 0 1px 0 rgba(255,255,255,0.08)', padding: 0 }}>
+                                                                        {/* Header Bar with back button */}
+                                                                        <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))', borderBottom: '1px solid rgba(251,191,36,0.12)', padding: '14px 22px', borderRadius: '18px 18px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                                            <button onClick={() => setShowCheckout(false)} className="btn-3d btn-3d-white" style={{ padding: '5px 14px', fontSize: 10, fontWeight: 700, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                                                                ← Fiyatlandırma
+                                                                            </button>
+                                                                            <div>
+                                                                                <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
+                                                                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                                                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
+                                                                                        {chkBilling === 'yearly' ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺` : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}
+                                                                                    </span>
+                                                                                    <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{chkBilling === 'yearly' ? '/yıl' : checkoutPlan.period}</span>
+                                                                                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>• {checkoutPlan.name}</span>
+                                                                                </div>
+                                                                            </div>
+                                                                            <button onClick={() => setShowCheckout(false)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}><X style={{ width: 14, height: 14 }} /></button>
+                                                                        </div>
+                                                                        <div style={{ padding: '16px 22px' }}>
+                                                                            {/* Aylık / Yıllık Toggle */}
+                                                                            <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                                <button onClick={() => setChkBilling('monthly')} style={{ flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none', background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent', color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b', boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none', transition: 'all 0.3s' }}>💳 Aylık Ödeme</button>
+                                                                                <button onClick={() => setChkBilling('yearly')} style={{ flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none', background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent', color: chkBilling === 'yearly' ? '#34d399' : '#64748b', boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none', transition: 'all 0.3s' }}>🎁 Yıllık <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 900, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4, marginLeft: 4 }}>2 AY HEDİYE</span></button>
+                                                                            </div>
+                                                                            {/* Kişisel Bilgiler */}
+                                                                            <div style={{ marginBottom: 14 }}>
+                                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler</div>
+                                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                                    {[{ label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' }, { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' }, { label: 'Telefon', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx', icon: '📱' }].map((field, i) => (
+                                                                                        <div key={i} style={{ position: 'relative' }}>
+                                                                                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>{field.icon}</span>
+                                                                                            <input type={field.type} value={field.value} onChange={e => field.setter(e.target.value)} placeholder={field.placeholder} style={{ width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s' }} onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.4)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }} onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                            </div>
+                                                                            {/* Logo Upload */}
+                                                                            <div style={{ marginBottom: 14 }}>
+                                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu</div>
+                                                                                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px', borderRadius: 12, cursor: 'pointer', background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)', border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`, color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700, transition: 'all 0.3s' }}>
+                                                                                    {chkLogo ? <Check style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
+                                                                                    {chkLogo ? chkLogo.name : 'Logo Yükle (.png, .jpg)'}
+                                                                                    <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                                                                                </label>
+                                                                            </div>
+                                                                            {/* Hosting Tercihi */}
+                                                                            <div style={{ marginBottom: 16 }}>
+                                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz</div>
+                                                                                <div style={{ display: 'flex', gap: 10 }}>
+                                                                                    {[{ key: 'soprano' as const, label: 'SopranoChat', sub: 'sopranochat.com üzerinden', color: '#38bdf8', icon: '🎙️' }, { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' }].map(opt => (
+                                                                                        <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{ flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)', border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.3s', boxShadow: chkHosting === opt.key ? `0 4px 16px ${opt.color}15` : 'none' }}>
+                                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                                                                                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${chkHosting === opt.key ? opt.color : '#475569'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>
+                                                                                                    {chkHosting === opt.key && <div style={{ width: 10, height: 10, borderRadius: '50%', background: opt.color, boxShadow: `0 0 6px ${opt.color}` }} />}
+                                                                                                </div>
+                                                                                                <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === opt.key ? opt.color : '#94a3b8' }}>{opt.icon} {opt.label}</span>
+                                                                                            </div>
+                                                                                            <div style={{ fontSize: 10, color: '#64748b', marginLeft: 30, fontWeight: 500 }}>{opt.sub}</div>
+                                                                                        </div>
+                                                                                    ))}
+                                                                                </div>
+                                                                                {chkHosting === 'soprano' && (<div style={{ marginTop: 8 }}><input type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)} placeholder="Oda Adınız" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', outline: 'none' }} /><div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div></div>)}
+                                                                                {chkHosting === 'own' && (<div style={{ marginTop: 8 }}><input type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)} placeholder="ornek.com" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)', outline: 'none' }} /><div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div></div>)}
+                                                                            </div>
+                                                                            {/* Ödeme Divider */}
+                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                                                                <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
+                                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                                                            </div>
+                                                                            {/* IBAN */}
+                                                                            {(() => {
+                                                                                const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+                                                                                return banks.map((bank: any, bankIdx: number) => (
+                                                                                    <div key={bankIdx} style={{ background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(251,191,36,0.1)', marginBottom: 10 }}>
+                                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                                                                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #ef4444, #dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: '#fff', boxShadow: '0 2px 8px rgba(239,68,68,0.3)' }}>{bank.bank?.charAt(0) || '?'}</div>
+                                                                                            <div><div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{bank.bank}</div><div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{bank.name}</div></div>
+                                                                                        </div>
+                                                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                                                            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>{bank.iban}</span>
+                                                                                            <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), `iban-${bankIdx}`)} style={{ background: chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)', border: `1px solid ${chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`, borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: chkCopied === `iban-${bankIdx}` ? '#34d399' : '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'all 0.2s' }}>
+                                                                                                {chkCopied === `iban-${bankIdx}` ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                                                                            </button>
+                                                                                        </div>
+                                                                                    </div>
+                                                                                ));
+                                                                            })()}
+                                                                            {/* Ödeme Kodu */}
+                                                                            <div style={{ background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(56,189,248,0.12)', marginBottom: 16 }}>
+                                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
+                                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 12, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)' }}>
+                                                                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
+                                                                                    <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{ background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)', border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`, borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: chkCopied === 'code' ? '#34d399' : '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'all 0.2s' }}>
+                                                                                        {chkCopied === 'code' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                                                                    </button>
+                                                                                </div>
+                                                                            </div>
+                                                                            {/* Submit */}
+                                                                            {chkSuccess ? (
+                                                                                <div style={{ textAlign: 'center', padding: '14px', borderRadius: 12, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', fontSize: 13, fontWeight: 800, color: '#34d399' }}>✅ Siparişiniz başarıyla gönderildi!</div>
+                                                                            ) : (
+                                                                                <button onClick={async () => {
+                                                                                    if (!chkName.trim() || !chkEmail.trim()) return;
+                                                                                    setChkSending(true);
+                                                                                    try {
+                                                                                        const nameParts = chkName.trim().split(' ');
+                                                                                        const firstName = nameParts[0] || '';
+                                                                                        const lastName = nameParts.slice(1).join(' ') || '';
+                                                                                        const amount = chkBilling === 'yearly' ? checkoutPlan.price * 10 : checkoutPlan.price;
+                                                                                        let logoBase64: string | null = null;
+                                                                                        if (chkLogo) { logoBase64 = await new Promise<string>((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result as string); reader.readAsDataURL(chkLogo); }); }
+                                                                                        const res = await fetch(`${API_URL}/admin/orders`, {
+                                                                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                                                                            body: JSON.stringify({ firstName, lastName, email: chkEmail.trim(), phone: chkPhone.trim(), packageName: checkoutPlan.name, paymentCode: chkPaymentCode, hostingType: chkHosting === 'own' ? 'own_domain' : 'sopranochat', customDomain: chkHosting === 'own' ? chkDomain : null, roomName: chkHosting === 'soprano' ? chkRoomName : null, amount, logo: logoBase64, details: { billing: chkBilling, period: checkoutPlan.period } }),
+                                                                                        });
+                                                                                        if (res.ok) { setChkSuccess(true); setTimeout(() => { setCheckoutPlan(null); setChkSuccess(false); setChkName(''); setChkEmail(''); setChkPhone(''); setChkLogo(null); setChkHosting('soprano'); setChkDomain(''); setChkRoomName(''); setChkBilling('monthly'); setShowCheckout(false); }, 3000); }
+                                                                                    } catch { }
+                                                                                    setChkSending(false);
+                                                                                }} disabled={chkSending || !chkName.trim() || !chkEmail.trim()} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, letterSpacing: 0.5, opacity: chkSending ? 0.6 : 1 }}>
+                                                                                    {chkSending ? 'Gönderiliyor...' : 'Ödemeyi Gönderdim, Tamamla'} <Check style={{ width: 18, height: 18 }} />
+                                                                                </button>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+                                                            )}
 
                                                             {/* Kampanyalı Paketler — fade out */}
                                                             <div style={{
                                                                 transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                                opacity: showCustomConfig ? 0 : 1,
-                                                                filter: showCustomConfig ? 'blur(6px)' : 'blur(0)',
-                                                                transform: showCustomConfig ? 'scale(0.97)' : 'scale(1)',
-                                                                maxHeight: showCustomConfig ? 0 : 2000,
+                                                                opacity: (showCustomConfig || showCheckout) ? 0 : 1,
+                                                                filter: (showCustomConfig || showCheckout) ? 'blur(6px)' : 'blur(0)',
+                                                                transform: (showCustomConfig || showCheckout) ? 'scale(0.97)' : 'scale(1)',
+                                                                maxHeight: (showCustomConfig || showCheckout) ? 0 : 2000,
                                                                 overflow: 'hidden',
-                                                                pointerEvents: showCustomConfig ? 'none' : 'auto',
+                                                                pointerEvents: (showCustomConfig || showCheckout) ? 'none' : 'auto',
                                                             }}>
                                                                 <div style={{ display: 'flex', gap: 12 }}>
                                                                     {(() => {
@@ -2153,12 +2291,12 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                             {/* Özel Yapılandırma Paneli — fade in */}
                                                             <div style={{
                                                                 transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s',
-                                                                opacity: showCustomConfig ? 1 : 0,
-                                                                filter: showCustomConfig ? 'blur(0)' : 'blur(6px)',
-                                                                transform: showCustomConfig ? 'translateY(0)' : 'translateY(20px)',
-                                                                maxHeight: showCustomConfig ? 2000 : 0,
+                                                                opacity: (showCustomConfig && !showCheckout) ? 1 : 0,
+                                                                filter: (showCustomConfig && !showCheckout) ? 'blur(0)' : 'blur(6px)',
+                                                                transform: (showCustomConfig && !showCheckout) ? 'translateY(0)' : 'translateY(20px)',
+                                                                maxHeight: (showCustomConfig && !showCheckout) ? 2000 : 0,
                                                                 overflow: 'hidden',
-                                                                pointerEvents: showCustomConfig ? 'auto' : 'none',
+                                                                pointerEvents: (showCustomConfig && !showCheckout) ? 'auto' : 'none',
                                                             }}>
                                                                 <div style={{
                                                                     background: 'rgba(0,0,0,0.3)', borderRadius: 14, padding: '24px',
@@ -2708,7 +2846,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             </div>
 
                                             {/* Paket Kartları */}
-                                            <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
+                                            <div style={{ display: (showCheckout && checkoutPlan) ? 'none' : 'flex', gap: 12, marginBottom: 20 }}>
                                                 {(() => {
                                                     const p = branding?.siteConfig?.pricing || {};
                                                     return [
@@ -2745,8 +2883,124 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                 ))}
                                             </div>
 
+                                            {/* ═══ CHECKOUT PANEL — fiyatlar section ═══ */}
+                                            {showCheckout && checkoutPlan && (
+                                                <div style={{ animation: 'slideDown 0.5s cubic-bezier(0.4, 0, 0.2, 1)', marginBottom: 16 }}>
+                                                    <div className="glossy-panel" style={{ borderRadius: 18, border: '1px solid rgba(251,191,36,0.15)', boxShadow: '0 16px 48px rgba(0,0,0,0.4), 0 0 40px rgba(251,191,36,0.06), inset 0 1px 0 rgba(255,255,255,0.08)', padding: 0 }}>
+                                                        <div style={{ background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))', borderBottom: '1px solid rgba(251,191,36,0.12)', padding: '14px 22px', borderRadius: '18px 18px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                            <button onClick={() => setShowCheckout(false)} className="btn-3d btn-3d-white" style={{ padding: '5px 14px', fontSize: 10, fontWeight: 700, borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}>← Fiyatlandırma</button>
+                                                            <div>
+                                                                <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
+                                                                <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
+                                                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>{chkBilling === 'yearly' ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺` : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}</span>
+                                                                    <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{chkBilling === 'yearly' ? '/yıl' : checkoutPlan.period}</span>
+                                                                    <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>• {checkoutPlan.name}</span>
+                                                                </div>
+                                                            </div>
+                                                            <button onClick={() => setShowCheckout(false)} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s' }}><X style={{ width: 14, height: 14 }} /></button>
+                                                        </div>
+                                                        <div style={{ padding: '16px 22px' }}>
+                                                            <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
+                                                                <button onClick={() => setChkBilling('monthly')} style={{ flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none', background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent', color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b', boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none', transition: 'all 0.3s' }}>💳 Aylık Ödeme</button>
+                                                                <button onClick={() => setChkBilling('yearly')} style={{ flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none', background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent', color: chkBilling === 'yearly' ? '#34d399' : '#64748b', boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none', transition: 'all 0.3s' }}>🎁 Yıllık <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 900, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4, marginLeft: 4 }}>2 AY HEDİYE</span></button>
+                                                            </div>
+                                                            <div style={{ marginBottom: 14 }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}><User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler</div>
+                                                                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                                                                    {[{ label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' }, { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' }, { label: 'Telefon', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx', icon: '📱' }].map((field, i) => (
+                                                                        <div key={i} style={{ position: 'relative' }}>
+                                                                            <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>{field.icon}</span>
+                                                                            <input type={field.type} value={field.value} onChange={e => field.setter(e.target.value)} placeholder={field.placeholder} style={{ width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)', outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s' }} onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.4)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }} onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }} />
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ marginBottom: 14 }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu</div>
+                                                                <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, padding: '12px', borderRadius: 12, cursor: 'pointer', background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)', border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`, color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700, transition: 'all 0.3s' }}>
+                                                                    {chkLogo ? <Check style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
+                                                                    {chkLogo ? chkLogo.name : 'Logo Yükle (.png, .jpg)'}
+                                                                    <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
+                                                                </label>
+                                                            </div>
+                                                            <div style={{ marginBottom: 16 }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz</div>
+                                                                <div style={{ display: 'flex', gap: 10 }}>
+                                                                    {[{ key: 'soprano' as const, label: 'SopranoChat', sub: 'sopranochat.com üzerinden', color: '#38bdf8', icon: '🎙️' }, { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' }].map(opt => (
+                                                                        <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{ flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer', background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)', border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.3s', boxShadow: chkHosting === opt.key ? `0 4px 16px ${opt.color}15` : 'none' }}>
+                                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+                                                                                <div style={{ width: 20, height: 20, borderRadius: '50%', border: `2px solid ${chkHosting === opt.key ? opt.color : '#475569'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.3s' }}>{chkHosting === opt.key && <div style={{ width: 10, height: 10, borderRadius: '50%', background: opt.color, boxShadow: `0 0 6px ${opt.color}` }} />}</div>
+                                                                                <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === opt.key ? opt.color : '#94a3b8' }}>{opt.icon} {opt.label}</span>
+                                                                            </div>
+                                                                            <div style={{ fontSize: 10, color: '#64748b', marginLeft: 30, fontWeight: 500 }}>{opt.sub}</div>
+                                                                        </div>
+                                                                    ))}
+                                                                </div>
+                                                                {chkHosting === 'soprano' && (<div style={{ marginTop: 8 }}><input type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)} placeholder="Oda Adınız" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)', outline: 'none' }} /><div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div></div>)}
+                                                                {chkHosting === 'own' && (<div style={{ marginTop: 8 }}><input type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)} placeholder="ornek.com" style={{ width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff', background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)', outline: 'none' }} /><div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div></div>)}
+                                                            </div>
+                                                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                                                <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
+                                                                <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
+                                                            </div>
+                                                            {(() => {
+                                                                const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+                                                                return banks.map((bank: any, bankIdx: number) => (
+                                                                    <div key={bankIdx} style={{ background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(251,191,36,0.1)', marginBottom: 10 }}>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+                                                                            <div style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg, #ef4444, #dc2626)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, fontWeight: 900, color: '#fff', boxShadow: '0 2px 8px rgba(239,68,68,0.3)' }}>{bank.bank?.charAt(0) || '?'}</div>
+                                                                            <div><div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{bank.bank}</div><div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{bank.name}</div></div>
+                                                                        </div>
+                                                                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+                                                                            <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>{bank.iban}</span>
+                                                                            <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), `iban-${bankIdx}`)} style={{ background: chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)', border: `1px solid ${chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`, borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: chkCopied === `iban-${bankIdx}` ? '#34d399' : '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'all 0.2s' }}>
+                                                                                {chkCopied === `iban-${bankIdx}` ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                                                            </button>
+                                                                        </div>
+                                                                    </div>
+                                                                ));
+                                                            })()}
+                                                            <div style={{ background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))', borderRadius: 14, padding: '12px 16px', border: '1px solid rgba(56,189,248,0.12)', marginBottom: 16 }}>
+                                                                <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
+                                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 12, background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)' }}>
+                                                                    <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
+                                                                    <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{ background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)', border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`, borderRadius: 8, padding: '6px 10px', cursor: 'pointer', color: chkCopied === 'code' ? '#34d399' : '#38bdf8', display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700, transition: 'all 0.2s' }}>
+                                                                        {chkCopied === 'code' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
+                                                                    </button>
+                                                                </div>
+                                                            </div>
+                                                            {chkSuccess ? (
+                                                                <div style={{ textAlign: 'center', padding: '14px', borderRadius: 12, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', fontSize: 13, fontWeight: 800, color: '#34d399' }}>✅ Siparişiniz başarıyla gönderildi!</div>
+                                                            ) : (
+                                                                <button onClick={async () => {
+                                                                    if (!chkName.trim() || !chkEmail.trim()) return;
+                                                                    setChkSending(true);
+                                                                    try {
+                                                                        const nameParts = chkName.trim().split(' ');
+                                                                        const firstName = nameParts[0] || '';
+                                                                        const lastName = nameParts.slice(1).join(' ') || '';
+                                                                        const amount = chkBilling === 'yearly' ? checkoutPlan.price * 10 : checkoutPlan.price;
+                                                                        let logoBase64: string | null = null;
+                                                                        if (chkLogo) { logoBase64 = await new Promise<string>((resolve) => { const reader = new FileReader(); reader.onload = () => resolve(reader.result as string); reader.readAsDataURL(chkLogo); }); }
+                                                                        const res = await fetch(`${API_URL}/admin/orders`, {
+                                                                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                                                                            body: JSON.stringify({ firstName, lastName, email: chkEmail.trim(), phone: chkPhone.trim(), packageName: checkoutPlan.name, paymentCode: chkPaymentCode, hostingType: chkHosting === 'own' ? 'own_domain' : 'sopranochat', customDomain: chkHosting === 'own' ? chkDomain : null, roomName: chkHosting === 'soprano' ? chkRoomName : null, amount, logo: logoBase64, details: { billing: chkBilling, period: checkoutPlan.period } }),
+                                                                        });
+                                                                        if (res.ok) { setChkSuccess(true); setTimeout(() => { setCheckoutPlan(null); setChkSuccess(false); setChkName(''); setChkEmail(''); setChkPhone(''); setChkLogo(null); setChkHosting('soprano'); setChkDomain(''); setChkRoomName(''); setChkBilling('monthly'); setShowCheckout(false); }, 3000); }
+                                                                    } catch { }
+                                                                    setChkSending(false);
+                                                                }} disabled={chkSending || !chkName.trim() || !chkEmail.trim()} className="btn-3d btn-3d-gold" style={{ width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, letterSpacing: 0.5, opacity: chkSending ? 0.6 : 1 }}>
+                                                                    {chkSending ? 'Gönderiliyor...' : 'Ödemeyi Gönderdim, Tamamla'} <Check style={{ width: 18, height: 18 }} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Özel Yapılandırma */}
-                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '20px', border: '1px solid rgba(56,189,248,0.15)', marginBottom: 16 }}>
+                                            <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 14, padding: '20px', border: '1px solid rgba(56,189,248,0.15)', marginBottom: 16, display: (showCheckout && checkoutPlan) ? 'none' : 'block' }}>
                                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
                                                     <div>
                                                         <div style={{ fontSize: 10, fontWeight: 800, color: '#38bdf8', background: 'rgba(56,189,248,0.15)', padding: '3px 10px', borderRadius: 6, display: 'inline-block', letterSpacing: 1, marginBottom: 6 }}>⚙️ Özel Yapılandırma</div>
@@ -2836,11 +3090,12 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                             </div>
 
                                             {/* Alt bilgi */}
-                                            <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.1)' }}>
+                                            <div style={{ textAlign: 'center', padding: '12px 16px', borderRadius: 10, background: 'rgba(56,189,248,0.05)', border: '1px solid rgba(56,189,248,0.1)', display: (showCheckout && checkoutPlan) ? 'none' : 'block' }}>
                                                 <div style={{ fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>
                                                     Tüm paketler <span style={{ color: '#34d399', fontWeight: 700 }}>7 gün ücretsiz deneme</span> ile başlar. İstediğiniz zaman iptal edebilirsiniz.
                                                 </div>
                                             </div>
+
                                         </div>
                                     </div>
                                 )}
@@ -4550,330 +4805,6 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                 </div>{/* home-scroll-area */}
             </div>
 
-            {/* CHECKOUT MODAL */}
-            {
-                showCheckout && checkoutPlan && (
-                    <div style={{
-                        position: 'fixed', inset: 0, zIndex: 9999,
-                        background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(12px)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        animation: 'fadeIn 0.4s ease',
-                    }} onClick={(e) => { if (e.target === e.currentTarget) setShowCheckout(false); }}>
-                        <div className="glossy-panel modal-scrollbar" style={{
-                            width: '100%', maxWidth: 460, maxHeight: '85vh', overflowY: 'auto',
-                            borderRadius: 18, position: 'relative',
-                            border: '1px solid rgba(251,191,36,0.15)',
-                            boxShadow: '0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(251,191,36,0.08), inset 0 1px 0 rgba(255,255,255,0.08)',
-                            padding: 0,
-                        }}>
-                            {/* Golden Header Bar */}
-                            <div style={{
-                                background: 'linear-gradient(135deg, rgba(251,191,36,0.15), rgba(245,158,11,0.05))',
-                                borderBottom: '1px solid rgba(251,191,36,0.12)',
-                                padding: '14px 22px', borderRadius: '18px 18px 0 0',
-                                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                            }}>
-                                <div>
-                                    <div style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 2 }}>⭐ Sipariş Özeti</div>
-                                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8 }}>
-                                        <span style={{ fontSize: 18, fontWeight: 900, color: '#fff', textShadow: '0 2px 4px rgba(0,0,0,0.3)' }}>
-                                            {chkBilling === 'yearly'
-                                                ? `${(checkoutPlan.price * 10).toLocaleString('tr-TR')} ₺`
-                                                : `${checkoutPlan.price.toLocaleString('tr-TR')} ₺`}
-                                        </span>
-                                        <span style={{ fontSize: 11, color: '#fbbf24', fontWeight: 700 }}>{chkBilling === 'yearly' ? '/yıl' : checkoutPlan.period}</span>
-                                        <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600 }}>• {checkoutPlan.name}</span>
-                                    </div>
-                                </div>
-                                <button onClick={() => setShowCheckout(false)} style={{
-                                    background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)',
-                                    borderRadius: 10, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    color: '#94a3b8', cursor: 'pointer', transition: 'all 0.2s',
-                                }}><X style={{ width: 14, height: 14 }} /></button>
-                            </div>
-
-                            <div style={{ padding: '16px 22px' }}>
-                                {/* Aylık / Yıllık Toggle */}
-                                <div style={{ display: 'flex', gap: 0, marginBottom: 16, background: 'rgba(0,0,0,0.25)', borderRadius: 12, padding: 3, border: '1px solid rgba(255,255,255,0.05)' }}>
-                                    <button onClick={() => setChkBilling('monthly')} style={{
-                                        flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                        background: chkBilling === 'monthly' ? 'linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.1))' : 'transparent',
-                                        color: chkBilling === 'monthly' ? '#38bdf8' : '#64748b',
-                                        boxShadow: chkBilling === 'monthly' ? '0 2px 8px rgba(56,189,248,0.15)' : 'none',
-                                        transition: 'all 0.3s',
-                                    }}>💳 Aylık Ödeme</button>
-                                    <button onClick={() => setChkBilling('yearly')} style={{
-                                        flex: 1, padding: '8px 0', borderRadius: 10, fontSize: 11, fontWeight: 800, cursor: 'pointer', border: 'none',
-                                        background: chkBilling === 'yearly' ? 'linear-gradient(135deg, rgba(52,211,153,0.25), rgba(52,211,153,0.1))' : 'transparent',
-                                        color: chkBilling === 'yearly' ? '#34d399' : '#64748b',
-                                        boxShadow: chkBilling === 'yearly' ? '0 2px 8px rgba(52,211,153,0.15)' : 'none',
-                                        transition: 'all 0.3s',
-                                    }}>🎁 Yıllık <span style={{ fontSize: 8, color: '#ef4444', fontWeight: 900, background: 'rgba(239,68,68,0.15)', padding: '2px 6px', borderRadius: 4, marginLeft: 4 }}>2 AY HEDİYE</span></button>
-                                </div>
-
-                                {/* Kişisel Bilgiler Section */}
-                                <div style={{ marginBottom: 14 }}>
-                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <User style={{ width: 11, height: 11 }} /> Kişisel Bilgiler
-                                    </div>
-                                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                                        {[
-                                            { label: 'Ad Soyad', value: chkName, setter: setChkName, type: 'text', placeholder: 'Ahmet Yılmaz', icon: '👤' },
-                                            { label: 'E-Posta', value: chkEmail, setter: setChkEmail, type: 'email', placeholder: 'ornek@mail.com', icon: '📧' },
-                                            { label: 'Telefon', value: chkPhone, setter: setChkPhone, type: 'tel', placeholder: '0532 xxx xx xx', icon: '📱' },
-                                        ].map((field, i) => (
-                                            <div key={i} style={{ position: 'relative' }}>
-                                                <span style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', fontSize: 13 }}>{field.icon}</span>
-                                                <input
-                                                    type={field.type} value={field.value} onChange={e => field.setter(e.target.value)}
-                                                    placeholder={field.placeholder}
-                                                    style={{
-                                                        width: '100%', padding: '10px 12px 10px 32px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                        background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.08)',
-                                                        outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                                                    }}
-                                                    onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.4)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
-                                                    onBlur={e => { e.target.style.borderColor = 'rgba(255,255,255,0.08)'; e.target.style.boxShadow = 'none'; }}
-                                                />
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* Logo Upload */}
-                                <div style={{ marginBottom: 14 }}>
-                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <Upload style={{ width: 11, height: 11 }} /> Müşteri Logosu
-                                    </div>
-                                    <label style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                        padding: '12px', borderRadius: 12, cursor: 'pointer',
-                                        background: chkLogo ? 'rgba(52,211,153,0.06)' : 'rgba(0,0,0,0.2)',
-                                        border: `1.5px dashed ${chkLogo ? 'rgba(52,211,153,0.4)' : 'rgba(255,255,255,0.1)'}`,
-                                        color: chkLogo ? '#34d399' : '#64748b', fontSize: 13, fontWeight: 700,
-                                        transition: 'all 0.3s',
-                                    }}>
-                                        {chkLogo ? <Check style={{ width: 16, height: 16 }} /> : <Upload style={{ width: 16, height: 16 }} />}
-                                        {chkLogo ? chkLogo.name : 'Logo Yükle (.png, .jpg)'}
-                                        <input type="file" accept="image/*" onChange={e => setChkLogo(e.target.files?.[0] || null)} style={{ display: 'none' }} />
-                                    </label>
-                                </div>
-
-                                {/* Hosting Tercihi */}
-                                <div style={{ marginBottom: 16 }}>
-                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                        <Globe style={{ width: 11, height: 11 }} /> Hosting Tercihiniz
-                                    </div>
-                                    <div style={{ display: 'flex', gap: 10 }}>
-                                        {[
-                                            { key: 'soprano' as const, label: 'SopranoChat', sub: 'sopranochat.com üzerinden', color: '#38bdf8', icon: '🎙️' },
-                                            { key: 'own' as const, label: 'Kendi Domainin', sub: 'Embed ile kendi siten', color: '#a78bfa', icon: '🌐' },
-                                        ].map(opt => (
-                                            <div key={opt.key} onClick={() => setChkHosting(opt.key)} style={{
-                                                flex: 1, padding: '12px', borderRadius: 12, cursor: 'pointer',
-                                                background: chkHosting === opt.key ? `linear-gradient(135deg, ${opt.color}11, ${opt.color}06)` : 'rgba(0,0,0,0.15)',
-                                                border: `1.5px solid ${chkHosting === opt.key ? opt.color + '55' : 'rgba(255,255,255,0.06)'}`,
-                                                transition: 'all 0.3s',
-                                                boxShadow: chkHosting === opt.key ? `0 4px 16px ${opt.color}15` : 'none',
-                                            }}>
-                                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-                                                    <div style={{
-                                                        width: 20, height: 20, borderRadius: '50%',
-                                                        border: `2px solid ${chkHosting === opt.key ? opt.color : '#475569'}`,
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        transition: 'all 0.3s',
-                                                    }}>
-                                                        {chkHosting === opt.key && <div style={{ width: 10, height: 10, borderRadius: '50%', background: opt.color, boxShadow: `0 0 6px ${opt.color}` }} />}
-                                                    </div>
-                                                    <span style={{ fontSize: 13, fontWeight: 800, color: chkHosting === opt.key ? opt.color : '#94a3b8' }}>{opt.icon} {opt.label}</span>
-                                                </div>
-                                                <div style={{ fontSize: 10, color: '#64748b', marginLeft: 30, fontWeight: 500 }}>{opt.sub}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                    {chkHosting === 'soprano' && (
-                                        <div style={{ marginTop: 8 }}>
-                                            <input
-                                                type="text" value={chkRoomName} onChange={e => setChkRoomName(e.target.value)}
-                                                placeholder="Oda Adınız"
-                                                style={{
-                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(56,189,248,0.06)', border: '1px solid rgba(56,189,248,0.2)',
-                                                    outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                                                }}
-                                                onFocus={e => { e.target.style.borderColor = 'rgba(56,189,248,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(56,189,248,0.1)'; }}
-                                                onBlur={e => { e.target.style.borderColor = 'rgba(56,189,248,0.2)'; e.target.style.boxShadow = 'none'; }}
-                                            />
-                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🏠 sopranochat.com üzerinde odanız bu isimle oluşturulacak</div>
-                                        </div>
-                                    )}
-                                    {chkHosting === 'own' && (
-                                        <div style={{ marginTop: 8 }}>
-                                            <input
-                                                type="text" value={chkDomain} onChange={e => setChkDomain(e.target.value)}
-                                                placeholder="ornek.com"
-                                                style={{
-                                                    width: '100%', padding: '10px 12px', borderRadius: 10, fontSize: 12, fontWeight: 600, color: '#fff',
-                                                    background: 'rgba(167,139,250,0.06)', border: '1px solid rgba(167,139,250,0.2)',
-                                                    outline: 'none', transition: 'border-color 0.3s, box-shadow 0.3s',
-                                                }}
-                                                onFocus={e => { e.target.style.borderColor = 'rgba(167,139,250,0.5)'; e.target.style.boxShadow = '0 0 12px rgba(167,139,250,0.1)'; }}
-                                                onBlur={e => { e.target.style.borderColor = 'rgba(167,139,250,0.2)'; e.target.style.boxShadow = 'none'; }}
-                                            />
-                                            <div style={{ fontSize: 9, color: '#64748b', marginTop: 4, fontWeight: 500 }}>🔗 Embed kodunu bu domain için oluşturacağız</div>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Ödeme Bilgileri Decorative Divider */}
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                                    <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
-                                    <span style={{ fontSize: 8, fontWeight: 800, color: '#fbbf24', textTransform: 'uppercase', letterSpacing: 2 }}>💰 Ödeme Bilgileri</span>
-                                    <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
-                                </div>
-
-                                {/* IBAN Cards — Tüm banka hesapları */}
-                                {(() => {
-                                    const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
-                                    return banks.map((bank: any, bankIdx: number) => (
-                                <div key={bankIdx} style={{
-                                    background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))',
-                                    borderRadius: 14, padding: '14px 16px',
-                                    border: '1px solid rgba(251,191,36,0.1)',
-                                    marginBottom: 10,
-                                }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                                        <div style={{
-                                            width: 28, height: 28, borderRadius: 8,
-                                            background: 'linear-gradient(135deg, #ef4444, #dc2626)',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            fontSize: 15, fontWeight: 900, color: '#fff',
-                                            boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
-                                        }}>{bank.bank?.charAt(0) || '?'}</div>
-                                        <div>
-                                            <div style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{bank.bank}</div>
-                                            <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500 }}>{bank.name}</div>
-                                        </div>
-                                    </div>
-                                    <div style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '12px 16px', borderRadius: 12,
-                                        background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
-                                    }}>
-                                        <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', letterSpacing: 2.5, fontFamily: 'monospace' }}>{bank.iban}</span>
-                                        <button onClick={() => copyToClipboard(bank.iban.replace(/\s/g, ''), `iban-${bankIdx}`)} style={{
-                                            background: chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
-                                            border: `1px solid ${chkCopied === `iban-${bankIdx}` ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
-                                            borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-                                            color: chkCopied === `iban-${bankIdx}` ? '#34d399' : '#38bdf8',
-                                            display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-                                            transition: 'all 0.2s',
-                                        }}>
-                                            {chkCopied === `iban-${bankIdx}` ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
-                                        </button>
-                                    </div>
-                                </div>
-                                    ));
-                                })()}
-
-                                {/* Ödeme Kodu Card */}
-                                <div style={{
-                                    background: 'linear-gradient(145deg, rgba(56,189,248,0.06), rgba(56,189,248,0.02))',
-                                    borderRadius: 14, padding: '12px 16px',
-                                    border: '1px solid rgba(56,189,248,0.12)',
-                                    marginBottom: 16,
-                                }}>
-                                    <div style={{ fontSize: 9, fontWeight: 800, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, marginBottom: 8 }}>📋 Ödeme Kodu (Açıklamaya Yazılacak)</div>
-                                    <div style={{
-                                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                                        padding: '14px 16px', borderRadius: 12,
-                                        background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(56,189,248,0.15)',
-                                    }}>
-                                        <span style={{ fontSize: 18, fontWeight: 900, color: '#38bdf8', letterSpacing: 4, fontFamily: 'monospace', textShadow: '0 0 10px rgba(56,189,248,0.3)' }}>{chkPaymentCode}</span>
-                                        <button onClick={() => copyToClipboard(chkPaymentCode, 'code')} style={{
-                                            background: chkCopied === 'code' ? 'rgba(52,211,153,0.15)' : 'rgba(56,189,248,0.1)',
-                                            border: `1px solid ${chkCopied === 'code' ? 'rgba(52,211,153,0.3)' : 'rgba(56,189,248,0.25)'}`,
-                                            borderRadius: 8, padding: '6px 10px', cursor: 'pointer',
-                                            color: chkCopied === 'code' ? '#34d399' : '#38bdf8',
-                                            display: 'flex', alignItems: 'center', gap: 4, fontSize: 10, fontWeight: 700,
-                                            transition: 'all 0.2s',
-                                        }}>
-                                            {chkCopied === 'code' ? <><Check style={{ width: 12, height: 12 }} /> Kopyalandı</> : <><Copy style={{ width: 12, height: 12 }} /> Kopyala</>}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Ödemeyi Tamamla Butonu */}
-                                {chkSuccess ? (
-                                    <div style={{ textAlign: 'center', padding: '14px', borderRadius: 12, background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.2)', fontSize: 13, fontWeight: 800, color: '#34d399' }}>
-                                        ✅ Siparişiniz başarıyla gönderildi! En kısa sürede sizinle iletişime geçeceğiz.
-                                    </div>
-                                ) : (
-                                    <button onClick={async () => {
-                                        if (!chkName.trim() || !chkEmail.trim()) return;
-                                        setChkSending(true);
-                                        try {
-                                            const nameParts = chkName.trim().split(' ');
-                                            const firstName = nameParts[0] || '';
-                                            const lastName = nameParts.slice(1).join(' ') || '';
-                                            const amount = chkBilling === 'yearly' ? checkoutPlan.price * 10 : checkoutPlan.price;
-                                            // Convert logo to base64 if provided
-                                            let logoBase64: string | null = null;
-                                            if (chkLogo) {
-                                                logoBase64 = await new Promise<string>((resolve) => {
-                                                    const reader = new FileReader();
-                                                    reader.onload = () => resolve(reader.result as string);
-                                                    reader.readAsDataURL(chkLogo);
-                                                });
-                                            }
-                                            const res = await fetch(`${API_URL}/admin/orders`, {
-                                                method: 'POST',
-                                                headers: { 'Content-Type': 'application/json' },
-                                                body: JSON.stringify({
-                                                    firstName, lastName,
-                                                    email: chkEmail.trim(),
-                                                    phone: chkPhone.trim(),
-                                                    packageName: checkoutPlan.name,
-                                                    paymentCode: chkPaymentCode,
-                                                    hostingType: chkHosting === 'own' ? 'own_domain' : 'sopranochat',
-                                                    customDomain: chkHosting === 'own' ? chkDomain : null,
-                                                    roomName: chkHosting === 'soprano' ? chkRoomName : null,
-                                                    amount,
-                                                    logo: logoBase64,
-                                                    details: { billing: chkBilling, period: checkoutPlan.period },
-                                                }),
-                                            });
-                                            if (res.ok) {
-                                                setChkSuccess(true);
-                                                setTimeout(() => {
-                                                    setCheckoutPlan(null);
-                                                    setChkSuccess(false);
-                                                    setChkName('');
-                                                    setChkEmail('');
-                                                    setChkPhone('');
-                                                    setChkLogo(null);
-                                                    setChkHosting('soprano');
-                                                    setChkDomain('');
-                                                    setChkRoomName('');
-                                                    setChkBilling('monthly');
-                                                }, 3000);
-                                            }
-                                        } catch { }
-                                        setChkSending(false);
-                                    }} disabled={chkSending || !chkName.trim() || !chkEmail.trim()} className="btn-3d btn-3d-gold" style={{
-                                        width: '100%', padding: '13px 0', fontSize: 13, fontWeight: 900, borderRadius: 12,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                                        letterSpacing: 0.5, textShadow: '0 1px 2px rgba(0,0,0,0.3)',
-                                        opacity: chkSending ? 0.6 : 1,
-                                    }}>
-                                        {chkSending ? 'Gönderiliyor...' : 'Ödemeyi Gönderdim, Tamamla'} <Check style={{ width: 18, height: 18 }} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
-            }
 
             {/* Üyelik Sözleşmesi Modal */}
             {

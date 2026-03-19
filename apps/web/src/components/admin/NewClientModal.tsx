@@ -130,21 +130,7 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
     const inputClass = "w-full rounded-[10px] px-4 py-2.5 text-white text-sm outline-none transition placeholder:text-gray-500" + " " + "owner-input-inset";
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            {/* Backdrop */}
-            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose}></div>
-
-            {/* Modal */}
-            <div className="relative w-full max-w-5xl max-h-[90vh] animate-in zoom-in-95 fade-in duration-300 flex flex-col" style={{
-                background: 'radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.09) 0%, transparent 60%), linear-gradient(180deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.015) 25%, transparent 55%), linear-gradient(180deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%)',
-                backdropFilter: 'blur(24px)',
-                borderRadius: 18,
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderTop: '1px solid rgba(255,255,255,0.35)',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)',
-                overflow: 'hidden',
-            }}>
-
+        <div className="owner-glossy" style={{ overflow: 'hidden', animation: 'fadeSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)' }}>
 
                 {/* Header — Metalik Bar */}
                 <div style={{ padding: '10px 20px', background: 'linear-gradient(180deg, #5a6070 0%, #3d4250 15%, #1e222e 50%, #282c3a 75%, #3a3f50 100%)', borderBottom: '1px solid rgba(0,0,0,0.5)', boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.12), 0 2px 6px rgba(0,0,0,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -587,11 +573,11 @@ export default function NewClientModal({ isOpen, onClose }: NewClientModalProps)
                             </div>
 
                         </div>
-                    </div>
-
                 </div>
             </div>
+
         </div>
     );
 }
+
 

@@ -20,7 +20,10 @@ self.addEventListener('fetch', (event) => {
     // Skip API/admin requests — these should never be cached
     if (url.pathname.startsWith('/api') || url.pathname.startsWith('/admin')) return;
 
-    // Network-first strategy for same-origin assets only
+    // Skip navigation requests — Next.js handles SPA routing client-side
+    if (event.request.mode === 'navigate') return;
+
+    // Network-first strategy for same-origin static assets only
     event.respondWith(
         fetch(event.request).catch(() => {
             return caches.match(event.request).then(r => r || fetch(event.request));
