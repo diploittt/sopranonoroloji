@@ -2219,7 +2219,7 @@ export default function OwnerPanel() {
 
                 {/* Dashboard Content */}
 
-                <div className="flex-1 overflow-y-auto p-8 scroll-smooth custom-scrollbar" style={{ background: 'linear-gradient(180deg, rgba(15,20,35,0.75) 0%, rgba(20,25,40,0.7) 50%, rgba(15,20,35,0.75) 100%)' }}>
+                <div className="flex-1 overflow-y-auto px-8 pt-8 pb-32 scroll-smooth custom-scrollbar" style={{ background: 'linear-gradient(180deg, rgba(15,20,35,0.75) 0%, rgba(20,25,40,0.7) 50%, rgba(15,20,35,0.75) 100%)' }}>
 
 
 
