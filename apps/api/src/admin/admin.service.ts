@@ -939,15 +939,15 @@ export class AdminService implements OnModuleInit {
 
     const [totalUsers, todayVisitors, totalVisitorsAllTime] = await Promise.all([
       // Toplam kayıtlı üye sayısı
-      this.prisma.user.count().catch(() => 0),
+      this.prisma.user.count().catch((err) => { console.error('totalUsers error:', err); return 0; }),
       // Bugün giriş yapan benzersiz kullanıcı sayısı
       this.prisma.user.count({
         where: { lastLoginAt: { gte: todayStart } },
-      }).catch(() => 0),
+      }).catch((err) => { console.error('todayVisitors error:', err); return 0; }),
       // Tüm zamanlar — en az 1 kez login yapmış kullanıcılar
       this.prisma.user.count({
         where: { lastLoginAt: { not: null } },
-      }).catch(() => 0),
+      }).catch((err) => { console.error('totalVisitorsAllTime error:', err); return 0; }),
     ]);
 
     // Misafir girişleri — şu an online olan misafirler
