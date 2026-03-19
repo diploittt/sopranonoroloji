@@ -599,6 +599,8 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
     const { slug: urlSlug } = use(params);
     // activeSlug state — allows room switching without remounting the component
     const [activeSlug, setActiveSlug] = useState(urlSlug);
+    // ★ Client-side VIP/erişim hatası state'i — backend round-trip beklenmeden anında overlay
+    const [clientRoomError, setClientRoomError] = useState<{ message: string; code?: string; fallbackSlug?: string } | null>(null);
     // Sync activeSlug when URL param changes (e.g. browser back/forward)
     useEffect(() => { setActiveSlug(urlSlug); }, [urlSlug]);
     const room = useRoomRealtime({ slug: activeSlug });
@@ -1342,8 +1344,14 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                     }}
                 >
 
-                    {/* ★★ ROOM ACCESS ERROR — Full overlay when roomError is set ★★ */}
-                    {room.state.roomError && (
+                    {/* ★★ ROOM ACCESS ERROR — Full overlay when roomError or clientRoomError is set ★★ */}
+                    {(() => {
+                        const effectiveError = room.state.roomError || clientRoomError;
+                        if (!effectiveError) return null;
+                        const code = effectiveError.code;
+                        const isVip = code === 'VIP_ONLY';
+                        const isLimit = code === 'ROOM_LIMIT_REACHED';
+                        return (
                         <div style={{
                             position: 'fixed', inset: 0, zIndex: 9999,
                             background: 'rgba(11,13,20,0.95)', backdropFilter: 'blur(12px)',
@@ -1357,24 +1365,20 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                             }}>
                                 <div style={{
                                     width: 64, height: 64, margin: '0 auto 20px',
-                                    background: room.state.roomError.code === 'VIP_ONLY' ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.10)',
-                                    border: room.state.roomError.code === 'VIP_ONLY' ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(239,68,68,0.2)',
+                                    background: isVip ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.10)',
+                                    border: isVip ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(239,68,68,0.2)',
                                     borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
                                 }}>
-                                    {room.state.roomError.code === 'VIP_ONLY' ? '⭐'
-                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? '🚷'
-                                        : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? '👤'
-                                        : '⚠️'}
+                                    {isVip ? '⭐' : isLimit ? '🚷'
+                                        : (code === 'NICK_TAKEN' || code === 'NICK_RESERVED') ? '👤' : '⚠️'}
                                 </div>
                                 <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>
-                                    {room.state.roomError.code === 'VIP_ONLY' ? 'VIP Odası'
-                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? 'Oda Dolu'
-                                        : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? 'İsim Kullanımda'
-                                        : 'Erişim Engellendi'}
+                                    {isVip ? 'VIP Odası' : isLimit ? 'Oda Dolu'
+                                        : (code === 'NICK_TAKEN' || code === 'NICK_RESERVED') ? 'İsim Kullanımda' : 'Erişim Engellendi'}
                                 </h2>
                                 <p style={{ fontSize: 14, color: '#9ca3af', margin: '0 0 24px', lineHeight: 1.6 }}>
                                     {(() => {
-                                        const msg = room.state.roomError.message || '';
+                                        const msg = effectiveError.message || '';
                                         const tr: Record<string, string> = {
                                             'VIP members only': 'Bu oda sadece VIP üyelere açıktır.',
                                             'Room is full': 'Oda kapasitesi doldu. Lütfen başka bir odayı deneyin.',
@@ -1386,9 +1390,10 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                 </p>
                                 <button
                                     onClick={() => {
-                                        const errorCode = room.state.roomError?.code;
-                                        if (errorCode === 'VIP_ONLY' || errorCode === 'ROOM_LIMIT_REACHED') {
-                                            const fallback = room.state.roomError?.fallbackSlug;
+                                        // Client-side error temizle
+                                        setClientRoomError(null);
+                                        if (isVip || isLimit) {
+                                            const fallback = effectiveError.fallbackSlug;
                                             if (fallback) {
                                                 setActiveSlug(fallback);
                                                 window.history.replaceState(null, '', roomUrl(fallback));
@@ -1409,24 +1414,24 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                     }}
                                     style={{
                                         padding: '12px 32px', borderRadius: 12, cursor: 'pointer', fontSize: 14, fontWeight: 600,
-                                        background: room.state.roomError.code === 'VIP_ONLY'
+                                        background: isVip
                                             ? 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(251,191,36,0.1))'
                                             : 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))',
-                                        border: room.state.roomError.code === 'VIP_ONLY'
+                                        border: isVip
                                             ? '1px solid rgba(251,191,36,0.35)'
                                             : '1px solid rgba(239,68,68,0.3)',
-                                        color: room.state.roomError.code === 'VIP_ONLY'
+                                        color: isVip
                                             ? 'rgba(253,230,138,0.95)'
                                             : 'rgba(252,165,165,0.95)',
                                         transition: 'all 0.2s ease',
                                     }}
                                 >
-                                    {(room.state.roomError.code === 'VIP_ONLY' || room.state.roomError.code === 'ROOM_LIMIT_REACHED')
-                                        ? '← Diğer Odalara Git' : '← Giriş Sayfasına Dön'}
+                                    {(isVip || isLimit) ? '← Diğer Odalara Git' : '← Giriş Sayfasına Dön'}
                                 </button>
                             </div>
                         </div>
-                    )}
+                        );
+                    })()}
                     {/* ★★ TOKEN GUARD MODAL — giriş yapılmamış kullanıcılar için floating modal ★★ */}
                     {isMounted && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
                         <div style={{
@@ -3026,7 +3031,33 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                         <RoomNavScroller
                                             rooms={(room.state.rooms || []).filter((r: any) => !r.name.toLowerCase().includes('toplantı') && !r.name.toLowerCase().includes('toplanti'))}
                                             activeSlug={activeSlug}
-                                            onSelect={(slug: string) => { setActiveSlug(slug); window.history.replaceState(null, '', roomUrl(slug)); }}
+                                            onSelect={(slug: string) => {
+                                                // ★ Client-side VIP ön kontrolü — backend round-trip beklenmeden anında overlay
+                                                const targetRoom = (room.state.rooms || []).find((r: any) => r.slug === slug);
+                                                if (targetRoom?.isVipRoom) {
+                                                    // Rol kaynakları: 1) currentUser (backend), 2) sessionStorage (fallback)
+                                                    const currentUserRole = room.state.currentUser?.role;
+                                                    let userRole = (currentUserRole || 'guest').toLowerCase();
+                                                    if (!currentUserRole) {
+                                                        try {
+                                                            const authUser = JSON.parse(sessionStorage.getItem('soprano_tenant_user') || sessionStorage.getItem('soprano_auth_user') || 'null');
+                                                            userRole = (authUser?.role || 'guest').toLowerCase();
+                                                        } catch { /* ignore */ }
+                                                    }
+                                                    const roleLevels: Record<string, number> = { guest: 0, member: 1, vip: 2, operator: 3, moderator: 4, admin: 5, superadmin: 6, super_admin: 6, owner: 7, godmaster: 8 };
+                                                    if ((roleLevels[userRole] ?? 0) < 2) {
+                                                        const fallbackRoom = (room.state.rooms || []).find((r: any) => r.slug !== slug && !r.isVipRoom);
+                                                        setClientRoomError({
+                                                            message: 'Bu oda sadece VIP üyelere açıktır.',
+                                                            code: 'VIP_ONLY',
+                                                            fallbackSlug: fallbackRoom?.slug || undefined,
+                                                        });
+                                                        return; // Oda geçişini ENGELLE
+                                                    }
+                                                }
+                                                setClientRoomError(null);
+                                                setActiveSlug(slug); window.history.replaceState(null, '', roomUrl(slug));
+                                            }}
                                         />
                                     </div>
 
