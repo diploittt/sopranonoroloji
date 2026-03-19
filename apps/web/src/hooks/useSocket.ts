@@ -414,6 +414,10 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:error', (data: { message: string; code?: string; fallbackSlug?: string }) => {
             console.warn('[Room Error]', data.message, data.code);
             setRoomError(data);
+            // ★ Oda erişim hatası geldiğinde katılımcıları ve mesajları temizle
+            // Böylece oda "yüklenmemiş" duruma döner ve sadece hata overlay'i gösterilir
+            setParticipants([]);
+            setMessages([]);
         });
 
         // ─── DUPLICATE LOGIN BLOCKED — bu hesap zaten aktif ───

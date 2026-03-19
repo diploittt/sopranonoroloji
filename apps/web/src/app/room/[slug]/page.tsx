@@ -1342,6 +1342,91 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                     }}
                 >
 
+                    {/* ★★ ROOM ACCESS ERROR — Full overlay when roomError is set ★★ */}
+                    {room.state.roomError && (
+                        <div style={{
+                            position: 'fixed', inset: 0, zIndex: 9999,
+                            background: 'rgba(11,13,20,0.95)', backdropFilter: 'blur(12px)',
+                            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                            <div style={{
+                                width: 420, maxWidth: '90vw', background: 'rgba(19,21,28,0.95)',
+                                border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20,
+                                padding: '40px 32px', textAlign: 'center',
+                                boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+                            }}>
+                                <div style={{
+                                    width: 64, height: 64, margin: '0 auto 20px',
+                                    background: room.state.roomError.code === 'VIP_ONLY' ? 'rgba(251,191,36,0.12)' : 'rgba(239,68,68,0.10)',
+                                    border: room.state.roomError.code === 'VIP_ONLY' ? '1px solid rgba(251,191,36,0.25)' : '1px solid rgba(239,68,68,0.2)',
+                                    borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 32,
+                                }}>
+                                    {room.state.roomError.code === 'VIP_ONLY' ? '⭐'
+                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? '🚷'
+                                        : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? '👤'
+                                        : '⚠️'}
+                                </div>
+                                <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 8px' }}>
+                                    {room.state.roomError.code === 'VIP_ONLY' ? 'VIP Odası'
+                                        : room.state.roomError.code === 'ROOM_LIMIT_REACHED' ? 'Oda Dolu'
+                                        : (room.state.roomError.code === 'NICK_TAKEN' || room.state.roomError.code === 'NICK_RESERVED') ? 'İsim Kullanımda'
+                                        : 'Erişim Engellendi'}
+                                </h2>
+                                <p style={{ fontSize: 14, color: '#9ca3af', margin: '0 0 24px', lineHeight: 1.6 }}>
+                                    {(() => {
+                                        const msg = room.state.roomError.message || '';
+                                        const tr: Record<string, string> = {
+                                            'VIP members only': 'Bu oda sadece VIP üyelere açıktır.',
+                                            'Room is full': 'Oda kapasitesi doldu. Lütfen başka bir odayı deneyin.',
+                                            'Nick already taken': 'Bu kullanıcı adı başka biri tarafından kullanılıyor.',
+                                            'Nick is reserved': 'Bu kullanıcı adı kullanılamaz.',
+                                        };
+                                        return tr[msg] || msg || 'Bu odaya giriş yapılamıyor.';
+                                    })()}
+                                </p>
+                                <button
+                                    onClick={() => {
+                                        const errorCode = room.state.roomError?.code;
+                                        if (errorCode === 'VIP_ONLY' || errorCode === 'ROOM_LIMIT_REACHED') {
+                                            const fallback = room.state.roomError?.fallbackSlug;
+                                            if (fallback) {
+                                                setActiveSlug(fallback);
+                                                window.history.replaceState(null, '', roomUrl(fallback));
+                                            } else {
+                                                const other = room.state.rooms?.find((r: any) => r.slug !== activeSlug && !r.isVipRoom);
+                                                if (other) {
+                                                    setActiveSlug(other.slug);
+                                                    window.history.replaceState(null, '', roomUrl(other.slug));
+                                                } else {
+                                                    const tm2 = window.location.pathname.match(/^\/t\/([^/]+)/);
+                                                    window.location.href = tm2 ? `/t/${tm2[1]}` : '/';
+                                                }
+                                            }
+                                        } else {
+                                            const tm2 = window.location.pathname.match(/^\/t\/([^/]+)/);
+                                            window.location.href = tm2 ? `/t/${tm2[1]}` : '/';
+                                        }
+                                    }}
+                                    style={{
+                                        padding: '12px 32px', borderRadius: 12, cursor: 'pointer', fontSize: 14, fontWeight: 600,
+                                        background: room.state.roomError.code === 'VIP_ONLY'
+                                            ? 'linear-gradient(135deg, rgba(251,191,36,0.2), rgba(251,191,36,0.1))'
+                                            : 'linear-gradient(135deg, rgba(239,68,68,0.2), rgba(239,68,68,0.1))',
+                                        border: room.state.roomError.code === 'VIP_ONLY'
+                                            ? '1px solid rgba(251,191,36,0.35)'
+                                            : '1px solid rgba(239,68,68,0.3)',
+                                        color: room.state.roomError.code === 'VIP_ONLY'
+                                            ? 'rgba(253,230,138,0.95)'
+                                            : 'rgba(252,165,165,0.95)',
+                                        transition: 'all 0.2s ease',
+                                    }}
+                                >
+                                    {(room.state.roomError.code === 'VIP_ONLY' || room.state.roomError.code === 'ROOM_LIMIT_REACHED')
+                                        ? '← Diğer Odalara Git' : '← Giriş Sayfasına Dön'}
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {/* ★★ TOKEN GUARD MODAL — giriş yapılmamış kullanıcılar için floating modal ★★ */}
                     {isMounted && !sessionStorage.getItem('soprano_token') && !room.state.currentUser && (
                         <div style={{
