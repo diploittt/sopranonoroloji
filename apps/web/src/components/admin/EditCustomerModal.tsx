@@ -766,17 +766,15 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                         {/* Mevcut şifre gösterimi */}
                                         {(resetResult?.password || ownerInfo?.password) && (
                                             <div className="flex items-center gap-2">
-                                                <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 overflow-hidden">
+                                                <div
+                                                    className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-emerald-500/5 border border-emerald-500/20 overflow-hidden cursor-pointer hover:bg-emerald-500/10 transition"
+                                                    onClick={() => copyToClipboard(resetResult?.password || ownerInfo?.password || '', 'password')}
+                                                    title="Tıkla kopyala"
+                                                >
                                                     <Key className="w-3 h-3 text-emerald-400 flex-shrink-0" />
                                                     <span className="text-[11px] text-emerald-400 font-mono font-medium truncate">{resetResult?.password || ownerInfo?.password}</span>
+                                                    {copied === 'password' && <CheckCircle className="w-3 h-3 text-green-400 flex-shrink-0" />}
                                                 </div>
-                                                <button
-                                                    onClick={() => copyToClipboard(resetResult?.password || ownerInfo?.password || '', 'password')}
-                                                    className="p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-500 hover:text-white transition flex-shrink-0"
-                                                    title="Kopyala"
-                                                >
-                                                    {copied === 'password' ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                                                </button>
                                             </div>
                                         )}
                                         {/* Yeni şifre girme + sıfırla */}
