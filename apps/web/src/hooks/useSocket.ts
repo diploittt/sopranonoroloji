@@ -63,6 +63,9 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
     const [passwordRequired, setPasswordRequired] = useState<{ roomId: string; roomName: string } | null>(null);
     const [roomSettings, setRoomSettings] = useState<any>(null);
     const [roomError, setRoomError] = useState<{ message: string; code?: string; fallbackSlug?: string } | null>(null);
+    const roomErrorRef = useRef(roomError);
+    // Keep ref in sync
+    useEffect(() => { roomErrorRef.current = roomError; }, [roomError]);
     const [systemSettings, setSystemSettings] = useState<any>(null);
     const [userPermissions, setUserPermissions] = useState<Record<string, boolean> | null>(null);
     const [tenantSuspended, setTenantSuspended] = useState(false);
@@ -162,6 +165,12 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         });
 
         socket.on('room:joined', (data: { messages: any[], participants: any[], rooms?: RoomInfo[], roomSettings?: any, systemSettings?: any, userPermissions?: Record<string, boolean> }) => {
+            // ★ roomError set ise (VIP/kilitli oda reddedildi) — geç kalmış room:joined'i IGNORE et
+            // Backend race condition: room:error sonrası room:joined gelebilir, bu overlay'i kırar
+            if (roomErrorRef.current) {
+                console.warn('[useSocket] room:joined IGNORED — roomError is active:', roomErrorRef.current.code);
+                return;
+            }
             console.log('Joined room:', data);
             console.log('[useSocket] room:joined systemSettings:', data.systemSettings ? 'EXISTS' : 'NULL');
             // ★ Mesaj mantığı: Odaya ilk girişte eski diyaloglar gösterilmez.
@@ -414,6 +423,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         socket.on('room:error', (data: { message: string; code?: string; fallbackSlug?: string }) => {
             console.warn('[Room Error]', data.message, data.code);
             setRoomError(data);
+            roomErrorRef.current = data; // ★ Ref'i hemen güncelle (closure safety)
             // ★ Oda erişim hatası geldiğinde katılımcıları ve mesajları temizle
             // Böylece oda "yüklenmemiş" duruma döner ve sadece hata overlay'i gösterilir
             setParticipants([]);
@@ -581,6 +591,7 @@ export const useSocket = ({ roomId, token, tenantId }: UseSocketProps) => {
         setRoomSettings(null);
         setPasswordRequired(null);
         setRoomError(null);
+        roomErrorRef.current = null; // ★ Ref'i hemen temizle
         // Join new room
         currentRoomRef.current = roomId;
         socket.emit('room:join', buildJoinPayload(roomId));

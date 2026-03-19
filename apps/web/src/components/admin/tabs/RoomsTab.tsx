@@ -440,8 +440,8 @@ export function RoomsTab({ socket, currentUser, systemSettings, socketRooms = []
 
                         <div className="admin-divider" />
 
-                        {/* Oda Ayarları (GodMaster Only) */}
-                        {isGodMaster && (
+                        {/* Oda Ayarları (Admin+ hiyerarşi) */}
+                        {isRoomAdmin && (
                         <div className="admin-perms-section">
                             <div className="admin-perms-title">
                                 <Home style={{ width: 12, height: 12 }} />
