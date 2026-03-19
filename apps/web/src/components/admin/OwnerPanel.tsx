@@ -2439,19 +2439,22 @@ export default function OwnerPanel() {
 
                                                         });
 
-                                                        if (!res.ok) throw new Error();
+                                                        if (!res.ok) {
+                                                            const errData = await res.json().catch(() => ({}));
+                                                            throw new Error(errData.message || `HTTP ${res.status}`);
+                                                        }
 
                                                         const updated = { ...adminUser, ...profileForm };
 
                                                         setAdminUser(updated);
 
-                                                        localStorage.setItem('soprano_admin_user', JSON.stringify(updated));
+                                                        sessionStorage.setItem('soprano_admin_user', JSON.stringify(updated));
 
                                                         addToast('Profil güncellendi ✅', 'success');
 
                                                         setEditingProfile(false);
 
-                                                    } catch { addToast('Profil güncellenemedi', 'error'); }
+                                                    } catch (e: any) { addToast('Profil güncellenemedi: ' + (e?.message || ''), 'error'); }
 
                                                     setSavingProfile(false);
 

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Shield, User, Lock, ArrowRight, Loader2, Eye, EyeOff, Users, Mail, UserPlus, LogIn, ChevronLeft } from 'lucide-react';
-import { setAuthUser } from '@/lib/auth';
+import { getAuthUser, setAuthUser, removeAuthUser, clearAllSopranoAuth, AuthUser } from '@/lib/auth';
 import { generateGenderAvatar } from '@/lib/avatar';
 import { openChatWindow } from '@/components/ui/TitleBar';
 
@@ -42,6 +42,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
     const [termsAccepted, setTermsAccepted] = useState(false);
     const [rememberMe, setRememberMe] = useState(false);
     const [oauthCompleted, setOauthCompleted] = useState(false);
+    const [loggedInUser, setLoggedInUser] = useState<AuthUser | null>(null);
 
     // Form state
     const [formData, setFormData] = useState({
@@ -72,7 +73,7 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
             try {
                 const user = JSON.parse(userStr);
                 // Store JWT
-                sessionStorage.setItem('soprano_auth_token', token);
+                sessionStorage.setItem('soprano_tenant_token', token);
                 // Store user for local auth system
                 setAuthUser({
                     userId: user.sub,
@@ -167,8 +168,15 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                         return;
                     }
 
-                    sessionStorage.removeItem('soprano_tenant_token');
-                    sessionStorage.removeItem('soprano_tenant_user');
+                    // Mevcut oturum kontrolü — üye giriş yapmışsa oturumu koru
+                    const existingUser = getAuthUser();
+                    const existingTenantToken = sessionStorage.getItem('soprano_tenant_token');
+                    if (existingUser && existingTenantToken && existingUser.isMember && existingUser.role !== 'guest') {
+                        setLoggedInUser(existingUser);
+                    } else if (!existingTenantToken) {
+                        // Token yoksa user bilgisini de temizle
+                        sessionStorage.removeItem('soprano_tenant_user');
+                    }
                 } else {
                     setNotFound(true);
                 }
@@ -725,6 +733,59 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                             <User style={{ width: 18, height: 18, color: '#38bdf8' }} /> Hesap Paneli
                         </h3>
 
+                        {/* loggedInUser varsa — Üyelik Profil Paneli */}
+                        {loggedInUser ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                                {/* Profil Kartı */}
+                                <div style={{
+                                    display: 'flex', alignItems: 'center', gap: 12, padding: '14px',
+                                    background: 'rgba(0,0,0,0.2)', borderRadius: 12,
+                                    border: '1px solid rgba(255,255,255,0.06)',
+                                }}>
+                                    <img
+                                        src={loggedInUser.avatar || '/avatars/neutral_1.png'}
+                                        alt="avatar"
+                                        style={{ width: 48, height: 48, borderRadius: 12, border: '2px solid rgba(56,189,248,0.3)', objectFit: 'cover' }}
+                                    />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: '#fff', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{loggedInUser.username}</div>
+                                        <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 }}>
+                                            {loggedInUser.role === 'member' ? '⭐ Üye' : loggedInUser.role === 'vip' ? '👑 VIP' : loggedInUser.role === 'admin' ? '🛡️ Admin' : (loggedInUser.role as string) === 'godmaster' ? '⚡ GodMaster' : loggedInUser.role}
+                                        </div>
+                                    </div>
+                                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: '#22c55e', border: '2px solid rgba(0,0,0,0.3)', flexShrink: 0 }} />
+                                </div>
+
+                                {/* Odaya Gir Butonu */}
+                                <button
+                                    onClick={navigateToRoom}
+                                    className="btn-3d btn-3d-blue"
+                                    style={{ width: '100%', padding: '12px 0', fontSize: 12, gap: 8 }}
+                                >
+                                    <LogIn style={{ width: 16, height: 16 }} /> Odaya Gir
+                                </button>
+
+                                {/* Çıkış Yap Butonu */}
+                                <button
+                                    onClick={() => {
+                                        sessionStorage.removeItem('soprano_tenant_token');
+                                        sessionStorage.removeItem('soprano_tenant_user');
+                                        setLoggedInUser(null);
+                                    }}
+                                    style={{
+                                        width: '100%', padding: '10px 0', fontSize: 10, fontWeight: 700,
+                                        letterSpacing: 1.5, textTransform: 'uppercase',
+                                        background: 'rgba(239,68,68,0.1)', color: '#fca5a5',
+                                        border: '1px solid rgba(239,68,68,0.2)', borderRadius: 8,
+                                        cursor: 'pointer', transition: 'all 0.3s ease',
+                                        fontFamily: 'inherit',
+                                    }}
+                                >
+                                    🚪 Çıkış Yap
+                                </button>
+                            </div>
+                        ) : (
+                        <>
                         {/* Sekmeler — Homepage ile birebir aynı */}
                         <div style={{ display: 'flex', marginBottom: 12, borderRadius: 10, overflow: 'hidden', gap: 8 }}>
                             <button
@@ -899,6 +960,8 @@ export default function TenantEntryPage({ params }: { params: Promise<{ tenant: 
                                     ← Giriş ekranına dön
                                 </button>
                             </div>
+                        )}
+                        </>
                         )}
                     </div>
 

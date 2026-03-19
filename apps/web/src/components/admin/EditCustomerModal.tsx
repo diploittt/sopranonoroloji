@@ -742,8 +742,7 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Owner Kullanıcı</label>
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.06] focus-within:border-amber-600/40 transition">
+                                        <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/[0.02] border border-white/[0.06] focus-within:border-amber-600/40 transition">
                                                 <Users className="w-3 h-3 text-gray-600" />
                                                 <input
                                                     type="text"
@@ -752,14 +751,13 @@ export default function EditCustomerModal({ isOpen, onClose, clientId }: EditCus
                                                     className="flex-1 bg-transparent text-[11px] text-white font-medium focus:outline-none min-w-0"
                                                     placeholder="admin"
                                                 />
+                                                <button
+                                                    onClick={() => copyToClipboard(ownerInfo?.username || 'admin', 'owner')}
+                                                    className="text-gray-500 hover:text-white transition flex-shrink-0"
+                                                >
+                                                    {copied === 'owner' ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
+                                                </button>
                                             </div>
-                                            <button
-                                                onClick={() => copyToClipboard(ownerInfo?.username || 'admin', 'owner')}
-                                                className="p-2 rounded-lg bg-white/[0.03] border border-white/[0.06] text-gray-500 hover:text-white transition flex-shrink-0"
-                                            >
-                                                {copied === 'owner' ? <CheckCircle className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3" />}
-                                            </button>
-                                        </div>
                                     </div>
                                     <div className="space-y-1.5">
                                         <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">Owner Şifre</label>
