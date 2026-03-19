@@ -2173,7 +2173,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                             </div>
                                                                             {/* IBAN */}
                                                                             {(() => {
-                                                                                const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+                                                                                const banks = branding?.siteConfig?.banks || [];
                                                                                 return banks.map((bank: any, bankIdx: number) => (
                                                                                     <div key={bankIdx} style={{ background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(251,191,36,0.1)', marginBottom: 10 }}>
                                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -2945,7 +2945,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                                 <div style={{ flex: 1, height: 1, background: 'linear-gradient(90deg, transparent, rgba(251,191,36,0.3), transparent)' }} />
                                                             </div>
                                                             {(() => {
-                                                                const banks = (branding?.siteConfig?.banks && branding.siteConfig.banks.length > 0) ? branding.siteConfig.banks : [{ bank: 'Akbank', name: 'SopranoChat Bilişim', iban: 'TR78 0004 6006 1388 8000 0123 45' }];
+                                                                const banks = branding?.siteConfig?.banks || [];
                                                                 return banks.map((bank: any, bankIdx: number) => (
                                                                     <div key={bankIdx} style={{ background: 'linear-gradient(145deg, rgba(0,0,0,0.3), rgba(0,0,0,0.15))', borderRadius: 14, padding: '14px 16px', border: '1px solid rgba(251,191,36,0.1)', marginBottom: 10 }}>
                                                                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
