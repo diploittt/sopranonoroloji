@@ -253,34 +253,180 @@ body {
 }
 
 
-/* Mobilde sun glow/rays gizle + layout düzeltmeleri */
-@media (max-width: 800px) {
+/* ═══════════════════════════════════════════════════════
+   MOBİL WEB OPTİMİZASYONU — ≤768px (masaüstü etkilenmez)
+   ═══════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
 
+    /* Sun glow dekoratif efektleri gizle */
     .glass-panel.room-container::before,
-    .glass-panel.room-container::after {
-        display: none !important;
-    }
-
+    .glass-panel.room-container::after,
     .app-background::before,
     .app-background::after {
         display: none !important;
     }
 
-    .glass-panel.room-container {
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(200, 150, 46, 0.08) !important;
-        flex-direction: column !important;
-        height: 100dvh !important;
-        max-height: 100dvh !important;
-        border-radius: 0 !important;
+    /* ── Ana sayfa padding kaldır ── */
+    main.app-background {
+        padding: 0 !important;
+        background-attachment: scroll !important;
     }
 
-    /* Sağ live panel — mobilde gizle */
-    .glass-panel.room-container .sidebar-right,
-    .glass-panel.room-container .live-panel,
-    .glass-panel.room-container .right-live-panel,
-    .glass-panel.room-container .live-panel-collapsed {
+    /* ── Room container tam ekran ── */
+    .glass-panel.room-container {
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        border: none !important;
+        flex-direction: column !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        min-height: 100dvh !important;
+        overflow: hidden !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+    }
+
+    /* ── Sol sidebar — mobilde gizle (tab ile yönetilir) ── */
+    .sidebar-left {
         display: none !important;
     }
+
+    /* ── Mobil sidebar overlay — tab'dan açıldığında ── */
+    .sidebar-left.mobile-visible {
+        display: flex !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        z-index: 60 !important;
+        border-right: none !important;
+        animation: mobileSidebarSlideIn 0.25s ease-out !important;
+    }
+
+    /* ── Sağ live panel — mobilde gizle ── */
+    .right-live-panel,
+    .live-panel,
+    .live-panel-collapsed,
+    .sidebar-right {
+        display: none !important;
+    }
+
+    /* ── Chat ana alanı — flex büyüsün ── */
+    .chat-area {
+        flex: 1 !important;
+        min-height: 0 !important;
+        padding-bottom: 110px !important; /* BottomToolbar yüksekliği kadar boşluk */
+    }
+
+    /* ── Mesaj container — tam yükseklik ── */
+    .chat-messages-container {
+        max-height: none !important;
+        flex: 1 !important;
+        min-height: 0 !important;
+    }
+
+    /* ── BottomToolbar — sabit alta yapıştır ── */
+    .bottom-toolbar {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 50 !important;
+        padding-bottom: env(safe-area-inset-bottom, 8px) !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+        padding-top: 8px !important;
+    }
+
+    /* ── Header kompakt ── */
+    .chat-header {
+        min-height: 0 !important;
+        padding-top: 6px !important;
+        padding-bottom: 6px !important;
+    }
+
+    /* ── Logo alanı — mobilde küçük ── */
+    .chat-logo-area {
+        padding: 6px 10px !important;
+        min-height: 0 !important;
+    }
+
+    /* ── Mobil Tab Bar ── */
+    .mobile-tab-bar {
+        display: flex !important;
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        z-index: 55 !important;
+        height: 48px !important;
+        background: rgba(10, 14, 24, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+        align-items: center !important;
+        justify-content: space-around !important;
+    }
+
+    .mobile-tab-btn {
+        flex: 1 !important;
+        height: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 6px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        color: #64748b !important;
+        border: none !important;
+        background: transparent !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        border-bottom: 2px solid transparent !important;
+    }
+
+    .mobile-tab-btn.active {
+        color: #7b9fef !important;
+        border-bottom-color: #7b9fef !important;
+        background: rgba(123,159,239,0.05) !important;
+    }
+
+    /* ── Room contentt — tab barın altına kayar ── */
+    .mobile-room-content {
+        padding-top: 48px !important;
+    }
+
+    /* ── Katılımcı kartları touch-friendly ── */
+    .participant-card,
+    [class*="participant"] button {
+        min-height: 44px !important;
+    }
+
+    /* ── Mesaj giriş kutusu tam genişlik ── */
+    .message-input {
+        font-size: 16px !important; /* iOS zoom'u engelle */
+    }
+
+    /* ── Mesaj send butonu kompakt ── */
+    .send-button {
+        width: 60px !important;
+    }
+
+    /* ── Room container > main düzgün büyüsün ── */
+    .room-container > main,
+    .room-container > * {
+        min-height: 0 !important;
+    }
+}
+
+/* ── Mobil sidebar slide animasyonu ── */
+@keyframes mobileOverlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
 }
 
 /* Mobil sidebar slide-in animasyonu (portal ile kullanılır) */
