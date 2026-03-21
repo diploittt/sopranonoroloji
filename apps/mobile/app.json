@@ -1,0 +1,51 @@
+{
+  "expo": {
+    "name": "SopranoChat",
+    "slug": "sopranochat",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/ikon.png",
+    "scheme": "sopranochat",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sopranochat.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#d0cce0",
+        "foregroundImage": "./assets/images/ikon.png"
+      },
+      "package": "com.sopranochat.app"
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/ikon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/ikon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#d0cce0",
+          "dark": {
+            "backgroundColor": "#d0cce0"
+          }
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "0973e88e-7715-433b-9d6e-0aed1c2b763f"
+      }
+    },
+    "owner": "sopranochat"
+  }
+}

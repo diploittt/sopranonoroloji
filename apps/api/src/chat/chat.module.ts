@@ -10,6 +10,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AdminModule } from '../admin/admin.module';
 import { FriendModule } from '../friend/friend.module';
 import { FriendService } from '../friend/friend.service';
+import { PushService } from '../push/push.service';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { FriendService } from '../friend/friend.service';
       inject: [ConfigService],
     }),
   ],
-  providers: [ChatGateway, ChatService, FriendService],
+  providers: [ChatGateway, ChatService, FriendService, PushService],
   exports: [ChatGateway, ChatService],
 })
 export class ChatModule { }

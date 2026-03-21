@@ -3,32 +3,35 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from './prisma/prisma.service';
 import { AdminService } from './admin/admin.service';
-import * as bcrypt from 'bcryptjs';
 import { json } from 'express';
+import { RedisIoAdapter } from './common/redis.adapter';
+import { AppLoggerService } from './common/logger.service';
+import helmet from 'helmet';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const cookieParser = require('cookie-parser');
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const logger = new AppLoggerService();
+
+  const app = await NestFactory.create(AppModule, { logger });
   const configService = app.get(ConfigService);
 
-  // Cookie parser for OAuth tenant tracking
+  // ── Security ──
+  app.use(helmet({ contentSecurityPolicy: false })); // CSP disabled for WebView compat
   app.use(cookieParser());
-
-  // Increase body size limit for base64 logo uploads
   app.use(json({ limit: '2mb' }));
 
-  // Enable CORS
+  // ── CORS (production: sadece belirli origin) ──
+  const corsOrigin = configService.get<string>('CORS_ORIGIN');
   app.enableCors({
-    origin: true,
+    origin: corsOrigin ? corsOrigin.split(',').map(s => s.trim()) : true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
-  // Global Validation Pipe
+  // ── Validation ──
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -36,18 +39,29 @@ async function bootstrap() {
     }),
   );
 
+  // ── Redis Socket.IO Adapter (cluster-ready) ──
+  const redisUrl = configService.get<string>('REDIS_URL') || 'redis://127.0.0.1:6379';
+  const redisAdapter = new RedisIoAdapter(app);
+  try {
+    await redisAdapter.connectToRedis(redisUrl);
+    app.useWebSocketAdapter(redisAdapter);
+    logger.log('🔄 Redis Socket.IO adapter aktif', 'Bootstrap');
+  } catch (err: any) {
+    logger.warn(`⚠️ Redis adapter bağlanamadı, in-memory fallback: ${err.message}`, 'Bootstrap');
+  }
+
+  // ── Start ──
   const port = configService.get<number>('PORT') || 3001;
   await app.listen(port);
-  // Order System Ready
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  logger.log(`🚀 SopranoChat API çalışıyor: ${await app.getUrl()}`, 'Bootstrap');
 
-  // Auto-seed admin account and default rooms
+  // ── Auto-seed ──
   try {
     const adminService = app.get(AdminService);
     await adminService.setupRootAdmin();
-    console.log('✓ Root admin & default rooms seeded.');
-  } catch (e) {
-    console.warn('⚠ setupRootAdmin skipped:', e.message);
+    logger.log('✓ Root admin & default rooms seeded.', 'Bootstrap');
+  } catch (e: any) {
+    logger.warn(`⚠ setupRootAdmin skipped: ${e.message}`, 'Bootstrap');
   }
 }
 bootstrap();

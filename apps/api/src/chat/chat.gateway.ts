@@ -18,6 +18,9 @@ import { Logger, Inject, forwardRef } from '@nestjs/common';
 import { ModuleRef } from '@nestjs/core';
 import { PrismaService } from '../prisma/prisma.service';
 import { FriendService } from '../friend/friend.service';
+import { PushService } from '../push/push.service';
+import { RedisService } from '../redis/redis.service';
+import { AppLoggerService } from '../common/logger.service';
 
 /**
  * In-memory participant for real-time presence.
@@ -254,6 +257,66 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private setModerationFlag(roomId: string, userId: string, flag: string, value: boolean) {
     const flags = this.getModerationFlags(roomId, userId);
     (flags as any)[flag] = value;
+    // Redis'e de yaz
+    this.redis.setModFlags(roomId, userId, flags).catch(() => {});
+  }
+
+  // ═══════════ REDIS SYNC HELPERS ═══════════
+  // Hibrit yaklaşım: in-memory (hız) + Redis (cluster sync + kalıcılık)
+
+  /** Participant'ı Redis'e senkronize et */
+  private syncParticipantToRedis(socketId: string, p: InMemoryParticipant) {
+    // roomId ve socketId verileri ile Redis'e yaz
+    this.redis.setParticipant(p.roomId, socketId, {
+      userId: p.userId, displayName: p.displayName, avatar: p.avatar,
+      role: p.role, socketId: p.socketId, roomId: p.roomId,
+      roomSlug: p.roomSlug, tenantId: p.tenantId, status: p.status,
+      isMuted: p.isMuted, isGagged: p.isGagged, gender: p.gender,
+      platform: p.platform,
+    }).catch(() => {});
+    this.redis.setSocketRoom(socketId, p.roomId).catch(() => {});
+  }
+
+  /** Participant'ı Redis'ten sil */
+  private removeParticipantFromRedis(socketId: string, roomId: string) {
+    this.redis.removeParticipant(roomId, socketId).catch(() => {});
+    this.redis.removeSocketRoom(socketId).catch(() => {});
+  }
+
+  /** Mic queue'yu Redis'e senkronize et */
+  private syncMicQueueToRedis(roomId: string, queue: string[]) {
+    this.redis.clearMicQueue(roomId).then(() => {
+      for (const userId of queue) {
+        this.redis.addToMicQueue(roomId, userId).catch(() => {});
+      }
+    }).catch(() => {});
+  }
+
+  /** Active speaker'ı Redis'e senkronize et */
+  private syncSpeakerToRedis(roomId: string, speaker: SpeakerState | null) {
+    if (speaker) {
+      this.redis.setActiveSpeaker(roomId, {
+        socketId: speaker.socketId, userId: speaker.userId,
+        displayName: speaker.displayName, role: speaker.role,
+        startedAt: speaker.startedAt, duration: speaker.duration,
+      }).catch(() => {});
+    } else {
+      this.redis.clearActiveSpeaker(roomId).catch(() => {});
+    }
+  }
+
+  /** Chat mesajını Redis'e kaydet (son 100) */
+  private syncChatMessageToRedis(roomId: string, message: any) {
+    this.redis.addChatMessage(roomId, message).catch(() => {});
+  }
+
+  /** Socket event rate limit kontrolü */
+  private async checkSocketRateLimit(userId: string, event: string, max: number, windowSec: number): Promise<boolean> {
+    try {
+      return await this.redis.checkSocketRate(userId, event, max, windowSec);
+    } catch {
+      return true; // Redis down ise allow (graceful fallback)
+    }
   }
 
   /**
@@ -345,7 +408,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private moduleRef: ModuleRef,
     private prisma: PrismaService,
     private friendService: FriendService,
+    private pushService: PushService,
+    private redis: RedisService,
   ) {
+    // ★ Production logger referansı (opsiyonel — AppLoggerService NestJS app logger olarak set edildi)
+    // Event logging için doğrudan this.logger kullanılır.
     // ★ STARTUP CLEANUP — Backend restart'ta tüm aktif oturumları temizle
     // (hiçbir socket bağlı değil, eski kayıtlar hayalet kullanıcı oluşturur)
     setTimeout(async () => {
@@ -404,6 +471,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
             this.logger.warn(`[🧹 ZOMBIE SWEEP] Removed: ${p.displayName} (socket ${zombieId}) from ${p.roomSlug}`);
           }
           this.participants.delete(zombieId);
+          // ★ REDIS SYNC — Zombie cleanup
+          if (p) this.removeParticipantFromRedis(zombieId, p.roomId);
         }
         // Etkilenen odaların katılımcı listesini güncelle
         for (const roomId of affectedRooms) {
@@ -452,6 +521,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  // ═══════════ Push Notification Register ═══════════
+  @SubscribeMessage('push:register')
+  async handlePushRegister(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { expoPushToken: string },
+  ) {
+    const user = client.data?.user;
+    if (!user?.sub || !data?.expoPushToken) return;
+    try {
+      await this.prisma.user.update({
+        where: { id: user.sub },
+        data: { expoPushToken: data.expoPushToken },
+      });
+      this.logger.log(`[PUSH:REGISTER] Token saved for ${user.sub}`);
+    } catch (e) {
+      this.logger.error(`[PUSH:REGISTER] Error: ${e}`);
+    }
+  }
+
   // ═══════════ Gift: List Available Gifts ═══════════
   @SubscribeMessage('gift:list')
   async handleGiftList(@ConnectedSocket() client: Socket) {
@@ -484,6 +572,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     try {
       const user = client.data.user;
       if (!user) return { error: 'Giriş yapmalısınız.' };
+
+      // ★ REDIS RATE LIMIT — gift:send (max 10/60sn)
+      const giftAllowed = await this.checkSocketRateLimit(user.sub, 'gift:send', 10, 60);
+      if (!giftAllowed) {
+        return { error: 'Çok hızlı hediye gönderiyorsunuz. Lütfen biraz bekleyin.' };
+      }
 
       const sender = this.participants.get(client.id);
       if (!sender) return { error: 'Oturumunuz bulunamadı.' };
@@ -615,6 +709,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       this.logger.log(`🎁 ${sender.displayName} → ${receiverDb?.displayName}: ${quantity}x ${gift.emoji} ${gift.name} (${totalCost} jeton)`);
+
+      // ★ Push Notification — alıcıya push bildirim gönder
+      this.sendGiftPushIfNeeded(data.receiverId, sender.displayName, `${gift.emoji} ${gift.name}`, sender.roomSlug).catch(() => {});
 
       return { success: true };
     } catch (err: any) {
@@ -780,6 +877,195 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     return { success: true, amount: data.amount };
   }
+
+  // ═══════════ Admin: Token Order — Listele ═══════════
+  @SubscribeMessage('token:orders')
+  async handleTokenOrders(@ConnectedSocket() client: Socket) {
+    const user = client.data?.user;
+    if (!user) return;
+
+    const actor = this.participants.get(client.id);
+    if (!actor || getRoleLevel(actor.role || 'guest') < ROLE_HIERARCHY['admin']) {
+      return { error: 'Yetkiniz yok.' };
+    }
+
+    try {
+      const orders = await this.prisma.tokenOrder.findMany({
+        where: { tenantId: user.tenantId },
+        include: {
+          user: { select: { id: true, displayName: true, avatarUrl: true, email: true } },
+          package: { select: { name: true, emoji: true, tokenAmount: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 100,
+      });
+
+      client.emit('token:ordersResponse', {
+        orders: orders.map(o => ({
+          id: o.id,
+          userId: o.userId,
+          userName: o.user.displayName,
+          userAvatar: o.user.avatarUrl,
+          userEmail: o.user.email,
+          packageName: o.package.name,
+          packageEmoji: o.package.emoji,
+          tokenAmount: o.tokenAmount,
+          price: Number(o.price),
+          status: o.status,
+          paymentMethod: o.paymentMethod || 'manual',
+          adminNote: o.adminNote,
+          processedBy: o.processedBy,
+          processedAt: o.processedAt?.toISOString(),
+          createdAt: o.createdAt.toISOString(),
+        })),
+      });
+    } catch (err: any) {
+      this.logger.error(`[TOKEN:ORDERS] Hata: ${err.message}`);
+      client.emit('token:ordersResponse', { orders: [] });
+    }
+  }
+
+  // ═══════════ Admin: Token Order — Onayla ═══════════
+  @SubscribeMessage('token:approveOrder')
+  async handleTokenApproveOrder(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { orderId: string; adminNote?: string },
+  ) {
+    const user = client.data?.user;
+    if (!user) return { error: 'Giriş yapmalısınız.' };
+
+    const actor = this.participants.get(client.id);
+    if (!actor || getRoleLevel(actor.role || 'guest') < ROLE_HIERARCHY['admin']) {
+      return { error: 'Yetkiniz yok.' };
+    }
+
+    if (!data?.orderId) return { error: 'orderId gerekli.' };
+
+    try {
+      const order = await this.prisma.tokenOrder.findUnique({
+        where: { id: data.orderId },
+        include: { package: { select: { name: true, emoji: true } } },
+      });
+
+      if (!order) return { error: 'Sipariş bulunamadı.' };
+      if (order.status !== 'PENDING') return { error: `Sipariş zaten işlenmiş (${order.status}).` };
+
+      // Transaction: order → APPROVED + bakiye yükle
+      await this.prisma.$transaction([
+        this.prisma.tokenOrder.update({
+          where: { id: data.orderId },
+          data: {
+            status: 'APPROVED',
+            processedBy: user.sub,
+            processedAt: new Date(),
+            adminNote: data.adminNote || null,
+          },
+        }),
+        this.prisma.user.update({
+          where: { id: order.userId },
+          data: { balance: { increment: order.tokenAmount } },
+        }),
+      ]);
+
+      this.logger.log(`✅ Token Order onaylandı: ${data.orderId} → +${order.tokenAmount} jeton (admin: ${actor.displayName})`);
+
+      // Push bildirim
+      try {
+        const targetUser = await this.prisma.user.findUnique({
+          where: { id: order.userId },
+          select: { expoPushToken: true },
+        });
+        if (targetUser?.expoPushToken) {
+          await this.pushService.sendPushNotification({
+            to: targetUser.expoPushToken,
+            title: '✅ Sipariş Onaylandı!',
+            body: `${order.tokenAmount.toLocaleString()} jeton hesabınıza yüklendi.`,
+            data: { type: 'token_approved' },
+          });
+        }
+      } catch { /* sessizce atla */ }
+
+      // Kullanıcının bakiyesini güncelle — eğer online ise
+      for (const [, p] of this.participants) {
+        if (p.userId === order.userId) {
+          const updatedUser = await this.prisma.user.findUnique({
+            where: { id: order.userId },
+            select: { balance: true, points: true },
+          });
+          this.server.to(p.socketId).emit('gift:balance', {
+            balance: Number(updatedUser?.balance || 0),
+            points: updatedUser?.points || 0,
+          });
+          break;
+        }
+      }
+
+      return { success: true, message: `Sipariş onaylandı, ${order.tokenAmount} jeton yüklendi.` };
+    } catch (err: any) {
+      this.logger.error(`[TOKEN:APPROVE] Hata: ${err.message}`, err.stack);
+      return { error: `İşlem hatası: ${err.message}` };
+    }
+  }
+
+  // ═══════════ Admin: Token Order — Reddet ═══════════
+  @SubscribeMessage('token:rejectOrder')
+  async handleTokenRejectOrder(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { orderId: string; adminNote?: string },
+  ) {
+    const user = client.data?.user;
+    if (!user) return { error: 'Giriş yapmalısınız.' };
+
+    const actor = this.participants.get(client.id);
+    if (!actor || getRoleLevel(actor.role || 'guest') < ROLE_HIERARCHY['admin']) {
+      return { error: 'Yetkiniz yok.' };
+    }
+
+    if (!data?.orderId) return { error: 'orderId gerekli.' };
+
+    try {
+      const order = await this.prisma.tokenOrder.findUnique({
+        where: { id: data.orderId },
+      });
+
+      if (!order) return { error: 'Sipariş bulunamadı.' };
+      if (order.status !== 'PENDING') return { error: `Sipariş zaten işlenmiş (${order.status}).` };
+
+      await this.prisma.tokenOrder.update({
+        where: { id: data.orderId },
+        data: {
+          status: 'REJECTED',
+          processedBy: user.sub,
+          processedAt: new Date(),
+          adminNote: data.adminNote || null,
+        },
+      });
+
+      this.logger.log(`❌ Token Order reddedildi: ${data.orderId} (admin: ${actor.displayName})`);
+
+      // Push bildirim
+      try {
+        const targetUser = await this.prisma.user.findUnique({
+          where: { id: order.userId },
+          select: { expoPushToken: true },
+        });
+        if (targetUser?.expoPushToken) {
+          await this.pushService.sendPushNotification({
+            to: targetUser.expoPushToken,
+            title: '❌ Sipariş Reddedildi',
+            body: data.adminNote || 'Jeton siparişiniz reddedildi.',
+            data: { type: 'token_rejected' },
+          });
+        }
+      } catch { /* sessizce atla */ }
+
+      return { success: true, message: 'Sipariş reddedildi.' };
+    } catch (err: any) {
+      this.logger.error(`[TOKEN:REJECT] Hata: ${err.message}`, err.stack);
+      return { error: `İşlem hatası: ${err.message}` };
+    }
+  }
+
 
   // ═══════════ Admin Panel: Live User Update via Socket ═══════════
   @SubscribeMessage('admin:userUpdate')
@@ -976,6 +1262,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       }
 
       this.participants.delete(client.id);
+      // ★ REDIS SYNC — Disconnect'te Redis'ten de sil
+      this.removeParticipantFromRedis(client.id, participant.roomId);
 
       // ★ Oda boşsa mesajları 5dk sonra temizle (kullanıcı geri dönebilir)
       const roomStillHasUsers = Array.from(this.participants.values()).some(p => p.roomId === participant.roomId);
@@ -1054,6 +1342,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Remove from participants
     this.participants.delete(client.id);
+    // ★ REDIS SYNC — room:leave'de Redis'ten de sil
+    this.removeParticipantFromRedis(client.id, participant.roomId);
 
     // ★ Oda boşsa mesajları 5dk sonra temizle (kullanıcı geri dönebilir)
     const roomStillHasUsersAfterLeave = Array.from(this.participants.values()).some(p => p.roomId === participant.roomId);
@@ -1723,6 +2013,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.participants.set(client.id, participant);
     (participant as any)._joinedAt = Date.now(); // ZOMBIE SWEEP grace period için
+    // ★ REDIS SYNC — Participant'ı Redis'e yaz (cluster sync + restart kalıcılığı)
+    this.syncParticipantToRedis(client.id, participant);
 
     // ★ SOFT BAN — mark participant as banned if soft ban applies
     if (softBanInfo) {
@@ -2169,6 +2461,13 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const user = client.data.user;
     if (!user) return;
 
+    // ★ REDIS RATE LIMIT — chat:message (max 15/10sn)
+    const chatAllowed = await this.checkSocketRateLimit(user.sub, 'chat:message', 15, 10);
+    if (!chatAllowed) {
+      client.emit('room:toast', { type: 'error', title: 'Rate Limit', message: 'Çok hızlı mesaj gönderiyorsunuz. Lütfen biraz bekleyin.' });
+      return;
+    }
+
     // ★ BAN CHECK — Banlı kullanıcılar mesaj atamaz
     const msgSender = this.participants.get(client.id);
     if (msgSender?.isBanned) {
@@ -2292,6 +2591,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (roomMsgs.length > this.MAX_ROOM_MESSAGES) {
       roomMsgs.shift();
     }
+    // ★ REDIS SYNC — Mesajı Redis'e de kaydet (son 100, cluster sync)
+    this.syncChatMessageToRedis(broadcastTarget, fullMessage);
 
     // ★ Mesajı gören herkesi "görmüş" olarak işaretle — oda değiştirip geri dönerlerse mesajları görür
     if (!this.roomUserSeen.has(broadcastTarget)) {
@@ -4614,6 +4915,53 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.logger.log(
       `[DM] ${senderUser.displayName} → ${target.displayName}: ${content.trim().slice(0, 50)}`,
     );
+
+    // ★ Push Notification — hedef kullanıcı offline olabilir, push gönder
+    this.sendDmPushIfNeeded(target.userId, senderUser.displayName, content.trim()).catch(() => {});
+  }
+
+  /**
+   * DM push bildirimi — hedef kullanıcının expoPushToken'ı varsa gönder
+   */
+  private async sendDmPushIfNeeded(targetUserId: string, senderName: string, content: string) {
+    try {
+      const targetUser = await this.prisma.user.findUnique({
+        where: { id: targetUserId },
+        select: { expoPushToken: true },
+      });
+      if (targetUser?.expoPushToken) {
+        await this.pushService.sendDMNotification(
+          targetUser.expoPushToken,
+          senderName,
+          content,
+          { fromUserId: targetUserId },
+        );
+      }
+    } catch (e) {
+      this.logger.warn(`[PUSH:DM] Failed: ${e}`);
+    }
+  }
+
+  /**
+   * Gift push bildirimi — alıcının expoPushToken'ı varsa gönder
+   */
+  private async sendGiftPushIfNeeded(receiverId: string, senderName: string, giftName: string, roomSlug?: string) {
+    try {
+      const receiver = await this.prisma.user.findUnique({
+        where: { id: receiverId },
+        select: { expoPushToken: true },
+      });
+      if (receiver?.expoPushToken) {
+        await this.pushService.sendGiftNotification(
+          receiver.expoPushToken,
+          senderName,
+          giftName,
+          { roomSlug: roomSlug || '' },
+        );
+      }
+    } catch (e) {
+      this.logger.warn(`[PUSH:GIFT] Failed: ${e}`);
+    }
   }
 
   // ─── DM NUDGE (MSN-style screen shake via DM) ───

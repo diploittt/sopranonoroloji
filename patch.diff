@@ -1,0 +1,258 @@
+diff --git a/apps/api/src/chat/chat.gateway.ts b/apps/api/src/chat/chat.gateway.ts
+index 6ec6578..0b8f93a 100644
+--- a/apps/api/src/chat/chat.gateway.ts
++++ b/apps/api/src/chat/chat.gateway.ts
+@@ -18,6 +18,7 @@ import { Logger, Inject, forwardRef } from '@nestjs/common';
+ import { ModuleRef } from '@nestjs/core';
+ import { PrismaService } from '../prisma/prisma.service';
+ import { FriendService } from '../friend/friend.service';
++import { PushService } from '../push/push.service';
+ 
+ /**
+  * In-memory participant for real-time presence.
+@@ -345,6 +346,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+     private moduleRef: ModuleRef,
+     private prisma: PrismaService,
+     private friendService: FriendService,
++    private pushService: PushService,
+   ) {
+     // Ôİà STARTUP CLEANUP ÔÇö Backend restart'ta t+-m aktif oturumlar¦- temizle
+     // (hi+ğbir socket ba¦şl¦- de¦şil, eski kay¦-tlar hayalet kullan¦-c¦- olu+şturur)
+@@ -453,6 +455,24 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+   }
+ 
+   // ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ Gift: List Available Gifts ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ
++  @SubscribeMessage('push:register')
++  async handlePushRegister(
++    @ConnectedSocket() client: Socket,
++    @MessageBody() data: { expoPushToken: string },
++  ) {
++    const user = client.data?.user;
++    if (!user?.sub || !data?.expoPushToken) return;
++    try {
++      await this.prisma.user.update({
++        where: { id: user.sub },
++        data: { expoPushToken: data.expoPushToken },
++      });
++      this.logger.log(`[PUSH:REGISTER] Token saved for ${user.sub}`);
++    } catch (e) {
++      this.logger.error(`[PUSH:REGISTER] Error: ${e}`);
++    }
++  }
++
+   @SubscribeMessage('gift:list')
+   async handleGiftList(@ConnectedSocket() client: Socket) {
+     const user = client.data.user;
+@@ -616,7 +636,23 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+ 
+       this.logger.log(`­şÄü ${sender.displayName} ÔåÆ ${receiverDb?.displayName}: ${quantity}x ${gift.emoji} ${gift.name} (${totalCost} jeton)`);
+ 
+-      return { success: true };
++      // --- PUSH NOTIFICATION (GIFT) ---
++      if (receiverExists.expoPushToken) {
++        // Hedef kullan¦-c¦- online de¦şilse veya farkl¦- odadaysa push g+Ânder
++        const targetOnline = Array.from(this.participants.values()).find(
++          (p) => p.userId === data.receiverId
++        );
++        if (!targetOnline) {
++          await this.pushService.sendGiftNotification(
++            receiverExists.expoPushToken,
++            sender.displayName,
++            gift.name,
++            { roomId: sender.roomSlug }
++          );
++        }
++      }
++
++      return { success: true, ...responseData };
+     } catch (err: any) {
+       this.logger.error(`[GIFT:SEND] Error: ${err.message}`, err.stack);
+       return { error: `Hediye g+Ânderilemedi: ${err.message}` };
+@@ -2305,6 +2341,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+     });
+ 
+     this.server.to(broadcastTarget).emit('chat:message', fullMessage);
++
++    // --- PUSH NOTIFICATION (MENTION) ---
++    // Mesaj i+ğeri¦şinde etiket var m¦- kontrol et (@username)
++    if (filteredContent.includes('@')) {
++      const words = filteredContent.split(/[ \n]+/);
++      const mentions = words.filter(w => w.startsWith('@')).map(w => w.slice(1));
++
++      if (mentions.length > 0) {
++        for (const username of mentions) {
++          // Username'den kullan¦-c¦-y¦- bul (+Ânbellekten bulmaya +ğal¦-+ş, yoksa DB'den)
++          // Bu basit versiyon: Performans i+ğin t+-m DB'yi taramaktansa online kat¦-l¦-mc¦-lara bak¦-l¦-r.
++          // +çevrimd¦-+ş¦- mention atmak i+ğin db sorgusu gerekir
++          this.prisma.user.findFirst({
++            where: { displayName: username, expoPushToken: { not: null } },
++            select: { id: true, expoPushToken: true }
++          }).then(targetUser => {
++            if (targetUser && targetUser.expoPushToken && targetUser.id !== user.sub) {
++              const targetOnline = Array.from(this.participants.values()).find(
++                (p) => p.userId === targetUser.id
++              );
++              if (!targetOnline) {
++                 this.pushService.sendMentionNotification(
++                  targetUser.expoPushToken,
++                  sender?.displayName || user.displayName || user.username,
++                  payload.roomId, // roomSlug
++                  { roomSlug: payload.roomId }
++                ).catch(e => this.logger.error(`Mention push error: ${e}`));
++              }
++            }
++          }).catch(e => this.logger.error(`Mention user lookup error: ${e}`));
++        }
++      }
++    }
+   }
+ 
+   @SubscribeMessage('chat:typing')
+@@ -4252,33 +4321,126 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
+     @MessageBody() payload: { otherUserId: string; text: string },
+   ) {
+     const sender = this.participants.get(client.id);
+-    if (!sender || !payload.text?.trim()) return;
+-
+-    const msgData = {
+-      id: `o2o-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+-      text: payload.text.trim(),
+-      senderDisplayName: sender.displayName || 'Bilinmeyen',
+-      senderAvatar: sender.avatar || '',
+-      senderRole: sender.role || 'guest',
+-      senderId: sender.userId || sender.socketId,
+-      timestamp: new Date().toISOString(),
+-    };
++    // Fallback: backend restart sonras¦- participants Map bo+ş olabilir
++    const senderUser = sender || (client.data?.user ? {
++      userId: client.data.user.sub || client.data.user.userId,
++      displayName: client.data.user.displayName || client.data.user.username || 'Unknown',
++      role: client.data.user.role || 'guest',
++      tenantId: client.data.user.tenantId || 'default',
++    } : null);
++    if (!senderUser) return;
+ 
+-    // Kar+ş¦- taraf¦- bul
+-    let otherSocketId: string | null = null;
+-    this.participants.forEach((p, key) => {
+-      if (p.userId === payload.otherUserId || p.socketId === payload.otherUserId) {
+-        otherSocketId = key;
++    // ÔöÇÔöÇÔöÇ GUEST DM PERMISSION CHECK ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ
++    if (senderUser.role === 'guest') {
++      const settings = this.tenantSettings.get(senderUser.tenantId);
++      if (settings && !settings.guestPrivateMessage) {
++        client.emit('dm:error', { message: 'Misafirler +Âzel mesaj g+Ânderemez.' });
++        return;
+       }
++    }
++
++    const { content, otherUserId } = payload;
++    if (!content?.trim() || !otherUserId) return;
++
++    const { socketId: targetSocketId, participant: target } =
++      this.findTargetSocket(otherUserId);
++
++    if (!targetSocketId || !target) {
++      client.emit('dm:error', { message: 'Kullan¦-c¦- bulunamad¦-.' });
++      return;
++    }
++
++    const dmMessage = {
++      id: `dm-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
++      from: senderUser.displayName,
++      fromUserId: senderUser.userId,
++      to: target.displayName,
++      toUserId: target.userId,
++      message: content.trim(),
++      timestamp: Date.now(),
++    };
++
++    // Send to target
++    this.server.to(targetSocketId).emit('dm:receive', {
++      ...dmMessage,
++      isSelf: false,
+     });
+ 
+-    // Kar+ş¦- tarafa g+Ânder
+-    if (otherSocketId) {
+-      this.server.to(otherSocketId).emit('one2one:message', msgData);
++    // Send confirmation back to sender
++    client.emit('dm:receive', {
++      ...dmMessage,
++      isSelf: true,
++    });
++
++    // --- PUSH NOTIFICATION (DM) ---
++    // DM at¦-ld¦-¦ş¦-nda targetSocketId +-zerinden zaten iletildi ama e¦şer mobil kullan¦-c¦-
++    // uygulamay¦- background'a ald¦-ysa (fakat socket'i kopmad¦-ysa) veya koptuysa, push bildirim at¦-labilir.
++    // +Şimdilik DB'den target kullan¦-c¦-n¦-n push token'¦-n¦- +ğekip atal¦-m
++    this.prisma.user.findUnique({
++      where: { id: otherUserId },
++      select: { expoPushToken: true }
++    }).then(targetUser => {
++      if (targetUser?.expoPushToken) {
++         this.pushService.sendDMNotification(
++          targetUser.expoPushToken,
++          senderUser.displayName,
++          content.trim(),
++          { fromUserId: senderUser.userId, roomId: sender?.roomSlug } // deep link data
++        ).catch(e => this.logger.error(`DM push error: ${e}`));
++      }
++    }).catch(e => this.logger.error(`DM push user lookup error: ${e}`));
++
++    this.logger.log(
++      `[DM] ${senderUser.displayName} ÔåÆ ${target.displayName}: ${content.trim().slice(0, 50)}`,
++    );
++  }
++
++  // ÔöÇÔöÇÔöÇ DM NUDGE (MSN-style screen shake via DM) ÔöÇÔöÇÔöÇ
++  @SubscribeMessage('dm:nudge')
++  handleDmNudge(
++    @ConnectedSocket() client: Socket,
++    @MessageBody() payload: { targetUsername: string },
++  ) {
++    const sender = this.participants.get(client.id);
++    if (!sender) return;
++
++    const { targetUsername } = payload;
++    if (!targetUsername) return;
++
++    // Cooldown: 5 saniye ÔÇö ayn¦- kullan¦-c¦-ya tekrar nudge at¦-lamaz
++    const cooldownKey = `nudge:${sender.userId}:${targetUsername}`;
++    const lastNudge = this._duelReactionCooldowns.get(cooldownKey) || 0;
++    if (Date.now() - lastNudge < 5000) {
++      client.emit('room:toast', { type: 'warning', title: 'Bekle', message: 'Titretmek i+ğin 5 saniye bekle.' });
++      return;
++    }
++    this._duelReactionCooldowns.set(cooldownKey, Date.now());
++
++    // Find target by displayName in same room
++    let targetSocketId: string | null = null;
++    let targetParticipant: any = null;
++    for (const [sid, p] of this.participants.entries()) {
++      if (p.displayName === targetUsername && p.roomId === sender.roomId) {
++        targetSocketId = sid;
++        targetParticipant = p;
++        break;
++      }
++    }
++
++    if (!targetSocketId || !targetParticipant) {
++      client.emit('room:toast', { type: 'error', title: 'Hata', message: 'Kullan¦-c¦- bulunamad¦-.' });
++      return;
+     }
+ 
+-    // G+Ânderene de geri g+Ânder (kendi mesaj¦-n¦- g+Ârmesi i+ğin)
+-    client.emit('one2one:message', msgData);
++    // Send nudge to target
++    this.server.to(targetSocketId).emit('dm:nudge-received', {
++      from: sender.displayName,
++      fromUserId: sender.userId,
++    });
++
++    // Confirmation to sender
++    client.emit('room:toast', { type: 'info', title: '­şô- Titretme', message: `${targetParticipant.displayName} titretildi!` });
++    this.logger.log(`[DM-NUDGE] ${sender.displayName} nudged ${targetParticipant.displayName} via DM`);
+   }
+ 
+   // ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ Admin Room Action ÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉÔòÉ

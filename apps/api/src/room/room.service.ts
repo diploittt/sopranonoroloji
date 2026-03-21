@@ -376,6 +376,7 @@ export class RoomService {
         onlineUsers: t.rooms.reduce((sum, r) => sum + (r._count?.participants || 0), 0),
         firstRoom: t.rooms[0]?.slug || null,
         firstRoomName: t.rooms[0]?.name || null,
+        rooms: t.rooms.map(r => ({ id: r.id, name: r.name, slug: r.slug, onlineUsers: r._count?.participants || 0 })),
       }));
 
     const ownDomainCustomers = tenants
@@ -388,6 +389,7 @@ export class RoomService {
         logoUrl: t.logoUrl,
         roomCount: t.rooms.length,
         onlineUsers: t.rooms.reduce((sum, r) => sum + (r._count?.participants || 0), 0),
+        rooms: t.rooms.map(r => ({ id: r.id, name: r.name, slug: r.slug, onlineUsers: r._count?.participants || 0 })),
       }));
 
     return { sopranoChatCustomers, ownDomainCustomers };
