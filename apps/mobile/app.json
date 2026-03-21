@@ -9,14 +9,18 @@
     "userInterfaceStyle": "light",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.sopranochat.app"
+      "bundleIdentifier": "com.sopranochat.app",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "SopranoChat sesli sohbet için mikrofon erişimi gerektirir."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#d0cce0",
         "foregroundImage": "./assets/images/ikon.png"
       },
-      "package": "com.sopranochat.app"
+      "package": "com.sopranochat.app",
+      "permissions": ["android.permission.RECORD_AUDIO"]
     },
     "web": {
       "output": "static",

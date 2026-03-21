@@ -29,10 +29,14 @@ interface UseLiveKitReturn {
 }
 
 export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptions): UseLiveKitReturn {
-  const { user, socketConnected } = useStore();
+  // Zustand selector — sadece bu field'lar değişince re-render
+  const socketConnected = useStore((s) => s.socketConnected);
+  const user = useStore((s) => s.user);
+
   const [connectionState, setConnectionState] = useState<LiveKitConnectionState>('idle');
   const [isPublishing, setIsPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const connectAttemptedRef = useRef(false);
 
   // App state tracking
   const appStateRef = useRef(AppState.currentState);
@@ -40,55 +44,70 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
 
   // ─── Connect/Disconnect lifecycle ─────────────────────────
   useEffect(() => {
-    if (!roomSlug || !user?.id || !socketConnected || !enabled) return;
+    console.log('[useLiveKit] Effect — roomSlug:', roomSlug, 'socketConnected:', socketConnected, 'enabled:', enabled, 'userId:', user?.id);
+
+    if (!roomSlug || !enabled) {
+      console.log('[useLiveKit] Atlanıyor — roomSlug veya enabled yok');
+      return;
+    }
+
+    if (!socketConnected) {
+      console.log('[useLiveKit] Atlanıyor — socket bağlı değil, bekliyor...');
+      return;
+    }
+
+    // Zaten bağlandıysa tekrar deneme
+    if (connectAttemptedRef.current && livekitService.isConnected) {
+      console.log('[useLiveKit] Zaten bağlı');
+      return;
+    }
+
+    const userId = user?.id || user?.displayName || `guest_${Date.now()}`;
+    const displayName = user?.displayName || user?.id || 'Misafir';
+
+    console.log('[useLiveKit] ✅ Tüm koşullar sağlandı — bağlanıyor:', roomSlug, userId);
+    connectAttemptedRef.current = true;
 
     // Callbacks ayarla
     livekitService.setCallbacks({
-      onConnectionStateChanged: (state) => {
-        setConnectionState(state);
-      },
+      onConnectionStateChanged: (state) => setConnectionState(state),
       onError: (errorMsg) => {
         setError(errorMsg);
-        // 5 saniye sonra hatayı temizle
         setTimeout(() => setError(null), 5000);
       },
-      onSpeakingChanged: (participantId, isSpeaking) => {
-        // Bu bilgi zaten socket üzerinden geliyor,
-        // ama LiveKit'ten gelen daha doğru olabilir.
-        // İleride store'a yazılabilir.
-      },
+      onSpeakingChanged: () => {},
     });
 
     // Bağlan
-    const connectAsync = async () => {
-      const success = await livekitService.connect(roomSlug, user.id, user.displayName || user.id);
+    livekitService.connect(roomSlug, userId, displayName).then((success) => {
+      console.log('[useLiveKit] Bağlantı sonucu:', success);
       if (!success) {
         setError('LiveKit bağlantısı kurulamadı');
+        connectAttemptedRef.current = false; // Tekrar denenebilsin
       }
-    };
-    connectAsync();
+    });
 
-    // Cleanup — component unmount veya parametre değişikliği
+    // Cleanup
     return () => {
+      console.log('[useLiveKit] Cleanup — disconnect');
+      connectAttemptedRef.current = false;
       livekitService.clearCallbacks();
       livekitService.disconnect();
       setConnectionState('idle');
       setIsPublishing(false);
       setError(null);
     };
-  }, [roomSlug, user?.id, socketConnected, enabled]);
+  }, [roomSlug, socketConnected, enabled, user?.id, user?.displayName]);
 
   // ─── App State (background/foreground) ────────────────────
   useEffect(() => {
     const handleAppState = async (nextState: AppStateStatus) => {
       if (appStateRef.current.match(/active/) && nextState.match(/inactive|background/)) {
-        // Background'a geçiş — yayın varsa kaydet ve durdur
         if (livekitService.isPublishing) {
           wasPublishingRef.current = true;
           await livekitService.setMicEnabled(false);
         }
       } else if (appStateRef.current.match(/inactive|background/) && nextState === 'active') {
-        // Foreground'a dönüş — yayın devam ediyordu ise yeniden başlat
         if (wasPublishingRef.current) {
           wasPublishingRef.current = false;
           await livekitService.setMicEnabled(true);
@@ -113,8 +132,8 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
     setIsPublishing(false);
   }, []);
 
-  const setMicEnabled = useCallback(async (enabled: boolean): Promise<void> => {
-    await livekitService.setMicEnabled(enabled);
+  const setMicEnabled = useCallback(async (en: boolean): Promise<void> => {
+    await livekitService.setMicEnabled(en);
   }, []);
 
   return {
@@ -126,3 +145,4 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
     setMicEnabled,
   };
 }
+

@@ -509,10 +509,10 @@ const s = StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.6)' },
   container: {
     width: '92%', maxHeight: '85%',
-    backgroundColor: 'rgba(15,22,40,0.99)',
+    backgroundColor: '#fff',
     borderRadius: 20, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 25 }, shadowOpacity: 0.6, shadowRadius: 60,
+    borderWidth: 1, borderColor: 'rgba(148,163,184,0.15)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 25 }, shadowOpacity: 0.15, shadowRadius: 60,
     elevation: 30,
   },
 
@@ -520,14 +520,14 @@ const s = StyleSheet.create({
   header: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingHorizontal: 18, paddingVertical: 14,
-    borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.06)',
+    borderBottomWidth: 0.5, borderBottomColor: 'rgba(148,163,184,0.12)',
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  headerTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
-  headerSub: { fontSize: 10, color: '#94a3b8', marginTop: 1 },
+  headerTitle: { fontSize: 16, fontWeight: '700', color: '#1e293b' },
+  headerSub: { fontSize: 10, color: '#64748b', marginTop: 1 },
   closeBtn: {
     width: 30, height: 30, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(148,163,184,0.08)',
     alignItems: 'center', justifyContent: 'center',
   },
 
@@ -536,12 +536,12 @@ const s = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', gap: 12,
     marginHorizontal: 16, marginTop: 12,
     padding: 10, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: 'rgba(99,102,241,0.04)',
   },
   balanceItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   balanceVal: { fontSize: 14, fontWeight: '700', color: '#fbbf24' },
   balanceLabel: { fontSize: 10, color: '#94a3b8' },
-  divider: { width: 1, height: 16, backgroundColor: 'rgba(255,255,255,0.1)' },
+  divider: { width: 1, height: 16, backgroundColor: 'rgba(148,163,184,0.15)' },
 
   // Messages
   msgBox: { marginHorizontal: 16, marginTop: 8, padding: 8, borderRadius: 8 },
@@ -566,7 +566,7 @@ const s = StyleSheet.create({
     position: 'relative', overflow: 'hidden',
   },
   pkgEmoji: { fontSize: 28, marginBottom: 8 },
-  pkgName: { fontSize: 13, fontWeight: '700', color: '#fff', marginBottom: 2 },
+  pkgName: { fontSize: 13, fontWeight: '700', color: '#1e293b', marginBottom: 2 },
   pkgAmount: { fontSize: 18, fontWeight: '800', color: '#fbbf24', marginBottom: 4 },
   pkgAmountLabel: { fontSize: 10, fontWeight: '500', color: '#94a3b8' },
   pkgDesc: { fontSize: 9, color: '#64748b', marginBottom: 6 },
@@ -581,7 +581,7 @@ const s = StyleSheet.create({
   iyzicoBtnText: { fontSize: 11, fontWeight: '700', color: '#818cf8' },
   manualBtn: {
     width: 32, height: 32, borderRadius: 8,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    backgroundColor: 'rgba(148,163,184,0.06)',
     alignItems: 'center', justifyContent: 'center',
   },
 
@@ -606,22 +606,22 @@ const s = StyleSheet.create({
   // Footer
   footer: {
     paddingHorizontal: 16, paddingVertical: 10,
-    borderTopWidth: 0.5, borderTopColor: 'rgba(255,255,255,0.04)',
+    borderTopWidth: 0.5, borderTopColor: 'rgba(148,163,184,0.1)',
     alignItems: 'center',
   },
   footerText: { fontSize: 9, color: '#64748b', textAlign: 'center' },
 
   // ════ WebView ════
-  webviewContainer: { flex: 1, backgroundColor: '#0f1628' },
+  webviewContainer: { flex: 1, backgroundColor: '#f8fafc' },
   webviewHeader: {
     flexDirection: 'row', alignItems: 'center', gap: 12,
     paddingTop: 50, paddingHorizontal: 16, paddingBottom: 12,
-    backgroundColor: 'rgba(15,22,40,0.98)',
-    borderBottomWidth: 0.5, borderBottomColor: 'rgba(99,102,241,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.98)',
+    borderBottomWidth: 0.5, borderBottomColor: 'rgba(148,163,184,0.15)',
   },
   webviewBackBtn: {
     width: 36, height: 36, borderRadius: 10,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(148,163,184,0.08)',
     alignItems: 'center', justifyContent: 'center',
   },
   webviewCloseBtn: {
@@ -629,7 +629,7 @@ const s = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.05)',
     alignItems: 'center', justifyContent: 'center',
   },
-  webviewTitle: { fontSize: 16, fontWeight: '700', color: '#fff' },
+  webviewTitle: { fontSize: 16, fontWeight: '700', color: '#1e293b' },
   webviewSubtitle: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
   progressBar: { height: 3, backgroundColor: 'rgba(255,255,255,0.05)' },
   progressFill: { height: 3, backgroundColor: '#818cf8', borderRadius: 2 },
@@ -647,8 +647,8 @@ const s = StyleSheet.create({
   },
   resultCard: {
     width: '85%', padding: 32, borderRadius: 24,
-    backgroundColor: 'rgba(15,22,40,0.98)',
-    borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)',
+    backgroundColor: '#fff',
+    borderWidth: 1, borderColor: 'rgba(99,102,241,0.15)',
     alignItems: 'center', gap: 12,
   },
   resultErrorCard: { borderColor: 'rgba(239,68,68,0.2)' },

@@ -114,10 +114,10 @@ function RootLayoutInner() {
 
   return (
     <SafeAreaProvider>
-      <SafeAreaView style={{ flex: 1, backgroundColor: '#eee8f5' }} edges={['bottom']}>
+      <SafeAreaView style={{ flex: 1, backgroundColor: '#0a0e27' }} edges={['bottom']}>
         <Slot />
       </SafeAreaView>
-      <StatusBar style="dark" />
+      <StatusBar style="light" />
     </SafeAreaProvider>
   );
 }
@@ -127,7 +127,7 @@ const splashStyles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#eee8f5',
+    backgroundColor: '#0a0e27',
   },
   icon: {
     width: W * 0.8,
@@ -136,16 +136,16 @@ const splashStyles = StyleSheet.create({
   orbTopRight: {
     position: 'absolute', top: -60, right: -80,
     width: 280, height: 280, borderRadius: 140,
-    backgroundColor: 'rgba(180,230,225,0.35)',
+    backgroundColor: 'rgba(139,92,246,0.12)',
   },
   orbBottomLeft: {
     position: 'absolute', bottom: 60, left: -100,
     width: 300, height: 300, borderRadius: 150,
-    backgroundColor: 'rgba(220,180,230,0.25)',
+    backgroundColor: 'rgba(59,130,246,0.08)',
   },
   orbCenterBlue: {
     position: 'absolute', top: '30%' as any, right: -30,
     width: 250, height: 250, borderRadius: 125,
-    backgroundColor: 'rgba(180,210,240,0.3)',
+    backgroundColor: 'rgba(192,132,252,0.06)',
   },
 });

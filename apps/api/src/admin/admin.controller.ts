@@ -297,13 +297,14 @@ export class AdminController {
   // ═══════════════════════════════════════════════════════════
 
   @Get('rooms')
-  @Roles('admin', 'owner', 'superadmin')
+  @Roles('admin', 'owner', 'superadmin', 'godmaster')
   async getRooms(@Req() req: any) {
+    console.log('[GET /admin/rooms] Headers x-tenant:', req.headers['x-tenant-id'], 'User:', req.user);
     return this.adminService.getRooms(req.user.tenantId);
   }
 
   @Post('rooms')
-  @Roles('admin', 'owner', 'superadmin')
+  @Roles('godmaster')
   async createRoom(
     @Req() req: any,
     @Body()
@@ -324,12 +325,16 @@ export class AdminController {
   }
 
   @Patch('rooms/:id')
-  @Roles('admin', 'owner', 'superadmin')
+  @Roles('admin', 'owner', 'superadmin', 'godmaster')
   async updateRoom(
     @Req() req: any,
     @Param('id') id: string,
     @Body() body: any,
   ) {
+    const role = (req.user.role || '').toLowerCase();
+    if (role !== 'godmaster' && body.maxParticipants !== undefined) {
+      delete body.maxParticipants;
+    }
     return this.adminService.updateRoom(req.user.userId, id, body, req.ip);
   }
 

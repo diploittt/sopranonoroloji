@@ -1,4 +1,5 @@
-import { PeerServer } from 'peer';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const { PeerServer } = require('peer');
 
 const peerServer = PeerServer({
     port: 9000,

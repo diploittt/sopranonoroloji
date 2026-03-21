@@ -242,8 +242,12 @@ class LiveKitService {
       log('Fetching token from:', tokenUrl);
 
       const response = await fetch(tokenUrl);
+      log('Token response status:', response.status);
+      
       if (!response.ok) {
-        throw new Error(`Token request failed: ${response.status}`);
+        const errText = await response.text().catch(() => '');
+        warn('Token request failed:', response.status, errText);
+        throw new Error(`Token request failed: ${response.status} — ${errText}`);
       }
 
       const data = await response.json();
@@ -251,7 +255,7 @@ class LiveKitService {
         throw new Error(data.error);
       }
 
-      log('Token received');
+      log('Token received, length:', data.token?.length);
       return data.token;
     } catch (error: any) {
       warn('Token fetch error:', error.message);
@@ -303,6 +307,22 @@ class LiveKitService {
       (track: any, publication: any, participant: any) => {
         if (track.kind === lk.Track.Kind.Audio) {
           log('Audio track subscribed:', participant.identity);
+          // ★ Ses çalmak için track'ı DOM'a ekle (web) veya otomatik çal (native)
+          try {
+            if (Platform.OS === 'web') {
+              const audioElement = track.attach();
+              audioElement.id = `lk-audio-${participant.identity}`;
+              audioElement.autoplay = true;
+              document.body.appendChild(audioElement);
+              log('Audio element attached to DOM for:', participant.identity);
+            } else {
+              // Native'de livekit-client otomatik çalar — ekstra işlem gerekmez
+              track.attach();
+              log('Audio track attached for native:', participant.identity);
+            }
+          } catch (err: any) {
+            warn('Audio attach error:', err.message);
+          }
           this.callbacks.onAudioTrackSubscribed?.(participant.identity);
         }
       },
@@ -313,6 +333,14 @@ class LiveKitService {
       (track: any, publication: any, participant: any) => {
         if (track.kind === lk.Track.Kind.Audio) {
           log('Audio track unsubscribed:', participant.identity);
+          // ★ DOM'dan ses elementini kaldır
+          try {
+            const elements = track.detach();
+            elements.forEach((el: HTMLElement) => el.remove());
+            log('Audio element detached for:', participant.identity);
+          } catch (err: any) {
+            warn('Audio detach error:', err.message);
+          }
           this.callbacks.onAudioTrackUnsubscribed?.(participant.identity);
         }
       },

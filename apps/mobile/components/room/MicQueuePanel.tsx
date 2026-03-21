@@ -51,7 +51,7 @@ export default function MicQueuePanel() {
         {speaker ? (
           <View style={st.speakerCard}>
             <View style={st.speakerAvWrap}>
-              <Image source={{ uri: speaker.avatar || '/avatars/neutral_1.png' }} style={st.speakerAv} />
+              <Image source={{ uri: speaker.avatar?.startsWith('http') ? speaker.avatar : 'https://sopranochat.com/avatars/neutral_1.png' }} style={st.speakerAv} />
               <View style={st.speakerGlow} />
             </View>
             <View style={st.speakerInfo}>
@@ -98,7 +98,7 @@ export default function MicQueuePanel() {
                     {item.queueIndex}
                   </Text>
                 </View>
-                <Image source={{ uri: item.avatar || '/avatars/neutral_1.png' }} style={st.queueAv} />
+                <Image source={{ uri: item.avatar?.startsWith('http') ? item.avatar : 'https://sopranochat.com/avatars/neutral_1.png' }} style={st.queueAv} />
                 <View style={{ flex: 1 }}>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                     {getRoleIcon(item.role) ? <Text style={{ fontSize: 10 }}>{getRoleIcon(item.role)}</Text> : null}

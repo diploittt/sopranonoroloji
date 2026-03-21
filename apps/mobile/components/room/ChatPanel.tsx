@@ -112,7 +112,7 @@ function MessageBubble({
   return (
     <View style={st.otherRow}>
       {/* Avatar */}
-      <Image source={{ uri: msg.senderAvatar || '/avatars/neutral_1.png' }} style={st.msgAvatar} />
+      <Image source={{ uri: msg.senderAvatar || 'https://sopranochat.com/avatars/neutral_1.png' }} style={st.msgAvatar} />
 
       <View style={{ flex: 1 }}>
         {/* İsim + Rol */}

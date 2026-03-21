@@ -1,593 +1,242 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
-  Dimensions,
-  StyleSheet,
-  Image,
-  Animated,
-  ActivityIndicator,
-  Alert,
+  View, Text, TouchableOpacity, ScrollView, Platform, Dimensions,
+  StyleSheet, RefreshControl, ActivityIndicator,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useStore } from '../store';
+import AppBackground from '../components/shared/AppBackground';
+import BottomNav from '../components/shared/BottomNav';
 
 const { width } = Dimensions.get('window');
 
-/* ═══════════════════════════════════════════════════════════
-   MOCK DATA
-   ═══════════════════════════════════════════════════════════ */
+type NType = 'gift' | 'mention' | 'follow' | 'system' | 'dm' | 'room';
 
-type NotifType = 'invite' | 'message' | 'follow' | 'warning' | 'system' | 'like';
-
-interface NotifItem {
-  id: string;
-  type: NotifType;
-  avatar: string;
-  title: string;
-  subtitle: string;
-  time: string;
-  read: boolean;
-  action?: 'join' | 'reply' | 'view';
-}
-
-/* Zaman farkını insancıl formata çevir */
-function formatTimeAgo(dateStr: string): string {
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diff = Math.max(0, now - then);
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'az önce';
-  if (mins < 60) return `${mins} dk önce`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours} saat önce`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} gün önce`;
-  return new Date(dateStr).toLocaleDateString('tr-TR');
-}
-
-const TYPE_CONFIG: Record<string, { color: string; icon: string; bgAlpha: string; label: string }> = {
-  invite:  { color: '#8b5cf6', icon: 'enter-outline',        bgAlpha: 'rgba(139,92,246,', label: 'Davet' },
-  message: { color: '#3b82f6', icon: 'chatbubble-outline',   bgAlpha: 'rgba(59,130,246,', label: 'Mesaj' },
-  follow:  { color: '#22c55e', icon: 'person-add-outline',   bgAlpha: 'rgba(34,197,94,',  label: 'Takip' },
-  warning: { color: '#ef4444', icon: 'alert-circle-outline', bgAlpha: 'rgba(239,68,68,',  label: 'Uyarı' },
-  system:  { color: '#6366f1', icon: 'information-circle-outline', bgAlpha: 'rgba(99,102,241,', label: 'Sistem' },
-  like:    { color: '#ec4899', icon: 'heart-outline',        bgAlpha: 'rgba(236,72,153,',  label: 'Beğeni' },
+const N_ICONS: Record<NType, { icon: string; color: string; bg: string }> = {
+  gift: { icon: 'gift', color: '#f59e0b', bg: 'rgba(245,158,11,0.12)' },
+  mention: { icon: 'at', color: '#0ea5e9', bg: 'rgba(14,165,233,0.12)' },
+  follow: { icon: 'person-add', color: '#10b981', bg: 'rgba(16,185,129,0.12)' },
+  system: { icon: 'information-circle', color: '#a78bfa', bg: 'rgba(139,92,246,0.12)' },
+  dm: { icon: 'chatbubble', color: '#ec4899', bg: 'rgba(236,72,153,0.12)' },
+  room: { icon: 'radio', color: '#6366f1', bg: 'rgba(99,102,241,0.12)' },
 };
 
-const ACTION_LABELS: Record<string, string> = { join: 'Katıl', reply: 'Cevapla', view: 'Görüntüle' };
-
 /* ═══════════════════════════════════════════════════════════
-   PARTİKÜLLER
+   BİLDİRİMLER EKRANI — KOYU TEMA
    ═══════════════════════════════════════════════════════════ */
+export default function NotificationsScreen() {
+  const router = useRouter();
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<'all' | NType>('all');
 
-function FloatingParticles() {
-  const pts = useRef(
-    Array.from({ length: 5 }, () => ({
-      x: Math.random() * width,
-      y: new Animated.Value(Math.random() * 400),
-      op: new Animated.Value(0),
-      size: 2 + Math.random() * 3,
-    }))
-  ).current;
+  const {
+    notifications, notificationsLoading, fetchNotifications,
+    markNotificationAsRead, clearNotifications, unreadCount,
+  } = useStore();
 
-  useEffect(() => {
-    pts.forEach(p => {
-      const go = () => {
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(p.op, { toValue: 0.2 + Math.random() * 0.15, duration: 2500, useNativeDriver: true }),
-            Animated.timing(p.y, { toValue: Math.random() * 350, duration: 4500, useNativeDriver: true }),
-          ]),
-          Animated.timing(p.op, { toValue: 0, duration: 1500, useNativeDriver: true }),
-        ]).start(go);
-      };
-      setTimeout(go, Math.random() * 2000);
-    });
+  useEffect(() => { fetchNotifications(); }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchNotifications();
+    setRefreshing(false);
   }, []);
 
-  return (
-    <View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}>
-      {pts.map((p, i) => (
-        <Animated.View key={i} style={{
-          position: 'absolute', width: p.size, height: p.size, borderRadius: p.size,
-          backgroundColor: i % 2 === 0 ? '#5eead4' : '#a78bfa',
-          left: p.x, opacity: p.op, transform: [{ translateY: p.y }],
-        }} />
-      ))}
-    </View>
-  );
-}
+  const filtered = filter === 'all'
+    ? notifications
+    : notifications.filter((n: any) => n.type === filter);
 
-/* ═══════════════════════════════════════════════════════════
-   BİLDİRİM KARTI
-   ═══════════════════════════════════════════════════════════ */
-
-function NotificationCard({ item, onMarkRead }: { item: NotifItem; onMarkRead: (id: string) => void }) {
-  const cfg = TYPE_CONFIG[item.type] || TYPE_CONFIG['system'];
-  const scaleAnim = useRef(new Animated.Value(1)).current;
-  const shadowAnim = useRef(new Animated.Value(item.read ? 0 : 1)).current;
-
-  const onPressIn = () => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 0.95, friction: 7, useNativeDriver: true }),
-      Animated.timing(shadowAnim, { toValue: 0.5, duration: 150, useNativeDriver: true }),
-    ]).start();
-  };
-  const onPressOut = () => {
-    Animated.parallel([
-      Animated.spring(scaleAnim, { toValue: 1, friction: 7, useNativeDriver: true }),
-      Animated.timing(shadowAnim, { toValue: item.read ? 0 : 1, duration: 200, useNativeDriver: true }),
-    ]).start();
-    if (!item.read) onMarkRead(item.id);
+  const formatTime = (date: string) => {
+    const d = new Date(date);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / 60000);
+    if (diff < 1) return 'Şimdi';
+    if (diff < 60) return `${diff} dk`;
+    if (diff < 1440) return `${Math.floor(diff / 60)} sa`;
+    return `${Math.floor(diff / 1440)} gün`;
   };
 
-  return (
-    <TouchableOpacity activeOpacity={1} onPressIn={onPressIn} onPressOut={onPressOut}>
-      <Animated.View style={[
-        st.card,
-        !item.read && st.cardUnread,
-        !item.read && { borderColor: cfg.color + '20', borderWidth: 1 },
-        { transform: [{ scale: scaleAnim }], opacity: shadowAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0.85, 0.7, 1] }) },
-      ]}>
-        {/* Okunmamış dot — daha büyük */}
-        {!item.read && <View style={[st.unreadDot, { backgroundColor: cfg.color }]} />}
+  const handlePress = (notif: any) => {
+    markNotificationAsRead(notif.id);
+    if (notif.roomId) {
+      router.push({ pathname: '/room', params: { roomId: notif.roomId } } as any);
+    } else if (notif.type === 'dm') {
+      router.push('/dm' as any);
+    }
+  };
 
-        {/* Sol — avatar + tip ikonu */}
-        <View style={st.avatarWrap}>
-          <Image source={{ uri: item.avatar }} style={[
-            st.avatar,
-            !item.read && { borderColor: cfg.color + '40', borderWidth: 2 },
-          ]} />
-          <View style={[st.typeIcon, { backgroundColor: cfg.color }]}>
-            <Ionicons name={cfg.icon as any} size={10} color="#fff" />
-          </View>
-        </View>
-
-        {/* Orta — bilgi */}
-        <View style={st.cardContent}>
-          <Text style={[st.cardTitle, !item.read && st.cardTitleUnread]} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <Text style={st.cardSub} numberOfLines={1}>{item.subtitle}</Text>
-          <View style={st.cardMeta}>
-            <Ionicons name="time-outline" size={11} color={!item.read ? '#64748b' : '#94a3b8'} />
-            <Text style={[st.cardTime, !item.read && st.cardTimeUnread]}>{item.time}</Text>
-          </View>
-        </View>
-
-        {/* Sağ — aksiyon butonu */}
-        {item.action && (
-          <TouchableOpacity activeOpacity={0.8} style={st.actionBtnWrap}
-            onPress={() => {
-              if (item.action === 'join') {
-                Alert.alert('Oda Daveti', 'Odaya katılmak ister misiniz?', [
-                  { text: 'İptal', style: 'cancel' },
-                  { text: 'Katıl', onPress: () => {} },
-                ]);
-              } else {
-                Alert.alert('Bildirim', 'Bu bildirim detayı görüntüleniyor.', [{ text: 'Tamam' }]);
-              }
-            }}>
-            <LinearGradient colors={['#6366f1','#8b5cf6']} style={st.actionBtn}>
-              <Text style={st.actionText}>{ACTION_LABELS[item.action]}</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-
-        {/* Sol kenar renk şeridi — daha kalın */}
-        <View style={[st.cardStripe, { backgroundColor: cfg.color, width: !item.read ? 4 : 3 }]} />
-      </Animated.View>
-    </TouchableOpacity>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   BOŞ DURUM
-   ═══════════════════════════════════════════════════════════ */
-
-function EmptyState() {
-  return (
-    <View style={st.emptyWrap}>
-      <View style={st.emptyIconWrap}>
-        <Ionicons name="notifications-off-outline" size={48} color="#a78bfa" />
-      </View>
-      <Text style={st.emptyTitle}>Henüz bildirim yok</Text>
-      <Text style={st.emptySub}>Yeni aktiviteler burada görünecek</Text>
-    </View>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ALT NAVİGASYON
-   ═══════════════════════════════════════════════════════════ */
-
-function BottomNavigation({ unreadCount }: { unreadCount: number }) {
-  const router = useRouter();
-  const items = [
-    { id: 'home', icon: 'home-outline' as const, label: 'Anasayfa', route: '/home' },
-    { id: 'explore', icon: 'compass-outline' as const, label: 'Keşfet', route: '/explore' },
-    { id: 'create', icon: 'add', label: 'Topluluk Aç', isCenter: true, route: '/create-room' },
-    { id: 'notifications', icon: 'notifications' as const, label: 'Bildirimler', route: '/notifications' },
-    { id: 'profile', icon: 'person-outline' as const, label: 'Profil', route: null },
+  const FILTERS: { id: 'all' | NType; label: string }[] = [
+    { id: 'all', label: 'Hepsi' },
+    { id: 'gift', label: 'Hediye' },
+    { id: 'mention', label: 'Etiket' },
+    { id: 'dm', label: 'Mesaj' },
+    { id: 'follow', label: 'Takip' },
+    { id: 'system', label: 'Sistem' },
   ];
 
   return (
-    <View style={st.bottomNav}>
-      {items.map(item => {
-        if (item.isCenter) {
-          return (
-            <TouchableOpacity key={item.id} style={st.bottomNavCenter} activeOpacity={0.85}
-              onPress={() => item.route && router.push(item.route as any)}>
-              <LinearGradient colors={['#4ecdc4','#44b8b0']} style={st.bottomNavCenterGrad}>
-                <Ionicons name="add" size={30} color="#fff" />
-              </LinearGradient>
-              <Text style={st.bottomNavCenterLabel}>{item.label}</Text>
-            </TouchableOpacity>
-          );
-        }
-        const isActive = item.id === 'notifications';
-        return (
-          <TouchableOpacity key={item.id}
-            onPress={() => {
-              if (item.route) router.push(item.route as any);
-              else if (item.id === 'profile') Alert.alert('Profil', 'Profil sayfası yakında eklenecek.', [{ text: 'Tamam' }]);
-            }}
-            style={st.bottomNavItem}>
-            <View>
-              <Ionicons name={item.icon as any} size={26} color={isActive ? '#4f46e5' : '#94a3b8'} />
-              {item.id === 'notifications' && unreadCount > 0 && (
-                <View style={st.navBadge}>
-                  <Text style={st.navBadgeText}>{unreadCount}</Text>
-                </View>
-              )}
-            </View>
-            <Text style={[st.bottomNavLabel, isActive && st.bottomNavLabelActive]}>{item.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ANA EKRAN
-   ═══════════════════════════════════════════════════════════ */
-
-export default function NotificationsScreen() {
-  // ── Store bağlantısı — gerçek API verisi ──
-  const {
-    notifications: storeNotifs,
-    notificationsLoading,
-    notificationsError,
-    fetchNotifications,
-    markAllRead: storeMarkAllRead,
-    unreadCount: storeUnreadCount,
-  } = useStore();
-
-  useEffect(() => {
-    fetchNotifications();
-  }, []);
-
-  // Store verisini UI formatına dönüştür
-  const notifications: NotifItem[] = storeNotifs.map((n: any) => {
-    const typeMap: Record<string, NotifType> = {
-      invite: 'invite', message: 'message', follow: 'follow',
-      system: 'system', like: 'like', warning: 'warning',
-    };
-    const type = typeMap[n.type] || 'system';
-    return {
-      id: n.id,
-      type,
-      avatar: n.fromUser?.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(n.title?.slice(0, 2) || 'N')}&background=1e293b&color=fb7185`,
-      title: n.title || '',
-      subtitle: n.body || n.message || '',
-      time: n.createdAt ? formatTimeAgo(n.createdAt) : '',
-      read: !!n.isRead,
-      action: type === 'invite' ? 'join' : type === 'message' ? 'reply' : 'view',
-    };
-  });
-
-  const unreadCount = storeUnreadCount;
-
-  const markRead = (id: string) => {
-    // Lokal bildirim okundu işaretleme
-    // Backend'de tekil okundu endpoint eklenince burayı güncelle
-  };
-
-  const markAllRead = () => {
-    storeMarkAllRead();
-  };
-
-  return (
-    <View style={st.container}>
-      <LinearGradient colors={['#eee8f5','#d0cce0','#b8b3d1']} style={StyleSheet.absoluteFill as any} />
-      <View style={st.orbTopRight} />
-      <View style={st.orbBottomLeft} />
-      <FloatingParticles />
-
-      {/* ── ÜST BAR ── */}
-      <View style={st.topBar}>
-        <View style={{ width: 40 }} />
-        <View style={st.topBarCenter}>
-          <Text style={st.topBarTitle}>Bildirimler</Text>
-          {unreadCount > 0 && (
-            <View style={st.topBarBadge}>
-              <Text style={st.topBarBadgeText}>{unreadCount} yeni</Text>
-            </View>
-          )}
-        </View>
+    <AppBackground>
+      {/* HEADER */}
+      <View style={st.header}>
+        <TouchableOpacity style={st.headerBtn} onPress={() => router.back()}>
+          <Ionicons name="chevron-back" size={20} color="rgba(255,255,255,0.6)" />
+        </TouchableOpacity>
+        <Text style={st.headerTitle}>Bildirimler</Text>
         {unreadCount > 0 ? (
-          <TouchableOpacity onPress={markAllRead} style={st.markAllBtnWrap}>
-            <View style={st.markAllBtn}>
-              <Ionicons name="checkmark-done" size={16} color="#6366f1" />
-              <Text style={st.markAllText}>Okundu</Text>
-            </View>
+          <TouchableOpacity style={st.headerBtn} onPress={clearNotifications}>
+            <Ionicons name="checkmark-done" size={18} color="#a78bfa" />
           </TouchableOpacity>
-        ) : (
-          <View style={{ width: 60 }} />
-        )}
+        ) : <View style={{ width: 42 }} />}
       </View>
 
-      {/* ── BİLDİRİM TÜRLERİ ÖZET ── */}
+      {/* FİLTRELER */}
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 16, gap: 8, paddingBottom: 10, paddingTop: 4 }}>
+        {FILTERS.map(f => (
+          <TouchableOpacity key={f.id} activeOpacity={0.8}
+            onPress={() => setFilter(f.id)}
+            style={[st.filterPill, filter === f.id && st.filterPillActive]}>
+            <Text style={[st.filterText, filter === f.id && st.filterTextActive]}>{f.label}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      {/* ÖZET */}
       {unreadCount > 0 && (
         <View style={st.summaryRow}>
-          {(['invite', 'message', 'follow', 'warning'] as NotifType[]).map(type => {
-            const count = notifications.filter(n => n.type === type && !n.read).length;
-            if (count === 0) return null;
-            const cfg = TYPE_CONFIG[type];
-            return (
-              <View key={type} style={[st.summaryChip, { backgroundColor: cfg.bgAlpha + '0.08)', borderColor: cfg.bgAlpha + '0.15)' }]}>
-                <Ionicons name={cfg.icon as any} size={12} color={cfg.color} />
-                <Text style={[st.summaryChipCount, { color: cfg.color }]}>{count}</Text>
-                <Text style={[st.summaryChipLabel, { color: cfg.color }]}>{cfg.label}</Text>
-              </View>
-            );
-          })}
+          <View style={st.summaryBadge}>
+            <Ionicons name="notifications" size={12} color="#a78bfa" />
+            <Text style={st.summaryText}>{unreadCount} okunmamış</Text>
+          </View>
         </View>
       )}
 
-      {/* ── LİSTE ── */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={st.scrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* LOADING */}
-        {notificationsLoading && (
-          <View style={{ padding: 40, alignItems: 'center' }}>
-            <ActivityIndicator size="large" color="#6366f1" />
-            <Text style={{ marginTop: 12, fontSize: 14, color: '#64748b', fontWeight: '600' }}>Bildirimler yükleniyor...</Text>
+      {/* İÇERİK */}
+      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a78bfa" />}>
+
+        {notificationsLoading && !refreshing && (
+          <View style={{ paddingVertical: 50, alignItems: 'center' }}>
+            <ActivityIndicator size="large" color="#a78bfa" />
           </View>
         )}
 
-        {/* ERROR */}
-        {notificationsError && !notificationsLoading && (
-          <View style={{ padding: 40, alignItems: 'center' }}>
-            <Ionicons name="cloud-offline-outline" size={48} color="#ef4444" />
-            <Text style={{ marginTop: 12, fontSize: 14, color: '#ef4444', fontWeight: '600' }}>{notificationsError}</Text>
-            <TouchableOpacity
-              onPress={() => fetchNotifications()}
-              style={{ marginTop: 16, backgroundColor: '#6366f1', paddingHorizontal: 24, paddingVertical: 10, borderRadius: 12 }}
-            >
-              <Text style={{ color: '#fff', fontWeight: '700', fontSize: 13 }}>Tekrar Dene</Text>
+        {!notificationsLoading && filtered.length === 0 && (
+          <View style={st.emptyWrap}>
+            <View style={st.emptyIcon}>
+              <Ionicons name="notifications-off-outline" size={36} color="rgba(139,92,246,0.3)" />
+            </View>
+            <Text style={st.emptyTitle}>Bildirim yok</Text>
+            <Text style={st.emptySub}>Yeni bildirimler burada görünecek</Text>
+          </View>
+        )}
+
+        {filtered.map((notif: any, i: number) => {
+          const nInfo = N_ICONS[notif.type as NType] || N_ICONS.system;
+          const isUnread = !notif.read;
+          return (
+            <TouchableOpacity key={notif.id || i} activeOpacity={0.85}
+              onPress={() => handlePress(notif)}
+              style={[st.notifCard, isUnread && st.notifCardUnread]}>
+              {/* Tip göstergesi — sol şerit */}
+              <View style={[st.notifStripe, { backgroundColor: nInfo.color }]} />
+
+              {/* İkon */}
+              <View style={[st.notifIcon, { backgroundColor: nInfo.bg }]}>
+                <Ionicons name={nInfo.icon as any} size={18} color={nInfo.color} />
+              </View>
+
+              {/* İçerik */}
+              <View style={st.notifContent}>
+                <Text style={st.notifTitle} numberOfLines={1}>{notif.title || notif.type}</Text>
+                <Text style={st.notifBody} numberOfLines={2}>{notif.body || notif.message}</Text>
+                <Text style={st.notifTime}>{formatTime(notif.createdAt || notif.timestamp || new Date().toISOString())}</Text>
+              </View>
+
+              {/* Okunmamış nokta */}
+              {isUnread && <View style={st.unreadDot} />}
             </TouchableOpacity>
-          </View>
-        )}
-        {notifications.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <>
-            {/* Okunmamışlar */}
-            {unreadCount > 0 && (
-              <>
-                <View style={st.sectionLabelRow}>
-                  <View style={st.sectionLabelDot} />
-                  <Text style={st.sectionLabelNew}>Yeni</Text>
-                  <View style={st.sectionLabelLine} />
-                </View>
-                {notifications.filter(n => !n.read).map(n => (
-                  <NotificationCard key={n.id} item={n} onMarkRead={markRead} />
-                ))}
-              </>
-            )}
+          );
+        })}
 
-            {/* Okunmuşlar */}
-            {notifications.some(n => n.read) && (
-              <>
-                <Text style={st.sectionLabel}>Daha Önce</Text>
-                {notifications.filter(n => n.read).map(n => (
-                  <NotificationCard key={n.id} item={n} onMarkRead={markRead} />
-                ))}
-              </>
-            )}
-          </>
-        )}
-        <View style={{ height: 30 }} />
+        <View style={{ height: 16 }} />
       </ScrollView>
 
-      <BottomNavigation unreadCount={unreadCount} />
-    </View>
+      <BottomNav active="notifications" />
+    </AppBackground>
   );
 }
 
-/* ═══════════════════════════════════════════════════════════
-   STİLLER
-   ═══════════════════════════════════════════════════════════ */
-
 const st = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#d0cce0' },
-
-  orbTopRight: {
-    position: 'absolute', top: -50, right: -70,
-    width: 220, height: 220, borderRadius: 110,
-    backgroundColor: 'rgba(94,234,212,0.15)',
-  },
-  orbBottomLeft: {
-    position: 'absolute', bottom: 80, left: -90,
-    width: 240, height: 240, borderRadius: 120,
-    backgroundColor: 'rgba(167,139,250,0.12)',
-  },
-
-  /* ── ÜST BAR ── */
-  topBar: {
+  header: {
     flexDirection: 'row', alignItems: 'center',
     paddingTop: Platform.OS === 'ios' ? 54 : 36,
-    paddingHorizontal: 16, paddingBottom: 8,
+    paddingHorizontal: 16, paddingBottom: 4, gap: 10,
   },
-  topBarCenter: { flex: 1, alignItems: 'center' },
-  topBarTitle: { fontSize: 18, fontWeight: '800', color: '#1e293b' },
-  topBarBadge: {
-    backgroundColor: 'rgba(99,102,241,0.12)',
-    paddingHorizontal: 8, paddingVertical: 2, borderRadius: 8,
-    marginTop: 3, borderWidth: 0.5, borderColor: 'rgba(99,102,241,0.2)',
+  headerBtn: {
+    width: 42, height: 42, borderRadius: 21,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    alignItems: 'center', justifyContent: 'center',
   },
-  topBarBadgeText: { fontSize: 10, fontWeight: '700', color: '#6366f1' },
-  markAllBtnWrap: {},
-  markAllBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    backgroundColor: 'rgba(99,102,241,0.08)',
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 12,
-    borderWidth: 0.5, borderColor: 'rgba(99,102,241,0.15)',
-  },
-  markAllText: { fontSize: 10, fontWeight: '700', color: '#6366f1' },
+  headerTitle: { flex: 1, fontSize: 20, fontWeight: '800', color: '#f1f5f9', textAlign: 'center' },
 
-  /* ── ÖZET ── */
-  summaryRow: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingHorizontal: 16, marginBottom: 12,
+  filterPill: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  summaryChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
-    borderWidth: 0.5,
-  },
-  summaryChipCount: { fontSize: 13, fontWeight: '800' },
-  summaryChipLabel: { fontSize: 10, fontWeight: '600', opacity: 0.8 },
+  filterPillActive: { backgroundColor: '#8b5cf6', borderColor: '#8b5cf6' },
+  filterText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.4)' },
+  filterTextActive: { color: '#fff', fontWeight: '700' },
 
-  scrollContent: { paddingHorizontal: 16, paddingBottom: 20 },
+  summaryRow: { flexDirection: 'row', paddingHorizontal: 16, marginBottom: 6 },
+  summaryBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8,
+    backgroundColor: 'rgba(139,92,246,0.08)',
+    borderWidth: 1, borderColor: 'rgba(139,92,246,0.12)',
+  },
+  summaryText: { fontSize: 11, fontWeight: '700', color: '#a78bfa' },
 
-  /* ── SECTION LABEL ── */
-  sectionLabel: {
-    fontSize: 11, fontWeight: '700', color: '#64748b',
-    letterSpacing: 1, textTransform: 'uppercase',
-    marginBottom: 10, marginTop: 6,
+  notifCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    marginHorizontal: 16, marginBottom: 4,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderRadius: 16, padding: 12,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.04)',
+    overflow: 'hidden',
   },
-  sectionLabelRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 8,
-    marginBottom: 12, marginTop: 6,
+  notifCardUnread: {
+    backgroundColor: 'rgba(139,92,246,0.04)',
+    borderColor: 'rgba(139,92,246,0.08)',
   },
-  sectionLabelDot: {
-    width: 8, height: 8, borderRadius: 4,
-    backgroundColor: '#6366f1',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6, shadowRadius: 6, elevation: 4,
+  notifStripe: {
+    position: 'absolute', left: 0, top: 0, bottom: 0,
+    width: 3, borderTopLeftRadius: 16, borderBottomLeftRadius: 16,
   },
-  sectionLabelNew: {
-    fontSize: 13, fontWeight: '800', color: '#4f46e5',
-    letterSpacing: 0.5,
+  notifIcon: {
+    width: 40, height: 40, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center', marginLeft: 4,
   },
-  sectionLabelLine: {
-    flex: 1, height: 1,
-    backgroundColor: 'rgba(99,102,241,0.15)',
-  },
+  notifContent: { flex: 1 },
+  notifTitle: { fontSize: 13, fontWeight: '700', color: '#f1f5f9' },
+  notifBody: { fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.4)', marginTop: 2 },
+  notifTime: { fontSize: 10, fontWeight: '600', color: 'rgba(255,255,255,0.2)', marginTop: 3 },
 
-  /* ── KART — Premium Glass ── */
-  card: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 20, padding: 15, gap: 12,
-    marginBottom: 8, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.8)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 3,
-  },
-  cardUnread: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#6366f1', shadowRadius: 18, elevation: 8,
-    shadowOffset: { width: 0, height: 6 }, shadowOpacity: 0.15,
-  },
   unreadDot: {
-    position: 'absolute', top: 14, left: 8,
-    width: 8, height: 8, borderRadius: 4,
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.5, shadowRadius: 4, elevation: 3,
-  },
-  cardStripe: {
-    position: 'absolute', left: 0, top: 6, bottom: 6,
-    width: 3, borderRadius: 2,
+    width: 8, height: 8, borderRadius: 4, backgroundColor: '#8b5cf6',
+    shadowColor: '#8b5cf6', shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8, shadowRadius: 4, elevation: 4,
   },
 
-  /* Avatar */
-  avatarWrap: { position: 'relative' },
-  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 1.5, borderColor: 'rgba(226,232,240,0.5)' },
-  typeIcon: {
-    position: 'absolute', bottom: -2, right: -2,
-    width: 18, height: 18, borderRadius: 9,
-    alignItems: 'center', justifyContent: 'center',
-    borderWidth: 1.5, borderColor: '#fff',
+  emptyWrap: { alignItems: 'center', paddingVertical: 60 },
+  emptyIcon: {
+    width: 64, height: 64, borderRadius: 32,
+    backgroundColor: 'rgba(139,92,246,0.08)',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
   },
-
-  /* Bilgi */
-  cardContent: { flex: 1 },
-  cardTitle: { fontSize: 13, fontWeight: '600', color: '#334155', marginBottom: 2 },
-  cardTitleUnread: { fontWeight: '700', color: '#0f172a' },
-  cardSub: { fontSize: 11, fontWeight: '500', color: '#94a3b8', marginBottom: 4 },
-  cardMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  cardTime: { fontSize: 10, fontWeight: '500', color: '#94a3b8' },
-  cardTimeUnread: { color: '#64748b', fontWeight: '600' },
-
-  /* Aksiyon butonu — Premium Glow */
-  actionBtnWrap: {},
-  actionBtn: {
-    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12,
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35, shadowRadius: 10, elevation: 5,
-  },
-  actionText: { fontSize: 11, fontWeight: '700', color: '#fff' },
-
-  /* ── BOŞ DURUM ── */
-  emptyWrap: { alignItems: 'center', justifyContent: 'center', paddingTop: 100 },
-  emptyIconWrap: {
-    width: 80, height: 80, borderRadius: 40,
-    backgroundColor: 'rgba(167,139,250,0.1)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
-  },
-  emptyTitle: { fontSize: 18, fontWeight: '700', color: '#334155', marginBottom: 6 },
-  emptySub: { fontSize: 13, fontWeight: '500', color: '#94a3b8' },
-
-  /* ── ALT NAV — Premium Glass ── */
-  bottomNav: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    backgroundColor: 'rgba(255,255,255,0.88)', paddingVertical: 8,
-    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.08, shadowRadius: 20, elevation: 15,
-  },
-  bottomNavItem: { alignItems: 'center', gap: 2, paddingVertical: 4, minWidth: 56 },
-  bottomNavLabel: { fontSize: 9, fontWeight: '600', color: '#94a3b8' },
-  bottomNavLabelActive: { color: '#4f46e5' },
-  bottomNavCenter: { alignItems: 'center', marginTop: -22 },
-  bottomNavCenterGrad: {
-    width: 56, height: 56, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5, shadowRadius: 16, elevation: 10,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.25)',
-  },
-  bottomNavCenterLabel: { fontSize: 9, fontWeight: '800', color: '#4f46e5', marginTop: 4 },
-  navBadge: {
-    position: 'absolute', top: -4, right: -8,
-    backgroundColor: '#ef4444', minWidth: 16, height: 16, borderRadius: 8,
-    alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4,
-    borderWidth: 2, borderColor: '#fff',
-    shadowColor: '#ef4444', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4, shadowRadius: 6, elevation: 4,
-  },
-  navBadgeText: { fontSize: 9, fontWeight: '700', color: '#fff' },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  emptySub: { fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.2)', marginTop: 4 },
 });

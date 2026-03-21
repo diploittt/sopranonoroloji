@@ -22,7 +22,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.use(json({ limit: '2mb' }));
 
-  // ── CORS (production: sadece belirli origin) ──
+  // ── CORS (production + development) ──
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
   const sopranoOrigins = [
     'https://sopranochat.com',
@@ -30,13 +30,24 @@ async function bootstrap() {
     'https://chatlesme.vercel.app',
     'http://localhost:3000',
     'http://localhost:3001',
+    'http://localhost:8081',  // Expo Metro bundler
+    'http://localhost:8082',  // Expo Metro bundler (alt port)
+    'http://localhost:19006', // Expo web dev
   ];
   // Merge env-based origins with hardcoded soprano domains
   const envOrigins = corsOrigin ? corsOrigin.split(',').map(s => s.trim()) : [];
   const allOrigins = [...new Set([...sopranoOrigins, ...envOrigins])];
 
   app.enableCors({
-    origin: allOrigins,
+    origin: (origin, callback) => {
+      // Mobil uygulamalar (Expo Go, release APK) origin göndermez — izin ver
+      if (!origin) return callback(null, true);
+      // Tanımlı origin'lere izin ver
+      if (allOrigins.includes(origin)) return callback(null, true);
+      // Fallback: tüm localhost'lara izin ver
+      if (origin.startsWith('http://localhost:') || origin.startsWith('http://192.168.')) return callback(null, true);
+      callback(null, false);
+    },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',

@@ -5,6 +5,7 @@
    ═══════════════════════════════════════════════════════════ */
 
 import { create } from 'zustand';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   User,
   Room,
@@ -76,6 +77,8 @@ interface AppState {
   unreadCount: number;
   fetchNotifications: () => Promise<void>;
   markAllRead: () => Promise<void>;
+  markNotificationAsRead: (id: string) => void;
+  clearNotifications: () => void;
 
   // ─── Admin ───
   adminStats: DashboardStats | null;
@@ -107,7 +110,7 @@ interface AppState {
   participants: Participant[];
   messages: ChatMessage[];
   socketRooms: RoomInfo[];
-  activeSpeaker: { userId: string; displayName: string } | null;
+  activeSpeaker: { userId: string; displayName: string; role?: string; duration?: number; startedAt?: number } | null;
   micQueue: string[];
   roomSettings: any;
   systemSettings: any;
@@ -117,6 +120,9 @@ interface AppState {
   // ─── Chat Etkileşim ───
   typingUsers: string[];
   dmMessages: Record<string, { id: string; fromUserId: string; fromUsername: string; content: string; timestamp: number; isOwn?: boolean }[]>;
+  dmConversations: any[];
+  fetchDMConversations: () => Promise<void>;
+  fetchDMMessages: (conversationId: string) => Promise<void>;
   emitTyping: (isTyping: boolean) => void;
   addReaction: (messageId: string, emoji: string) => void;
   sendDM: (targetUserId: string, content: string) => void;
@@ -129,6 +135,8 @@ interface AppState {
   fetchGiftList: () => void;
   sendGift: (receiverId: string, giftId: string, quantity: number) => void;
   clearGiftAnimation: () => void;
+  lastReaction: { emoji: string; userId: string; timestamp: number } | null;
+  clearReaction: () => void;
 
   // ─── Push Notification ───
   pushToken: string | null;
@@ -145,6 +153,7 @@ interface AppState {
   requestMic: () => void;
   leaveQueue: () => void;
   emitModAction: (action: string, userId: string, extra?: Record<string, any>) => void;
+  sendReaction: (emoji: string) => void;
   setupSocketListeners: () => void;
   teardownSocketListeners: () => void;
 }
@@ -172,18 +181,48 @@ export const useStore = create<AppState>((set, get) => ({
   setLoading: (loading) => set({ isLoading: loading }),
 
   /** Login sonrası otomatik socket bağlantısı */
-  loginWithSocket: (token, user, tenantId = 'default') => {
-    set({ token, user, isAuthenticated: true, isAdmin: isAdminRole(user.role) });
-    // Socket bağlantısını başlat
+  loginWithSocket: async (token, user, tenantId = 'default') => {
+    // Önce eski oturumu tamamen temizle
+    get().teardownSocketListeners();
+    realtimeService.disconnect();
+
+    // Axios'un kullanması için AsyncStorage'e token'ı YAZDIRMAK ZORUNDAYIZ!
+    try {
+      if (token) {
+        await AsyncStorage.setItem('auth_token', token);
+      }
+      if (user) {
+        await AsyncStorage.setItem('user_data', JSON.stringify(user));
+      }
+      await AsyncStorage.setItem('tenant_id', tenantId);
+    } catch (e) {
+      console.warn('AsyncStorage kayıt hatası:', e);
+    }
+
+    set({
+      token, user, isAuthenticated: true, isAdmin: isAdminRole(user.role),
+      socketConnected: false, socketRoomId: null,
+      participants: [], messages: [], activeSpeaker: null,
+      micQueue: [], roomError: null, connectionError: null,
+      activeTenantId: tenantId, // Login anında aktif tenant'ı belirle
+    });
+    // Yeni token ile bağlan
     const config = require('../config').default;
     realtimeService.connect(config.SOCKET_URL, token, tenantId);
     get().setupSocketListeners();
   },
 
   /** Logout — socket disconnect + full state reset */
-  logoutWithSocket: () => {
+  logoutWithSocket: async () => {
     get().teardownSocketListeners();
     realtimeService.disconnect();
+
+    try {
+      await AsyncStorage.multiRemove(['auth_token', 'user_data', 'tenant_id']);
+    } catch (e) {
+      console.warn('AsyncStorage silme hatası:', e);
+    }
+
     set({
       token: null,
       user: null,
@@ -296,6 +335,19 @@ export const useStore = create<AppState>((set, get) => ({
     } catch {
       // silent fail
     }
+  },
+
+  markNotificationAsRead: (id: string) => {
+    set((s) => ({
+      notifications: s.notifications.map((n) =>
+        n.id === id ? { ...n, isRead: true } : n
+      ),
+      unreadCount: Math.max(0, s.unreadCount - (s.notifications.find((n) => n.id === id && !n.isRead) ? 1 : 0)),
+    }));
+  },
+
+  clearNotifications: () => {
+    set({ notifications: [], unreadCount: 0 });
   },
 
   // ═══ ADMIN ═══
@@ -415,12 +467,36 @@ export const useStore = create<AppState>((set, get) => ({
   // Chat etkileşim
   typingUsers: [],
   dmMessages: {},
+  dmConversations: [],
+
+  fetchDMConversations: async () => {
+    try {
+      const { data } = await require('../services/api').default.get('/dm/conversations');
+      set({ dmConversations: Array.isArray(data) ? data : data?.conversations || [] });
+    } catch (e) {
+      // DM conversations endpoint henüz yoksa sessizce devam et
+      console.log('[Store] DM conversations fetch:', e);
+    }
+  },
+
+  fetchDMMessages: async (conversationId: string) => {
+    try {
+      const { data } = await require('../services/api').default.get(`/dm/conversations/${conversationId}/messages`);
+      const messages = Array.isArray(data) ? data : data?.messages || [];
+      set((s) => ({
+        dmMessages: { ...s.dmMessages, [conversationId]: messages },
+      }));
+    } catch (e) {
+      console.log('[Store] DM messages fetch:', e);
+    }
+  },
 
   // Gift & Jeton
   balance: 0,
   points: 0,
   giftList: [],
   lastGiftAnimation: null,
+  lastReaction: null,
 
   // Push Notification
   pushToken: null,
@@ -474,6 +550,10 @@ export const useStore = create<AppState>((set, get) => ({
   requestMic: () => realtimeService.requestMic(),
   leaveQueue: () => realtimeService.leaveQueue(),
   emitModAction: (action, userId, extra) => realtimeService.emitModAction(action, userId, extra),
+  sendReaction: (emoji) => {
+    const roomId = get().socketRoomId;
+    if (roomId) realtimeService.emit('room:reaction', { roomId, emoji });
+  },
 
   setupSocketListeners: () => {
     // connect / disconnect
@@ -489,26 +569,42 @@ export const useStore = create<AppState>((set, get) => ({
 
     // room:joined — ana veri doldurma
     realtimeService.on('room:joined', (data: any) => {
+      const fixAvatars = (arr: any[]) => (arr || []).map((p: any) => ({
+        ...p,
+        avatar: p.avatar?.startsWith('http') ? p.avatar
+          : p.avatar ? `https://sopranochat.com${p.avatar}` : undefined,
+      }));
       set({
-        participants: data.participants || [],
+        participants: fixAvatars(data.participants),
         messages: data.messages || [],
         socketRooms: data.rooms || [],
         roomSettings: data.roomSettings || null,
         systemSettings: data.systemSettings || null,
         roomError: null,
+        activeTenantId: data.tenantId || get().activeTenantId, // Odaya girince aktif tenant'ı kesinleştir
       });
     });
 
     // Katılımcı listesi güncellemesi
     realtimeService.on('room:participants', (data: any) => {
-      set({ participants: data.participants || [] });
+      const fixAvatars = (arr: any[]) => (arr || []).map((p: any) => ({
+        ...p,
+        avatar: p.avatar?.startsWith('http') ? p.avatar
+          : p.avatar ? `https://sopranochat.com${p.avatar}` : undefined,
+      }));
+      set({ participants: fixAvatars(data.participants) });
     });
 
     // Yeni katılımcı
     realtimeService.on('room:participant-joined', (participant: Participant) => {
+      const p = {
+        ...participant,
+        avatar: participant.avatar?.startsWith('http') ? participant.avatar
+          : participant.avatar ? `https://sopranochat.com${participant.avatar}` : undefined,
+      };
       set((s) => {
-        if (s.participants.find((p) => p.userId === participant.userId)) return s;
-        return { participants: [...s.participants, participant] };
+        if (s.participants.find((x) => x.userId === p.userId)) return s;
+        return { participants: [...s.participants, p] };
       });
     });
 
@@ -521,6 +617,7 @@ export const useStore = create<AppState>((set, get) => ({
 
     // Chat mesajı
     realtimeService.on('chat:message', (message: ChatMessage) => {
+      console.log('[Store] chat:message alındı:', (message as any).content || JSON.stringify(message).substring(0, 80));
       set((s) => ({ messages: [...s.messages, message] }));
     });
 
@@ -574,13 +671,44 @@ export const useStore = create<AppState>((set, get) => ({
       });
     });
 
-    // Mikrofon konuşmacı değişti
+    // Mikrofon konuşmacı değişti (eski event adı — geriye uyumluluk)
     realtimeService.on('mic:speaker-changed', (data: any) => {
       if (data?.userId) {
-        set({ activeSpeaker: { userId: data.userId, displayName: data.displayName || '' } });
+        set({ activeSpeaker: {
+          userId: data.userId,
+          displayName: data.displayName || '',
+          role: data.role,
+          duration: data.duration,
+          startedAt: data.startedAt || Date.now(),
+        }});
       } else {
         set({ activeSpeaker: null });
       }
+    });
+
+    // ★ Mikrofon alındı (sunucu bu event'i gönderiyor)
+    realtimeService.on('mic:acquired', (data: any) => {
+      console.log('[Store] mic:acquired:', data);
+      if (data?.userId) {
+        set({ activeSpeaker: {
+          userId: data.userId,
+          displayName: data.displayName || '',
+          role: data.role,
+          duration: data.duration,
+          startedAt: data.startedAt || Date.now(),
+        }});
+      }
+    });
+
+    // ★ Mikrofon bırakıldı
+    realtimeService.on('mic:released', (data: any) => {
+      console.log('[Store] mic:released:', data);
+      set({ activeSpeaker: null });
+    });
+
+    // ★ Room Reactions (emojiler)
+    realtimeService.on('room:reaction', (data: { userId: string; emoji: string }) => {
+      set({ lastReaction: { emoji: data.emoji, userId: data.userId, timestamp: Date.now() } });
     });
 
     // Mikrofon kuyruğu güncellendi
@@ -794,6 +922,10 @@ export const useStore = create<AppState>((set, get) => ({
 
   clearGiftAnimation: () => {
     set({ lastGiftAnimation: null });
+  },
+
+  clearReaction: () => {
+    set({ lastReaction: null });
   },
 
   // ─── Push Notification Action ───

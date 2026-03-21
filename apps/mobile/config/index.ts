@@ -20,7 +20,7 @@ const PROD_API_URL = 'https://api.sopranochat.com';
 const IS_DEV = typeof __DEV__ !== 'undefined' ? __DEV__ : true;
 
 // Lokal backend'e bağlan (dev modu)
-const USE_LOCAL_BACKEND = true;
+const USE_LOCAL_BACKEND = false; // <-- PROD: Canlı sunucu (Google Play dağıtımı)
 
 export const config = {
   // ── API ──
@@ -40,8 +40,8 @@ export const config = {
     ],
   },
   
-  // ── LiveKit ──
-  LIVEKIT_URL: IS_DEV ? 'ws://localhost:7880' : 'wss://livekit.sopranochat.com',
+  // ── LiveKit (Cloud — tüm platformlar aynı sunucu) ──
+  LIVEKIT_URL: 'wss://soprano-chat-98fpupmw.livekit.cloud',
   
   // ── Storage Keys ──
   STORAGE_KEYS: {

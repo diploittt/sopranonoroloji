@@ -134,7 +134,7 @@ export default function UserProfileModal({ visible, onClose, participant }: User
             {/* Avatar */}
             <View style={[st.avatarWrap, { borderColor: getRoleColor(targetRole) + '60' }]}>
               <Image
-                source={{ uri: participant.avatar || '/avatars/neutral_1.png' }}
+                source={{ uri: participant.avatar?.startsWith('http') ? participant.avatar : 'https://sopranochat.com/avatars/neutral_1.png' }}
                 style={st.avatar}
               />
               {/* Online dot */}
@@ -206,7 +206,7 @@ export default function UserProfileModal({ visible, onClose, participant }: User
                     {action.submenu && (
                       <Ionicons
                         name={openSubmenu === action.id ? 'chevron-up' : 'chevron-down'}
-                        size={14} color="rgba(255,255,255,0.3)"
+                        size={14} color="rgba(71,85,105,0.3)"
                       />
                     )}
                   </TouchableOpacity>
@@ -249,31 +249,32 @@ const st = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   sheet: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#fff',
     borderTopLeftRadius: 24, borderTopRightRadius: 24,
     paddingHorizontal: 20, paddingTop: 12, paddingBottom: 30,
     maxHeight: '75%',
-    borderTopWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    borderTopWidth: 1, borderColor: 'rgba(148,163,184,0.15)',
+    shadowColor: '#000', shadowOffset: { width: 0, height: -4 }, shadowOpacity: 0.1, shadowRadius: 16, elevation: 10,
   },
   handleBar: {
     width: 36, height: 4, borderRadius: 2,
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(148,163,184,0.2)',
     alignSelf: 'center', marginBottom: 16,
   },
   profileSection: { alignItems: 'center', paddingBottom: 16 },
   avatarWrap: {
     width: 80, height: 80, borderRadius: 40,
-    borderWidth: 3, backgroundColor: '#1e293b',
+    borderWidth: 3, backgroundColor: '#f8fafc',
     alignItems: 'center', justifyContent: 'center',
   },
   avatar: { width: 72, height: 72, borderRadius: 36 },
   onlineDot: {
     position: 'absolute', bottom: 2, right: 2,
     width: 14, height: 14, borderRadius: 7,
-    backgroundColor: '#22c55e', borderWidth: 2.5, borderColor: '#0f172a',
+    backgroundColor: '#22c55e', borderWidth: 2.5, borderColor: '#fff',
   },
   nameSection: { alignItems: 'center', marginTop: 10, gap: 6 },
-  userName: { fontSize: 18, fontWeight: '800' },
+  userName: { fontSize: 18, fontWeight: '800', color: '#1e293b' },
   roleBadge: {
     paddingHorizontal: 12, paddingVertical: 4,
     borderRadius: 8, borderWidth: 1,
@@ -286,12 +287,12 @@ const st = StyleSheet.create({
     borderRadius: 6, borderWidth: 0.5,
   },
   divider: {
-    height: 1, backgroundColor: 'rgba(255,255,255,0.06)',
+    height: 1, backgroundColor: 'rgba(148,163,184,0.12)',
     marginVertical: 8,
   },
   actionsScroll: { maxHeight: 280 },
   sectionLabel: {
-    fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.3)',
+    fontSize: 10, fontWeight: '700', color: 'rgba(71,85,105,0.6)',
     letterSpacing: 1, textTransform: 'uppercase',
     marginBottom: 8, marginLeft: 4,
   },
@@ -304,12 +305,12 @@ const st = StyleSheet.create({
     width: 32, height: 32, borderRadius: 10,
     alignItems: 'center', justifyContent: 'center',
   },
-  actionLabel: { flex: 1, fontSize: 14, fontWeight: '600', color: '#e2e8f0' },
+  actionLabel: { flex: 1, fontSize: 14, fontWeight: '600', color: '#334155' },
   submenu: {
     marginLeft: 44, marginBottom: 4,
-    backgroundColor: 'rgba(255,255,255,0.03)',
+    backgroundColor: 'rgba(99,102,241,0.04)',
     borderRadius: 10, paddingVertical: 4, paddingHorizontal: 8,
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.06)',
+    borderWidth: 0.5, borderColor: 'rgba(99,102,241,0.1)',
   },
   subBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 10,
@@ -319,8 +320,8 @@ const st = StyleSheet.create({
   closeBtn: {
     marginTop: 12, alignItems: 'center',
     paddingVertical: 12, borderRadius: 12,
-    backgroundColor: 'rgba(255,255,255,0.06)',
-    borderWidth: 0.5, borderColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(148,163,184,0.08)',
+    borderWidth: 0.5, borderColor: 'rgba(148,163,184,0.12)',
   },
-  closeBtnText: { fontSize: 14, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  closeBtnText: { fontSize: 14, fontWeight: '700', color: '#94a3b8' },
 });

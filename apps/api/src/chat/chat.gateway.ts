@@ -586,9 +586,60 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const quantity = data.quantity || 1;
 
-      // Get gift info
-      const gift = await this.prisma.gift.findUnique({ where: { id: data.giftId } });
-      if (!gift || !gift.isActive) {
+      // Get gift info — UUID ile ara, bulunamazsa name/emoji ile dene
+      let gift = await this.prisma.gift.findUnique({ where: { id: data.giftId } });
+      if (!gift) {
+        // Client fallback hediye ID'si göndermiş olabilir ('rose', 'coffee' vb.)
+        // Name veya emoji ile eşleştir
+        const fallbackMap: Record<string, { name: string; emoji: string; price: number; animationType: string; category: string }> = {
+          rose: { name: 'Gül', emoji: '🌹', price: 5, animationType: 'float', category: 'basic' },
+          coffee: { name: 'Kahve', emoji: '☕', price: 5, animationType: 'float', category: 'basic' },
+          heart: { name: 'Kalp', emoji: '❤️', price: 10, animationType: 'pulse', category: 'basic' },
+          kiss: { name: 'Öpücük', emoji: '💋', price: 10, animationType: 'float', category: 'basic' },
+          sunflower: { name: 'Ay Çiçeği', emoji: '🌻', price: 15, animationType: 'float', category: 'basic' },
+          bear: { name: 'Ayıcık', emoji: '🧸', price: 15, animationType: 'float', category: 'basic' },
+          candy: { name: 'Şeker', emoji: '🍬', price: 18, animationType: 'spin', category: 'basic' },
+          icecream: { name: 'Dondurma', emoji: '🍦', price: 20, animationType: 'float', category: 'basic' },
+          cake: { name: 'Pasta', emoji: '🎂', price: 25, animationType: 'float', category: 'basic' },
+          balloon: { name: 'Balon', emoji: '🎈', price: 25, animationType: 'fly', category: 'basic' },
+          rainbow: { name: 'Gökkuşağı', emoji: '🌈', price: 30, animationType: 'glow', category: 'basic' },
+          perfume: { name: 'Parfüm', emoji: '🧴', price: 35, animationType: 'float', category: 'basic' },
+          diamond: { name: 'Elmas', emoji: '💎', price: 50, animationType: 'spin', category: 'premium' },
+          guitar: { name: 'Gitar', emoji: '🎸', price: 60, animationType: 'pulse', category: 'premium' },
+          music: { name: 'Müzik Notu', emoji: '🎵', price: 65, animationType: 'float', category: 'premium' },
+          bouquet: { name: 'Buket', emoji: '💐', price: 75, animationType: 'glow', category: 'premium' },
+          fire: { name: 'Ateş', emoji: '🔥', price: 80, animationType: 'pulse', category: 'premium' },
+          champagne: { name: 'Şampanya', emoji: '🍾', price: 90, animationType: 'fly', category: 'premium' },
+          ring: { name: 'Yüzük', emoji: '💍', price: 100, animationType: 'spin', category: 'premium' },
+          mic: { name: 'Mikrofon', emoji: '🎤', price: 100, animationType: 'pulse', category: 'premium' },
+          crown: { name: 'Taç', emoji: '👑', price: 120, animationType: 'glow', category: 'premium' },
+          sports_car: { name: 'Spor Araba', emoji: '🏎️', price: 150, animationType: 'fly', category: 'premium' },
+          airplane: { name: 'Uçak', emoji: '✈️', price: 180, animationType: 'fly', category: 'premium' },
+          trophy: { name: 'Kupa', emoji: '🏆', price: 200, animationType: 'glow', category: 'premium' },
+          rocket: { name: 'Roket', emoji: '🚀', price: 300, animationType: 'fly', category: 'legendary' },
+          unicorn: { name: 'Unicorn', emoji: '🦄', price: 400, animationType: 'fly', category: 'legendary' },
+          dragon: { name: 'Ejderha', emoji: '🐉', price: 500, animationType: 'pulse', category: 'legendary' },
+          castle: { name: 'Kale', emoji: '🏰', price: 600, animationType: 'glow', category: 'legendary' },
+          shooting_star: { name: 'Kayan Yıldız', emoji: '🌠', price: 750, animationType: 'fly', category: 'legendary' },
+          galaxy: { name: 'Galaksi', emoji: '🌌', price: 800, animationType: 'spin', category: 'legendary' },
+          fireworks: { name: 'Havai Fişek', emoji: '🎆', price: 900, animationType: 'pulse', category: 'legendary' },
+          yacht: { name: 'Yat', emoji: '🛥️', price: 1000, animationType: 'fly', category: 'legendary' },
+          island: { name: 'Ada', emoji: '🏝️', price: 1500, animationType: 'glow', category: 'legendary' },
+          planet: { name: 'Gezegen', emoji: '🪐', price: 2000, animationType: 'spin', category: 'legendary' },
+          aurora: { name: 'Kuzey Işığı', emoji: '🌊', price: 3000, animationType: 'glow', category: 'legendary' },
+          infinity: { name: 'Sonsuzluk', emoji: '♾️', price: 5000, animationType: 'spin', category: 'legendary' },
+        };
+        const fb = fallbackMap[data.giftId];
+        if (fb) {
+          // Fallback hediye bulundu — DB'ye bakmadan doğrudan kullan
+          this.logger.log(`[GIFT:SEND] Using fallback gift: ${data.giftId} → ${fb.emoji} ${fb.name}`);
+          gift = { id: data.giftId, name: fb.name, emoji: fb.emoji, price: fb.price, animationType: fb.animationType, category: fb.category, isActive: true } as any;
+        } else {
+          // Son çare: name ile DB'de ara
+          gift = await this.prisma.gift.findFirst({ where: { tenantId: user.tenantId, isActive: true, name: { contains: data.giftId, mode: 'insensitive' } } });
+        }
+      }
+      if (!gift || !(gift as any).isActive) {
         this.logger.warn(`[GIFT:SEND] Gift not found: ${data.giftId}`);
         return { error: 'Hediye bulunamadı.' };
       }
@@ -5175,13 +5226,15 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @SubscribeMessage('mic:take')
   async handleMicTake(
-    @MessageBody() data: { roomId: string; userId: string },
+    @MessageBody() data: { roomId: string; userId?: string },
     @ConnectedSocket() client: Socket,
   ) {
-    const { userId } = data;
     const user = client.data.user;
     const participant = this.participants.get(client.id);
-    if (!user || user.sub !== userId || !participant) return;
+    if (!user || !participant) return;
+
+    // Use authenticated user.sub (JWT) — ignore client-sent userId which may mismatch
+    const userId = user.sub;
 
     // ★ BAN CHECK — Banlı kullanıcılar mikrofon alamaz
     if (participant.isBanned) {

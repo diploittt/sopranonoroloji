@@ -59,9 +59,12 @@ export async function clearAuthData(): Promise<void> {
 // ── Request Interceptor — her isteğe token ekle ──
 api.interceptors.request.use(
   async (cfg: InternalAxiosRequestConfig) => {
-    const token = await getToken();
-    if (token && cfg.headers) {
-      cfg.headers.Authorization = `Bearer ${token}`;
+    // SADECE eğer Authorization header önceden (örn: getConfig bypass) ayarlanmamışsa AsyncStorage okunsun
+    if (cfg.headers && !cfg.headers.Authorization) {
+      const token = await getToken();
+      if (token) {
+        cfg.headers.Authorization = `Bearer ${token}`;
+      }
     }
     return cfg;
   },

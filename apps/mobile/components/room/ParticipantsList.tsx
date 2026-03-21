@@ -26,7 +26,7 @@ function ParticipantRow({
 }) {
   const roleColor = getRoleColor(participant.role);
   const roleIcon = getRoleIcon(participant.role);
-  const avatarUri = participant.avatar || '/avatars/neutral_1.png';
+  const avatarUri = participant.avatar?.startsWith('http') ? participant.avatar : 'https://sopranochat.com/avatars/neutral_1.png';
 
   return (
     <TouchableOpacity style={st.row} onPress={onPress} activeOpacity={0.7} onLongPress={onPress}>

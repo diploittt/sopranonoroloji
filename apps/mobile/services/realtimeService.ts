@@ -4,6 +4,7 @@
 // ═══════════════════════════════════════════════════════════
 
 import { io, Socket } from 'socket.io-client';
+import useStore from '../store';
 
 // ─── Types ──────────────────────────────────────────────────
 export interface Participant {
@@ -251,23 +252,41 @@ class RealtimeService {
 
   // ─── Mic ──────────────────────────────────────────────────
   takeMic(): void {
-    if (!this.socket?.connected || !this.currentRoomId) return;
-    this.socket.emit('mic:take', { roomId: this.currentRoomId });
+    if (!this.socket?.connected || !this.currentRoomId) {
+      console.warn('[RT] takeMic BAŞARISIZ — socket:', this.socket?.connected, 'roomId:', this.currentRoomId);
+      return;
+    }
+    const userId = useStore.getState().user?.id || useStore.getState().user?.email || '';
+    console.log('[RT] takeMic emit — roomId:', this.currentRoomId, 'userId:', userId);
+    this.socket.emit('mic:take', { roomId: this.currentRoomId, userId });
   }
 
   releaseMic(): void {
-    if (!this.socket?.connected || !this.currentRoomId) return;
-    this.socket.emit('mic:release', { roomId: this.currentRoomId });
+    if (!this.socket?.connected || !this.currentRoomId) {
+      console.warn('[RT] releaseMic BAŞARISIZ — socket:', this.socket?.connected, 'roomId:', this.currentRoomId);
+      return;
+    }
+    const userId = useStore.getState().user?.id || useStore.getState().user?.email || '';
+    this.socket.emit('mic:release', { roomId: this.currentRoomId, userId });
   }
 
   requestMic(): void {
-    if (!this.socket?.connected || !this.currentRoomId) return;
-    this.socket.emit('mic:request', { roomId: this.currentRoomId });
+    if (!this.socket?.connected || !this.currentRoomId) {
+      console.warn('[RT] requestMic BAŞARISIZ — socket:', this.socket?.connected, 'roomId:', this.currentRoomId);
+      return;
+    }
+    const userId = useStore.getState().user?.id || useStore.getState().user?.email || '';
+    console.log('[RT] requestMic emit — roomId:', this.currentRoomId, 'userId:', userId);
+    this.socket.emit('mic:request', { roomId: this.currentRoomId, userId });
   }
 
   leaveQueue(): void {
-    if (!this.socket?.connected || !this.currentRoomId) return;
-    this.socket.emit('mic:leave-queue', { roomId: this.currentRoomId });
+    if (!this.socket?.connected || !this.currentRoomId) {
+      console.warn('[RT] leaveQueue BAŞARISIZ — socket:', this.socket?.connected, 'roomId:', this.currentRoomId);
+      return;
+    }
+    const userId = useStore.getState().user?.id || useStore.getState().user?.email || '';
+    this.socket.emit('mic:leave-queue', { roomId: this.currentRoomId, userId });
   }
 
   // ─── Status ───────────────────────────────────────────────

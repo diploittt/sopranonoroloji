@@ -2,6 +2,7 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from 'react';
 import { useSocket, Message as SocketMessage, Participant as SocketParticipant } from './useSocket';
 import { useMediasoup } from './useMediasoup';
+import { useLiveKitAudio } from './useLiveKitAudio';
 import { User, Message } from '@/types';
 import { ensureAuthUser, getAuthUser } from '@/lib/auth';
 import { generateGenderAvatar } from '@/lib/avatar';
@@ -63,16 +64,30 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         setActionIndicators,
     } = useSocket({ roomId: slug, token });
 
-    // Mediasoup — camera/video + audio streaming
+    // Mediasoup — camera/video streaming ONLY (audio is handled by LiveKit)
     const {
         remoteStreams: mediaRemoteStreams,
         isProducing: isVideoProducing,
         produceVideo,
         closeVideoProducer,
-        produceAudio,
-        closeAudioProducer,
         initDevice: initMediaDevice,
     } = useMediasoup({ socket, roomId: slug, enabled: isConnected });
+
+    // LiveKit — audio streaming (replaces Mediasoup audio)
+    const authUserForLK = useMemo(() => getAuthUser(), []);
+    const {
+        publishAudio: lkPublishAudio,
+        unpublishAudio: lkUnpublishAudio,
+    } = useLiveKitAudio({
+        roomSlug: slug,
+        username: authUserForLK?.displayName || authUserForLK?.username || 'anon',
+        enabled: isConnected,
+    });
+    // Refs for stable access inside useEffect closures
+    const lkPublishAudioRef = useRef(lkPublishAudio);
+    const lkUnpublishAudioRef = useRef(lkUnpublishAudio);
+    lkPublishAudioRef.current = lkPublishAudio;
+    lkUnpublishAudioRef.current = lkUnpublishAudio;
 
     // 2. Local State for UI Compatibility
     const [currentUser, setCurrentUser] = useState<any>(null);
@@ -222,7 +237,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     micStreamRef.current = stream;
                     const audioTrack = stream.getAudioTracks()[0];
                     if (audioTrack) {
-                        await produceAudio(audioTrack);
+                        await lkPublishAudioRef.current(audioTrack);
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio:', err);
@@ -256,7 +271,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 setIsMicOn(false);
                 isMicOnRef.current = false; // ★ Ref'i de güncelle
                 cleanupMicStream();
-                closeAudioProducer();
+                lkUnpublishAudioRef.current();
             }
         };
 
@@ -275,7 +290,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             if (authUser && data.userId === authUser.userId) {
                 setIsMicOn(false);
                 cleanupMicStream();
-                closeAudioProducer();
+                lkUnpublishAudioRef.current();
                 setToastMessage({ type: 'info', title: 'Süre doldu', message: 'Mikrofon süresi sona erdi.' });
             }
         };
@@ -309,7 +324,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         const onMicForceReleased = (data: { by: string; byRole: string }) => {
             setIsMicOn(false);
             cleanupMicStream();
-            closeAudioProducer();
+            lkUnpublishAudioRef.current();
             setToastMessage({ type: 'info', title: 'Mikrofon alındı', message: `${data.by} mikrofonu zorla aldı.` });
         };
 
@@ -372,7 +387,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     if (isMicOnRef.current) {
                         setIsMicOn(false);
                         cleanupMicStream();
-                        closeAudioProducer(); // Also close mediasoup audio producer
+                        lkUnpublishAudioRef.current(); // Close LiveKit audio
                     }
                 } else {
                     setIsCurrentUserMuted(false);
@@ -439,7 +454,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 // Admin forced mic release — turn off mic locally
                 setIsMicOn(false);
                 cleanupMicStream();
-                closeAudioProducer();
+                lkUnpublishAudioRef.current();
                 setToastMessage({ type: 'info', title: '🎤 Mikrofon Serbest', message: 'Mikrofonunuz yönetici tarafından serbest bırakıldı.' });
             } else if (data.action === 'take_mic') {
                 // Server already assigned mic to us — capture audio and produce
@@ -455,7 +470,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     micStreamRef.current = stream;
                     const audioTrack = stream.getAudioTracks()[0];
                     if (audioTrack) {
-                        await produceAudio(audioTrack);
+                        await lkPublishAudioRef.current(audioTrack);
                     }
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio (take_mic):', err);
@@ -867,7 +882,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             socket.emit('mic:release', { roomId: slug });
             setIsMicOn(false);
             cleanupMicStream();
-            closeAudioProducer();
+            lkUnpublishAudioRef.current();
         },
 
         forceTakeMic: (targetSocketId?: string) => {
@@ -945,7 +960,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             if (isMicOnRef.current) {
                 setIsMicOn(false);
                 cleanupMicStream();
-                closeAudioProducer();
+                lkUnpublishAudioRef.current();
             } else {
                 try {
                     const constraints: MediaStreamConstraints = {
@@ -958,7 +973,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                     setIsMicOn(true);
                     const audioTrack = stream.getAudioTracks()[0];
                     if (audioTrack) {
-                        await produceAudio(audioTrack);
+                        await lkPublishAudioRef.current(audioTrack);
                     }
                 } catch (err: any) {
                     setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon açılamıyor.' });
@@ -1188,8 +1203,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 micStreamRef.current = stream;
                 const audioTrack = stream.getAudioTracks()[0];
                 if (audioTrack) {
-                    await produceAudio(audioTrack);
-                    console.log('[ONE2ONE] Audio track produced via mediasoup');
+                    await lkPublishAudioRef.current(audioTrack);
+                    console.log('[ONE2ONE] Audio track produced via LiveKit');
                 }
             } catch (err: any) {
                 console.error('[ONE2ONE] Failed to capture audio:', err);
@@ -1200,7 +1215,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 micStreamRef.current.getTracks().forEach(t => t.stop());
                 micStreamRef.current = null;
             }
-            closeAudioProducer();
+            lkUnpublishAudioRef.current();
             setIsMicOn(false);
             console.log('[ONE2ONE] Audio stopped + producer closed');
         },

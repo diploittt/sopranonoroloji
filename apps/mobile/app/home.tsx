@@ -1,364 +1,58 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-  Platform,
-  Dimensions,
-  StyleSheet,
-  Image,
-  Animated,
-  RefreshControl,
-  ActivityIndicator,
-  Alert,
-  TextInput,
+  View, Text, TouchableOpacity, ScrollView, Platform, Dimensions,
+  StyleSheet, Image, RefreshControl, ActivityIndicator, Alert,
+  TextInput, Modal,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStore } from '../store';
 import api from '../services/api';
+import AppBackground from '../components/shared/AppBackground';
+import BottomNav from '../components/shared/BottomNav';
 
-const { width, height: H } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
 
-/* ═══════════════════════════════════════════════════════════
-   FLOATING PARTİKÜLLER — Mockup tarzı turkuaz/lavanta
-   ═══════════════════════════════════════════════════════════ */
-
-function FloatingParticles() {
-  const COLORS = ['#5eead4', '#a78bfa', '#7dd3c8', '#c4b5fd', '#38bdf8'];
-  const pts = useRef(
-    Array.from({ length: 10 }, (_, i) => ({
-      x: Math.random() * width,
-      y: new Animated.Value(Math.random() * H * 0.5),
-      opacity: new Animated.Value(0),
-      size: 1.5 + Math.random() * 3,
-      color: COLORS[i % COLORS.length],
-    }))
-  ).current;
-
-  useEffect(() => {
-    pts.forEach(p => {
-      const go = () => {
-        Animated.sequence([
-          Animated.parallel([
-            Animated.timing(p.opacity, { toValue: 0.15 + Math.random() * 0.25, duration: 2000 + Math.random() * 2000, useNativeDriver: true }),
-            Animated.timing(p.y, { toValue: Math.random() * H * 0.5, duration: 4000 + Math.random() * 3000, useNativeDriver: true }),
-          ]),
-          Animated.timing(p.opacity, { toValue: 0, duration: 1500, useNativeDriver: true }),
-        ]).start(go);
-      };
-      setTimeout(go, Math.random() * 2500);
-    });
-  }, []);
-
-  return (
-    <View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]}>
-      {pts.map((p, i) => (
-        <Animated.View key={i} style={{
-          position: 'absolute', width: p.size, height: p.size, borderRadius: p.size,
-          backgroundColor: p.color,
-          left: p.x, opacity: p.opacity, transform: [{ translateY: p.y }],
-        }} />
-      ))}
-    </View>
-  );
-}
+const GRADS: [string, string][] = [
+  ['#8b5cf6', '#6366f1'],
+  ['#06b6d4', '#0ea5e9'],
+  ['#ec4899', '#f43f5e'],
+  ['#f59e0b', '#ef4444'],
+  ['#10b981', '#059669'],
+];
 
 /* ═══════════════════════════════════════════════════════════
-   ALT NAVİGASYON — Mockup stili (koyu, turkuaz vurgu, + butonu)
+   HOME EKRANI — KOYU TEMA
    ═══════════════════════════════════════════════════════════ */
-
-function BottomNavigation() {
-  const router = useRouter();
-  const items = [
-    { id: 'home', icon: 'home' as const, iconOut: 'home-outline' as const, label: 'Anasayfa', route: null },
-    { id: 'explore', icon: 'compass' as const, iconOut: 'compass-outline' as const, label: 'Keşfet', route: '/explore' },
-    { id: 'create', icon: 'add', label: 'Topluluk Aç', isCenter: true, route: '/create-room' },
-    { id: 'notifications', icon: 'notifications' as const, iconOut: 'notifications-outline' as const, label: 'Bildirimler', route: '/notifications' },
-    { id: 'profile', icon: 'person' as const, iconOut: 'person-outline' as const, label: 'Profil', route: null },
-  ];
-
-  return (
-    <View style={styles.bottomNav}>
-      {items.map(item => {
-        if (item.isCenter) {
-          return (
-            <TouchableOpacity key={item.id} style={styles.bottomNavCenter} activeOpacity={0.85}
-              onPress={() => item.route && router.push(item.route as any)}>
-              <LinearGradient colors={['#4ecdc4','#44b8b0']} style={styles.bottomNavCenterGrad}>
-                <Ionicons name="add" size={30} color="#fff" />
-              </LinearGradient>
-              <Text style={styles.bottomNavCenterLabel}>{item.label}</Text>
-            </TouchableOpacity>
-          );
-        }
-        const isActive = item.id === 'home';
-        return (
-          <TouchableOpacity key={item.id}
-            onPress={() => {
-              if (item.route) router.push(item.route as any);
-              else if (item.id === 'profile') Alert.alert('Profil', 'Profil sayfası yakında eklenecek.', [{ text: 'Tamam' }]);
-            }}
-            style={styles.bottomNavItem}>
-            <Ionicons name={(isActive ? item.icon : item.iconOut) as any} size={24}
-              color={isActive ? '#4f46e5' : '#94a3b8'} />
-            <Text style={[styles.bottomNavLabel, isActive && styles.bottomNavLabelActive]}>{item.label}</Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-/* ═══════════════════════════════════════════════════════════
-   TENANT KARTI — Inline çekmece ile misafir/üye girişi
-   Tıkla → misafir olarak gir (mevcut isimle)
-   "Üye Girişi" → çekmece aç → email+şifre
-   ═══════════════════════════════════════════════════════════ */
-
-function TenantCard({ tenant, index, user, router }: { tenant: any; index: number; user: any; router: any }) {
-  const { loginWithSocket } = useStore();
-  const [drawerMode, setDrawerMode] = useState<'closed' | 'rooms' | 'member'>('closed');
-  const [memberEmail, setMemberEmail] = useState('');
-  const [memberPass, setMemberPass] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const drawerH = useRef(new Animated.Value(0)).current;
-  const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
-  const rooms = Array.isArray(tenant.rooms) ? tenant.rooms : [];
-
-  const openDrawer = (mode: 'rooms' | 'member') => {
-    const newMode = drawerMode === mode ? 'closed' : mode;
-    setDrawerMode(newMode);
-    setError(null);
-    Animated.timing(drawerH, {
-      toValue: newMode === 'closed' ? 0 : 1,
-      duration: 250,
-      useNativeDriver: false,
-    }).start();
-  };
-
-  // Misafir olarak odaya gir
-  const enterAsGuest = async (roomSlug: string) => {
-    if (loading) return;
-    setLoading(true);
-    setError(null);
-    try {
-      const guestName = user?.displayName || user?.username || 'Misafir';
-      const { data } = await api.post('/auth/guest', {
-        username: guestName,
-        gender: user?.gender || 'male',
-        tenantId: tenant.id,
-      });
-      loginWithSocket(data.access_token, data.user, tenant.id);
-      router.push({ pathname: '/room', params: { roomId: roomSlug } } as any);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Giriş başarısız.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Üye olarak gir
-  const handleMemberLogin = async () => {
-    if (!memberEmail.trim() || !memberPass.trim()) {
-      setError('Kullanıcı adı ve şifre gerekli.');
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const { data } = await api.post('/auth/login', {
-        username: memberEmail.trim(),
-        password: memberPass.trim(),
-        tenantId: tenant.id,
-      });
-      loginWithSocket(data.access_token, data.user, tenant.id);
-      const slug = tenant.firstRoom || rooms[0]?.slug;
-      if (slug) router.push({ pathname: '/room', params: { roomId: slug } } as any);
-    } catch (err: any) {
-      setError(err?.response?.data?.message || err?.message || 'Giriş başarısız.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Misafir tıkla: tek oda → direkt gir, çok oda → çekmece aç
-  const handleGuestClick = () => {
-    if (rooms.length === 1) {
-      enterAsGuest(rooms[0].slug);
-    } else if (rooms.length > 1) {
-      openDrawer('rooms');
-    } else if (tenant.firstRoom) {
-      enterAsGuest(tenant.firstRoom);
-    } else {
-      Alert.alert('Topluluk', 'Bu toplulukta henüz aktif oda yok.');
-    }
-  };
-
-
-  return (
-    <View style={{ marginBottom: 10 }}>
-      {/* Ana kart */}
-      <View style={styles.roomCard}>
-        <TouchableOpacity
-          style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}
-          activeOpacity={0.7}
-          onPress={handleGuestClick}
-        >
-          <View style={[styles.roomIconWrap, { backgroundColor: gradient[0] + '25' }]}>
-            <Ionicons name="globe" size={22} color={gradient[0]} />
-          </View>
-          <View style={styles.roomInfo}>
-            <Text style={styles.roomName} numberOfLines={1}>{tenant.name}</Text>
-            <Text style={styles.roomAnnounce} numberOfLines={1}>{tenant.firstRoomName || tenant.slug}</Text>
-            <View style={styles.roomMeta}>
-              <View style={styles.roomLiveDot} />
-              <Text style={styles.roomMetaText}>{tenant.roomCount || 0} oda • {tenant.onlineUsers || 0} çevrimiçi</Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Sağ: Misafir + Üye iki küçük buton */}
-        <View style={{ alignItems: 'stretch', gap: 3, width: 62 }}>
-          <TouchableOpacity activeOpacity={0.85} onPress={handleGuestClick}>
-            <LinearGradient colors={['#4ecdc4','#44b8b0']} style={{
-              paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8,
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3,
-            }}>
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <>
-                  <Ionicons name="person-outline" size={11} color="#fff" />
-                  <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>Misafir</Text>
-                </>
-              )}
-            </LinearGradient>
-          </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.85} onPress={() => openDrawer('member')}>
-            <LinearGradient colors={drawerMode === 'member' ? ['#8b5cf6','#7c3aed'] : ['#6366f1','#4f46e5']} style={{
-              paddingVertical: 6, paddingHorizontal: 8, borderRadius: 8,
-              flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3,
-            }}>
-              <Ionicons name="key-outline" size={11} color="#fff" />
-              <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>Üye</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* Hata mesajı */}
-      {error && (
-        <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
-          <Text style={{ fontSize: 11, color: '#ef4444' }}>⚠ {error}</Text>
-        </View>
-      )}
-
-      {/* Çekmece — oda listesi veya üye girişi */}
-      <Animated.View style={{
-        overflow: 'hidden',
-        maxHeight: drawerH.interpolate({ inputRange: [0, 1], outputRange: [0, drawerMode === 'member' ? 160 : Math.max(rooms.length * 52 + 20, 60)] }),
-        opacity: drawerH.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 0, 1] }),
-      }}>
-        <View style={{
-          marginHorizontal: 12, marginTop: 6, borderRadius: 12, padding: 10,
-          backgroundColor: drawerMode === 'member' ? 'rgba(99,102,241,0.06)' : 'rgba(78,205,196,0.06)',
-          borderWidth: 1, borderColor: drawerMode === 'member' ? 'rgba(99,102,241,0.15)' : 'rgba(78,205,196,0.15)',
-        }}>
-          {/* Oda listesi */}
-          {drawerMode === 'rooms' && (
-            <>
-              <Text style={{ fontSize: 10, fontWeight: '700', color: '#0d9488', marginBottom: 6, letterSpacing: 1 }}>ODALAR</Text>
-              {rooms.map((room: any) => (
-                <TouchableOpacity
-                  key={room.id}
-                  activeOpacity={0.7}
-                  onPress={() => enterAsGuest(room.slug)}
-                  style={{
-                    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-                    paddingVertical: 8, paddingHorizontal: 10, marginBottom: 4,
-                    backgroundColor: 'rgba(255,255,255,0.5)', borderRadius: 8,
-                  }}
-                >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flex: 1 }}>
-                    <Ionicons name="mic" size={14} color="#0d9488" />
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: '#1e293b' }} numberOfLines={1}>{room.name}</Text>
-                  </View>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                    <Text style={{ fontSize: 10, color: '#64748b' }}>{room.onlineUsers || 0} 👤</Text>
-                    <View style={{ backgroundColor: '#4ecdc4', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
-                      <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>Gir</Text>
-                    </View>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </>
-          )}
-
-          {/* Üye girişi */}
-          {drawerMode === 'member' && (
-            <>
-              <Text style={{ fontSize: 10, fontWeight: '700', color: '#6366f1', marginBottom: 8, letterSpacing: 1 }}>ÜYE GİRİŞİ</Text>
-              <TextInput
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 8,
-                  paddingHorizontal: 12, paddingVertical: 8, fontSize: 13,
-                  color: '#1e293b', marginBottom: 6, borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)',
-                }}
-                placeholder="Kullanıcı adı" placeholderTextColor="#94a3b8"
-                value={memberEmail} onChangeText={setMemberEmail} autoCapitalize="none"
-              />
-              <TextInput
-                style={{
-                  backgroundColor: 'rgba(255,255,255,0.7)', borderRadius: 8,
-                  paddingHorizontal: 12, paddingVertical: 8, fontSize: 13,
-                  color: '#1e293b', marginBottom: 8, borderWidth: 1, borderColor: 'rgba(99,102,241,0.2)',
-                }}
-                placeholder="Şifre" placeholderTextColor="#94a3b8"
-                value={memberPass} onChangeText={setMemberPass} secureTextEntry
-              />
-              <TouchableOpacity activeOpacity={0.85} onPress={handleMemberLogin} disabled={loading}
-                style={{ borderRadius: 8, overflow: 'hidden' }}>
-                <LinearGradient colors={['#6366f1','#4f46e5']} style={{
-                  paddingVertical: 10, alignItems: 'center', borderRadius: 8,
-                  flexDirection: 'row', justifyContent: 'center', gap: 6,
-                }}>
-                  {loading ? <ActivityIndicator color="#fff" size="small" /> : (
-                    <>
-                      <Ionicons name="key-outline" size={14} color="#fff" />
-                      <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Giriş Yap</Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-      </Animated.View>
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState<'communities' | 'rooms' | 'online'>('rooms');
   const [refreshing, setRefreshing] = useState(false);
+  const [expandedTenant, setExpandedTenant] = useState<string | null>(null);
+  const [directLoading, setDirectLoading] = useState<string | null>(null);
+
+  // Üye girişi modal
+  const [memberEntry, setMemberEntry] = useState<{ tenantId: string; room: any; tenantRooms: any[] } | null>(null);
+  const [mTab, setMTab] = useState<'login' | 'register'>('login');
+  const [mEmail, setMEmail] = useState('');
+  const [mPassword, setMPassword] = useState('');
+  const [mUsername, setMUsername] = useState('');
+  const [mGender, setMGender] = useState<'male' | 'female'>('male');
+  const [mLoading, setMLoading] = useState(false);
 
   const {
     publicRooms, roomsLoading, roomsError, fetchPublicRooms,
     exploreTenants: rawTenants, exploreLoading, fetchExploreData,
-    activeTenantId, setActiveTenant,
-    user,
+    loginWithSocket, user,
   } = useStore();
   const exploreTenants = Array.isArray(rawTenants) ? rawTenants : [];
 
-  useEffect(() => {
-    fetchPublicRooms();
-    fetchExploreData();
-  }, []);
+  const allLiveRooms = [
+    ...publicRooms,
+    ...exploreTenants.flatMap((t: any) => (Array.isArray(t.rooms) ? t.rooms : [])),
+  ].filter((r: any) => r && r.name);
+
+  useEffect(() => { fetchPublicRooms(); fetchExploreData(); }, []);
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -366,378 +60,483 @@ export default function HomeScreen() {
     setRefreshing(false);
   }, []);
 
+  const enterRoom = (room: any) => {
+    router.push({ pathname: '/room', params: { roomId: room.slug || room.id } } as any);
+  };
+
+  const directEnterRoom = async (tenantId: string, room: any, tenantRooms: any[]) => {
+    const roomId = room.slug || room.id;
+    if (user && user.tenantId === tenantId) {
+      router.push({ pathname: '/room', params: { roomId, tenantRooms: JSON.stringify(tenantRooms) } } as any);
+      return;
+    }
+    setDirectLoading(roomId);
+    try {
+      const guestName = `Misafir_${Math.floor(Math.random() * 9000 + 1000)}`;
+      const { data } = await api.post('/auth/guest', { username: guestName, gender: 'male', tenantId });
+      loginWithSocket(data.access_token, data.user, tenantId);
+      router.push({ pathname: '/room', params: { roomId, tenantRooms: JSON.stringify(tenantRooms) } } as any);
+    } catch (err: any) {
+      Alert.alert('Hata', err?.response?.data?.message || err?.message || 'Giriş başarısız.');
+    } finally { setDirectLoading(null); }
+  };
+
+  const handleMemberEntry = async () => {
+    if (!memberEntry || !mEmail.trim() || !mPassword.trim()) return;
+    setMLoading(true);
+    try {
+      const { data } = await api.post('/auth/login', { username: mEmail.trim(), password: mPassword.trim(), tenantId: memberEntry.tenantId });
+      loginWithSocket(data.access_token, data.user, memberEntry.tenantId);
+      const roomId = memberEntry.room.slug || memberEntry.room.id;
+      const tenantRooms = memberEntry.tenantRooms;
+      setMemberEntry(null); setMEmail(''); setMPassword('');
+      router.push({ pathname: '/room', params: { roomId, tenantRooms: JSON.stringify(tenantRooms) } } as any);
+    } catch (err: any) {
+      Alert.alert('Hata', err?.response?.data?.message || err?.message || 'Giriş başarısız.');
+    } finally { setMLoading(false); }
+  };
+
+  const handleRegister = async () => {
+    if (!memberEntry || !mUsername.trim() || !mEmail.trim() || !mPassword.trim()) return;
+    setMLoading(true);
+    try {
+      const { data } = await api.post('/auth/register', { username: mUsername.trim(), email: mEmail.trim(), password: mPassword.trim(), gender: mGender, tenantId: memberEntry.tenantId });
+      loginWithSocket(data.access_token, data.user, memberEntry.tenantId);
+      const roomId = memberEntry.room.slug || memberEntry.room.id;
+      const tenantRooms = memberEntry.tenantRooms;
+      setMemberEntry(null); setMEmail(''); setMPassword(''); setMUsername('');
+      router.push({ pathname: '/room', params: { roomId, tenantRooms: JSON.stringify(tenantRooms) } } as any);
+    } catch (err: any) {
+      Alert.alert('Hata', err?.response?.data?.message || err?.message || 'Kayıt başarısız.');
+    } finally { setMLoading(false); }
+  };
+
+  const toggleTenant = (tenantId: string) => setExpandedTenant(prev => prev === tenantId ? null : tenantId);
+
   return (
-    <View style={styles.container}>
-      {/* Arka plan — ikon.png zemin rengi */}
-      <LinearGradient colors={['#eee8f5','#d0cce0','#b8b3d1']} style={StyleSheet.absoluteFill as any} />
-
-      {/* Işık orbs */}
-      <View style={styles.orbTopRight} />
-      <View style={styles.orbBottomLeft} />
-      <FloatingParticles />
-
-      {/* ═══ HEADER — Logo + arama + profil ═══ */}
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => router.push('/explore' as any)}>
-          <Ionicons name="search" size={20} color="#475569" />
+    <AppBackground>
+      {/* HEADER */}
+      <View style={st.header}>
+        <TouchableOpacity style={st.headerBtn} onPress={() => router.push('/explore' as any)}>
+          <Ionicons name="search" size={20} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
-        <View style={styles.headerCenter}>
-          <Image source={require('../assets/images/logo.png')} style={styles.headerLogo} resizeMode="contain" />
-          <Text style={styles.headerSlogan}>Senin Sesin</Text>
+        <View style={st.headerCenter}>
+          <Image source={require('../assets/images/logo.png')} style={st.headerLogo} resizeMode="contain" />
         </View>
-        <TouchableOpacity style={styles.headerBtn} onPress={() => Alert.alert('Profil', 'Profil sayfası yakında eklenecek.', [{ text: 'Tamam' }])}>
-          <Ionicons name="person-circle-outline" size={24} color="#475569" />
+        <TouchableOpacity style={st.headerBtn} onPress={() => router.push('/profile' as any)}>
+          <Ionicons name="person-circle-outline" size={24} color="rgba(255,255,255,0.6)" />
         </TouchableOpacity>
       </View>
 
-      {/* ═══ SEKMELER — Topluluklar / Odalar / Çevrimiçi ═══ */}
-      <View style={styles.tabBar}>
-        {([{ id: 'communities' as const, label: 'Topluluklar' }, { id: 'rooms' as const, label: 'Odalar' }, { id: 'online' as const, label: 'Çevrimiçi' }]).map(t => {
-          const isActive = activeTab === t.id;
-          return (
-            <TouchableOpacity key={t.id} onPress={() => setActiveTab(t.id)}
-              style={[styles.tab, isActive && styles.tabActive]}>
-              <Text style={[styles.tabText, isActive && styles.tabTextActive]}>{t.label}</Text>
-            </TouchableOpacity>
-          );
-        })}
-      </View>
+      {/* İÇERİK */}
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={st.scroll} showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a78bfa" />}>
 
-      {/* ═══ İÇERİK ═══ */}
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#5eead4" />}
-      >
-        {/* ── LOADING ── */}
-        {roomsLoading && !refreshing && (
-          <View style={styles.placeholder}>
-            <ActivityIndicator size="large" color="#5eead4" />
-            <Text style={styles.placeholderText}>{activeTab === 'rooms' ? 'Odalar yükleniyor...' : 'Kullanıcılar yükleniyor...'}</Text>
+        {(roomsLoading || exploreLoading) && !refreshing && (
+          <View style={{ alignItems: 'center', paddingVertical: 50 }}>
+            <ActivityIndicator size="large" color="#a78bfa" />
           </View>
         )}
 
-        {/* ── ERROR ── */}
         {roomsError && !roomsLoading && (
-          <View style={styles.placeholder}>
-            <Ionicons name="cloud-offline-outline" size={48} color="#ef4444" />
-            <Text style={[styles.placeholderText, { color: '#ef4444' }]}>{roomsError}</Text>
-            <TouchableOpacity onPress={fetchPublicRooms} style={styles.retryBtn}>
-              <Text style={styles.retryText}>Tekrar Dene</Text>
+          <View style={{ alignItems: 'center', paddingVertical: 30 }}>
+            <Ionicons name="cloud-offline-outline" size={40} color="#ef4444" />
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#ef4444', marginTop: 8 }}>{roomsError}</Text>
+            <TouchableOpacity onPress={() => { fetchPublicRooms(); fetchExploreData(); }}
+              style={{ marginTop: 12, backgroundColor: '#8b5cf6', paddingHorizontal: 20, paddingVertical: 8, borderRadius: 10 }}>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: '#fff' }}>Tekrar Dene</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* ═══ TOPLULUKLAR SEKMESİ ═══ */}
-        {activeTab === 'communities' && !exploreLoading && (
+        {/* 🔥 CANLI ODALAR */}
+        {allLiveRooms.length > 0 && (
           <>
-            {exploreTenants.length === 0 && (
-              <View style={styles.placeholder}>
-                <Ionicons name="globe-outline" size={56} color="rgba(167,139,250,0.4)" />
-                <Text style={styles.placeholderText}>Henüz topluluk yok</Text>
-                <Text style={styles.placeholderSub}>Yakında topluluklar burada listelenecek</Text>
+            <View style={st.secRow}>
+              <View style={st.secIconWrap}><Ionicons name="radio" size={14} color="#a78bfa" /></View>
+              <Text style={st.secTitle}>Canlı Odalar</Text>
+              <View style={st.secBadge}>
+                <View style={st.secDotLive} />
+                <Text style={st.secBadgeText}>{allLiveRooms.length} aktif</Text>
               </View>
-            )}
-            {exploreTenants.map((tenant: any, index: number) => (
-              <TenantCard
-                key={tenant.id}
-                tenant={tenant}
-                index={index}
-                user={user}
-                router={router}
-              />
-            ))}
-          </>
-        )}
-
-        {/* ═══ ODALAR SEKMESİ ═══ */}
-        {activeTab === 'rooms' && !roomsLoading && (
-          <>
-            {publicRooms.length === 0 && !roomsError && (
-              <View style={styles.placeholder}>
-                <Ionicons name="mic-circle-outline" size={56} color="rgba(167,139,250,0.4)" />
-                <Text style={styles.placeholderText}>Henüz aktif oda yok</Text>
-                <Text style={styles.placeholderSub}>Yeni bir oda oluşturarak başla!</Text>
-              </View>
-            )}
-
-            {publicRooms.map((room: any, index: number) => {
-              const gradient = CARD_GRADIENTS[index % CARD_GRADIENTS.length];
-              return (
-                <TouchableOpacity
-                  key={room.id}
-                  activeOpacity={0.88}
-                  onPress={() => router.push({ pathname: '/room', params: { roomId: room.slug || room.id } } as any)}
-                  style={styles.roomCard}
-                >
-                  <View style={[styles.roomIconWrap, { backgroundColor: gradient[0] + '25' }]}>
-                    <Ionicons name="mic" size={22} color={gradient[0]} />
-                  </View>
-                  <View style={styles.roomInfo}>
-                    <View style={styles.roomNameRow}>
-                      {room.isLocked && <Ionicons name="lock-closed" size={12} color="#f59e0b" style={{ marginRight: 4 }} />}
-                      {room.isVipRoom && <Text style={{ fontSize: 12, marginRight: 4 }}>💎</Text>}
-                      <Text style={styles.roomName} numberOfLines={1}>{room.name}</Text>
-                    </View>
-                    <Text style={styles.roomAnnounce} numberOfLines={1}>{room.announcement || 'Sohbet odası'}</Text>
-                    <View style={styles.roomMeta}>
-                      <View style={styles.roomLiveDot} />
-                      <Text style={styles.roomMetaText}>{room.participantCount || 0} kişi dinliyor</Text>
-                    </View>
-                  </View>
-                  <TouchableOpacity activeOpacity={0.85}
-                    onPress={() => router.push({ pathname: '/room', params: { roomId: room.slug || room.id } } as any)}
-                    style={styles.joinBtnWrap}>
-                    <LinearGradient colors={['#4ecdc4','#44b8b0']} style={styles.joinGradient}>
-                      <Ionicons name="enter-outline" size={14} color="#fff" />
-                      <Text style={styles.joinText}>Katıl</Text>
-                    </LinearGradient>
-                  </TouchableOpacity>
-                </TouchableOpacity>
-              );
-            })}
-
-            {/* ── TENANT ODALARI ── */}
-            {exploreTenants.filter((t: any) => Array.isArray(t.rooms) && t.rooms.length > 0).map((tenant: any, ti: number) => (
-              <View key={`t-${tenant.id}`}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 16, marginBottom: 6, paddingHorizontal: 4 }}>
-                  <Ionicons name="globe" size={14} color="#6366f1" />
-                  <Text style={{ fontSize: 12, fontWeight: '800', color: '#4c1d95', letterSpacing: 0.3 }}>{tenant.name}</Text>
-                  <Text style={{ fontSize: 10, color: '#7c3aed', fontWeight: '600' }}>({tenant.rooms.length} oda)</Text>
-                  <View style={{ flex: 1, height: 1, backgroundColor: 'rgba(99,102,241,0.15)', marginLeft: 6 }} />
-                </View>
-                {tenant.rooms.map((room: any, ri: number) => {
-                  const gradient = CARD_GRADIENTS[(ti + ri) % CARD_GRADIENTS.length];
-                  return (
-                    <View key={room.id} style={styles.roomCard}>
-                      <View style={[styles.roomIconWrap, { backgroundColor: gradient[0] + '25' }]}>
-                        <Ionicons name="mic" size={22} color={gradient[0]} />
+            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingLeft: 16, paddingRight: 8, gap: 10 }}>
+              {allLiveRooms.map((room: any, i: number) => {
+                const grad = GRADS[i % GRADS.length];
+                return (
+                  <TouchableOpacity key={room.id || i} activeOpacity={0.88} onPress={() => enterRoom(room)}>
+                    <LinearGradient colors={grad} style={st.liveCard}>
+                      <View style={st.liveBadge}>
+                        <View style={st.liveDot} />
+                        <Text style={st.liveBadgeText}>CANLI</Text>
                       </View>
-                      <View style={styles.roomInfo}>
-                        <Text style={styles.roomName} numberOfLines={1}>{room.name}</Text>
-                        <View style={styles.roomMeta}>
-                          <View style={styles.roomLiveDot} />
-                          <Text style={styles.roomMetaText}>{room.onlineUsers || 0} çevrimiçi</Text>
+                      <View style={[st.liveCircle, { top: -10, right: -10 }]} />
+                      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+                        <Text style={st.liveName} numberOfLines={1}>{room.name}</Text>
+                        <View style={st.liveMetaRow}>
+                          <Ionicons name="people" size={12} color="rgba(255,255,255,0.85)" />
+                          <Text style={st.liveMeta}>{room.participantCount || 0} kişi</Text>
                         </View>
                       </View>
-                      <View style={{ flexDirection: 'column', gap: 4 }}>
-                        <TouchableOpacity activeOpacity={0.85}
-                          onPress={() => router.push({ pathname: '/room', params: { roomId: room.slug || room.id } } as any)}
-                          style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#4ecdc4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 }}>
-                          <Ionicons name="person-outline" size={12} color="#fff" />
-                          <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff' }}>Misafir</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity activeOpacity={0.85}
-                          onPress={() => {/* üye girişi — TenantCard drawer ile */}}
-                          style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: '#8b5cf6', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 8 }}>
-                          <Ionicons name="key-outline" size={12} color="#fff" />
-                          <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff' }}>Üye</Text>
-                        </TouchableOpacity>
+                    </LinearGradient>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </>
+        )}
+
+        {allLiveRooms.length === 0 && !roomsLoading && !exploreLoading && !roomsError && (
+          <View style={st.emptyWrap}>
+            <View style={st.emptyIconWrap}>
+              <Ionicons name="radio-outline" size={36} color="rgba(139,92,246,0.4)" />
+            </View>
+            <Text style={st.emptyTitle}>Henüz canlı oda yok</Text>
+            <Text style={st.emptySub}>Bir topluluğa katılarak başlayın</Text>
+          </View>
+        )}
+
+        {/* 🌐 TOPLULUKLAR */}
+        {exploreTenants.length > 0 && (
+          <>
+            <View style={[st.secRow, { marginTop: 18 }]}>
+              <View style={[st.secIconWrap, { backgroundColor: 'rgba(16,185,129,0.12)' }]}>
+                <Ionicons name="globe" size={14} color="#10b981" />
+              </View>
+              <Text style={st.secTitle}>Topluluklar</Text>
+              <View style={[st.secBadge, { backgroundColor: 'rgba(16,185,129,0.1)' }]}>
+                <Text style={[st.secBadgeText, { color: '#10b981' }]}>{exploreTenants.length}</Text>
+              </View>
+            </View>
+
+            {exploreTenants.map((tenant: any, i: number) => {
+              const rooms = Array.isArray(tenant.rooms) ? tenant.rooms : [];
+              const totalOnline = rooms.reduce((s: number, r: any) => s + (r.onlineUsers || 0), 0);
+              const grad = GRADS[i % GRADS.length];
+              const isExpanded = expandedTenant === tenant.id;
+
+              return (
+                <View key={tenant.id}>
+                  <TouchableOpacity activeOpacity={0.88} onPress={() => toggleTenant(tenant.id)}
+                    style={[st.comCard, isExpanded && st.comCardExpanded]}>
+                    {tenant.logoUrl ? (
+                      <Image source={{ uri: tenant.logoUrl }} style={st.comLogoImg} />
+                    ) : (
+                      <LinearGradient colors={grad} style={st.comAvatar}>
+                        <Ionicons name="storefront" size={22} color="#fff" />
+                      </LinearGradient>
+                    )}
+                    <View style={st.comInfo}>
+                      <Text style={st.comName} numberOfLines={1}>{tenant.name}</Text>
+                      <View style={st.comMeta}>
+                        <Ionicons name="chatbubbles" size={11} color="#a78bfa" />
+                        <Text style={st.comMetaText}>{rooms.length} oda</Text>
+                        <View style={st.comDot} />
+                        <View style={st.comOnlineDot} />
+                        <Text style={[st.comMetaText, { color: '#22c55e' }]}>{totalOnline} çevrimiçi</Text>
                       </View>
                     </View>
-                  );
-                })}
-              </View>
-            ))}
-          </>
-        )}
+                    <Ionicons name={isExpanded ? 'chevron-up' : 'chevron-down'} size={18} color="rgba(255,255,255,0.3)" />
+                  </TouchableOpacity>
 
-        {/* ═══ ÇEVRİMİÇİ SEKMESİ ═══ */}
-        {activeTab === 'online' && (
-          <>
-            {(!publicRooms || publicRooms.length === 0) && !roomsLoading && (
-              <View style={styles.placeholder}>
-                <Ionicons name="people-outline" size={56} color="rgba(167,139,250,0.4)" />
-                <Text style={styles.placeholderText}>Çevrimiçi kullanıcı yok</Text>
-              </View>
-            )}
+                  {isExpanded && rooms.length > 0 && (
+                    <View style={st.roomsExpanded}>
+                      {rooms.map((room: any, ri: number) => {
+                        const rGrad = GRADS[ri % GRADS.length];
+                        const online = room.onlineUsers || 0;
+                        const isRoomLoading = directLoading === (room.slug || room.id);
+                        return (
+                          <View key={room.id} style={st.roomRow}>
+                            <LinearGradient colors={rGrad} style={st.roomDot}>
+                              <Ionicons name="chatbubble" size={10} color="#fff" />
+                            </LinearGradient>
+                            <View style={{ flex: 1 }}>
+                              <Text style={st.roomName} numberOfLines={1}>{room.name}</Text>
+                              <Text style={st.roomOnline}>{online > 0 ? `${online} kişi çevrimiçi` : 'Boş oda'}</Text>
+                            </View>
+                            <TouchableOpacity activeOpacity={0.85}
+                              onPress={() => directEnterRoom(tenant.id, room, rooms)}
+                              disabled={!!directLoading} style={st.roomDirectBtn}>
+                              {isRoomLoading
+                                ? <ActivityIndicator color="#fff" size="small" />
+                                : <><Ionicons name="enter-outline" size={13} color="#fff" /><Text style={st.roomDirectText}>Gir</Text></>
+                              }
+                            </TouchableOpacity>
+                            <TouchableOpacity activeOpacity={0.85}
+                              onPress={() => {
+                                if (user && user.tenantId === tenant.id) {
+                                  router.push({ pathname: '/room', params: { roomId: room.slug || room.id, tenantRooms: JSON.stringify(rooms) } } as any);
+                                } else {
+                                  setMemberEntry({ tenantId: tenant.id, room, tenantRooms: rooms });
+                                }
+                              }}
+                              style={st.roomMemberBtn}>
+                              <Ionicons name="key-outline" size={13} color="#a78bfa" />
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  )}
 
-            {publicRooms && publicRooms.map((u: any) => (
-              <View key={u.id || u.username} style={styles.userCard}>
-                <Image source={{ uri: u.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.displayName || u.username)}&background=2d1b69&color=5eead4` }}
-                  style={styles.userAvatar} />
-                <View style={styles.userInfo}>
-                  <Text style={styles.userName}>{u.displayName || u.username}</Text>
-                  <Text style={styles.userRole}>{u.role || 'Üye'}</Text>
+                  {isExpanded && rooms.length === 0 && (
+                    <View style={st.roomsExpanded}>
+                      <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', paddingVertical: 12 }}>
+                        Henüz oda oluşturulmamış
+                      </Text>
+                    </View>
+                  )}
                 </View>
-                <View style={styles.onlineDot} />
-              </View>
-            ))}
+              );
+            })}
           </>
         )}
 
-        <View style={{ height: 20 }} />
+        {/* CTA */}
+        <TouchableOpacity activeOpacity={0.9} onPress={() => router.push('/create-room' as any)} style={{ marginTop: 18, marginHorizontal: 16 }}>
+          <LinearGradient colors={['#8b5cf6', '#6366f1']} style={st.ctaBanner} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+            <View style={st.ctaDecoCircle} />
+            <View style={st.ctaContent}>
+              <View style={st.ctaIcon}><Ionicons name="add-circle" size={24} color="#fff" /></View>
+              <View style={{ flex: 1 }}>
+                <Text style={st.ctaTitle}>Kendi Topluluğunu Kur</Text>
+                <Text style={st.ctaSub}>200₺'den başlayan fiyatlarla</Text>
+              </View>
+              <View style={st.ctaArrow}><Ionicons name="arrow-forward" size={16} color="#8b5cf6" /></View>
+            </View>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <View style={{ height: 16 }} />
       </ScrollView>
 
-      <BottomNavigation />
-    </View>
+      {/* ═══ ÜYE GİRİŞİ MODAL — Koyu Tema ═══ */}
+      <Modal visible={!!memberEntry} transparent animationType="fade" onRequestClose={() => setMemberEntry(null)}>
+        <TouchableOpacity activeOpacity={1} onPress={() => setMemberEntry(null)} style={st.modalOverlay}>
+          <TouchableOpacity activeOpacity={1} onPress={() => {}} style={st.modalCard}>
+            <View style={st.modalHandle} />
+            <Text style={st.modalTitle}>Üye Girişi</Text>
+            <Text style={st.modalRoom}>{memberEntry?.room?.name}</Text>
+
+            <View style={st.mTabBar}>
+              <TouchableOpacity onPress={() => setMTab('login')} style={[st.mTab, mTab === 'login' && st.mTabActive]}>
+                <Text style={[st.mTabText, mTab === 'login' && st.mTabTextActive]}>Giriş</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setMTab('register')} style={[st.mTab, mTab === 'register' && st.mTabActive]}>
+                <Text style={[st.mTabText, mTab === 'register' && st.mTabTextActive]}>Üye Ol</Text>
+              </TouchableOpacity>
+            </View>
+
+            {mTab === 'login' && (
+              <>
+                <Text style={st.modalLabel}>KULLANICI ADI / E-POSTA</Text>
+                <View style={st.modalInputWrap}>
+                  <Ionicons name="mail-outline" size={16} color="rgba(255,255,255,0.3)" />
+                  <TextInput style={st.modalInput} placeholder="E-posta veya kullanıcı adı"
+                    placeholderTextColor="rgba(255,255,255,0.25)" value={mEmail} onChangeText={setMEmail}
+                    autoCapitalize="none" keyboardType="email-address" autoFocus />
+                </View>
+                <Text style={[st.modalLabel, { marginTop: 4 }]}>ŞİFRE</Text>
+                <View style={st.modalInputWrap}>
+                  <Ionicons name="lock-closed-outline" size={16} color="rgba(255,255,255,0.3)" />
+                  <TextInput style={st.modalInput} placeholder="Şifreniz"
+                    placeholderTextColor="rgba(255,255,255,0.25)" value={mPassword} onChangeText={setMPassword}
+                    secureTextEntry returnKeyType="go" onSubmitEditing={handleMemberEntry} />
+                </View>
+                <TouchableOpacity activeOpacity={0.85} disabled={mLoading || !mEmail.trim() || !mPassword.trim()}
+                  onPress={handleMemberEntry}
+                  style={[st.modalBtn, (!mEmail.trim() || !mPassword.trim() || mLoading) && { opacity: 0.5 }]}>
+                  <LinearGradient colors={['#8b5cf6', '#6366f1']} style={st.modalBtnGrad}>
+                    {mLoading ? <ActivityIndicator color="#fff" size="small" /> : (
+                      <><Ionicons name="key-outline" size={16} color="#fff" /><Text style={st.modalBtnText}>Giriş Yap</Text></>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {mTab === 'register' && (
+              <>
+                <Text style={st.modalLabel}>KULLANICI ADI</Text>
+                <View style={st.modalInputWrap}>
+                  <Ionicons name="person-outline" size={16} color="rgba(255,255,255,0.3)" />
+                  <TextInput style={st.modalInput} placeholder="Kullanıcı adınız"
+                    placeholderTextColor="rgba(255,255,255,0.25)" value={mUsername} onChangeText={setMUsername}
+                    autoCapitalize="none" autoFocus />
+                </View>
+                <Text style={[st.modalLabel, { marginTop: 4 }]}>E-POSTA</Text>
+                <View style={st.modalInputWrap}>
+                  <Ionicons name="mail-outline" size={16} color="rgba(255,255,255,0.3)" />
+                  <TextInput style={st.modalInput} placeholder="E-posta adresiniz"
+                    placeholderTextColor="rgba(255,255,255,0.25)" value={mEmail} onChangeText={setMEmail}
+                    autoCapitalize="none" keyboardType="email-address" />
+                </View>
+                <Text style={[st.modalLabel, { marginTop: 4 }]}>ŞİFRE</Text>
+                <View style={st.modalInputWrap}>
+                  <Ionicons name="lock-closed-outline" size={16} color="rgba(255,255,255,0.3)" />
+                  <TextInput style={st.modalInput} placeholder="En az 4 karakter"
+                    placeholderTextColor="rgba(255,255,255,0.25)" value={mPassword} onChangeText={setMPassword}
+                    secureTextEntry />
+                </View>
+                <Text style={[st.modalLabel, { marginTop: 4 }]}>CİNSİYET</Text>
+                <View style={st.mGenderRow}>
+                  <TouchableOpacity style={[st.mGenderBtn, mGender === 'male' && st.mGenderMale]} onPress={() => setMGender('male')}>
+                    <Ionicons name="male" size={14} color={mGender === 'male' ? '#38bdf8' : 'rgba(255,255,255,0.3)'} />
+                    <Text style={[st.mGenderText, mGender === 'male' && { color: '#38bdf8' }]}>Erkek</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={[st.mGenderBtn, mGender === 'female' && st.mGenderFemale]} onPress={() => setMGender('female')}>
+                    <Ionicons name="female" size={14} color={mGender === 'female' ? '#f472b6' : 'rgba(255,255,255,0.3)'} />
+                    <Text style={[st.mGenderText, mGender === 'female' && { color: '#f472b6' }]}>Kadın</Text>
+                  </TouchableOpacity>
+                </View>
+                <TouchableOpacity activeOpacity={0.85} disabled={mLoading || !mUsername.trim() || !mEmail.trim() || !mPassword.trim()}
+                  onPress={handleRegister}
+                  style={[st.modalBtn, { marginTop: 12 }, (!mUsername.trim() || !mEmail.trim() || !mPassword.trim() || mLoading) && { opacity: 0.5 }]}>
+                  <LinearGradient colors={['#10b981', '#059669']} style={st.modalBtnGrad}>
+                    {mLoading ? <ActivityIndicator color="#fff" size="small" /> : (
+                      <><Ionicons name="person-add-outline" size={16} color="#fff" /><Text style={st.modalBtnText}>Üye Ol</Text></>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </>
+            )}
+
+            <Text style={st.modalNote}>
+              {mTab === 'login' ? 'Topluluk hesabınızla giriş yapın' : 'Kayıt olarak bu topluluğun üyesi olun'}
+            </Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Modal>
+
+      <BottomNav active="home" />
+    </AppBackground>
   );
 }
 
-/* ── Kart gradientleri ── */
-const CARD_GRADIENTS: [string, string][] = [
-  ['#8b5cf6', '#a78bfa'],
-  ['#5eead4', '#38b2ac'],
-  ['#ec4899', '#f43f5e'],
-  ['#f59e0b', '#ef4444'],
-  ['#6366f1', '#818cf8'],
-];
-
 /* ═══════════════════════════════════════════════════════════
-   STİLLER — Mockup tarzı koyu mor arka plan, turkuaz vurgu
+   STİLLER — KOYU TEMA
    ═══════════════════════════════════════════════════════════ */
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#c8c0da' },
-
-  /* ── IŞIK ORBS — Zenginleştirilmiş ── */
-  orbTopRight: {
-    position: 'absolute', top: -70, right: -60,
-    width: 260, height: 260, borderRadius: 130,
-    backgroundColor: 'rgba(94,234,212,0.2)',
-  },
-  orbBottomLeft: {
-    position: 'absolute', bottom: 50, left: -90,
-    width: 280, height: 280, borderRadius: 140,
-    backgroundColor: 'rgba(167,139,250,0.18)',
-  },
-
-  /* ── HEADER ── */
+const st = StyleSheet.create({
   header: {
     flexDirection: 'row', alignItems: 'center',
-    paddingTop: Platform.OS === 'ios' ? 52 : 36,
-    paddingHorizontal: 16, paddingBottom: 8,
+    paddingTop: Platform.OS === 'ios' ? 54 : 36,
+    paddingHorizontal: 16, paddingBottom: 6, gap: 10,
   },
   headerBtn: {
     width: 42, height: 42, borderRadius: 21,
-    backgroundColor: 'rgba(255,255,255,0.7)',
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.85)',
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.12, shadowRadius: 10, elevation: 4,
   },
   headerCenter: { flex: 1, alignItems: 'center' },
-  headerLogo: { width: width * 0.5, height: 30 },
-  headerSlogan: { fontSize: 10, fontWeight: '500', color: '#475569', marginTop: 2, letterSpacing: 2 },
+  headerLogo: { width: 120, height: 30 },
 
-  /* ── SEKMELER — Glass ── */
-  tabBar: {
-    flexDirection: 'row', marginHorizontal: 16, marginBottom: 10,
-    backgroundColor: 'rgba(255,255,255,0.6)',
-    borderRadius: 16, padding: 3,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.75)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1, shadowRadius: 12, elevation: 4,
-  },
-  tab: { flex: 1, paddingVertical: 10, borderRadius: 13, alignItems: 'center' },
-  tabActive: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#4ecdc4', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 12, elevation: 6,
-  },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#64748b' },
-  tabTextActive: { color: '#1e293b', fontWeight: '700' },
+  scroll: { paddingBottom: 16 },
 
-  scrollContent: { paddingHorizontal: 16, paddingTop: 6 },
-
-  /* ── ODA KARTI — Glassmorphism ── */
-  roomCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    borderRadius: 20, padding: 15, gap: 12,
-    marginBottom: 12,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.9)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.14, shadowRadius: 20, elevation: 8,
+  secRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, marginBottom: 10, marginTop: 8 },
+  secIconWrap: {
+    width: 28, height: 28, borderRadius: 8,
+    backgroundColor: 'rgba(139,92,246,0.12)', alignItems: 'center', justifyContent: 'center',
   },
-  roomIconWrap: {
-    width: 48, height: 48, borderRadius: 16,
+  secTitle: { fontSize: 16, fontWeight: '800', color: '#f1f5f9', flex: 1 },
+  secBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(139,92,246,0.1)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  secDotLive: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22c55e' },
+  secBadgeText: { fontSize: 10, fontWeight: '700', color: '#a78bfa' },
+
+  liveCard: { width: (width - 52) / 2, height: 140, borderRadius: 18, padding: 14, overflow: 'hidden' },
+  liveBadge: { flexDirection: 'row', alignItems: 'center', gap: 4, alignSelf: 'flex-start', backgroundColor: 'rgba(0,0,0,0.3)', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
+  liveDot: { width: 6, height: 6, borderRadius: 3, backgroundColor: '#22c55e' },
+  liveBadgeText: { fontSize: 8, fontWeight: '900', color: '#fff', letterSpacing: 1 },
+  liveCircle: { position: 'absolute', width: 50, height: 50, borderRadius: 25, backgroundColor: 'rgba(255,255,255,0.08)' },
+  liveName: { fontSize: 14, fontWeight: '800', color: '#fff', marginBottom: 4 },
+  liveMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  liveMeta: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.85)' },
+
+  comCard: {
+    flexDirection: 'row', alignItems: 'center', gap: 12,
+    marginHorizontal: 16, marginBottom: 2,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderRadius: 18, padding: 14,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+  },
+  comCardExpanded: { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, marginBottom: 0, borderBottomWidth: 0 },
+  comLogoImg: { width: 50, height: 50, borderRadius: 14 },
+  comAvatar: { width: 50, height: 50, borderRadius: 16, alignItems: 'center', justifyContent: 'center' },
+  comInfo: { flex: 1 },
+  comName: { fontSize: 15, fontWeight: '800', color: '#f1f5f9', marginBottom: 4 },
+  comMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  comMetaText: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  comDot: { width: 3, height: 3, borderRadius: 1.5, backgroundColor: 'rgba(255,255,255,0.15)', marginHorizontal: 2 },
+  comOnlineDot: { width: 5, height: 5, borderRadius: 2.5, backgroundColor: '#22c55e', marginRight: 1 },
+
+  roomsExpanded: {
+    marginHorizontal: 16, marginBottom: 8,
+    backgroundColor: 'rgba(255,255,255,0.02)',
+    borderBottomLeftRadius: 18, borderBottomRightRadius: 18,
+    borderWidth: 1, borderTopWidth: 0, borderColor: 'rgba(255,255,255,0.06)',
+    paddingHorizontal: 12, paddingVertical: 6,
+  },
+  roomRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    paddingVertical: 10,
+    borderBottomWidth: 0.5, borderBottomColor: 'rgba(255,255,255,0.04)',
+  },
+  roomDot: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  roomName: { fontSize: 13, fontWeight: '700', color: '#f1f5f9' },
+  roomOnline: { fontSize: 10, fontWeight: '500', color: 'rgba(255,255,255,0.35)', marginTop: 1 },
+  roomDirectBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 3,
+    backgroundColor: '#8b5cf6', paddingHorizontal: 12, paddingVertical: 7, borderRadius: 10,
+  },
+  roomDirectText: { fontSize: 11, fontWeight: '700', color: '#fff' },
+  roomMemberBtn: {
+    width: 32, height: 32, borderRadius: 10,
+    backgroundColor: 'rgba(139,92,246,0.1)',
     alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1, shadowRadius: 6, elevation: 2,
-  },
-  roomInfo: { flex: 1 },
-  roomNameRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 2 },
-  roomName: { fontSize: 15, fontWeight: '700', color: '#1e293b', flexShrink: 1 },
-  roomAnnounce: { fontSize: 11, fontWeight: '500', color: '#64748b', marginBottom: 4 },
-  roomMeta: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  roomLiveDot: {
-    width: 7, height: 7, borderRadius: 3.5, backgroundColor: '#22c55e',
-    shadowColor: '#22c55e', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8, shadowRadius: 6, elevation: 2,
-  },
-  roomMetaText: { fontSize: 10, fontWeight: '600', color: '#475569' },
-
-  /* ── KATIL BUTONU — Gradient + Glow ── */
-  joinBtnWrap: {},
-  joinGradient: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 14,
-    shadowColor: '#4ecdc4', shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.55, shadowRadius: 14, elevation: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)',
-  },
-  joinText: { fontSize: 12, fontWeight: '700', color: '#fff' },
-
-  /* ── KULLANICI KARTI — Glass ── */
-  userCard: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.75)',
-    borderRadius: 16, padding: 12, gap: 12,
-    marginBottom: 8,
-    borderWidth: 1, borderColor: 'rgba(255,255,255,0.85)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08, shadowRadius: 12, elevation: 4,
-  },
-  userAvatar: {
-    width: 44, height: 44, borderRadius: 22,
-    borderWidth: 2, borderColor: 'rgba(94,234,212,0.3)',
-    shadowColor: '#5eead4', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2, shadowRadius: 6, elevation: 2,
-  },
-  userInfo: { flex: 1 },
-  userName: { fontSize: 14, fontWeight: '700', color: '#1e293b' },
-  userRole: { fontSize: 11, fontWeight: '500', color: '#64748b', marginTop: 1 },
-  onlineDot: {
-    width: 10, height: 10, borderRadius: 5,
-    backgroundColor: '#22c55e',
-    shadowColor: '#22c55e', shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.7, shadowRadius: 6, elevation: 4,
+    borderWidth: 1, borderColor: 'rgba(139,92,246,0.2)',
   },
 
-  /* ── PLACEHOLDER ── */
-  placeholder: { alignItems: 'center', justifyContent: 'center', paddingVertical: 60 },
-  placeholderText: { fontSize: 15, fontWeight: '600', color: '#475569', marginTop: 12 },
-  placeholderSub: { fontSize: 12, fontWeight: '500', color: '#64748b', marginTop: 4 },
-  retryBtn: {
-    marginTop: 12, paddingHorizontal: 20, paddingVertical: 10,
-    backgroundColor: 'rgba(94,234,212,0.18)', borderRadius: 12,
-    borderWidth: 1, borderColor: 'rgba(94,234,212,0.35)',
-    shadowColor: '#5eead4', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15, shadowRadius: 8, elevation: 2,
-  },
-  retryText: { color: '#0d9488', fontWeight: '700', fontSize: 13 },
+  ctaBanner: { borderRadius: 18, overflow: 'hidden' },
+  ctaDecoCircle: { position: 'absolute', top: -20, right: -20, width: 80, height: 80, borderRadius: 40, backgroundColor: 'rgba(255,255,255,0.08)' },
+  ctaContent: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
+  ctaIcon: { width: 40, height: 40, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
+  ctaTitle: { fontSize: 14, fontWeight: '800', color: '#fff' },
+  ctaSub: { fontSize: 11, fontWeight: '500', color: 'rgba(255,255,255,0.7)', marginTop: 2 },
+  ctaArrow: { width: 32, height: 32, borderRadius: 16, backgroundColor: 'rgba(255,255,255,0.15)', alignItems: 'center', justifyContent: 'center' },
 
-  /* ── ALT NAVİGASYON — Premium Glass ── */
-  bottomNav: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-around',
-    backgroundColor: 'rgba(255,255,255,0.92)',
-    paddingVertical: 8,
-    borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.95)',
-    shadowColor: '#6366f1', shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.12, shadowRadius: 24, elevation: 18,
+  emptyWrap: { alignItems: 'center', paddingVertical: 40 },
+  emptyIconWrap: { width: 64, height: 64, borderRadius: 32, backgroundColor: 'rgba(139,92,246,0.1)', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  emptyTitle: { fontSize: 15, fontWeight: '700', color: 'rgba(255,255,255,0.6)' },
+  emptySub: { fontSize: 12, fontWeight: '500', color: 'rgba(255,255,255,0.3)', marginTop: 4 },
+
+  /* Modal — Koyu Bottom Sheet */
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: 'rgba(16,12,42,0.98)', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 24, paddingBottom: Platform.OS === 'ios' ? 40 : 24, borderWidth: 1, borderBottomWidth: 0, borderColor: 'rgba(139,92,246,0.1)' },
+  modalHandle: { width: 40, height: 4, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.1)', alignSelf: 'center', marginBottom: 16 },
+  modalTitle: { fontSize: 18, fontWeight: '900', color: '#f1f5f9', textAlign: 'center' },
+  modalRoom: { fontSize: 13, fontWeight: '600', color: '#a78bfa', textAlign: 'center', marginTop: 4, marginBottom: 16 },
+  modalLabel: { fontSize: 10, fontWeight: '700', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 },
+  modalInputWrap: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 12, borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)', marginBottom: 12 },
+  modalInput: { flex: 1, fontSize: 15, fontWeight: '500', color: '#f1f5f9' },
+  modalBtn: { marginTop: 4 },
+  modalBtnGrad: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 14, borderRadius: 14 },
+  modalBtnText: { fontSize: 15, fontWeight: '800', color: '#fff' },
+  modalNote: { fontSize: 10, fontWeight: '500', color: 'rgba(255,255,255,0.25)', textAlign: 'center', marginTop: 10 },
+
+  mTabBar: { flexDirection: 'row', gap: 4, marginBottom: 16, backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: 12, padding: 3 },
+  mTab: { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 10 },
+  mTabActive: { backgroundColor: 'rgba(139,92,246,0.15)', borderWidth: 1, borderColor: 'rgba(139,92,246,0.2)' },
+  mTabText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.35)' },
+  mTabTextActive: { color: '#f1f5f9', fontWeight: '700' },
+
+  mGenderRow: { flexDirection: 'row', gap: 8, marginBottom: 4 },
+  mGenderBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4,
+    paddingVertical: 10, borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
   },
-  bottomNavItem: { alignItems: 'center', gap: 2, paddingVertical: 4, minWidth: 56 },
-  bottomNavLabel: { fontSize: 9, fontWeight: '600', color: '#94a3b8' },
-  bottomNavLabelActive: { color: '#4f46e5', fontWeight: '700' },
-  bottomNavCenter: { alignItems: 'center', marginTop: -22 },
-  bottomNavCenterGrad: {
-    width: 56, height: 56, borderRadius: 20,
-    alignItems: 'center', justifyContent: 'center',
-    shadowColor: '#4ecdc4', shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.55, shadowRadius: 20, elevation: 14,
-    borderWidth: 2, borderColor: 'rgba(255,255,255,0.3)',
-  },
-  bottomNavCenterLabel: { fontSize: 9, fontWeight: '800', color: '#0d9488', marginTop: 4 },
+  mGenderMale: { backgroundColor: 'rgba(56,189,248,0.08)', borderColor: 'rgba(56,189,248,0.2)' },
+  mGenderFemale: { backgroundColor: 'rgba(244,114,182,0.08)', borderColor: 'rgba(244,114,182,0.2)' },
+  mGenderText: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.35)' },
 });
