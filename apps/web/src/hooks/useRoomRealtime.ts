@@ -164,6 +164,8 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
     // ─── Socket Listeners for Mic Events ─────────────────
     const lastMicAcquiredRef = useRef<number>(0); // ★ Debounce guard
+    const micAcquireCountRef = useRef<number[]>([]); // ★ Circuit breaker: timestamps of recent acquires
+    const micCircuitBrokenRef = useRef(false); // ★ Circuit breaker tripped
 
     useEffect(() => {
         if (!socket) return;
@@ -182,9 +184,21 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
             const authUser = getAuthUser();
             if (authUser && data.userId === authUser.userId) {
-                // ★ DEBOUNCE: Son 2 saniye içinde zaten acquire edildiyse atla
                 const now = Date.now();
-                if (now - lastMicAcquiredRef.current < 2000) {
+
+                // ★ CIRCUIT BREAKER: 30 saniye içinde 3+ acquire → tamamen durdur
+                micAcquireCountRef.current = micAcquireCountRef.current.filter(t => now - t < 30000);
+                micAcquireCountRef.current.push(now);
+                if (micAcquireCountRef.current.length >= 3) {
+                    if (!micCircuitBrokenRef.current) {
+                        console.error('[Mic] ⚡ CIRCUIT BREAKER: 30sn içinde 3+ acquire — döngü tespit edildi, engelleniyor');
+                        micCircuitBrokenRef.current = true;
+                    }
+                    return;
+                }
+
+                // ★ DEBOUNCE: Son 3 saniye içinde zaten acquire edildiyse atla
+                if (now - lastMicAcquiredRef.current < 3000) {
                     console.warn('[Mic] Debounce: mic:acquired skipped (too fast)');
                     return;
                 }
