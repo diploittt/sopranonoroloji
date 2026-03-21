@@ -164,7 +164,6 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
     // ─── Socket Listeners for Mic Events ─────────────────
     const lastMicAcquiredRef = useRef<number>(0); // ★ Debounce guard
-    const isMicOnRef = useRef(false); // ★ Sync ref for mic state
 
     useEffect(() => {
         if (!socket) return;
