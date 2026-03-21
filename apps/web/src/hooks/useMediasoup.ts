@@ -33,19 +33,26 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
     const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
     const [isProducing, setIsProducing] = useState(false);
     const initializedRef = useRef(false);
+    const initInProgressRef = useRef(false); // ★ Init sırasında ikinci çağrıyı önle
+    const audioProducingRef = useRef(false);  // ★ produceAudio race condition önleme
     const roomIdRef = useRef(roomId);
     roomIdRef.current = roomId;
+    const socketRef = useRef(socket);
+    socketRef.current = socket;
+    const enabledRef = useRef(enabled);
+    enabledRef.current = enabled;
 
-    // ─── Socket request helper (emit + callback) ───
+    // ─── Socket request helper (emit + callback) — stable ref-based ───
     const request = useCallback((event: string, data?: any): Promise<any> => {
         return new Promise((resolve, reject) => {
-            if (!socket) return reject(new Error('No socket'));
-            socket.emit(event, data, (response: any) => {
+            const s = socketRef.current;
+            if (!s) return reject(new Error('No socket'));
+            s.emit(event, data, (response: any) => {
                 if (response?.error) reject(new Error(response.error));
                 else resolve(response);
             });
         });
-    }, [socket]);
+    }, []); // ★ Boş deps — socketRef üzerinden her zaman güncel socket'e erişir
 
     // ─── Full cleanup helper (reusable) ───
     const fullCleanup = useCallback(() => {
@@ -65,9 +72,12 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
     // ─── Initialize Device + Transports ───
     const initDevice = useCallback(async () => {
-        if (!socket || !enabled) return;
+        if (!socketRef.current || !enabledRef.current) return;
         // Prevent double-init while already initialized for THIS room
         if (initializedRef.current) return;
+        // Prevent concurrent init calls
+        if (initInProgressRef.current) return;
+        initInProgressRef.current = true;
 
         try {
             // 1. Get router RTP capabilities
@@ -152,6 +162,7 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
             recvTransportRef.current = recvTransport;
             initializedRef.current = true;
+            initInProgressRef.current = false;
 
             console.log('[Mediasoup] Device initialized, transports created');
 
@@ -160,12 +171,13 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
         } catch (err) {
             console.error('[Mediasoup] Init error:', err);
+            initInProgressRef.current = false;
         }
-    }, [socket, roomId, enabled, request, fullCleanup]);
+    }, [request, fullCleanup]); // ★ socket ve enabled ref'ten okunuyor — deps'e EKLEME
 
     // ─── Consume existing producers ───
     const consumeExistingProducers = useCallback(async () => {
-        if (!socket || !deviceRef.current || !recvTransportRef.current) return;
+        if (!socketRef.current || !deviceRef.current || !recvTransportRef.current) return;
 
         try {
             const producers = await request('media:getProducers', { roomId: roomIdRef.current });
@@ -177,7 +189,7 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         } catch (err) {
             console.error('[Mediasoup] Error consuming existing producers:', err);
         }
-    }, [socket, request]);
+    }, [request]);
 
     // ─── Consume a single producer ───
     const consumeProducer = useCallback(async (producerId: string, userId: string, kind: 'audio' | 'video') => {
@@ -188,7 +200,7 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
         // Don't consume our own producers
         const authUser = typeof window !== 'undefined'
-            ? JSON.parse(localStorage.getItem('soprano_tenant_user') || localStorage.getItem('soprano_auth_user') || 'null')
+            ? JSON.parse(sessionStorage.getItem('soprano_tenant_user') || sessionStorage.getItem('soprano_auth_user') || 'null')
             : null;
         if (authUser && userId === authUser.userId) return;
 
@@ -300,13 +312,27 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         }
     }, [initDevice]);
 
-    // ─── Produce audio ───
+    // ─── Produce audio — with lock to prevent concurrent calls ───
     const produceAudio = useCallback(async (audioTrack: MediaStreamTrack) => {
+        // ★ Race condition guard
+        if (audioProducingRef.current) {
+            console.warn('[Mediasoup] produceAudio already in progress, skipping');
+            return null;
+        }
+
+        // ★ Track geçerliliğini kontrol et
+        if (!audioTrack || audioTrack.readyState !== 'live') {
+            console.warn('[Mediasoup] Cannot produce audio — track not live');
+            return null;
+        }
+
         if (!sendTransportRef.current || !deviceRef.current) {
             console.warn('[Mediasoup] Cannot produce audio — transport not ready');
             await initDevice();
             if (!sendTransportRef.current) return null;
         }
+
+        audioProducingRef.current = true;
 
         // Close any existing audio producer first
         if (audioProducerRef.current) {
@@ -319,6 +345,13 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
         }
 
         try {
+            // ★ Son kontrol — track hala canlı mı?
+            if (audioTrack.readyState !== 'live') {
+                console.warn('[Mediasoup] Track not live before produce call');
+                audioProducingRef.current = false;
+                return null;
+            }
+
             const producer = await sendTransportRef.current!.produce({
                 track: audioTrack,
                 appData: { mediaType: 'audio' },
@@ -330,31 +363,40 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
                 audioProducerRef.current = null;
             });
 
+            // ★ trackended: SADECE ref temizle, closeAudioProducer ÇAĞIRMA
+            // Çünkü onMicReleased zaten cleanup yapıyor, ikisi çakışırsa döngü oluşur
             producer.on('trackended', () => {
-                closeAudioProducer();
+                console.log('[Mediasoup] Audio track ended (stream stopped)');
+                if (audioProducerRef.current === producer) {
+                    audioProducerRef.current = null;
+                }
             });
 
             console.log('[Mediasoup] Audio producer created:', producer.id);
+            audioProducingRef.current = false;
             return producer;
 
         } catch (err) {
             console.error('[Mediasoup] produceAudio error:', err);
+            audioProducingRef.current = false;
             return null;
         }
     }, [initDevice, request]);
 
-    // ─── Close audio producer ───
+    // ─── Close audio producer (defensive — server hatası sessizce yutulur) ───
     const closeAudioProducer = useCallback(async () => {
         if (audioProducerRef.current) {
             const producerId = audioProducerRef.current.id;
-            audioProducerRef.current.close();
+            try {
+                audioProducerRef.current.close();
+            } catch { /* already closed */ }
             audioProducerRef.current = null;
 
-            // Notify server
+            // Notify server — producer zaten kapalı olabilir, hatayı sessizce yut
             try {
                 await request('media:closeProducer', { producerId });
-            } catch (err) {
-                console.warn('[Mediasoup] closeAudioProducer server error:', err);
+            } catch {
+                // ★ 'Producer not found' hatası normal — server zaten temizlemiş olabilir
             }
 
             console.log('[Mediasoup] Audio producer closed');
@@ -436,49 +478,57 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
     // ─── Init device when enabled and socket available ───
     useEffect(() => {
         if (enabled && socket) {
-            initDevice();
+            // Küçük delay ile socket room:join'in tamamlanmasını bekle
+            const timer = setTimeout(() => initDevice(), 300);
+            return () => clearTimeout(timer);
         }
-    }, [enabled, socket, initDevice]);
+    }, [enabled, socket]); // ★ initDevice deps'ten ÇIKARILDI — stable ref
 
     // ─── Reset on socket reconnect (server clears old transports) ───
     useEffect(() => {
         if (!socket) return;
 
+        // ★ 'connect' yerine socket.io 'reconnect' olayını dinle
+        // Bu sayede ilk bağlantıda tetiklenmez, sadece yeniden bağlantıda çalışır
         const onReconnect = () => {
             console.log('[Mediasoup] Socket reconnected — resetting media state');
             fullCleanup();
 
             // Re-initialize with fresh transports
-            if (enabled) {
+            if (enabledRef.current) {
                 setTimeout(() => initDevice(), 500);
             }
         };
 
-        socket.on('connect', onReconnect);
+        socket.io.on('reconnect', onReconnect);
         return () => {
-            socket.off('connect', onReconnect);
+            socket.io.off('reconnect', onReconnect);
         };
-    }, [socket, enabled, initDevice, fullCleanup]);
+    }, [socket, fullCleanup, initDevice]);
 
     // ─── Cleanup + reinit on room change ───
+    const prevRoomIdRef = useRef(roomId);
     useEffect(() => {
+        // İlk render'da cleanup yapma — sadece gerçek oda değişimlerinde
+        if (prevRoomIdRef.current === roomId) return;
+        prevRoomIdRef.current = roomId;
+
         // Oda değiştiğinde eski kaynakları temizle ve yeniden başlat
+        console.log(`[Mediasoup] Room changed to ${roomId} — reinitializing`);
         fullCleanup();
 
         // Yeni oda için init — küçük delay ile socket room:join'in tamamlanmasını bekle
         let timer: ReturnType<typeof setTimeout> | null = null;
-        if (enabled && socket) {
+        if (enabledRef.current && socketRef.current) {
             timer = setTimeout(() => {
-                console.log(`[Mediasoup] Room changed to ${roomId} — reinitializing`);
                 initDevice();
-            }, 500);
+            }, 600);
         }
 
         return () => {
             if (timer) clearTimeout(timer);
-            fullCleanup();
         };
-    }, [roomId]); // Re-run on room change
+    }, [roomId, fullCleanup, initDevice]); // Re-run on room change
 
     return {
         remoteStreams,
