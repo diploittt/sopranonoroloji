@@ -314,6 +314,10 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
     // ─── Produce audio — with lock to prevent concurrent calls ───
     const produceAudio = useCallback(async (audioTrack: MediaStreamTrack) => {
+        // ★ DEBUG: Kim çağırıyor?
+        console.log('[Mediasoup] produceAudio called — track state:', audioTrack?.readyState);
+        console.trace('[Mediasoup] produceAudio caller stack');
+
         // ★ Race condition guard
         if (audioProducingRef.current) {
             console.warn('[Mediasoup] produceAudio already in progress, skipping');
@@ -385,6 +389,8 @@ export function useMediasoup({ socket, roomId, enabled }: UseMediasoupProps) {
 
     // ─── Close audio producer (defensive — server hatası sessizce yutulur) ───
     const closeAudioProducer = useCallback(async () => {
+        console.log('[Mediasoup] closeAudioProducer called, ref exists:', !!audioProducerRef.current);
+        console.trace('[Mediasoup] closeAudioProducer caller stack');
         if (audioProducerRef.current) {
             const producerId = audioProducerRef.current.id;
             try {
