@@ -163,6 +163,9 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     }, []);
 
     // ─── Socket Listeners for Mic Events ─────────────────
+    const lastMicAcquiredRef = useRef<number>(0); // ★ Debounce guard
+    const isMicOnRef = useRef(false); // ★ Sync ref for mic state
+
     useEffect(() => {
         if (!socket) return;
 
@@ -180,7 +183,22 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
 
             const authUser = getAuthUser();
             if (authUser && data.userId === authUser.userId) {
+                // ★ DEBOUNCE: Son 2 saniye içinde zaten acquire edildiyse atla
+                const now = Date.now();
+                if (now - lastMicAcquiredRef.current < 2000) {
+                    console.warn('[Mic] Debounce: mic:acquired skipped (too fast)');
+                    return;
+                }
+                lastMicAcquiredRef.current = now;
+
+                // ★ GUARD: Zaten mikrofon açıksa tekrar getUserMedia yapma
+                if (isMicOnRef.current) {
+                    console.warn('[Mic] Already mic on, skipping duplicate mic:acquired');
+                    return;
+                }
+
                 setIsMicOn(true);
+                isMicOnRef.current = true;
                 try {
                     const constraints: MediaStreamConstraints = {
                         audio: selectedAudioDeviceIdRef.current
@@ -196,6 +214,7 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
                 } catch (err: any) {
                     console.error('[Mic] Failed to capture audio:', err);
                     setIsMicOn(false);
+                    isMicOnRef.current = false;
                     // Server'a mic bırakma bildir — UI bug'da kalmasın
                     socket.emit('mic:release', { roomId: slug });
                     setToastMessage({ type: 'error', title: 'Mikrofon Hatası', message: err.message || 'Mikrofon yakılanamıyor.' });
@@ -222,10 +241,12 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
             const authUser = getAuthUser();
             if (authUser && data.userId === authUser.userId) {
                 setIsMicOn(false);
+                isMicOnRef.current = false; // ★ Ref'i de güncelle
                 cleanupMicStream();
                 closeAudioProducer();
             }
         };
+
 
         const onMicTimerExpired = (data: { userId: string; displayName: string; reason: string }) => {
             setDuelSpeakers(prev => prev.filter(s => s.userId !== data.userId));

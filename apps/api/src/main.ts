@@ -24,8 +24,19 @@ async function bootstrap() {
 
   // ── CORS (production: sadece belirli origin) ──
   const corsOrigin = configService.get<string>('CORS_ORIGIN');
+  const sopranoOrigins = [
+    'https://sopranochat.com',
+    'https://www.sopranochat.com',
+    'https://chatlesme.vercel.app',
+    'http://localhost:3000',
+    'http://localhost:3001',
+  ];
+  // Merge env-based origins with hardcoded soprano domains
+  const envOrigins = corsOrigin ? corsOrigin.split(',').map(s => s.trim()) : [];
+  const allOrigins = [...new Set([...sopranoOrigins, ...envOrigins])];
+
   app.enableCors({
-    origin: corsOrigin ? corsOrigin.split(',').map(s => s.trim()) : true,
+    origin: allOrigins,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
     allowedHeaders: 'Content-Type, Accept, Authorization',
