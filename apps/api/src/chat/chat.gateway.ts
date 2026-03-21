@@ -1483,7 +1483,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: { roomId: string; initialStatus?: string; password?: string; disguiseName?: string; avatar?: string; gender?: string; godmasterIcon?: string; urlTenantSlug?: string },
   ) {
-    const { roomId } = payload;
+    let { roomId } = payload;
     const user = client.data.user;
 
     // ─── RESOLVE EFFECTIVE TENANT (URL tenant slug overrides JWT tenant for cross-tenant access) ──
@@ -1531,6 +1531,17 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       this.logger.warn(`room:join denied — no auth on socket ${client.id}`);
       client.emit('room:error', { message: 'Authentication required' });
       return;
+    }
+
+    // ─── CANONICAL ROOM RESOLUTION (Web & Mobile Sync Fix) ──
+    let canonicalRoom: any = null;
+    try {
+      canonicalRoom = await this.roomService.findBySlug(effectiveTenantId, roomId);
+      if (canonicalRoom && canonicalRoom.slug) {
+        roomId = canonicalRoom.slug;
+      }
+    } catch(e) {
+      this.logger.warn(`Could not resolve canonical room ${roomId}: ${e.message}`);
     }
 
     // ─── BAN CHECK ─────────────────────────────────────────
@@ -1649,7 +1660,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // GodMaster bypasses all room restrictions
     if (userRole !== 'godmaster') {
       try {
-        const room = await this.roomService.findBySlug(effectiveTenantId, roomId);
+        const room = canonicalRoom;
         if (room) {
           // 0) MEETING ROOM — davet ile açık, kısıtlama kaldırıldı
           // (Hiyerarşi kontrolü meeting:invite handler'ında yapılıyor)
@@ -1825,7 +1836,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       role: user.role || 'guest',
       socketId: client.id,
       roomId: scopedRoom,
-      roomSlug: roomId,
+      roomSlug: canonicalRoom?.slug || roomId,
       tenantId: effectiveTenantId,
       isStealth: initialStealth,
       status: initialStealth ? 'stealth' : 'online',
@@ -2058,7 +2069,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // Get participants (filtered for this viewer's role) — roomSlug bazlı, tenantId uyumsuzluğuna dayanıklı
     const roomParticipants = this.getRoomParticipantsMultiTenant(
-      roomId,
+      canonicalRoom?.slug || roomId,
       participant.userId,
       participant.role,
     );
@@ -2183,6 +2194,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         };
       })() : null,
       userPermissions: user.permissions || null,
+      tenantId: effectiveTenantId,
     });
 
     // ★ BROADCAST: Yeni katılan dahil tüm odadaki kullanıcılara güncel listeyi gönder
@@ -4768,9 +4780,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const duration = this.getMicDuration(actor.role, actor.tenantId);
       const startedAt = Date.now();
 
-      const timer = setTimeout(() => {
+      // ★ FIX: duration null ise (sınırsız) timer oluşturma!
+      const timer = duration != null ? setTimeout(() => {
         this.releaseSpeaker(roomId, 'timer_expired');
-      }, duration);
+      }, duration) : null;
 
       this.roomSpeakers.set(roomId, {
         socketId: client.id,
@@ -4825,9 +4838,10 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const duration = this.getMicDuration(actor.role, actor.tenantId);
     const startedAt = Date.now();
 
-    const timer = setTimeout(() => {
+    // ★ FIX: duration null ise (sınırsız) timer oluşturma!
+    const timer = duration != null ? setTimeout(() => {
       this.releaseSpeaker(roomId, 'timer_expired');
-    }, duration);
+    }, duration) : null;
 
     this.roomSpeakers.set(roomId, {
       socketId: client.id,
@@ -5196,9 +5210,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const duration = this.getMicDuration(user.role, user.tenantId);
     const startedAt = Date.now();
 
-    const timer = setTimeout(() => {
+    // ★ FIX: duration null ise (sınırsız) timer oluşturma!
+    // setTimeout(fn, null) = setTimeout(fn, 0) → anında release oluyordu
+    const timer = duration != null ? setTimeout(() => {
       this.releaseSpeaker(roomId, 'timer_expired');
-    }, duration);
+    }, duration) : null;
 
     const speakerState: SpeakerState = {
       socketId: client.id,
