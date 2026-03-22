@@ -182,6 +182,23 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
     const micAcquireCountRef = useRef<number[]>([]); // ★ Circuit breaker: timestamps of recent acquires
     const micCircuitBrokenRef = useRef(false); // ★ Circuit breaker tripped
 
+    // ★ CRITICAL: Reset speaker state on room:joined to prevent zombie speakers
+    useEffect(() => {
+        if (!socket) return;
+        const onRoomJoined = () => {
+            console.log('[useRoomRealtime] room:joined → resetting currentSpeaker, queue, mic state');
+            setCurrentSpeaker(null);
+            setDuelSpeakers([]);
+            setQueue([]);
+            setIsMicOn(false);
+            stopCountdown();
+            cleanupMicStream();
+        };
+        socket.on('room:joined', onRoomJoined);
+        return () => { socket.off('room:joined', onRoomJoined); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket]);
+
     useEffect(() => {
         if (!socket) return;
 
