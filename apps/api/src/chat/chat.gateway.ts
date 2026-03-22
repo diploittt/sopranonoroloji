@@ -4833,7 +4833,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const currentSpeaker = this.roomSpeakers.get(roomId);
 
     // Only the current speaker can release (or if no speaker, ignore)
-    if (!currentSpeaker || currentSpeaker.socketId !== client.id) return;
+    if (!currentSpeaker) return;
+
+    // ★ FIX: socketId değişmiş olabilir (reconnect sonrası). userId ile de kontrol et.
+    if (currentSpeaker.socketId !== client.id) {
+      if (currentSpeaker.userId === participant.userId) {
+        // Aynı kullanıcı, farklı socket (reconnect) — socketId güncelle ve devam et
+        this.logger.log(`🎤 mic:release socketId mismatch but userId matches — updating socketId and releasing`);
+        currentSpeaker.socketId = client.id;
+      } else {
+        return; // Farklı kullanıcı, izin verme
+      }
+    }
 
     this.releaseSpeaker(roomId, 'released');
   }

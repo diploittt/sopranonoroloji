@@ -897,7 +897,10 @@ export function useRoomRealtime({ slug }: UseRoomRealtimeProps) {
         releaseMic: () => {
             if (!socket) return;
             socket.emit('mic:release', { roomId: slug });
+            // ★ Optimistik: UI'da hemen mikrofonu bırak görünümüne geç
+            setCurrentSpeaker(null);
             setIsMicOn(false);
+            stopCountdown();
             cleanupMicStream();
             lkUnpublishAudioRef.current();
         },
