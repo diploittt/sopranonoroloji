@@ -15,6 +15,7 @@ export interface BottomToolbarProps {
     onReleaseMic: () => void;
     onJoinQueue: () => void;
     onLeaveQueue: () => void;
+    onTakeMic?: () => void;
     onToggleCamera: () => void;
     onLeaveRoom: () => void;
     onToggleSettings: () => void;
@@ -67,6 +68,7 @@ export function BottomToolbar({
     onReleaseMic,
     onJoinQueue,
     onLeaveQueue,
+    onTakeMic,
     onToggleCamera,
     onLeaveRoom,
     onToggleSettings,
@@ -175,6 +177,7 @@ export function BottomToolbar({
     };
 
     const isMeSpeaker = currentSpeaker?.userId === currentUser?.userId;
+    const isSomeoneElseSpeaker = currentSpeaker && currentSpeaker.userId !== currentUser?.userId;
     const isInQueue = queue.includes(currentUser?.userId || '');
 
     return (
@@ -375,25 +378,48 @@ export function BottomToolbar({
                     ) : (
                         <button
                             onClick={() => {
-                                console.log('[BottomToolbar] Hand clicked. isInQueue:', isInQueue, 'isMeSpeaker:', isMeSpeaker);
-                                if (isInQueue) onLeaveQueue();
-                                else onJoinQueue();
+                                console.log('[BottomToolbar] Mic/Hand clicked. isInQueue:', isInQueue, 'isMeSpeaker:', isMeSpeaker, 'isSomeoneElseSpeaker:', isSomeoneElseSpeaker);
+                                if (isMeSpeaker) {
+                                    // Kendim konuşuyorsam → mikrofonu bırak
+                                    onReleaseMic();
+                                } else if (isSomeoneElseSpeaker) {
+                                    // Başkası konuşuyorsa → sıraya gir/çık
+                                    if (isInQueue) onLeaveQueue();
+                                    else onJoinQueue();
+                                } else {
+                                    // Kimse konuşmuyorsa → mikrofonu al
+                                    if (onTakeMic) onTakeMic();
+                                    else onRequestMic();
+                                }
                             }}
-                            disabled={isMeSpeaker}
                             className={`relative group w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300
-                                ${isInQueue
-                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                                    : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'}
+                                ${isMeSpeaker
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
+                                    : isInQueue
+                                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                                        : isSomeoneElseSpeaker
+                                            ? 'bg-white/5 text-gray-400 border border-white/5 hover:bg-emerald-500/10 hover:text-emerald-400 hover:border-emerald-500/30'
+                                            : 'bg-white/5 text-gray-400 border border-white/5 hover:bg-sky-500/10 hover:text-sky-400 hover:border-sky-500/30'}
                             `}
-                            title={isInQueue ? t.leaveQueue : t.joinQueue}
+                            title={isMeSpeaker ? t.releaseMic : isSomeoneElseSpeaker ? (isInQueue ? t.leaveQueue : t.joinQueue) : t.takeMic}
                         >
-                            <Hand className={`w-4 h-4 transition-transform group-hover:scale-110`} />
-                            {isInQueue && (
+                            {isSomeoneElseSpeaker ? (
+                                <Hand className={`w-4 h-4 transition-transform group-hover:scale-110`} />
+                            ) : (
+                                <Mic className={`w-4 h-4 transition-transform group-hover:scale-110`} />
+                            )}
+                            {isMeSpeaker && (
+                                <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                                    <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                                </span>
+                            )}
+                            {isInQueue && !isMeSpeaker && (
                                 <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                                     <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
                                 </span>
                             )}
-                            {queue.length > 0 && !isInQueue && (
+                            {queue.length > 0 && !isInQueue && !isMeSpeaker && (
                                 <span className="absolute -top-2 -left-2 bg-[#1f2937] text-white text-[9px] font-bold rounded-md px-1.5 py-0.5 border border-white/10 shadow-lg">
                                     {queue.length}
                                 </span>

@@ -37,7 +37,6 @@ export default function ProfileScreen() {
     { id: 'dm', icon: 'chatbubbles', label: 'Özel Mesajlar', color: '#ec4899', route: '/dm' },
     { id: 'settings', icon: 'settings', label: 'Ayarlar', color: '#a78bfa', route: '/settings' },
     { id: 'wallet', icon: 'wallet', label: 'Bakiye & Puan', color: '#f59e0b', info: `${user?.balance || 0} ₺` },
-    { id: 'admin', icon: 'shield-checkmark', label: 'Yönetici Paneli', color: '#6366f1', route: '/(tenant-admin)' },
   ];
 
   const avatarUrl = user?.avatar || user?.avatarUrl;

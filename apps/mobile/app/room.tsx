@@ -93,7 +93,8 @@ export default function RoomScreen() {
   const [roomInfoVisible, setRoomInfoVisible] = useState(false);
   const [micQueueVisible, setMicQueueVisible] = useState(false);
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
-  const [joinedAt] = useState(() => Date.now()); // Mesaj session timestamp
+  const [joinedAt] = useState(() => Date.now());
+  const [handRaiseToast, setHandRaiseToast] = useState(false);
 
   // ═══ STORE ═══
   const {
@@ -109,7 +110,9 @@ export default function RoomScreen() {
   const roomSlug = currentRoom?.slug || params.roomId;
   const {
     connectionState: lkState, isPublishing: lkPublishing,
+    isVideoPublishing: lkVideoPublishing,
     error: lkError, publishAudio, unpublishAudio, setMicEnabled,
+    publishVideo, unpublishVideo,
   } = useLiveKit({ roomSlug, enabled: socketConnected });
 
   // ═══ ACTIVE SPEAKER DATA ═══
@@ -132,6 +135,7 @@ export default function RoomScreen() {
       avatar: p.avatar || DEFAULT_AVATAR,
       speaking: (p as any).isSpeaking || false, muted: p.isMuted || false,
       role: p.role || 'listener', camOn: (p as any).camOn || false,
+      requesting: micQueue.includes(p.userId),
     }));
 
   const LISTENERS = storeParticipants.filter(p => {
@@ -177,20 +181,33 @@ export default function RoomScreen() {
       await unpublishAudio();
     }
   };
-  const handleCamToggle = () => {
+  const handleCamToggle = async () => {
     const next = !camOn;
     setCamOn(next);
-    console.log('[Room] Kamera toggle:', next);
-    // Kamera henüz LiveKit video entegrasyonu yok — sadece state değişir
+    if (next) {
+      console.log('[Oda] Kamera AÇ — publishVideo');
+      const ok = await publishVideo();
+      if (!ok) {
+        console.warn('[Oda] publishVideo başarısız — LiveKit bağlantısı yok');
+        setCamOn(false); // Geri al
+      }
+    } else {
+      console.log('[Oda] Kamera KAPAT — unpublishVideo');
+      await unpublishVideo();
+    }
   };
   const handleHandToggle = () => {
     const inQueue = micQueue.includes(user?.id || '');
     if (inQueue) {
-      console.log('[Room] El kaldırma geri çekiliyor');
+      console.log('[Oda] El kaldırma geri çekiliyor');
       leaveQueue();
+      setHandRaiseToast(false);
     } else {
-      console.log('[Room] Sıraya giriliyor');
+      console.log('[Oda] Sıraya giriliyor');
       requestMic();
+      // Bildirim toast göster
+      setHandRaiseToast(true);
+      setTimeout(() => setHandRaiseToast(false), 3000);
     }
   };
   const handleSendMessage = () => {
@@ -275,11 +292,6 @@ export default function RoomScreen() {
           <TouchableOpacity style={st.hBtnSmall} onPress={() => setRoomInfoVisible(true)}>
             <Ionicons name="information-circle-outline" size={16} color="rgba(255,255,255,0.6)" />
           </TouchableOpacity>
-          {(user?.role === 'owner' || user?.role === 'godmaster' || user?.role === 'admin' || user?.role === 'superadmin' || user?.role === 'super_admin') && (
-            <TouchableOpacity style={st.hBtnSmall} onPress={() => router.push('/(tenant-admin)')}>
-              <Ionicons name="settings-outline" size={16} color="rgba(255,255,255,0.6)" />
-            </TouchableOpacity>
-          )}
         </View>
       </View>
 
@@ -361,8 +373,12 @@ export default function RoomScreen() {
                   const bgColor = bgColors[initial.charCodeAt(0) % bgColors.length];
                   return (
                     <TouchableOpacity key={p.userId} activeOpacity={0.8}
-                      onPress={() => openProfile(p)} style={st.listenerItem}>
-                      <View style={st.listenerAvatarWrap}>
+                      onPress={() => openProfile(p)}
+                      style={[st.listenerItem, isRequesting && st.listenerItemRequesting]}>
+                      <View style={[
+                        st.listenerAvatarWrap,
+                        isRequesting && { borderColor: '#ffb800', borderWidth: 2 },
+                      ]}>
                         {hasAvatar ? (
                           <Image source={{ uri: p.avatar }} style={st.listenerAvatarImg} />
                         ) : (
@@ -372,11 +388,16 @@ export default function RoomScreen() {
                         )}
                         {isRequesting && (
                           <View style={st.listenerMicReq}>
-                            <Ionicons name="hand-left" size={7} color="#fff" />
+                            <Text style={{ fontSize: 8 }}>🖐️</Text>
                           </View>
                         )}
                       </View>
-                      <Text style={st.listenerName} numberOfLines={1}>{p.displayName || 'Kullanıcı'}</Text>
+                      <Text style={[st.listenerName, isRequesting && { color: '#ffb800', fontWeight: '700' }]} numberOfLines={1}>
+                        {p.displayName || 'Kullanıcı'}
+                      </Text>
+                      {isRequesting && (
+                        <Text style={st.listenerReqText}>Mik İst.</Text>
+                      )}
                     </TouchableOpacity>
                   );
                 })}
@@ -388,6 +409,14 @@ export default function RoomScreen() {
 
       {/* ── KLAVYEYİ KAÇIRMA: Alt bar + input ── */}
       <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+        {/* ═══ EL KALDIRMA TOAST BİLDİRİMİ ═══ */}
+        {handRaiseToast && (
+          <View style={st.handToast}>
+            <Text style={{ fontSize: 14 }}>🖐️</Text>
+            <Text style={st.handToastText}>Mikrofon isteğiniz iletildi!</Text>
+          </View>
+        )}
+
         {/* ═══ CANLI MESAJ OVERLAY — ScrollView DIŞINDA (sabit konum) ═══ */}
         <LiveChat
           messages={chatMessages}
@@ -561,6 +590,31 @@ const st = StyleSheet.create({
   listenerName: {
     fontSize: 8, fontWeight: '500', color: 'rgba(255,255,255,0.45)',
     marginTop: 3, textAlign: 'center' as const, maxWidth: 50,
+  },
+  listenerItemRequesting: {
+    backgroundColor: 'rgba(255,184,0,0.06)',
+    borderRadius: 12,
+    borderWidth: 0.5,
+    borderColor: 'rgba(255,184,0,0.2)',
+    paddingVertical: 4,
+  },
+  listenerReqText: {
+    fontSize: 6, fontWeight: '800', color: '#ffb800',
+    marginTop: 1, textAlign: 'center' as const,
+    textTransform: 'uppercase' as const, letterSpacing: 0.3,
+  },
+
+  /* El kaldırma toast */
+  handToast: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8,
+    marginHorizontal: 40, marginBottom: 4,
+    paddingVertical: 8, paddingHorizontal: 16,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,184,0,0.12)',
+    borderWidth: 1, borderColor: 'rgba(255,184,0,0.25)',
+  },
+  handToastText: {
+    fontSize: 12, fontWeight: '700', color: '#ffb800',
   },
 
   /* Header small buttons */

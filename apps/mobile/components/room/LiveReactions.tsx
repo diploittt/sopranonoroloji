@@ -84,7 +84,7 @@ export default function LiveReactions({
   }, [incomingReaction?.timestamp]);
 
   const handleTap = (emoji: string) => {
-    addEmoji(emoji);
+    // Sunucuya gönder — geri geldiğinde incomingReaction ile herkes görür
     onReaction?.(emoji);
   };
 

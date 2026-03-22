@@ -3586,6 +3586,7 @@ export default function RoomPage({ params }: { params: Promise<{ slug: string }>
                                                     onSendMessage={room.actions.sendMessage}
                                                     onRequestMic={room.actions.requestMic}
                                                     onReleaseMic={room.actions.releaseMic}
+                                                    onTakeMic={room.actions.takeMic}
                                                     onJoinQueue={room.actions.joinQueue}
                                                     onLeaveQueue={room.actions.leaveQueue}
                                                     onToggleCamera={room.actions.toggleCamera}

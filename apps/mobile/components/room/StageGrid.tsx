@@ -16,6 +16,7 @@ interface StageUser {
   muted: boolean;
   role: string;
   camOn?: boolean;
+  requesting?: boolean;
 }
 
 /* ── Mini Speaking Ring ── */
@@ -48,6 +49,54 @@ function MiniSpeakingRing({ speaking }: { speaking: boolean }) {
       borderWidth: 2, borderColor: '#00ff88',
       opacity, transform: [{ scale }],
     }} />
+  );
+}
+
+/* ── Mikrofon İsteyen Badge ── */
+function RequestingBadge({ requesting }: { requesting: boolean }) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const borderOpacity = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (requesting) {
+      Animated.loop(Animated.sequence([
+        Animated.parallel([
+          Animated.timing(scale, { toValue: 1.15, duration: 500, useNativeDriver: true }),
+          Animated.timing(borderOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
+        ]),
+        Animated.parallel([
+          Animated.timing(scale, { toValue: 1, duration: 500, useNativeDriver: true }),
+          Animated.timing(borderOpacity, { toValue: 0.4, duration: 300, useNativeDriver: true }),
+        ]),
+      ])).start();
+    } else {
+      scale.setValue(1);
+      borderOpacity.setValue(0);
+    }
+  }, [requesting]);
+
+  if (!requesting) return null;
+  return (
+    <>
+      {/* Nabız atan turuncu halka */}
+      <Animated.View style={{
+        ...StyleSheet.absoluteFillObject,
+        borderRadius: AVATAR / 2 + 4,
+        borderWidth: 2, borderColor: '#ffb800',
+        opacity: borderOpacity, transform: [{ scale }],
+      }} />
+      {/* El ikonu badge */}
+      <Animated.View style={[{
+        position: 'absolute', top: -4, right: -4,
+        width: 22, height: 22, borderRadius: 11,
+        backgroundColor: '#ffb800',
+        alignItems: 'center', justifyContent: 'center',
+        borderWidth: 2, borderColor: '#0a0e27',
+        transform: [{ scale }],
+      }]}>
+        <Text style={{ fontSize: 10 }}>🖐️</Text>
+      </Animated.View>
+    </>
   );
 }
 
@@ -85,21 +134,28 @@ export default function StageGrid({
           const roleIcon = getRoleIcon(sp.role);
           return (
             <TouchableOpacity key={sp.id} activeOpacity={0.8}
-              onPress={() => onPress?.(sp.id)} style={s.card}>
+              onPress={() => onPress?.(sp.id)}
+              style={[s.card, sp.requesting && s.cardRequesting]}>
               {/* Avatar */}
               <View style={s.avatarOuter}>
                 <MiniSpeakingRing speaking={sp.speaking} />
-                <View style={[s.avatarBorder, sp.speaking && { borderColor: '#00ff88' }]}>
+                <RequestingBadge requesting={!!sp.requesting} />
+                <View style={[s.avatarBorder,
+                  sp.speaking && { borderColor: '#00ff88' },
+                  sp.requesting && !sp.speaking && { borderColor: '#ffb800' },
+                ]}>
                   <Image source={{ uri: sp.avatar }} style={s.avatarImg} />
                 </View>
 
                 {/* Mic badge */}
                 <View style={[s.micBadge,
                   sp.speaking ? { backgroundColor: '#00ff88' } :
+                  sp.requesting ? { backgroundColor: '#ffb800' } :
                   sp.muted ? { backgroundColor: '#ef4444' } :
                   { backgroundColor: 'rgba(100,100,100,0.8)' }
                 ]}>
-                  <Ionicons name={sp.muted ? 'mic-off' : 'mic'} size={8} color={sp.speaking ? '#0a0e27' : '#fff'} />
+                  <Ionicons name={sp.requesting ? 'hand-left' : sp.muted ? 'mic-off' : 'mic'} size={8}
+                    color={sp.speaking ? '#0a0e27' : '#fff'} />
                 </View>
 
                 {/* Rol badge */}
@@ -111,7 +167,11 @@ export default function StageGrid({
               </View>
 
               {/* İsim */}
-              <Text style={[s.name, { color: roleColor }]} numberOfLines={1}>{sp.name}</Text>
+              <Text style={[s.name, { color: sp.requesting ? '#ffb800' : roleColor }]} numberOfLines={1}>{sp.name}</Text>
+              {/* Mikrofon İstiyor yazısı */}
+              {sp.requesting && (
+                <Text style={s.requestingText}>Mik. İstiyor</Text>
+              )}
             </TouchableOpacity>
           );
         })}
@@ -157,6 +217,10 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.08)',
   },
+  cardRequesting: {
+    backgroundColor: 'rgba(255,184,0,0.06)',
+    borderColor: 'rgba(255,184,0,0.2)',
+  },
 
   /* Avatar */
   avatarOuter: {
@@ -186,5 +250,10 @@ const s = StyleSheet.create({
   name: {
     fontSize: 10, fontWeight: '700', marginTop: 6,
     textAlign: 'center', maxWidth: CARD_W - 8,
+  },
+  requestingText: {
+    fontSize: 7, fontWeight: '700', color: '#ffb800',
+    marginTop: 2, textAlign: 'center',
+    textTransform: 'uppercase' as const, letterSpacing: 0.5,
   },
 });

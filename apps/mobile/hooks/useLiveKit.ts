@@ -18,6 +18,8 @@ interface UseLiveKitReturn {
   connectionState: LiveKitConnectionState;
   /** Ses yayınlanıyor mu */
   isPublishing: boolean;
+  /** Video yayınlanıyor mu */
+  isVideoPublishing: boolean;
   /** Hata mesajı */
   error: string | null;
   /** Mikrofon sesini yayınla (mic:take sonrası çağır) */
@@ -26,6 +28,12 @@ interface UseLiveKitReturn {
   unpublishAudio: () => Promise<void>;
   /** Mikrofonu mute/unmute */
   setMicEnabled: (enabled: boolean) => Promise<void>;
+  /** Kamera video yayınını başlat */
+  publishVideo: () => Promise<boolean>;
+  /** Kamera video yayınını durdur */
+  unpublishVideo: () => Promise<void>;
+  /** Kamerayı aç/kapat */
+  setCameraEnabled: (enabled: boolean) => Promise<void>;
 }
 
 export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptions): UseLiveKitReturn {
@@ -35,12 +43,14 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
 
   const [connectionState, setConnectionState] = useState<LiveKitConnectionState>('idle');
   const [isPublishing, setIsPublishing] = useState(false);
+  const [isVideoPublishing, setIsVideoPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const connectAttemptedRef = useRef(false);
 
-  // App state tracking
+  // Uygulama durumu takibi
   const appStateRef = useRef(AppState.currentState);
   const wasPublishingRef = useRef(false);
+  const wasVideoPublishingRef = useRef(false);
 
   // ─── Connect/Disconnect lifecycle ─────────────────────────
   useEffect(() => {
@@ -99,18 +109,28 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
     };
   }, [roomSlug, socketConnected, enabled, user?.id, user?.displayName]);
 
-  // ─── App State (background/foreground) ────────────────────
+  // ─── Uygulama Durumu (arka plan/ön plan) ────────────────────
   useEffect(() => {
     const handleAppState = async (nextState: AppStateStatus) => {
       if (appStateRef.current.match(/active/) && nextState.match(/inactive|background/)) {
+        // Arka plana geçerken ses ve video yayınını durdur
         if (livekitService.isPublishing) {
           wasPublishingRef.current = true;
           await livekitService.setMicEnabled(false);
         }
+        if (livekitService.isVideoPublishing) {
+          wasVideoPublishingRef.current = true;
+          await livekitService.setCameraEnabled(false);
+        }
       } else if (appStateRef.current.match(/inactive|background/) && nextState === 'active') {
+        // Ön plana gelince devam ettir
         if (wasPublishingRef.current) {
           wasPublishingRef.current = false;
           await livekitService.setMicEnabled(true);
+        }
+        if (wasVideoPublishingRef.current) {
+          wasVideoPublishingRef.current = false;
+          await livekitService.setCameraEnabled(true);
         }
       }
       appStateRef.current = nextState;
@@ -120,7 +140,7 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
     return () => subscription.remove();
   }, []);
 
-  // ─── Actions ──────────────────────────────────────────────
+  // ─── İşlemler ──────────────────────────────────────────────
   const publishAudio = useCallback(async (): Promise<boolean> => {
     const success = await livekitService.publishAudio();
     setIsPublishing(success);
@@ -136,13 +156,32 @@ export default function useLiveKit({ roomSlug, enabled = true }: UseLiveKitOptio
     await livekitService.setMicEnabled(en);
   }, []);
 
+  const publishVideo = useCallback(async (): Promise<boolean> => {
+    const success = await livekitService.publishVideo();
+    setIsVideoPublishing(success);
+    return success;
+  }, []);
+
+  const unpublishVideo = useCallback(async (): Promise<void> => {
+    await livekitService.unpublishVideo();
+    setIsVideoPublishing(false);
+  }, []);
+
+  const setCameraEnabled = useCallback(async (en: boolean): Promise<void> => {
+    await livekitService.setCameraEnabled(en);
+  }, []);
+
   return {
     connectionState,
     isPublishing,
+    isVideoPublishing,
     error,
     publishAudio,
     unpublishAudio,
     setMicEnabled,
+    publishVideo,
+    unpublishVideo,
+    setCameraEnabled,
   };
 }
 

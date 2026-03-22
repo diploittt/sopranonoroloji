@@ -771,6 +771,35 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
   }
 
+  // ═══════════ Room Reactions (Emojiler) — Broadcast ═══════════
+  @SubscribeMessage('room:reaction')
+  async handleRoomReaction(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { roomId: string; emoji: string },
+  ) {
+    const user = client.data?.user;
+    if (!user || !data?.emoji) return;
+
+    const sender = this.participants.get(client.id);
+    if (!sender) return;
+
+    // ★ REDIS RATE LIMIT — room:reaction (max 10/10sn)
+    const allowed = await this.checkSocketRateLimit(user.sub, 'room:reaction', 10, 10);
+    if (!allowed) return;
+
+    // Odadaki herkese broadcast et (gönderen dahil)
+    const roomSlug = sender.roomSlug;
+    for (const [, p] of this.participants) {
+      if (p.roomSlug === roomSlug) {
+        this.server.to(p.socketId).emit('room:reaction', {
+          userId: user.sub,
+          emoji: data.emoji,
+          displayName: sender.displayName,
+        });
+      }
+    }
+  }
+
   // ═══════════ Gift: Get Balance ═══════════
   @SubscribeMessage('gift:balance')
   async handleGiftBalance(@ConnectedSocket() client: Socket) {

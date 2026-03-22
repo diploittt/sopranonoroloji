@@ -307,7 +307,7 @@ class RealtimeService {
 
     this.socket.emit('admin:userAction', {
       action,
-      userId,
+      targetUserId: userId,
       roomId: this.currentRoomId,
       ...extra,
     });

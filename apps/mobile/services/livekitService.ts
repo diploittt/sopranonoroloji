@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════════════════
-   SopranoChat Mobil — LiveKit Audio Service (Singleton)
+   SopranoChat Mobil — LiveKit Audio + Video Service (Singleton)
    WebRTC ses katmanı — socket altyapısından bağımsız
    
    ⚠️  livekit-client paketi henüz yüklü DEĞİL.
@@ -19,6 +19,8 @@ export interface LiveKitCallbacks {
   onError?: (error: string) => void;
   onAudioTrackSubscribed?: (participantId: string) => void;
   onAudioTrackUnsubscribed?: (participantId: string) => void;
+  onVideoTrackSubscribed?: (participantId: string, track: any) => void;
+  onVideoTrackUnsubscribed?: (participantId: string) => void;
 }
 
 // ─── Debug Logger ───────────────────────────────────────────
@@ -57,6 +59,8 @@ class LiveKitService {
   private callbacks: LiveKitCallbacks = {};
   private localAudioTrack: any = null;
   private isMicPublished = false;
+  private localVideoTrack: any = null;
+  private isCamPublished = false;
 
   /**
    * LiveKit odasına bağlan
@@ -112,6 +116,9 @@ class LiveKitService {
       if (this.isMicPublished) {
         await this.unpublishAudio();
       }
+      if (this.isCamPublished) {
+        await this.unpublishVideo();
+      }
 
       if (this.room) {
         await this.room.disconnect();
@@ -120,10 +127,12 @@ class LiveKitService {
 
       this.localAudioTrack = null;
       this.isMicPublished = false;
+      this.localVideoTrack = null;
+      this.isCamPublished = false;
       this.setConnectionState('disconnected');
-      log('Disconnected from LiveKit');
+      log('Bağlantı kesildi');
     } catch (error: any) {
-      warn('Disconnect error:', error.message);
+      warn('Bağlantı kesme hatası:', error.message);
       this.room = null;
       this.setConnectionState('disconnected');
     }
@@ -199,9 +208,84 @@ class LiveKitService {
 
     try {
       await this.room.localParticipant.setMicrophoneEnabled(enabled);
-      log('Mic enabled:', enabled);
+      log('Mikrofon durumu:', enabled);
     } catch (error: any) {
-      warn('Set mic enabled error:', error.message);
+      warn('Mikrofon durumu değiştirme hatası:', error.message);
+    }
+  }
+
+  /**
+   * Kamera video yayınını başlat
+   */
+  async publishVideo(): Promise<boolean> {
+    const lk = getLiveKitClient();
+    if (!lk || !this.room || this.room.state !== lk.ConnectionState.Connected) {
+      warn('Video yayınlanamıyor — bağlantı yok');
+      return false;
+    }
+
+    if (this.isCamPublished) {
+      log('Video zaten yayında');
+      return true;
+    }
+
+    const hasPermission = await this.requestCameraPermission();
+    if (!hasPermission) {
+      this.callbacks.onError?.('Kamera izni verilmedi');
+      return false;
+    }
+
+    try {
+      const videoTrack = await lk.createLocalVideoTrack({
+        facingMode: 'user',
+        resolution: { width: 640, height: 480, frameRate: 24 },
+      });
+
+      const publication = await this.room.localParticipant.publishTrack(videoTrack);
+      this.localVideoTrack = publication;
+      this.isCamPublished = true;
+      log('Video yayını başlatıldı');
+      return true;
+    } catch (error: any) {
+      warn('Video yayını başlatılamadı:', error.message);
+      this.callbacks.onError?.(`Kamera başlatılamadı: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Kamera video yayınını durdur
+   */
+  async unpublishVideo(): Promise<void> {
+    if (!this.room || !this.isCamPublished) return;
+
+    try {
+      const localParticipant = this.room.localParticipant;
+      for (const [, publication] of localParticipant.videoTrackPublications) {
+        if (publication.track) {
+          await localParticipant.unpublishTrack(publication.track);
+          publication.track.stop();
+        }
+      }
+      this.localVideoTrack = null;
+      this.isCamPublished = false;
+      log('Video yayını durduruldu');
+    } catch (error: any) {
+      warn('Video yayını durdurma hatası:', error.message);
+    }
+  }
+
+  /**
+   * Kamera aç/kapat (mute/unmute)
+   */
+  async setCameraEnabled(enabled: boolean): Promise<void> {
+    if (!this.room || !this.isCamPublished) return;
+
+    try {
+      await this.room.localParticipant.setCameraEnabled(enabled);
+      log('Kamera durumu:', enabled);
+    } catch (error: any) {
+      warn('Kamera durumu değiştirme hatası:', error.message);
     }
   }
 
@@ -214,6 +298,10 @@ class LiveKitService {
 
   get isPublishing(): boolean {
     return this.isMicPublished;
+  }
+
+  get isVideoPublishing(): boolean {
+    return this.isCamPublished;
   }
 
   get state(): LiveKitConnectionState {
@@ -279,7 +367,27 @@ class LiveKitService {
       );
       return granted === PermissionsAndroid.RESULTS.GRANTED;
     } catch (error) {
-      warn('Permission error:', error);
+      warn('Mikrofon izni hatası:', error);
+      return false;
+    }
+  }
+
+  private async requestCameraPermission(): Promise<boolean> {
+    if (Platform.OS !== 'android') return true;
+
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        {
+          title: 'Kamera İzni',
+          message: 'SopranoChat görüntülü sohbet için kamera erişimi gerektirir.',
+          buttonPositive: 'İzin Ver',
+          buttonNegative: 'Reddet',
+        },
+      );
+      return granted === PermissionsAndroid.RESULTS.GRANTED;
+    } catch (error) {
+      warn('Kamera izni hatası:', error);
       return false;
     }
   }
@@ -306,24 +414,26 @@ class LiveKitService {
       lk.RoomEvent.TrackSubscribed,
       (track: any, publication: any, participant: any) => {
         if (track.kind === lk.Track.Kind.Audio) {
-          log('Audio track subscribed:', participant.identity);
-          // ★ Ses çalmak için track'ı DOM'a ekle (web) veya otomatik çal (native)
+          log('Ses track abone olundu:', participant.identity);
           try {
             if (Platform.OS === 'web') {
               const audioElement = track.attach();
               audioElement.id = `lk-audio-${participant.identity}`;
               audioElement.autoplay = true;
               document.body.appendChild(audioElement);
-              log('Audio element attached to DOM for:', participant.identity);
+              log('Ses elementi DOM\'a eklendi:', participant.identity);
             } else {
-              // Native'de livekit-client otomatik çalar — ekstra işlem gerekmez
+              // Native'de livekit-client otomatik çalar
               track.attach();
-              log('Audio track attached for native:', participant.identity);
+              log('Ses track bağlandı (native):', participant.identity);
             }
           } catch (err: any) {
-            warn('Audio attach error:', err.message);
+            warn('Ses bağlama hatası:', err.message);
           }
           this.callbacks.onAudioTrackSubscribed?.(participant.identity);
+        } else if (track.kind === lk.Track.Kind.Video) {
+          log('Video track abone olundu:', participant.identity);
+          this.callbacks.onVideoTrackSubscribed?.(participant.identity, track);
         }
       },
     );
@@ -332,16 +442,18 @@ class LiveKitService {
       lk.RoomEvent.TrackUnsubscribed,
       (track: any, publication: any, participant: any) => {
         if (track.kind === lk.Track.Kind.Audio) {
-          log('Audio track unsubscribed:', participant.identity);
-          // ★ DOM'dan ses elementini kaldır
+          log('Ses track aboneliği kaldırıldı:', participant.identity);
           try {
             const elements = track.detach();
             elements.forEach((el: HTMLElement) => el.remove());
-            log('Audio element detached for:', participant.identity);
+            log('Ses elementi kaldırıldı:', participant.identity);
           } catch (err: any) {
-            warn('Audio detach error:', err.message);
+            warn('Ses elementi kaldırma hatası:', err.message);
           }
           this.callbacks.onAudioTrackUnsubscribed?.(participant.identity);
+        } else if (track.kind === lk.Track.Kind.Video) {
+          log('Video track aboneliği kaldırıldı:', participant.identity);
+          this.callbacks.onVideoTrackUnsubscribed?.(participant.identity);
         }
       },
     );
@@ -360,9 +472,11 @@ class LiveKitService {
     });
 
     this.room.on(lk.RoomEvent.Disconnected, (reason?: any) => {
-      log('Room disconnected, reason:', reason);
+      log('Oda bağlantısı kesildi, sebep:', reason);
       this.isMicPublished = false;
       this.localAudioTrack = null;
+      this.isCamPublished = false;
+      this.localVideoTrack = null;
     });
 
     this.room.on(lk.RoomEvent.Reconnected, () => {

@@ -2494,6 +2494,7 @@ export default function HomePage({ initialRoomsMode, initialSlug, initialTenant 
                                                     onSendMessage={demoRoomRef.current.actions.sendMessage}
                                                     onRequestMic={demoRoomRef.current.actions.requestMic}
                                                     onReleaseMic={demoRoomRef.current.actions.releaseMic}
+                                                    onTakeMic={demoRoomRef.current.actions.takeMic}
                                                     onJoinQueue={demoRoomRef.current.actions.joinQueue}
                                                     onLeaveQueue={demoRoomRef.current.actions.leaveQueue}
                                                     onToggleCamera={demoRoomRef.current.actions.toggleCamera}

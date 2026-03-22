@@ -209,6 +209,7 @@ export const useStore = create<AppState>((set, get) => ({
     // Yeni token ile bağlan
     const config = require('../config').default;
     realtimeService.connect(config.SOCKET_URL, token, tenantId);
+    realtimeService.setUserRole(user.role || 'guest');
     get().setupSocketListeners();
   },
 
@@ -581,8 +582,12 @@ export const useStore = create<AppState>((set, get) => ({
         roomSettings: data.roomSettings || null,
         systemSettings: data.systemSettings || null,
         roomError: null,
-        activeTenantId: data.tenantId || get().activeTenantId, // Odaya girince aktif tenant'ı kesinleştir
+        activeTenantId: data.tenantId || get().activeTenantId,
       });
+      // ★ Kendi rolümüzü realtimeService'e bildir (client-side mod check)
+      const myId = get().user?.id;
+      const me = (data.participants || []).find((p: any) => p.userId === myId);
+      if (me?.role) realtimeService.setUserRole(me.role);
     });
 
     // Katılımcı listesi güncellemesi
@@ -795,6 +800,7 @@ export const useStore = create<AppState>((set, get) => ({
         set((s) => ({
           user: s.user ? { ...s.user, role: data.newRole as any } : s.user,
         }));
+        realtimeService.setUserRole(data.newRole);
       }
     });
 
@@ -867,15 +873,15 @@ export const useStore = create<AppState>((set, get) => ({
       set({ balance: data.balance || 0, points: data.points || 0 });
     });
 
-    // ★ Gift — hediye alındı (animasyon)
+    // ★ Gift — hediye alındı (animasyon) — odanın tamamına broadcast
     realtimeService.on('gift:received', (data: any) => {
       set({ lastGiftAnimation: {
         senderName: data.senderName || '',
         receiverName: data.receiverName || '',
-        giftEmoji: data.giftEmoji || '🎁',
-        giftName: data.giftName || '',
-        totalCost: data.totalCost || 0,
-        giftCategory: data.giftCategory || 'basic',
+        giftEmoji: data.gift?.emoji || data.giftEmoji || '🎁',
+        giftName: data.gift?.name || data.giftName || '',
+        totalCost: data.totalCost || (data.gift?.price || 0) * (data.quantity || 1),
+        giftCategory: data.gift?.category || data.giftCategory || 'basic',
       }});
     });
   },
